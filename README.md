@@ -10,6 +10,39 @@ The LogicBenchy project was designed to address inaccurate:
 - non-standard vendor IP benchmarks with a long list of footnotes
 - non-stardard vendor tool benchmarks bound by NDAs
 
+# Quickstart Guide
+
+## Step1: Install Python package
+
+**Install from PyPI**
+```bash
+python3 -m pip install --upgrade logicbenchy
+```
+
+(or)
+
+**Install from source**
+
+```bash
+git clone https://github.com/zeroasiccorp/logicbenchy
+cd logicbenchy
+python3 -m pip install -e .
+```
+
+## Step2: Install preq-requisites
+
+You will need to install any binary tools required by the target. The easiest way to do this is via sc-install. For example, to install yosys,
+
+```bash
+sc-install yosys
+```
+
+## Step3: Run a benchmark
+
+```bash
+lb -b mult -target asap7_demo -m cellarea -to syn
+```
+
 ## License
 
 The main LogicBenchy project is licended under [MIT](LICENSE). Individual benchmark components are covered by licensed documented by the LICENSE file found in the root directory of each benchmark.
