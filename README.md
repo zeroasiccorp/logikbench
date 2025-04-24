@@ -10,6 +10,10 @@ The LogicBenchy project was designed to address inaccurate:
 - non-standard vendor IP benchmarks with a long list of footnotes
 - non-stardard vendor tool benchmarks bound by NDAs
 
+**!!NOTE!!**
+
+Each benchmark must be self contained with zero external dependencies and runnable via SiliconCompiler
+
 # Quickstart Guide
 
 ## Step1: Install Python package
