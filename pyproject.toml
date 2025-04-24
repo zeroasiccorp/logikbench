@@ -8,15 +8,15 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools]
 include-package-data = true
 packages = [
-    "hwbenchy"
+    "logicbenchy"
 ]
 
 [project]
-name = "hwbenchy"
+name = "logicbenchy"
 authors = [{name = "Zero ASIC"}]
 description = "Technology agnostic hardware benchmark suite"
 readme = "README.md"
-urls = {Homepage = "https://github.com/zeroasiccorp/hwbenchy"}
+urls = {Homepage = "https://github.com/zeroasiccorp/logicbenchy"}
 requires-python = ">= 3.12"
 license = {file = "LICENSE"}
 dependencies = [
@@ -25,7 +25,7 @@ dependencies = [
 dynamic = ['version']
 
 [tool.setuptools.dynamic]
-version = {attr = "hwbenchy._common._version"}
+version = {attr = "logicbenchy.__version__"}
 
 [tool.pytest.ini_options]
 testpaths = "tests"
