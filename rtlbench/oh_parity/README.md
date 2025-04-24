@@ -5,10 +5,9 @@ Parametrized Parity Calculator
 
 Calculates parity of an N bit wide input vector using xor's producing an single output bit indicating if there are an even or odd number of bits set.
 
-This benchmark checks:
-- xor tree synthesis
-- technology mapping
-- datapath placement
+## Parameters
+
+- N: vector data width
 
 ## Original Sources
 

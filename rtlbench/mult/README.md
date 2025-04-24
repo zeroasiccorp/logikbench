@@ -3,19 +3,21 @@ Parametrized Integer Multiplier
 
 ## Description
 
-A benchmark multiplies two numbers of width N and returns the N bit wide product a * b.
+Multiplies two unsigned input vectors of width N and returns the N bit wide result.
 
-This benchmark checks:
-- high level synthesis
-- arithmetic logic libraries
-- critical path timing optimization
-- datapath placement
+## Parameters
 
-## Source
+- N: vector data width
+
+## Original Sources
 
 - Author: Andreas Olofsson
-- Repo: https://github.com/zeroasiccorp/rtlbench
+- Repo: https://github.com/zeroasiccorp/logicbenchy
 
 ## License
 
 MIT. See LICENSE for more details.
+
+## Modifications
+
+- N/A
