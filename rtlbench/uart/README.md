@@ -1,6 +1,7 @@
-# UART
+Basic Universal Asynchronous Receiver Transmitter (UART) block.
+==================================================================
 
-A basic Universal Asynchronous Receiver Transmitter (UART) block.
+
 
 Original Author: Alex Forencich
 Origintal Repo: https://github.com/alexforencich/verilog-uart
