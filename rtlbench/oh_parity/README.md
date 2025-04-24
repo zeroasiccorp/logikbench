@@ -1,16 +1,13 @@
-Parametrized Datapath Mux
+Parametrized Parity Calculator
 ============================================
 
 ## Description
 
-Muxes together M vectors of width N to produce a single vector of width N.
+Calculates parity of an N bit wide input vector using xor's producing an single output bit indicating if there are an even or odd number of bits set.
 
 This benchmark checks:
-- mux tree synthesis
+- xor tree synthesis
 - technology mapping
-- wiring rats nest
-- fanout buffering on selects
-- critical path timing optimization
 - datapath placement
 
 ## Original Sources
@@ -25,4 +22,4 @@ MIT. See LICENSE for more details.
 
 ## Modifications
 
-- Removed ASIC mapping and deprecated parameters
+- None

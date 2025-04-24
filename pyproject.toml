@@ -1,0 +1,39 @@
+[build-system]
+requires = [
+    "setuptools >= 61.2",
+    "setuptools_scm[toml] >= 6.2"
+]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+include-package-data = true
+packages = [
+    "hwbenchy"
+]
+
+[project]
+name = "hwbenchy"
+authors = [{name = "Zero ASIC"}]
+description = "Technology agnostic hardware benchmark suite"
+readme = "README.md"
+urls = {Homepage = "https://github.com/zeroasiccorp/hwbenchy"}
+requires-python = ">= 3.12"
+license = {file = "LICENSE"}
+dependencies = [
+    "siliconcompiler >= 0.28.0"
+]
+dynamic = ['version']
+
+[tool.setuptools.dynamic]
+version = {attr = "hwbenchy._common._version"}
+
+[tool.pytest.ini_options]
+testpaths = "tests"
+timeout = "60"
+
+[project.optional-dependencies]
+dev = [
+    "flake8 >= 5.0.0",
+    "pytest >= 6.2.4",
+    "pytest-timeout >= 2.1.0"
+]
