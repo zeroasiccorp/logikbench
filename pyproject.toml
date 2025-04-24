@@ -1,15 +1,6 @@
 [build-system]
-requires = [
-    "setuptools >= 61.2",
-    "setuptools_scm[toml] >= 6.2"
-]
+requires = ["setuptools >= 61.2"]
 build-backend = "setuptools.build_meta"
-
-[tool.setuptools]
-include-package-data = true
-packages = [
-    "logicbenchy"
-]
 
 [project]
 name = "logicbenchy"
@@ -19,10 +10,11 @@ readme = "README.md"
 urls = {Homepage = "https://github.com/zeroasiccorp/logicbenchy"}
 requires-python = ">= 3.12"
 license = {file = "LICENSE"}
-dependencies = [
-    "siliconcompiler >= 0.28.0"
-]
+dependencies = ["siliconcompiler >= 0.32.3"]
 dynamic = ['version']
+
+[project.scripts]
+lb = "logicbenchy.cli:main"
 
 [tool.setuptools.dynamic]
 version = {attr = "logicbenchy.__version__"}
