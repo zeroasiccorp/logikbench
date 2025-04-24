@@ -40,7 +40,7 @@ sc-install yosys
 ## Step3: Run a benchmark
 
 ```bash
-lb -b mult -target asap7_demo -m cellarea -to syn
+lb -b mult -m cellarea -to syn
 ```
 
 ## License
