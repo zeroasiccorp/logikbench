@@ -14,7 +14,7 @@ dependencies = ["siliconcompiler >= 0.32.3"]
 dynamic = ['version']
 
 [project.scripts]
-lb = "logicbenchy.cli:main"
+lb = "logicbenchy.lb:main"
 
 [tool.setuptools.dynamic]
 version = {attr = "logicbenchy.__version__"}
