@@ -34,7 +34,6 @@ examples:
     # sc switches to pass through
     switchlist = ['-param',
                   '-to',
-                  '-from',
                   '-jobname',
                   '-quiet',
                   '-clean']
@@ -58,55 +57,68 @@ examples:
                                    description=description,
                                    additional_args=lb_args)
 
-
     # capture extra arguments
     benchmarks = args['b']
-    metrics = args['m']
-    outfile = args['o']
-    results = []
 
-    # TODO: params don't work when looping over designs, remove for loop
-    # params really only works for one run, remove for loop?
+    # create a sime runset
+    runset = {}
+    for b in args['b']:
+        runset[b] = {}
+        for p in chipargs.getkeys('option', 'param'):
+            runset[b][p] = chipargs.get('option', 'param', p)
 
-    # iterate over all benchmarks
-    # TODO: params don't work when looping over designs, remove for loop
-    # params really only works for one run, remove for loop?
+    # run benchmarks
+    run(runset,
+        metrics=args['m'],
+        target=asap7_demo, #TODO: make dynamic
+        output=args['o'],
+        to=chipargs.get('option', 'to')[0],
+        jobname=chipargs.get('option', 'jobname'),
+        quiet=chipargs.get('option', 'quiet'),
+        clean=chipargs.get('option', 'clean'))
+
+########################################################################
+# Python callable function
+########################################################################
+def run(runset, metrics, target,
+        output=None, to=None, jobname=None, quiet=None, clean=None):
+    '''
+    '''
 
     # TODO iterate over params as well
-    for item in benchmarks:
+    results = []
+    for design in runset:
 
-        # dynamic modyle import
-        module = importlib.import_module(f"logicbenchy.{item}.{item}")
+        # dynamic module import
+        module = importlib.import_module(f"logicbenchy.{design}.{design}")
         func = getattr(module, "setup")
 
         # creating a per design chip object
+        # TODO: update with class object
         chip = func()
 
-        # copy over arguments
-        chip.set('option', 'to', chipargs.get('option', 'to'))
-        chip.set('option', 'from', chipargs.get('option', 'from'))
-        chip.set('option', 'jobname', chipargs.get('option', 'jobname'))
-        chip.set('option', 'quiet', chipargs.get('option', 'quiet'))
-        chip.set('option', 'clean', chipargs.get('option', 'clean'))
-        for p in chipargs.getkeys('option', 'param'):
-            chip.set('option', 'param', p, chipargs.get('option', 'param', p))
+        # set user arguments
+        chip.set('option', 'to', to)
+        chip.set('option', 'jobname', jobname)
+        chip.set('option', 'quiet', quiet)
+        chip.set('option', 'clean', clean)
 
         # run benchmark
-        chip.use(asap7_demo) #TODO: set dynamically
+        chip.use(target) #TODO: very anonymous, relying on user naming, kwargs, load/use?
         chip.run()
         chip.summary()
 
         # stuff metrics into a pandas compatible table
         row = {}
-        row['benchmark'] = item
+        row['benchmark'] = design
         for m in metrics:
-            row[m] = chip.get('metric', m, step=chipargs.get('option', 'to')[0], index=str(0))
+            row[m] = chip.get('metric', m, step=to, index=str(0))
         results.append(row)
 
     # Create DataFrame in one shot
     df = pd.DataFrame(results)
     print(df)
-    df.to_csv(outfile, index=False)
+    df.to_csv(output, index=False)
 
 
 ##############################################
