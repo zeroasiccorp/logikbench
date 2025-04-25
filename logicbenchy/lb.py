@@ -24,9 +24,10 @@ Logic (RTL) benchmark utility based on SiliconCompiler.
 ============================================================================
 
 examples:
-   >> lb mult asap7_demo # run mult benchmark on asap7
-   >> lb all asap7_demo # run all benchmarks on asap7
-   >> lb mult asap7_demo -clean # clean mult directory before running
+   >> lb -b add mult -m cellarea warnings -to syn -o tmp.csv
+   >> lb -b mult asap7_demo # run mult benchmark on asap7
+   >> lb -b all asap7_demo # run all benchmarks on asap7
+   >> lb -b mult asap7_demo -clean # clean mult directory before running
 
 """
 
@@ -42,21 +43,21 @@ examples:
     lb_args = {
         '-b': {'nargs': '+',
                'help': 'list of benchmarks to run',
-               'metavar': '<benchmark>',
                'sc_print': False},
         '-m': {'nargs': '+',
                'help': 'list of metrics to report',
-               'metavar': '<metric>',
                'sc_print': False},
         '-o': {'help': 'output results file name',
                'metavar': '<file>'}
     }
 
     # run sc command line function
+    # TODO: why isn't this failing on above?
     args = chipargs.create_cmdline(progname,
                                    switchlist=switchlist,
                                    description=description,
                                    additional_args=lb_args)
+
 
     # capture extra arguments
     benchmarks = args['b']
