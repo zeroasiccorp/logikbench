@@ -3,8 +3,8 @@ import sys
 import os
 import importlib
 import shutil
+import pandas as pd
 import siliconcompiler
-from siliconcompiler.apps._common import manifest_switches
 
 # TODO: cleaner way of dynamically importing targets?
 from siliconcompiler.targets import asap7_demo
@@ -20,14 +20,14 @@ def main():
 
     description= f"""
 ============================================================================
-Logic (RTL) benchmark utility leveraging the SiliconCompiler project.
-See SiliconCompiler for target and metric documentation.
+Logic (RTL) benchmark utility based on SiliconCompiler.
 ============================================================================
-Examples:
-lb mult asap7_demo # run mult benchmark on asap7
-lb all asap7_demo # run all benchmarks on asap7
-lb mult asap7_demo -clean # clean mult directory before running
- =============================================================================
+
+examples:
+   >> lb mult asap7_demo # run mult benchmark on asap7
+   >> lb all asap7_demo # run all benchmarks on asap7
+   >> lb mult asap7_demo -clean # clean mult directory before running
+
 """
 
     # sc switches to pass through
@@ -40,14 +40,16 @@ lb mult asap7_demo -clean # clean mult directory before running
 
     # extra switches to add
     lb_args = {
-        '-b': {'action': 'append',
-               'help': 'list of benchmarks to run ',
+        '-b': {'nargs': '+',
+               'help': 'list of benchmarks to run',
                'metavar': '<benchmark>',
                'sc_print': False},
-        '-m': {'action': 'append',
-               'help': 'list of metrics to report ',
+        '-m': {'nargs': '+',
+               'help': 'list of metrics to report',
                'metavar': '<metric>',
-               'sc_print': False}
+               'sc_print': False},
+        '-o': {'help': 'output results file name',
+               'metavar': '<file>'}
     }
 
     # run sc command line function
@@ -59,14 +61,17 @@ lb mult asap7_demo -clean # clean mult directory before running
     # capture extra arguments
     benchmarks = args['b']
     metrics = args['m']
-    results = {}
-    for m in metrics:
-        results[m] = {}
+    outfile = args['o']
+    results = []
 
     # TODO: params don't work when looping over designs, remove for loop
     # params really only works for one run, remove for loop?
 
-    # iterate over list
+    # iterate over all benchmarks
+    # TODO: params don't work when looping over designs, remove for loop
+    # params really only works for one run, remove for loop?
+
+    # TODO iterate over params as well
     for item in benchmarks:
 
         # dynamic modyle import
@@ -90,13 +95,18 @@ lb mult asap7_demo -clean # clean mult directory before running
         chip.run()
         chip.summary()
 
-        # stuff metrics into table
-        #TODO: why is to a list and why is error so obtuse!?
+        # stuff metrics into a pandas compatible table
+        row = {}
+        row['benchmark'] = item
         for m in metrics:
-            results[m][item] = chip.get('metric', m, step=chipargs.get('option', 'to')[0], index=str(0))
+            row[m] = chip.get('metric', m, step=chipargs.get('option', 'to')[0], index=str(0))
+        results.append(row)
 
+    # Create DataFrame in one shot
+    df = pd.DataFrame(results)
+    print(df)
+    df.to_csv(outfile, index=False)
 
-    print(results)
 
 ##############################################
 # Calling as standalone program
