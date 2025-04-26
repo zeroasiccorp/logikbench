@@ -1,23 +1,17 @@
 import os
-from siliconcompiler import Chip
+from logicbenchy.design import Design
 
-def setup():
+class Add(Design):
 
-    # root dir
-    root = os.path.dirname(__file__)
+    def __init__(self):
+        self.name = "add"
+        super().__init__(self.name)
+        root = os.path.dirname(__file__)
+        self.source(os.path.join(root, 'rtl', f'{self.name}.v'))
+        self.source(os.path.join(root, 'sdc', f'{self.name}.sdc'))
 
-    #module
-    name = 'add'
+    def model(self, a, b):
+        pass
 
-    # library object
-    chip = Chip(name)
-
-    # rtl
-    chip.input(os.path.join(root, 'rtl', f'{name}.v'))
-
-    # sdc
-    chip.input(os.path.join(root, 'sdc', f'{name}.sdc'))
-
-    # need to add parameter range
-
-    return chip
+if __name__ == "__main__":
+    Add()

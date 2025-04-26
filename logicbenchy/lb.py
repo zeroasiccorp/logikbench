@@ -4,10 +4,12 @@ import os
 import importlib
 import shutil
 import pandas as pd
-import siliconcompiler
+import siliconcompiler as sc
 
-# TODO: cleaner way of dynamically importing targets?
 from siliconcompiler.targets import asap7_demo
+
+from .add.add import Add
+from .mult.mult import Mult
 
 ##############################################
 # Main Program
@@ -16,7 +18,7 @@ def main():
 
     progname = "lb"
     # creating dummy chip object to access cmdline utility
-    chipargs = siliconcompiler.Chip(progname)
+    chipargs = sc.Chip(progname)
 
     description= f"""
 ============================================================================
@@ -62,12 +64,19 @@ examples:
 
     # create a sime runset
     runset = {}
-    for b in args['b']:
-        runset[b] = {}
-        for p in chipargs.getkeys('option', 'param'):
-            runset[b][p] = chipargs.get('option', 'param', p)
+    #for b in args['b']:
+    #    runset[b] = {}
+    #    for p in chipargs.getkeys('option', 'param'):
+    #        runset[b][p] = chipargs.get('option', 'param', p)
 
     # run benchmarks
+    # todo, string to object mapping
+    # todo, set
+    # a.set('option, 'param', 'N', 16)
+    a = Add()
+
+    runset = [Add(), Mult()]
+
     run(runset,
         metrics=args['m'],
         target=asap7_demo, #TODO: make dynamic
@@ -84,33 +93,32 @@ def run(runset, metrics, target,
         output=None, to=None, jobname=None, quiet=None, clean=None):
     '''
     '''
-
-    # TODO iterate over params as well
     results = []
     for design in runset:
-
-        # dynamic module import
-        module = importlib.import_module(f"logicbenchy.{design}.{design}")
-        func = getattr(module, "setup")
-
-        # creating a per design chip object
-        # TODO: update with class object
-        chip = func()
-
-        # set user arguments
+        # a new chip object for every benchmark
+        chip = sc.Chip(design.name)
         chip.set('option', 'to', to)
         chip.set('option', 'jobname', jobname)
         chip.set('option', 'quiet', quiet)
         chip.set('option', 'clean', clean)
+        chip.use(target)
+
+        # instantiate object and copy over parameters
+        # TODO: --> replace with chip.use(design)
+        keypath = ['input', 'rtl','verilog']
+        vlog = design.get(*keypath)
+        chip.set(*keypath, vlog)
+        keypath = ['input', 'constraint','sdc']
+        sdc = design.get(*keypath)
+        chip.set(*keypath, sdc)
 
         # run benchmark
-        chip.use(target) #TODO: very anonymous, relying on user naming, kwargs, load/use?
         chip.run()
         chip.summary()
 
         # stuff metrics into a pandas compatible table
         row = {}
-        row['benchmark'] = design
+        row['benchmark'] = design.name
         for m in metrics:
             row[m] = chip.get('metric', m, step=to, index=str(0))
         results.append(row)
@@ -120,9 +128,9 @@ def run(runset, metrics, target,
     print(df)
     df.to_csv(output, index=False)
 
-
 ##############################################
 # Calling as standalone program
 ##############################################
 if __name__ == "__main__":
     sys.exit(main())
+    "lb -to syn -m warnings cellarea -o tmp.csv"

@@ -1,23 +1,10 @@
 import os
-from siliconcompiler import Chip
+from logicbenchy.design import Design
 
-def setup():
-
-    # root dir
-    root = os.path.dirname(__file__)
-
-    #module
-    name = 'mult'
-
-    # library object
-    chip = Chip(name)
-
-    # rtl
-    chip.input(os.path.join(root, 'rtl', f'{name}.v'))
-
-    # sdc
-    chip.input(os.path.join(root, 'sdc', f'{name}.sdc'))
-
-    # need to add parameter range
-
-    return chip
+class Mult(Design):
+    def __init__(self):
+        self.name = "mult"
+        super().__init__(self.name)
+        root = os.path.dirname(__file__)
+        self.source(os.path.join(root, 'rtl', f'{self.name}.v'))
+        self.source(os.path.join(root, 'sdc', f'{self.name}.sdc'))
