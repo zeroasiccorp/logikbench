@@ -1,6 +1,15 @@
 PicoRV32 - A Size-Optimized RISC-V CPU
 ============================================
 
+## Description
+
+A popular single file parametrized RV32I CPU design.
+
+## Parameters
+
+- Default overrides recorded in picorv32.py
+- See https://github.com/YosysHQ/picorv32/blob/main/README.md for reference
+
 ## Original Sources
 
 - Author: Claire Xenia Wolf
@@ -9,14 +18,11 @@ PicoRV32 - A Size-Optimized RISC-V CPU
 
 ## License
 
-MIT. See LICENSE file for more detail.
+- MIT(See LICENSE file for details).
 
 ## Modifications
 
 - Added SDC design constraints
-
-## Parameter Settings
-
 - ENABLE_COUNTERS64 = 0
 - ENABLE_REGS_DUALPORT = 0
 - TWO_STAGE_SHIFT = 0
