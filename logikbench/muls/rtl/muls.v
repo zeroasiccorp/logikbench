@@ -1,6 +1,6 @@
-module mults #(parameter N = 8 // input width
-               parameter M = 8 // output width (>=N)
-	       )
+module muls #(parameter N = 8 // input width
+              parameter M = 8 // output width (>=N)
+	      )
    (
     //Inputs
     input signed [N-1:0]  a, // a input (multiplier)

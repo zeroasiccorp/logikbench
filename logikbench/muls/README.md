@@ -12,7 +12,7 @@ Parametrized integer multiplier that takes two signed N-bit wide inputs and retu
 
 ## Original Sources
 
-- https://github.com/zeroasiccorp/logikbench/logikbench/smult
+- https://github.com/zeroasiccorp/logikbench/logikbench/muls
 
 ## License
 
