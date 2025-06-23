@@ -1,0 +1,10 @@
+Name,Parameters,Group,Notes
+add,N,micro,
+aes,N,acc,
+mult,N,micro,
+fir,N,acc,
+parity,N,micro,oh
+mux,N,micro,oh
+uart,,io,
+picorv32,,cpu,
+ethmac,,io,
