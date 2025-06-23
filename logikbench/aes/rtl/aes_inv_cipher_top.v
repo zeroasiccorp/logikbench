@@ -100,48 +100,48 @@ reg	[3:0]	dcnt;
 //
 
 always @(posedge clk)
-	if(!rst)	dcnt <= #1 4'h0;
+	if(!rst)	dcnt <= 4'h0;
 	else
-	if(done)	dcnt <= #1 4'h0;
+	if(done)	dcnt <= 4'h0;
 	else
-	if(ld)		dcnt <= #1 4'h1;
+	if(ld)		dcnt <= 4'h1;
 	else
-	if(go)		dcnt <= #1 dcnt + 4'h1;
+	if(go)		dcnt <= dcnt + 4'h1;
 
-always @(posedge clk)	done <= #1 (dcnt==4'hb) & !ld;
+always @(posedge clk)	done <= (dcnt==4'hb) & !ld;
 
 always @(posedge clk)
-	if(!rst)	go <= #1 1'b0;
+	if(!rst)	go <= 1'b0;
 	else
-	if(ld)		go <= #1 1'b1;
+	if(ld)		go <= 1'b1;
 	else
-	if(done)	go <= #1 1'b0;
+	if(done)	go <= 1'b0;
 
-always @(posedge clk)	if(ld)	text_in_r <= #1 text_in;
+always @(posedge clk)	if(ld)	text_in_r <= text_in;
 
-always @(posedge clk)	ld_r <= #1 ld;
+always @(posedge clk)	ld_r <= ld;
 
 ////////////////////////////////////////////////////////////////////
 //
 // Initial Permutation
 //
 
-always @(posedge clk)	sa33 <= #1 ld_r ? text_in_r[007:000] ^ w3[07:00] : sa33_next;
-always @(posedge clk)	sa23 <= #1 ld_r ? text_in_r[015:008] ^ w3[15:08] : sa23_next;
-always @(posedge clk)	sa13 <= #1 ld_r ? text_in_r[023:016] ^ w3[23:16] : sa13_next;
-always @(posedge clk)	sa03 <= #1 ld_r ? text_in_r[031:024] ^ w3[31:24] : sa03_next;
-always @(posedge clk)	sa32 <= #1 ld_r ? text_in_r[039:032] ^ w2[07:00] : sa32_next;
-always @(posedge clk)	sa22 <= #1 ld_r ? text_in_r[047:040] ^ w2[15:08] : sa22_next;
-always @(posedge clk)	sa12 <= #1 ld_r ? text_in_r[055:048] ^ w2[23:16] : sa12_next;
-always @(posedge clk)	sa02 <= #1 ld_r ? text_in_r[063:056] ^ w2[31:24] : sa02_next;
-always @(posedge clk)	sa31 <= #1 ld_r ? text_in_r[071:064] ^ w1[07:00] : sa31_next;
-always @(posedge clk)	sa21 <= #1 ld_r ? text_in_r[079:072] ^ w1[15:08] : sa21_next;
-always @(posedge clk)	sa11 <= #1 ld_r ? text_in_r[087:080] ^ w1[23:16] : sa11_next;
-always @(posedge clk)	sa01 <= #1 ld_r ? text_in_r[095:088] ^ w1[31:24] : sa01_next;
-always @(posedge clk)	sa30 <= #1 ld_r ? text_in_r[103:096] ^ w0[07:00] : sa30_next;
-always @(posedge clk)	sa20 <= #1 ld_r ? text_in_r[111:104] ^ w0[15:08] : sa20_next;
-always @(posedge clk)	sa10 <= #1 ld_r ? text_in_r[119:112] ^ w0[23:16] : sa10_next;
-always @(posedge clk)	sa00 <= #1 ld_r ? text_in_r[127:120] ^ w0[31:24] : sa00_next;
+always @(posedge clk)	sa33 <= ld_r ? text_in_r[007:000] ^ w3[07:00] : sa33_next;
+always @(posedge clk)	sa23 <= ld_r ? text_in_r[015:008] ^ w3[15:08] : sa23_next;
+always @(posedge clk)	sa13 <= ld_r ? text_in_r[023:016] ^ w3[23:16] : sa13_next;
+always @(posedge clk)	sa03 <= ld_r ? text_in_r[031:024] ^ w3[31:24] : sa03_next;
+always @(posedge clk)	sa32 <= ld_r ? text_in_r[039:032] ^ w2[07:00] : sa32_next;
+always @(posedge clk)	sa22 <= ld_r ? text_in_r[047:040] ^ w2[15:08] : sa22_next;
+always @(posedge clk)	sa12 <= ld_r ? text_in_r[055:048] ^ w2[23:16] : sa12_next;
+always @(posedge clk)	sa02 <= ld_r ? text_in_r[063:056] ^ w2[31:24] : sa02_next;
+always @(posedge clk)	sa31 <= ld_r ? text_in_r[071:064] ^ w1[07:00] : sa31_next;
+always @(posedge clk)	sa21 <= ld_r ? text_in_r[079:072] ^ w1[15:08] : sa21_next;
+always @(posedge clk)	sa11 <= ld_r ? text_in_r[087:080] ^ w1[23:16] : sa11_next;
+always @(posedge clk)	sa01 <= ld_r ? text_in_r[095:088] ^ w1[31:24] : sa01_next;
+always @(posedge clk)	sa30 <= ld_r ? text_in_r[103:096] ^ w0[07:00] : sa30_next;
+always @(posedge clk)	sa20 <= ld_r ? text_in_r[111:104] ^ w0[15:08] : sa20_next;
+always @(posedge clk)	sa10 <= ld_r ? text_in_r[119:112] ^ w0[23:16] : sa10_next;
+always @(posedge clk)	sa00 <= ld_r ? text_in_r[127:120] ^ w0[31:24] : sa00_next;
 
 ////////////////////////////////////////////////////////////////////
 //
@@ -190,22 +190,22 @@ assign {sa03_next, sa13_next, sa23_next, sa33_next} = inv_mix_col(sa03_ark,sa13_
 // Final Text Output
 //
 
-always @(posedge clk) text_out[127:120] <= #1 sa00_ark;
-always @(posedge clk) text_out[095:088] <= #1 sa01_ark;
-always @(posedge clk) text_out[063:056] <= #1 sa02_ark;
-always @(posedge clk) text_out[031:024] <= #1 sa03_ark;
-always @(posedge clk) text_out[119:112] <= #1 sa10_ark;
-always @(posedge clk) text_out[087:080] <= #1 sa11_ark;
-always @(posedge clk) text_out[055:048] <= #1 sa12_ark;
-always @(posedge clk) text_out[023:016] <= #1 sa13_ark;
-always @(posedge clk) text_out[111:104] <= #1 sa20_ark;
-always @(posedge clk) text_out[079:072] <= #1 sa21_ark;
-always @(posedge clk) text_out[047:040] <= #1 sa22_ark;
-always @(posedge clk) text_out[015:008] <= #1 sa23_ark;
-always @(posedge clk) text_out[103:096] <= #1 sa30_ark;
-always @(posedge clk) text_out[071:064] <= #1 sa31_ark;
-always @(posedge clk) text_out[039:032] <= #1 sa32_ark;
-always @(posedge clk) text_out[007:000] <= #1 sa33_ark;
+always @(posedge clk) text_out[127:120] <= sa00_ark;
+always @(posedge clk) text_out[095:088] <= sa01_ark;
+always @(posedge clk) text_out[063:056] <= sa02_ark;
+always @(posedge clk) text_out[031:024] <= sa03_ark;
+always @(posedge clk) text_out[119:112] <= sa10_ark;
+always @(posedge clk) text_out[087:080] <= sa11_ark;
+always @(posedge clk) text_out[055:048] <= sa12_ark;
+always @(posedge clk) text_out[023:016] <= sa13_ark;
+always @(posedge clk) text_out[111:104] <= sa20_ark;
+always @(posedge clk) text_out[079:072] <= sa21_ark;
+always @(posedge clk) text_out[047:040] <= sa22_ark;
+always @(posedge clk) text_out[015:008] <= sa23_ark;
+always @(posedge clk) text_out[103:096] <= sa30_ark;
+always @(posedge clk) text_out[071:064] <= sa31_ark;
+always @(posedge clk) text_out[039:032] <= sa32_ark;
+always @(posedge clk) text_out[007:000] <= sa33_ark;
 
 ////////////////////////////////////////////////////////////////////
 //
@@ -270,22 +270,22 @@ reg		kdone;
 reg		kb_ld;
 
 always @(posedge clk)
-	if(!rst)	kcnt <= #1 4'ha;
+	if(!rst)	kcnt <= 4'ha;
 	else
-	if(kld)		kcnt <= #1 4'ha;
+	if(kld)		kcnt <= 4'ha;
 	else
-	if(kb_ld)	kcnt <= #1 kcnt - 4'h1;
+	if(kb_ld)	kcnt <= kcnt - 4'h1;
 
 always @(posedge clk)
-	if(!rst)	kb_ld <= #1 1'b0;
+	if(!rst)	kb_ld <= 1'b0;
 	else
-	if(kld)		kb_ld <= #1 1'b1;
+	if(kld)		kb_ld <= 1'b1;
 	else
-	if(kcnt==4'h0)	kb_ld <= #1 1'b0;
+	if(kcnt==4'h0)	kb_ld <= 1'b0;
 
-always @(posedge clk)	kdone <= #1 (kcnt==4'h0) & !kld;
-always @(posedge clk)	if(kb_ld) kb[kcnt] <= #1 {wk3, wk2, wk1, wk0};
-always @(posedge clk)	{w3, w2, w1, w0} <= #1 kb[dcnt];
+always @(posedge clk)	kdone <= (kcnt==4'h0) & !kld;
+always @(posedge clk)	if(kb_ld) kb[kcnt] <= {wk3, wk2, wk1, wk0};
+always @(posedge clk)	{w3, w2, w1, w0} <= kb[dcnt];
 
 ////////////////////////////////////////////////////////////////////
 //

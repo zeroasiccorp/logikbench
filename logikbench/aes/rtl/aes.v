@@ -99,37 +99,37 @@ reg	[3:0]	dcnt;
 //
 
 always @(posedge clk)
-	if(!rst)	dcnt <= #1 4'h0;
+	if(!rst)	dcnt <= 4'h0;
 	else
-	if(ld)		dcnt <= #1 4'hb;
+	if(ld)		dcnt <= 4'hb;
 	else
-	if(|dcnt)	dcnt <= #1 dcnt - 4'h1;
+	if(|dcnt)	dcnt <= dcnt - 4'h1;
 
-always @(posedge clk) done <= #1 !(|dcnt[3:1]) & dcnt[0] & !ld;
-always @(posedge clk) if(ld) text_in_r <= #1 text_in;
-always @(posedge clk) ld_r <= #1 ld;
+always @(posedge clk) done <= !(|dcnt[3:1]) & dcnt[0] & !ld;
+always @(posedge clk) if(ld) text_in_r <= text_in;
+always @(posedge clk) ld_r <= ld;
 
 ////////////////////////////////////////////////////////////////////
 //
 // Initial Permutation (AddRoundKey)
 //
 
-always @(posedge clk)	sa33 <= #1 ld_r ? text_in_r[007:000] ^ w3[07:00] : sa33_next;
-always @(posedge clk)	sa23 <= #1 ld_r ? text_in_r[015:008] ^ w3[15:08] : sa23_next;
-always @(posedge clk)	sa13 <= #1 ld_r ? text_in_r[023:016] ^ w3[23:16] : sa13_next;
-always @(posedge clk)	sa03 <= #1 ld_r ? text_in_r[031:024] ^ w3[31:24] : sa03_next;
-always @(posedge clk)	sa32 <= #1 ld_r ? text_in_r[039:032] ^ w2[07:00] : sa32_next;
-always @(posedge clk)	sa22 <= #1 ld_r ? text_in_r[047:040] ^ w2[15:08] : sa22_next;
-always @(posedge clk)	sa12 <= #1 ld_r ? text_in_r[055:048] ^ w2[23:16] : sa12_next;
-always @(posedge clk)	sa02 <= #1 ld_r ? text_in_r[063:056] ^ w2[31:24] : sa02_next;
-always @(posedge clk)	sa31 <= #1 ld_r ? text_in_r[071:064] ^ w1[07:00] : sa31_next;
-always @(posedge clk)	sa21 <= #1 ld_r ? text_in_r[079:072] ^ w1[15:08] : sa21_next;
-always @(posedge clk)	sa11 <= #1 ld_r ? text_in_r[087:080] ^ w1[23:16] : sa11_next;
-always @(posedge clk)	sa01 <= #1 ld_r ? text_in_r[095:088] ^ w1[31:24] : sa01_next;
-always @(posedge clk)	sa30 <= #1 ld_r ? text_in_r[103:096] ^ w0[07:00] : sa30_next;
-always @(posedge clk)	sa20 <= #1 ld_r ? text_in_r[111:104] ^ w0[15:08] : sa20_next;
-always @(posedge clk)	sa10 <= #1 ld_r ? text_in_r[119:112] ^ w0[23:16] : sa10_next;
-always @(posedge clk)	sa00 <= #1 ld_r ? text_in_r[127:120] ^ w0[31:24] : sa00_next;
+always @(posedge clk)	sa33 <= ld_r ? text_in_r[007:000] ^ w3[07:00] : sa33_next;
+always @(posedge clk)	sa23 <= ld_r ? text_in_r[015:008] ^ w3[15:08] : sa23_next;
+always @(posedge clk)	sa13 <= ld_r ? text_in_r[023:016] ^ w3[23:16] : sa13_next;
+always @(posedge clk)	sa03 <= ld_r ? text_in_r[031:024] ^ w3[31:24] : sa03_next;
+always @(posedge clk)	sa32 <= ld_r ? text_in_r[039:032] ^ w2[07:00] : sa32_next;
+always @(posedge clk)	sa22 <= ld_r ? text_in_r[047:040] ^ w2[15:08] : sa22_next;
+always @(posedge clk)	sa12 <= ld_r ? text_in_r[055:048] ^ w2[23:16] : sa12_next;
+always @(posedge clk)	sa02 <= ld_r ? text_in_r[063:056] ^ w2[31:24] : sa02_next;
+always @(posedge clk)	sa31 <= ld_r ? text_in_r[071:064] ^ w1[07:00] : sa31_next;
+always @(posedge clk)	sa21 <= ld_r ? text_in_r[079:072] ^ w1[15:08] : sa21_next;
+always @(posedge clk)	sa11 <= ld_r ? text_in_r[087:080] ^ w1[23:16] : sa11_next;
+always @(posedge clk)	sa01 <= ld_r ? text_in_r[095:088] ^ w1[31:24] : sa01_next;
+always @(posedge clk)	sa30 <= ld_r ? text_in_r[103:096] ^ w0[07:00] : sa30_next;
+always @(posedge clk)	sa20 <= ld_r ? text_in_r[111:104] ^ w0[15:08] : sa20_next;
+always @(posedge clk)	sa10 <= ld_r ? text_in_r[119:112] ^ w0[23:16] : sa10_next;
+always @(posedge clk)	sa00 <= ld_r ? text_in_r[127:120] ^ w0[31:24] : sa00_next;
 
 ////////////////////////////////////////////////////////////////////
 //
@@ -178,22 +178,22 @@ assign sa33_next = sa33_mc ^ w3[07:00];
 // Final text output
 //
 
-always @(posedge clk) text_out[127:120] <= #1 sa00_sr ^ w0[31:24];
-always @(posedge clk) text_out[095:088] <= #1 sa01_sr ^ w1[31:24];
-always @(posedge clk) text_out[063:056] <= #1 sa02_sr ^ w2[31:24];
-always @(posedge clk) text_out[031:024] <= #1 sa03_sr ^ w3[31:24];
-always @(posedge clk) text_out[119:112] <= #1 sa10_sr ^ w0[23:16];
-always @(posedge clk) text_out[087:080] <= #1 sa11_sr ^ w1[23:16];
-always @(posedge clk) text_out[055:048] <= #1 sa12_sr ^ w2[23:16];
-always @(posedge clk) text_out[023:016] <= #1 sa13_sr ^ w3[23:16];
-always @(posedge clk) text_out[111:104] <= #1 sa20_sr ^ w0[15:08];
-always @(posedge clk) text_out[079:072] <= #1 sa21_sr ^ w1[15:08];
-always @(posedge clk) text_out[047:040] <= #1 sa22_sr ^ w2[15:08];
-always @(posedge clk) text_out[015:008] <= #1 sa23_sr ^ w3[15:08];
-always @(posedge clk) text_out[103:096] <= #1 sa30_sr ^ w0[07:00];
-always @(posedge clk) text_out[071:064] <= #1 sa31_sr ^ w1[07:00];
-always @(posedge clk) text_out[039:032] <= #1 sa32_sr ^ w2[07:00];
-always @(posedge clk) text_out[007:000] <= #1 sa33_sr ^ w3[07:00];
+always @(posedge clk) text_out[127:120] <= sa00_sr ^ w0[31:24];
+always @(posedge clk) text_out[095:088] <= sa01_sr ^ w1[31:24];
+always @(posedge clk) text_out[063:056] <= sa02_sr ^ w2[31:24];
+always @(posedge clk) text_out[031:024] <= sa03_sr ^ w3[31:24];
+always @(posedge clk) text_out[119:112] <= sa10_sr ^ w0[23:16];
+always @(posedge clk) text_out[087:080] <= sa11_sr ^ w1[23:16];
+always @(posedge clk) text_out[055:048] <= sa12_sr ^ w2[23:16];
+always @(posedge clk) text_out[023:016] <= sa13_sr ^ w3[23:16];
+always @(posedge clk) text_out[111:104] <= sa20_sr ^ w0[15:08];
+always @(posedge clk) text_out[079:072] <= sa21_sr ^ w1[15:08];
+always @(posedge clk) text_out[047:040] <= sa22_sr ^ w2[15:08];
+always @(posedge clk) text_out[015:008] <= sa23_sr ^ w3[15:08];
+always @(posedge clk) text_out[103:096] <= sa30_sr ^ w0[07:00];
+always @(posedge clk) text_out[071:064] <= sa31_sr ^ w1[07:00];
+always @(posedge clk) text_out[039:032] <= sa32_sr ^ w2[07:00];
+always @(posedge clk) text_out[007:000] <= sa33_sr ^ w3[07:00];
 
 ////////////////////////////////////////////////////////////////////
 //
