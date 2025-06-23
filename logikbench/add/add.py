@@ -1,17 +1,18 @@
 import os
-from logicbenchy.design import Design
+from siliconcompiler.design import DesignSchema
 
-class Add(Design):
-
+class Add(DesignSchema):
     def __init__(self):
-        self.name = "add"
-        super().__init__(self.name)
-        root = os.path.dirname(__file__)
-        self.source(os.path.join(root, 'rtl', f'{self.name}.v'))
-        self.source(os.path.join(root, 'sdc', f'{self.name}.sdc'))
 
-    def model(self, a, b):
-        pass
+        name = 'add'
+        super().__init__(name)
 
-if __name__ == "__main__":
-    Add()
+        # rtl
+        fileset = 'rtl'
+        self.add_file('rtl/{name}.v', fileset)
+        self.set_topmodule(name, fileset)
+        self.set_param('N', "64", fileset)
+
+        # constraints
+        fileset = 'constraint'
+        self.add_file('constraint/{name}.sdc', fileset)

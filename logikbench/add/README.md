@@ -1,20 +1,14 @@
-Parametrized Integer Multiplier
+Integer Adder
 ============================================
 
 ## Description
 
-A benchmark multiplies two numbers of width N and returns the N bit wide product a * b.
-
-This benchmark checks:
-- high level synthesis
-- arithmetic logic libraries
-- critical path timing optimization
-- datapath placement
+Parametrized integer adder that takes two inputsof width N and returns the N bit wide sum of a + b.
 
 ## Source
 
 - Author: Andreas Olofsson
-- Repo: https://github.com/zeroasiccorp/rtlbench
+- Repo: https://github.com/zeroasiccorp/logikbench
 
 ## License
 
