@@ -2,10 +2,10 @@ import os
 from siliconcompiler.design import DesignSchema
 
 
-class Mult(DesignSchema):
+class Mul(DesignSchema):
     def __init__(self):
 
-        name = 'mult'
+        name = 'mul'
         super().__init__(name)
 
         # rtl
