@@ -1,4 +1,4 @@
-module add #(parameter N = 8  // Operator width (8,16,32,64,128)
+module add #(parameter N = 8  // Operator width (8,16,32,64,128,...)
 	     )
    (
     //Inputs

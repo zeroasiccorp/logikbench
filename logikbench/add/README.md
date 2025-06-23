@@ -3,13 +3,20 @@ Integer Adder
 
 ## Description
 
-Parametrized integer adder that takes two inputsof width N and returns the N bit wide sum of a + b.
+Parametrized integer adder that takes two inputs of width N and returns the N bit wide result.
 
-## Source
+## Parameters
 
-- Author: Andreas Olofsson
-- Repo: https://github.com/zeroasiccorp/logikbench
+ - N: data width
+
+## Original Source
+
+- https://github.com/zeroasiccorp/logikbench/logikbench/add
 
 ## License
 
-MIT. See LICENSE for more details.
+- MIT (See LICENSE for more details)
+
+## Modifications
+
+- N/A
