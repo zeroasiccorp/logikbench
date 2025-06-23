@@ -12,7 +12,7 @@ Parametrized integer multiplier that takes two unsigned N-bit wide inputs and re
 
 ## Original Sources
 
-- https://github.com/zeroasiccorp/logikbench/logikbench/mult
+- https://github.com/zeroasiccorp/logikbench/logikbench/mul
 
 ## License
 

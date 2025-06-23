@@ -1,5 +1,5 @@
-module mul #(parameter N = 8 // input width
-             parameter M = 8 // output width(>=N)
+module mul #(parameter N = 8, // input width
+             parameter M = 8  // output width(>=N)
 	     )
    (
     //Inputs
