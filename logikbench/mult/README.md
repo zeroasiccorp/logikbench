@@ -1,22 +1,22 @@
-Parametrized Integer Multiplier
+Unsigned Integer Multiplier
 ============================================
 
 ## Description
 
-Multiplies two unsigned input vectors of width N and returns the N bit wide result.
+Parametrized integer multiplier that takes two unsigned N-bit wide inputs and returns a M-bit wide result.
 
 ## Parameters
 
-- N: vector data width
+- N: input data width
+- M: output data width
 
 ## Original Sources
 
-- Author: Andreas Olofsson
-- Repo: https://github.com/zeroasiccorp/logicbenchy
+- https://github.com/zeroasiccorp/logikbench/logikbench/mult
 
 ## License
 
-MIT. See LICENSE for more details.
+- MIT (See LICENSE for more details)
 
 ## Modifications
 
