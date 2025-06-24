@@ -1,33 +1,31 @@
-module mul #(parameter N = 8, // input width
-             parameter M = 8  // output width(>=N)
-	     )
+module mulreg #(parameter N = 8, // input width
+                parameter M = 8  // output width(>=N)
+	        )
    (
     //Inputs
-    input          clk, // clock
-    input [N-1:0]  a,   // a input (multiplier)
-    input [N-1:0]  b,   // b input (multiplicand)
+    input                     clk, // clock
+    input signed [N-1:0]      a,   // a input (multiplier)
+    input signed [N-1:0]      b,   // b input (multiplicand)
     //Outputs
-    output [M-1:0] c    // a * b final product
+    output reg signed [M-1:0] out  // a * b
     );
 
-   assign c[M-1:0] = a[N-1:0] * b[N-1:0];
+   reg signed [N-1:0] areg;
+   reg signed [N-1:0] breg;
+   wire signed [M-1:0] prod;
 
-endmodule
+   // register inputs
+   always @ (posedge clk)
+     begin
+        areg[N-1:0] <= a;
+        breg[N-1:0] <= b;
+     end
 
-module signed_mult (out, clk, a, b);
- output [15:0] out;
- input clk;
- input signed [7:0] a;
- input signed [7:0] b;
- reg signed [7:0] a_reg;
- reg signed [7:0] b_reg;
- reg signed [15:0] out;
- wire signed [15:0] mult_out;
- assign mult_out = a_reg * b_reg;
- always @ (posedge clk)
- begin
- a_reg <= a;
- b_reg <= b;
- out <= mult_out;
- end
+   // multiplier
+   assign prod[M-1:0] = areg[N-1:0] * breg[N-1:0];
+
+   // register output
+   always @ (posedge clk)
+     out[M-1:0]  <= prod;
+
 endmodule
