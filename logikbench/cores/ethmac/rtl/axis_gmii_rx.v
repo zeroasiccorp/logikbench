@@ -149,7 +149,7 @@ assign start_packet = start_packet_reg;
 assign error_bad_frame = error_bad_frame_reg;
 assign error_bad_fcs = error_bad_fcs_reg;
 
-lfsr #(
+eth_lfsr #(
     .LFSR_WIDTH(32),
     .LFSR_POLY(32'h4c11db7),
     .LFSR_CONFIG("GALOIS"),
