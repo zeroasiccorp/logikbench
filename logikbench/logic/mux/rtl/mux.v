@@ -1,21 +1,21 @@
 module mux
-  #(parameter N = 32, // vector width
-    parameter M = 2   // number of vectors
+  #(parameter DW = 32, // data width
+    parameter N = 2    // number of vectors
     )
    (
-    input [M-1:0]   sel, // select vector
-    input [M*N-1:0] in,  // concatenated input {..,in1[N-1:0],in0[N-1:0]
-    output [N-1:0]  out  // output
+    input [N-1:0]   sel, // select vector
+    input [N*DW-1:0] in,  // concatenated input {..,in1[DW-1:0],in0[DW-1:0]
+    output [DW-1:0]  out  // output
     );
 
-   reg [N-1:0]     mux;
+   reg [DW-1:0]     mux;
    integer         i;
    always @*
      begin
-	mux[N-1:0] = 'b0;
-	for(i=0;i<M;i=i+1)
-	  mux[N-1:0] = mux[N-1:0] | {(N){sel[i]}} & in[((i+1)*N-1)-:N];
+	mux[DW-1:0] = 'b0;
+	for(i=0;i<N;i=i+1)
+	  mux[DW-1:0] = mux[DW-1:0] | {(DW){sel[i]}} & in[((i+1)*DW-1)-:DW];
      end
-   assign out[N-1:0] = mux[N-1:0];
+   assign out[DW-1:0] = mux[DW-1:0];
 
 endmodule
