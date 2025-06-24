@@ -3,21 +3,21 @@ requires = ["setuptools >= 61.2"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "logicbenchy"
+name = "logikbench"
 authors = [{name = "Zero ASIC"}]
-description = "Technology agnostic hardware benchmark suite"
+description = "Tech agnostic RTL benchmark suite"
 readme = "README.md"
-urls = {Homepage = "https://github.com/zeroasiccorp/logicbenchy"}
+urls = {Homepage = "https://github.com/zeroasiccorp/logikbench"}
 requires-python = ">= 3.12"
 license = {file = "LICENSE"}
 dependencies = ["siliconcompiler >= 0.32.3"]
 dynamic = ['version']
 
 [project.scripts]
-lb = "logicbenchy.lb:main"
+lb = "logikbench.lb:main"
 
 [tool.setuptools.dynamic]
-version = {attr = "logicbenchy.__version__"}
+version = {attr = "logikbench.__version__"}
 
 [tool.pytest.ini_options]
 testpaths = "tests"
