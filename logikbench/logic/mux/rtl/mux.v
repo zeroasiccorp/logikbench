@@ -1,7 +1,6 @@
-module mux
-  #(parameter DW = 32, // data width
-    parameter N = 2    // number of vectors
-    )
+module mux #(parameter DW = 32, // data width
+             parameter N = 2    // number of vectors
+             )
    (
     input [N-1:0]   sel, // select vector
     input [N*DW-1:0] in,  // concatenated input {..,in1[DW-1:0],in0[DW-1:0]
