@@ -2,6 +2,7 @@ module ramsdp #(parameter DW = 32,
                 parameter AW= 6
                 )
    (
+    // single clock
     input               clk,
     // Port A - Read/Write
     input               we_a,

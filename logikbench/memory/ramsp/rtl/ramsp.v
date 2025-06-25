@@ -1,12 +1,12 @@
 module ramsp #(parameter DW = 32,
-               parameter AW= 6
+               parameter AW = 6
                )
    (
-    input               clk,
-    input               we,
-    input [AW-1:0]      addr,
-    input [DW-1:0]      din,
-    output reg [DW-1:0] dout
+    input               clk,  // clock
+    input               we,   // write enable
+    input [AW-1:0]      addr, // addr
+    input [DW-1:0]      din,  // data input
+    output reg [DW-1:0] dout  // data output
     );
 
    reg [DW-1:0] mem [(2**AW)-1:0];
