@@ -1,20 +1,12 @@
-module mux #(parameter DW = 32, // data width
-             parameter N = 2    // number of vectors
+module mux #(parameter DW = 16, // data width
+             parameter N = 8    // number of inputs (power of 2)
              )
    (
-    input [N-1:0]   sel, // select vector
-    input [N*DW-1:0] in,  // concatenated input {..,in1[DW-1:0],in0[DW-1:0]
-    output [DW-1:0]  out  // output
+    input [$clog2(N)-1:0] sel,  // binary select signal
+    input [N*DW-1:0]      data, // concatenated inputs
+    output [DW-1:0]       out   // selected output
     );
 
-   reg [DW-1:0]     mux;
-   integer         i;
-   always @*
-     begin
-	mux[DW-1:0] = 'b0;
-	for(i=0;i<N;i=i+1)
-	  mux[DW-1:0] = mux[DW-1:0] | {(DW){sel[i]}} & in[((i+1)*DW-1)-:DW];
-     end
-   assign out[DW-1:0] = mux[DW-1:0];
+   assign out[DW-1:0] = data[sel*DW +: DW];
 
 endmodule
