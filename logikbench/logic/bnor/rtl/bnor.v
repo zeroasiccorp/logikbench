@@ -1,10 +1,10 @@
-module bxnor #(parameter DW = 32 // data width
+module bnor #(parameter DW = 32 // data width
               )
    (
     input [DW-1:0] in,
     output         out
     );
 
-   assign out = ~^in;
+   assign out = ~|in;
 
 endmodule
