@@ -4,9 +4,9 @@ module ramsdp #(parameter DW = 32,
    (
     // single clock
     input               clk,
-    // Port A - Read/Write
-    input               we_a,
+    // Port A - Write Only
     input               en_a,
+    input               we_a,
     input [AW-1:0]      addr_a,
     input [DW-1:0]      din_a,
     // Port B - Read Only
