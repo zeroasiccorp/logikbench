@@ -3,21 +3,41 @@ module pipeline #(parameter DW = 32, // data width
                   )
    (
     input           clk,
-    input           en, // pipeline enable
-    input [DW-1:0]  in, // data input
-    output [DW-1:0] out // data output
+    input           nreset,    // async active low reset
+    input           en,        // pipeline enable
+    input           valid_in,  // valid input
+    input [DW-1:0]  data_in,   // data input
+    output          valid_out, // valid output
+    output [DW-1:0] data_out   // data output
     );
 
-   reg [DW-1:0] pipeline_regs [0:N-1];
+   reg [DW-1:0] data_regs [0:N-1];
+   reg [N-1:0]  valid_regs;
 
-   integer      i;
+   integer      i,j;
+
+   // valid pipeline (with async reset)
+   always @(posedge clk or negedge nreset)
+     if (~nreset)
+       valid_regs <= 'b0;
+     else if (en) begin
+        valid_regs[0] <= valid_in;
+        for (i = 1; i < N; i = i + 1)
+          valid_regs[i] <= valid_regs[i-1];
+     end
+
+   // data pipeline, sample on valid
    always @(posedge clk)
      if (en) begin
-        pipeline_regs[0] <= in;
-        for (i = 1; i < N; i = i + 1) begin
-           pipeline_regs[i] <= pipeline_regs[i-1];
-        end
+        if(valid_in)
+          data_regs[0] <= data_in;
+        for (j = 1; j < N; j = j + 1)
+          if(valid_regs[j-1])
+            data_regs[j] <= data_regs[j-1];
      end
-   assign out = pipeline_regs[N-1];
+
+   // signal assignment
+   assign data_out  = data_regs[N-1];
+   assign valid_out = valid_regs[N-1];
 
 endmodule
