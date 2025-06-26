@@ -5,6 +5,11 @@
 tmp*
 .vscode/
 
+# icarus
+a.out
+*.vcd
+
+
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
