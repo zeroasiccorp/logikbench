@@ -1,9 +1,12 @@
+#####################################################################
+# Simple script that loops over benchmarks using
+# a native yosys script running at the command line
+#####################################################################
 import subprocess
 import os
 from pathlib import Path
 
-#################################################
-def print_yosys_script(name, filename):
+def yosys_script(name, filename):
     return(f"""
 # Read your RTL files
 read_verilog {filename}
@@ -17,11 +20,19 @@ synth -top {name}
 # Technology mapping for Xilinx (e.g., 6-input LUTs)
 synth_xilinx -top {name}
 
+memory_dff           ;# move DFFs into memory
+memory_collect       ;# collect and prepare
+memory_bram -rules +/xilinx_bram.rules  ;# apply Xilinx BRAM mapping rules
+techmap -map +/xilinx_bram.v            ;# instantiate mapped BRAMs
+opt_clean             ;# clean up
+
 # Write synthesized netlist as Verilog
 write_verilog -noattr {name}.vg
 """.strip())
 
 if __name__ == "__main__":
+
+    #TODO: Add some arguments
 
     scriptdir = Path(__file__).resolve().parent
     rootdir = Path(__file__).resolve().parent.parent.parent
@@ -40,16 +51,16 @@ if __name__ == "__main__":
             os.makedirs(f"build/{group}/{name}", exist_ok=True)
             os.chdir(f"build/{group}/{name}")
             filename = group_path / name / "rtl" / f"{name}.v"
-            content = print_yosys_script(name, filename)
+            content = yosys_script(name, filename)
             with open(script, "w") as file:
                 file.write(content)
             # run
             try:
                 result = subprocess.run(
                     ["yosys", script],
-                    check=True,                  # Raise error if Yosys fails
-                    capture_output=True,         # Capture stdout and stderr
-                    text=True)                   # Decode bytes to string
+                    check=True,
+                    capture_output=True,
+                    text=True)
 
                 print("Yosys output:")
                 print(result.stdout)
