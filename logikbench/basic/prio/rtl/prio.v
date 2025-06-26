@@ -1,4 +1,4 @@
-module priority #(parameter DW = 32) // data width
+module prio #(parameter DW = 32) // data width
    (
     input [DW-1:0]      in,   // input vector
     output reg [DW-1:0] out,  // one hot output
