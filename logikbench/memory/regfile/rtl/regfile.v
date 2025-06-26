@@ -1,5 +1,5 @@
 module regfile
-  # (parameter AW = 6,  // total regs = 2**AW
+  # (parameter AW = 6,  // address with (regs = 2**AW)
      parameter RW = 16, // register width
      parameter RP = 5,  // # read ports
      parameter WP = 3   // # write prots
