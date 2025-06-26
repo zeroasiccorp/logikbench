@@ -1,6 +1,6 @@
-module ramdist #(parameter DW = 32,
-                 parameter AW = 6
-                 )
+module ramasync #(parameter DW = 32,
+                  parameter AW = 6
+                  )
    (
     input           clk,  // clock
     input           we,   // write enable
@@ -16,6 +16,6 @@ module ramdist #(parameter DW = 32,
         mem[addr] <= din;
    end
 
-   assign dout[DW-1:0] <= mem[addr];
+   assign dout[DW-1:0] = mem[addr];
 
 endmodule
