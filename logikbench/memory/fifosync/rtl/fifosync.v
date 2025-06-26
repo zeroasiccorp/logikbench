@@ -1,5 +1,5 @@
-module fifosync #(parameter DW = 32, // datawidth
-                  parameter AW = 6   // DEPTH = 1 << AW
+module fifosync #(parameter DW = 16, // datawidth
+                  parameter AW = 10   // DEPTH = 1 << AW
                   )
    (
     input               clk,

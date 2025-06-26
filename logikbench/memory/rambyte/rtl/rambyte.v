@@ -1,4 +1,4 @@
-module rambyte #(parameter DW = 32, // Memory width
+module rambyte #(parameter DW = 16, // Memory width
                  parameter AW = 10  // Address width
                  )
    (input               clk,  // write clock

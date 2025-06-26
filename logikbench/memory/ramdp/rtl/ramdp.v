@@ -1,5 +1,5 @@
-module ramdp #(parameter DW = 32,
-               parameter AW = 6
+module ramdp #(parameter DW = 16,
+               parameter AW = 10
                )
    (
     // single clock

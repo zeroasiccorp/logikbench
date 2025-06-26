@@ -1,5 +1,5 @@
-module rom #(parameter DW = 32,
-             parameter AW = 6
+module rom #(parameter DW = 16,
+             parameter AW = 10
              )
    (
     input               clk,  // clock
