@@ -24,7 +24,7 @@ module crossbar #(parameter DW = 16, // data width
    always @(*) begin
       for (i = 0; i < N; i = i + 1) begin
          dout[i*DW +: DW] = {DW{1'b0}};
-         for (i = 0; i < N; i = i + 1)
+         for (j = 0; j < N; j = j + 1)
            if (sel_array[i][j])
              dout[i*DW +: DW] = din_array[j];
       end
