@@ -1,28 +1,32 @@
-#!/usr/bin/env python3
+from os.path import dirname, abspath
+from siliconcompiler.design import DesignSchema
 
-import os
-from siliconcompiler import Chip
 
-def setup():
+class Ethmac(DesignSchema):
+    def __init__(self):
 
-    # root dir
-    root = os.path.dirname(__file__)
+        name = 'ethmac'
+        root = f'{name}_root'
+        source = [f'rtl/{name}.v']
 
-    #module
-    name = 'ethmac'
+        # create a Design object
+        super().__init__(name)
 
-    # library object
-    chip = Chip(name)
+        # set data home directory
+        self.register_package(root, dirname(abspath(__file__)))
 
-    # rtl
-    for item in ('ethmac.v',
-                 'eth_mac_1g.v',
-                 'axis_gmii_rx.v',
-                 'axis_gmii_tx.v',
-                 'lfsr.v'):
-        chip.input(os.path.join(root, 'rtl', item))
+        # rtl files
+        fileset = 'rtl'
+        for item in ('rtl/ethmac.v',
+                     'rtl/eth_mac_1g.v',
+                     'rtl/axis_gmii_rx.v',
+                     'rtl/axis_gmii_tx.v',
+                     'rtl/eth_lfsr.v'):
+            self.add_file(item, fileset, package=root)
 
-    # sdc
-    chip.input(os.path.join(root, 'sdc', f'{name}.sdc'))
+        # top module
+        self.set_topmodule(name, fileset)
 
-    return chip
+if __name__ == "__main__":
+   d = Ethmac()
+   d.write_fileset(f"ethmac.f", fileset="rtl")

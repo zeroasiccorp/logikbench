@@ -1,23 +1,28 @@
-#!/usr/bin/env python3
+from os.path import dirname, abspath
+from siliconcompiler.design import DesignSchema
 
-import os
-from siliconcompiler import Chip
 
-def setup():
+class Picorv32(DesignSchema):
+    def __init__(self):
 
-    # root dir
-    root = os.path.dirname(__file__)
+        name = 'picorv32'
+        root = f'{name}_root'
+        source = [f'rtl/{name}.v']
 
-    #module
-    name = 'picorv32'
+        # create a Design object
+        super().__init__(name)
 
-    # library object
-    chip = Chip(name)
+        # set data home directory
+        self.register_package(root, dirname(abspath(__file__)))
 
-    # rtl
-    chip.input(os.path.join(root, 'rtl', f'{name}.v'))
+        # rtl files
+        fileset = 'rtl'
+        for item in source:
+            self.add_file(item, fileset, package=root)
 
-    # sdc
-    chip.input(os.path.join(root, 'sdc', f'{name}.sdc'))
+        # top module
+        self.set_topmodule(name, fileset)
 
-    return chip
+if __name__ == "__main__":
+   d = Picorv32()
+   d.write_fileset(f"picorv32.f", fileset="rtl")
