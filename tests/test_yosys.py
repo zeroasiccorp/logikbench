@@ -14,6 +14,9 @@ hierarchy -top {{ topmodule }}
 # Generic synthesis
 proc; opt; flatten; opt
 
+# Get stats
+stat
+
 # Write synthesized netlist in Verilog
 write_verilog {{ netlist }}
 """
@@ -46,8 +49,13 @@ write_verilog {{ netlist }}
         script = f"{name}.ys"
         with open(script, 'w') as f:
             f.write(output)
-        # run
-        subprocess.run(["yosys", "-s", script], check=True)
+        # get results
+        result = subprocess.run(["yosys", "-s", script],
+                                check=True,
+                                capture_output=True,
+                                text=True)
+        #grab stats here if you like
+        #print(result)
 
 def test_yosys_basic():
     run_yosys(common.basic_list)
