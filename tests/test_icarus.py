@@ -1,7 +1,6 @@
 import common
 import subprocess
 
-
 def run_icarus(dlist):
     for item in dlist:
         name = item.name()
@@ -10,14 +9,14 @@ def run_icarus(dlist):
         item.write_fileset(ifile, fileset='rtl')
         subprocess.run(["iverilog", "-f", ifile, "-o", ofile,], check=True)
 
-def test_basic_compile():
+def test_icarus_basic():
     run_icarus(common.basic_list)
 
-def test_memory_compile():
+def test_icarus_memory():
     run_icarus(common.memory_list)
 
-def test_arithmetic_compile():
+def test_icarus_arithmetic():
     run_icarus(common.arithmetic_list)
 
-def test_block_compile():
+def test_icarus_block():
     run_icarus(common.block_list)
