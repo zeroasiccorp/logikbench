@@ -75,18 +75,18 @@ from .memory.rambyte.rambyte import Rambyte
 from .memory.ramdp.ramdp import Ramdp
 from .memory.ramsdp.ramsdp import Ramsdp
 from .memory.ramsp.ramsp import Ramsp
-from .memory.ramspn.ramspncc import Ramspnc
+from .memory.ramspnc.ramspnc import Ramspnc
 from .memory.regfile.regfile import Regfile
 from .memory.rom.rom import Rom
 
 # Blocks
-from .blocks.aes.aes import AES
+from .blocks.aes.aes import Aes
 from .blocks.axicrossbar.axicrossbar import Axicrossbar
 from .blocks.ethmac.ethmac import Ethmac
-from .blocks.ialu.ialu import IALU
-from .blocks.ialu.i2c import I2C
-from .blocks.lfsr.lfsr import LSFR
-from .blocks.picrorv32.picorv32 import Picrorv32
+from .blocks.ialu.ialu import Ialu
+from .blocks.i2c.i2c import I2c
+from .blocks.lfsr.lfsr import Lfsr
+from .blocks.picorv32.picorv32 import Picorv32
 from .blocks.serv.serv import Serv
 from .blocks.uart.uart import Uart
 
