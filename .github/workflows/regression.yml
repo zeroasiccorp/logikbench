@@ -1,0 +1,22 @@
+name: Regression
+on:
+  pull_request:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  pure_python_ci:
+    name: "Python Tests"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run pytest
+        run: |
+          python3 -m pip install --upgrade pip
+          python3 -m pip install .[test]
+          pytest
