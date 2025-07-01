@@ -1,23 +1,28 @@
-import os
-from siliconcompiler import Chip
+from os.path import dirname, abspath
+from siliconcompiler.design import DesignSchema
 
-def setup():
 
-    # root dir
-    root = os.path.dirname(__file__)
+class Fir(DesignSchema):
+    def __init__(self):
 
-    #module
-    name = 'fir'
+        name = 'fir'
+        root = f'{name}_root'
+        source = [f'rtl/{name}.v']
 
-    # library object
-    chip = Chip(name)
+        # create a Design object
+        super().__init__(name)
 
-    # rtl
-    chip.input(os.path.join(root, 'rtl', f'{name}.v'))
+        # set data home directory
+        self.register_package(root, dirname(abspath(__file__)))
 
-    # sdc
-    chip.input(os.path.join(root, 'sdc', f'{name}.sdc'))
+        # rtl files
+        fileset = 'rtl'
+        for item in source:
+            self.add_file(item, fileset, package=root)
 
-    # need to add parameter range
+        # top module
+        self.set_topmodule(name, fileset)
 
-    return chip
+if __name__ == "__main__":
+   d = Fir()
+   d.write_fileset(f"fir.f", fileset="rtl")
