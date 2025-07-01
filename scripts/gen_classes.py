@@ -1,4 +1,6 @@
 import argparse
+import glob
+import os
 from os.path import dirname, abspath
 from jinja2 import Environment, FileSystemLoader
 
@@ -30,12 +32,13 @@ gen_class mux
     for item in lb_list:
         dir = f"../logikbench/{args.group}/item"
         context = {
-            'class_name': item.name.capitalize(),
-            'module_name': item.name
-            output = template.render(context)
-            filename=f"../logikbench/{args.group}/{item.name}.py"
-    with open(filename, 'w') as f:
-        f.write(output)
+            'class_name': item.capitalize(),
+            'module_name': item
+        }
+        output = template.render(context)
+        filename=f"../logikbench/{args.group}/{item}/{item}.py"
+        with open(filename, 'w') as f:
+            f.write(output)
 
 if __name__ == "__main__":
     main()
