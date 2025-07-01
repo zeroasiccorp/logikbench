@@ -1,11 +1,24 @@
 import common
 import subprocess
-from jinja2 import Environment, FileSystemLoader
+from jinja2 import Template
 
 def run_yosys(dlist):
 
-    env = Environment(loader=FileSystemLoader('.'))
-    template = env.get_template('template.ys.j2')
+    yosys_template =  """
+# Read the Verilog source file
+read_verilog_file_list -f {{ cmdfile }}
+
+# Set the top module
+hierarchy -top {{ topmodule }}
+
+# Generic synthesis
+proc; opt; flatten; opt
+
+# Write synthesized netlist in Verilog
+write_verilog {{ netlist }}
+"""
+
+    template = Template(yosys_template)
 
     for item in dlist:
         name = item.name()
