@@ -1,18 +1,28 @@
-import os
+from os.path import dirname, abspath
 from siliconcompiler.design import DesignSchema
+
 
 class Add(DesignSchema):
     def __init__(self):
 
         name = 'add'
+        root = f'{name}_root'
+        source = [f'rtl/{name}.v']
+
+        # create a Design object
         super().__init__(name)
 
-        # rtl
-        fileset = 'rtl'
-        self.add_file('rtl/{name}.v', fileset)
-        self.set_topmodule(name, fileset)
-        self.set_param('N', "64", fileset)
+        # set data home directory
+        self.register_package(root, dirname(abspath(__file__)))
 
-        # constraints
-        fileset = 'constraint'
-        self.add_file('constraint/{name}.sdc', fileset)
+        # rtl files
+        fileset = 'rtl'
+        for item in source:
+            self.add_file(item, fileset, package=root)
+
+        # top module
+        self.set_topmodule(name, fileset)
+
+if __name__ == "__main__":
+   d = Add()
+   d.write_fileset(f"add.f", fileset="rtl")

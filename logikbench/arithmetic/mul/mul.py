@@ -1,22 +1,28 @@
-import os
+from os.path import dirname, abspath
 from siliconcompiler.design import DesignSchema
+
 
 class Mul(DesignSchema):
     def __init__(self):
 
         name = 'mul'
+        root = f'{name}_root'
+        source = [f'rtl/{name}.v']
+
+        # create a Design object
         super().__init__(name)
 
-        # register package
-        self.register_package(name, "python://logikbench")
+        # set data home directory
+        self.register_package(root, dirname(abspath(__file__)))
 
-        # rtl
+        # rtl files
         fileset = 'rtl'
-        self.add_file(f'rtl/{name}.v', fileset)
-        self.set_topmodule(name, fileset)
-        self.set_param('N', "16", fileset)
-        self.set_param('M', "32", fileset)
+        for item in source:
+            self.add_file(item, fileset, package=root)
 
-        # constraints
-        fileset = 'constraint'
-        self.add_file(f'constraint/{name}.sdc', fileset)
+        # top module
+        self.set_topmodule(name, fileset)
+
+if __name__ == "__main__":
+   d = Mul()
+   d.write_fileset(f"mul.f", fileset="rtl")

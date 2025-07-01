@@ -1,4 +1,4 @@
-import os
+from os.path import dirname, abspath
 from siliconcompiler.design import DesignSchema
 
 
@@ -6,15 +6,23 @@ class Muladd(DesignSchema):
     def __init__(self):
 
         name = 'muladd'
+        root = f'{name}_root'
+        source = [f'rtl/{name}.v']
+
+        # create a Design object
         super().__init__(name)
 
-        # rtl
-        fileset = 'rtl'
-        self.add_file(f'rtl/{name}.v', fileset)
-        self.set_topmodule(name, fileset)
-        self.set_param('N', "16", fileset)
-        self.set_param('M', "48", fileset)
+        # set data home directory
+        self.register_package(root, dirname(abspath(__file__)))
 
-        # constraints
-        fileset = 'constraint'
-        self.add_file(f'constraint/{name}.sdc', fileset)
+        # rtl files
+        fileset = 'rtl'
+        for item in source:
+            self.add_file(item, fileset, package=root)
+
+        # top module
+        self.set_topmodule(name, fileset)
+
+if __name__ == "__main__":
+   d = Muladd()
+   d.write_fileset(f"muladd.f", fileset="rtl")

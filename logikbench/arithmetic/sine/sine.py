@@ -2,10 +2,10 @@ from os.path import dirname, abspath
 from siliconcompiler.design import DesignSchema
 
 
-class Mulreg(DesignSchema):
+class Sine(DesignSchema):
     def __init__(self):
 
-        name = 'mulreg'
+        name = 'sine'
         root = f'{name}_root'
         source = [f'rtl/{name}.v']
 
@@ -24,5 +24,5 @@ class Mulreg(DesignSchema):
         self.set_topmodule(name, fileset)
 
 if __name__ == "__main__":
-   d = Mulreg()
-   d.write_fileset(f"mulreg.f", fileset="rtl")
+   d = Sine()
+   d.write_fileset(f"sine.f", fileset="rtl")

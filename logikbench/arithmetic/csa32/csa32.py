@@ -2,10 +2,10 @@ from os.path import dirname, abspath
 from siliconcompiler.design import DesignSchema
 
 
-class Mulreg(DesignSchema):
+class Csa32(DesignSchema):
     def __init__(self):
 
-        name = 'mulreg'
+        name = 'csa32'
         root = f'{name}_root'
         source = [f'rtl/{name}.v']
 
@@ -24,5 +24,5 @@ class Mulreg(DesignSchema):
         self.set_topmodule(name, fileset)
 
 if __name__ == "__main__":
-   d = Mulreg()
-   d.write_fileset(f"mulreg.f", fileset="rtl")
+   d = Csa32()
+   d.write_fileset(f"csa32.f", fileset="rtl")
