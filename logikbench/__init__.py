@@ -65,6 +65,31 @@ from .arithmetic.sqrt.sqrt import Sqrt
 from .arithmetic.sub.sub import Sub
 from .arithmetic.sum.sum import Sum
 
+# Memory
+from .memory.cache.cache import Cache
+from .memory.fifoasync.fifoasync import Fifoasync
+from .memory.fifosync.fifosync import Fifosync
+from .memory.ramasync.ramasync import Ramasync
+from .memory.rambit.rambit import Rambit
+from .memory.rambyte.rambyte import Rambyte
+from .memory.ramdp.ramdp import Ramdp
+from .memory.ramsdp.ramsdp import Ramsdp
+from .memory.ramsp.ramsp import Ramsp
+from .memory.ramspn.ramspncc import Ramspnc
+from .memory.regfile.regfile import Regfile
+from .memory.rom.rom import Rom
+
+# Blocks
+from .blocks.aes.aes import AES
+from .blocks.axicrossbar.axicrossbar import Axicrossbar
+from .blocks.ethmac.ethmac import Ethmac
+from .blocks.ialu.ialu import IALU
+from .blocks.ialu.i2c import I2C
+from .blocks.lfsr.lfsr import LSFR
+from .blocks.picrorv32.picorv32 import Picrorv32
+from .blocks.serv.serv import Serv
+from .blocks.uart.uart import Uart
+
 #################################################
 # Define the public API
 #################################################
