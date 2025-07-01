@@ -1,0 +1,11 @@
+# Read the Verilog source file
+read_verilog_file_list -f {{ cmdfile }}
+
+# Set the top module
+hierarchy -top {{ topmodule }}
+
+# Generic synthesis
+proc; opt; flatten; opt
+
+# Write synthesized netlist in Verilog
+write_verilog {{ netlist }}
