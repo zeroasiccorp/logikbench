@@ -2,10 +2,10 @@ from os.path import dirname, abspath
 from siliconcompiler.design import DesignSchema
 
 
-class Ramsp(DesignSchema):
+class Rom(DesignSchema):
     def __init__(self):
 
-        name = 'ramsp'
+        name = 'rom'
         root = f'{name}_root'
         source = [f'rtl/{name}.v']
 
@@ -24,5 +24,5 @@ class Ramsp(DesignSchema):
         self.set_topmodule(name, fileset)
 
 if __name__ == "__main__":
-   d = Ramsp()
-   d.write_fileset(f"ramsp.f", fileset="rtl")
+   d = Rom()
+   d.write_fileset(f"rom.f", fileset="rtl")

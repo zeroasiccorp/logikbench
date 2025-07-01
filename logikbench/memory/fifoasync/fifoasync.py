@@ -2,10 +2,10 @@ from os.path import dirname, abspath
 from siliconcompiler.design import DesignSchema
 
 
-class Ramsp(DesignSchema):
+class Fifoasync(DesignSchema):
     def __init__(self):
 
-        name = 'ramsp'
+        name = 'fifoasync'
         root = f'{name}_root'
         source = [f'rtl/{name}.v']
 
@@ -24,5 +24,5 @@ class Ramsp(DesignSchema):
         self.set_topmodule(name, fileset)
 
 if __name__ == "__main__":
-   d = Ramsp()
-   d.write_fileset(f"ramsp.f", fileset="rtl")
+   d = Fifoasync()
+   d.write_fileset(f"fifoasync.f", fileset="rtl")
