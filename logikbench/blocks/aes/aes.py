@@ -1,30 +1,33 @@
-#!/usr/bin/env python3
-
-import os
-from siliconcompiler import Chip
-
-def setup():
-
-    # root dir
-    root = os.path.dirname(__file__)
-
-    #module
-    name = 'aes'
-
-    # library object
-    chip = Chip(name)
-
-    # rtl
-    for item in ('aes.v',
-                 'aes_inv_cipher_top.v',
-                 'aes_inv_sbox.v',
-                 'aes_key_expand_128.v',
-                 'aes_rcon.v',
-                 'aes_sbox.v'):
-        chip.input(os.path.join(root, 'rtl', item))
+from os.path import dirname, abspath
+from siliconcompiler.design import DesignSchema
 
 
-    # sdc
-    chip.input(os.path.join(root, 'sdc', f'{name}.sdc'))
+class Aes(DesignSchema):
+    def __init__(self):
 
-    return chip
+        name = 'aes'
+        root = f'{name}_root'
+        source = [f'rtl/{name}.v']
+
+        # create a Design object
+        super().__init__(name)
+
+        # set data home directory
+        self.register_package(root, dirname(abspath(__file__)))
+
+        # rtl files
+        fileset = 'rtl'
+        for item in ('rtl/aes.v',
+                     'rtl/aes_inv_cipher_top.v',
+                     'rtl/aes_inv_sbox.v',
+                     'rtl/aes_key_expand_128.v',
+                     'rtl/aes_rcon.v',
+                     'rtl/aes_sbox.v'):
+            self.add_file(item, fileset, package=root)
+
+        # top module
+        self.set_topmodule(name, fileset)
+
+if __name__ == "__main__":
+   d = Aes()
+   d.write_fileset(f"aes.f", fileset="rtl")
