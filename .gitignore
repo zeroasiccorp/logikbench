@@ -8,8 +8,8 @@ tmp*
 # icarus
 a.out
 *.vcd
-
-
+*.vvp
+*.f
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
