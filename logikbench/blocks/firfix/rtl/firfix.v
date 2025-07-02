@@ -14,7 +14,7 @@
  *
  *    Legend:
  *      x[n]   : input sample
- *      h0..hN : FIR coefficients
+ *      h0..hN : FIR coefficients (constant parameters)
  *      z0..zN : delayed input samples (shift register)
  *      y[n]   : output sample
  *
@@ -54,7 +54,7 @@ module firfix
          // dot-product
          acc = 0;
          for (i = 0; i < N; i = i + 1)
-           acc = acc + shift_reg[i] * H[i];
+           acc = acc + shift_reg[i] * H[i*DW+:DW];
          y <= acc;
       end
    end
