@@ -64,8 +64,9 @@ module serv_state
 
    reg [4:2] o_cnt;
    wire [3:0] cnt_r;
+   wire       trap_pending;
+   reg        ibus_cyc;
 
-   reg 	     ibus_cyc;
    //Update PC in RUN or TRAP states
    assign o_ctrl_pc_en  = o_cnt_en & !o_init;
 
@@ -124,7 +125,7 @@ module serv_state
     shift : Shift in during phase 1. Continue shifting between phases (except
             for the first cycle after init). Shift out during phase 2
     */
-   
+
    assign o_bufreg_en = (o_cnt_en & (o_init | ((o_ctrl_trap | i_branch_op) & i_two_stage_op))) | (i_shift_op & init_done & (i_sh_right | i_sh_done));
 
    assign o_ibus_cyc = ibus_cyc & !i_rst;
@@ -214,7 +215,7 @@ module serv_state
 
 	 //trap_pending is only guaranteed to have correct value during the
 	 // last cycle of the init stage
-	 wire trap_pending = WITH_CSR & ((take_branch & i_ctrl_misalign & !ALIGN) |
+   assign trap_pending = WITH_CSR & ((take_branch & i_ctrl_misalign & !ALIGN) |
 					 (i_dbus_en   & i_mem_misalign));
 
    generate
