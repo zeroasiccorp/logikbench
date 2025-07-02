@@ -38,6 +38,8 @@ module fft
    reg [LOG2N:0]       output_count;
    reg                 processing;
 
+   // static look up table
+   reg signed [DW-1:0] sine_lut [0:255];
 
    integer             i;
 
@@ -143,8 +145,6 @@ module fft
          cosine_lut = sine_lut[(angle_idx + 64) % 256];
       end
    endfunction
-
-   reg signed [DW-1:0] sine_lut [0:255];
 
    initial
      begin

@@ -83,6 +83,9 @@ from .memory.rom.rom import Rom
 from .blocks.aes.aes import Aes
 from .blocks.axicrossbar.axicrossbar import Axicrossbar
 from .blocks.ethmac.ethmac import Ethmac
+from .blocks.fft.fft import Fft
+from .blocks.firfix.firfix import Firfix
+from .blocks.firprog.firprog import Firprog
 from .blocks.ialu.ialu import Ialu
 from .blocks.i2c.i2c import I2c
 from .blocks.lfsr.lfsr import Lfsr

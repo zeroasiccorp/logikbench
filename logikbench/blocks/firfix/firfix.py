@@ -2,7 +2,7 @@ from os.path import dirname, abspath
 from siliconcompiler.design import DesignSchema
 
 
-class Fir(DesignSchema):
+class Firfix(DesignSchema):
     def __init__(self):
 
         name = 'firfix'
