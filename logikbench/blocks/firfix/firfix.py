@@ -5,7 +5,7 @@ from siliconcompiler.design import DesignSchema
 class Fir(DesignSchema):
     def __init__(self):
 
-        name = 'fir'
+        name = 'firfix'
         root = f'{name}_root'
         source = [f'rtl/{name}.v']
 
@@ -25,4 +25,4 @@ class Fir(DesignSchema):
 
 if __name__ == "__main__":
    d = Fir()
-   d.write_fileset(f"fir.f", fileset="rtl")
+   d.write_fileset(f"firfix.f", fileset="rtl")
