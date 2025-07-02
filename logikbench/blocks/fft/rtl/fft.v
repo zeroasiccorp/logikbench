@@ -139,6 +139,12 @@ module fft
    // Sin/Cos Twiddle Factor lookup table
    //#################################################
 
+
+   //TODO! Obviously this won't synthesize!
+   //change to a case statement and see how this can be mapped
+   //via a ROM compiler. It should be a dual port RAM
+   //with one table and two ports (one fore sine, one for cosine)
+
    function [15:0] cosine_lut;
       input [7:0] angle_idx;
       begin
