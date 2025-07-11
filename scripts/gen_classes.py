@@ -40,6 +40,7 @@ gen_class mux
         filename = f"../logikbench/{args.group}/{item}/{item}.py"
         with open(filename, 'w') as f:
             f.write(output)
+            f.write("\n")
 
 
 if __name__ == "__main__":
