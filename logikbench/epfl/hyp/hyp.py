@@ -21,7 +21,7 @@ class Hyp(DesignSchema):
             self.add_file(item, fileset, package=root)
 
         # top module
-        self.set_topmodule(name, fileset)
+        self.set_topmodule("top", fileset)
 
 
 if __name__ == "__main__":
