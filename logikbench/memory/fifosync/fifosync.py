@@ -23,6 +23,7 @@ class Fifosync(DesignSchema):
         # top module
         self.set_topmodule(name, fileset)
 
+
 if __name__ == "__main__":
-   d = Fifosync()
-   d.write_fileset(f"fifosync.f", fileset="rtl")
+    d = Fifosync()
+    d.write_fileset("fifosync.f", fileset="rtl")

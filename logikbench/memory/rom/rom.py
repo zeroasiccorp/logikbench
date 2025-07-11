@@ -23,6 +23,7 @@ class Rom(DesignSchema):
         # top module
         self.set_topmodule(name, fileset)
 
+
 if __name__ == "__main__":
-   d = Rom()
-   d.write_fileset(f"rom.f", fileset="rtl")
+    d = Rom()
+    d.write_fileset("rom.f", fileset="rtl")

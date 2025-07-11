@@ -23,6 +23,7 @@ class Ramsp(DesignSchema):
         # top module
         self.set_topmodule(name, fileset)
 
+
 if __name__ == "__main__":
-   d = Ramsp()
-   d.write_fileset(f"ramsp.f", fileset="rtl")
+    d = Ramsp()
+    d.write_fileset("ramsp.f", fileset="rtl")

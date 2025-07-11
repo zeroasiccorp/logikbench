@@ -23,6 +23,7 @@ class Regfile(DesignSchema):
         # top module
         self.set_topmodule(name, fileset)
 
+
 if __name__ == "__main__":
-   d = Regfile()
-   d.write_fileset(f"regfile.f", fileset="rtl")
+    d = Regfile()
+    d.write_fileset("regfile.f", fileset="rtl")

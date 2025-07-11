@@ -23,6 +23,7 @@ class Ramasync(DesignSchema):
         # top module
         self.set_topmodule(name, fileset)
 
+
 if __name__ == "__main__":
-   d = Ramasync()
-   d.write_fileset(f"ramasync.f", fileset="rtl")
+    d = Ramasync()
+    d.write_fileset("ramasync.f", fileset="rtl")

@@ -23,6 +23,7 @@ class Rambyte(DesignSchema):
         # top module
         self.set_topmodule(name, fileset)
 
+
 if __name__ == "__main__":
-   d = Rambyte()
-   d.write_fileset(f"rambyte.f", fileset="rtl")
+    d = Rambyte()
+    d.write_fileset("rambyte.f", fileset="rtl")

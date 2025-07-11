@@ -23,6 +23,7 @@ class Rambit(DesignSchema):
         # top module
         self.set_topmodule(name, fileset)
 
+
 if __name__ == "__main__":
-   d = Rambit()
-   d.write_fileset(f"rambit.f", fileset="rtl")
+    d = Rambit()
+    d.write_fileset("rambit.f", fileset="rtl")

@@ -23,6 +23,7 @@ class Ramspnc(DesignSchema):
         # top module
         self.set_topmodule(name, fileset)
 
+
 if __name__ == "__main__":
-   d = Ramspnc()
-   d.write_fileset(f"ramspnc.f", fileset="rtl")
+    d = Ramspnc()
+    d.write_fileset("ramspnc.f", fileset="rtl")

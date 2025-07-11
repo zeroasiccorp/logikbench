@@ -23,6 +23,7 @@ class Ramsdp(DesignSchema):
         # top module
         self.set_topmodule(name, fileset)
 
+
 if __name__ == "__main__":
-   d = Ramsdp()
-   d.write_fileset(f"ramsdp.f", fileset="rtl")
+    d = Ramsdp()
+    d.write_fileset("ramsdp.f", fileset="rtl")
