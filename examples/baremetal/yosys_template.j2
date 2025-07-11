@@ -1,0 +1,16 @@
+# To run a yosys script simplydo "yosys -s name.ys" at the command line
+
+# read single file verilog ("pickled")
+read_verilog {{ filename }}
+
+# Check design hierarchy and set top module
+hierarchy -check -top {{ top }}  # Replace 'top' with your top module name
+
+# Generic synthesis
+synth -top {{ top }}
+
+# Technology mapping
+synth_ice40 -top {{ top }}
+
+# Write synthesized netlist as Verilog
+write_verilog -noattr {{ name }}.vg
