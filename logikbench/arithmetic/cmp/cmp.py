@@ -23,6 +23,7 @@ class Cmp(DesignSchema):
         # top module
         self.set_topmodule(name, fileset)
 
+
 if __name__ == "__main__":
-   d = Cmp()
-   d.write_fileset(f"cmp.f", fileset="rtl")
+    d = Cmp()
+    d.write_fileset("cmp.f", fileset="rtl")

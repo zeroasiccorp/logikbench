@@ -23,6 +23,7 @@ class Dec(DesignSchema):
         # top module
         self.set_topmodule(name, fileset)
 
+
 if __name__ == "__main__":
-   d = Dec()
-   d.write_fileset(f"dec.f", fileset="rtl")
+    d = Dec()
+    d.write_fileset("dec.f", fileset="rtl")

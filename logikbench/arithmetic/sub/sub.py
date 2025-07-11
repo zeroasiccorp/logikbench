@@ -23,6 +23,7 @@ class Sub(DesignSchema):
         # top module
         self.set_topmodule(name, fileset)
 
+
 if __name__ == "__main__":
-   d = Sub()
-   d.write_fileset(f"sub.f", fileset="rtl")
+    d = Sub()
+    d.write_fileset("sub.f", fileset="rtl")

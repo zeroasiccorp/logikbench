@@ -23,6 +23,7 @@ class Csa32(DesignSchema):
         # top module
         self.set_topmodule(name, fileset)
 
+
 if __name__ == "__main__":
-   d = Csa32()
-   d.write_fileset(f"csa32.f", fileset="rtl")
+    d = Csa32()
+    d.write_fileset("csa32.f", fileset="rtl")

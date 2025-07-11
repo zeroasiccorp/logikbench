@@ -23,6 +23,7 @@ class Shiftl(DesignSchema):
         # top module
         self.set_topmodule(name, fileset)
 
+
 if __name__ == "__main__":
-   d = Shiftl()
-   d.write_fileset(f"shiftl.f", fileset="rtl")
+    d = Shiftl()
+    d.write_fileset("shiftl.f", fileset="rtl")

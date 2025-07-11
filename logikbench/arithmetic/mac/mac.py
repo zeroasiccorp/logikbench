@@ -23,6 +23,7 @@ class Mac(DesignSchema):
         # top module
         self.set_topmodule(name, fileset)
 
+
 if __name__ == "__main__":
-   d = Mac()
-   d.write_fileset(f"mac.f", fileset="rtl")
+    d = Mac()
+    d.write_fileset("mac.f", fileset="rtl")

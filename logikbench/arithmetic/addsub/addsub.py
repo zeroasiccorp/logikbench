@@ -23,6 +23,7 @@ class Addsub(DesignSchema):
         # top module
         self.set_topmodule(name, fileset)
 
+
 if __name__ == "__main__":
-   d = Addsub()
-   d.write_fileset(f"addsub.f", fileset="rtl")
+    d = Addsub()
+    d.write_fileset("addsub.f", fileset="rtl")

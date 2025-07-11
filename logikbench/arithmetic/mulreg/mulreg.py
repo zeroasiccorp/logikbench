@@ -23,6 +23,7 @@ class Mulreg(DesignSchema):
         # top module
         self.set_topmodule(name, fileset)
 
+
 if __name__ == "__main__":
-   d = Mulreg()
-   d.write_fileset(f"mulreg.f", fileset="rtl")
+    d = Mulreg()
+    d.write_fileset("mulreg.f", fileset="rtl")

@@ -23,6 +23,7 @@ class Sqrt(DesignSchema):
         # top module
         self.set_topmodule(name, fileset)
 
+
 if __name__ == "__main__":
-   d = Sqrt()
-   d.write_fileset(f"sqrt.f", fileset="rtl")
+    d = Sqrt()
+    d.write_fileset("sqrt.f", fileset="rtl")

@@ -23,6 +23,7 @@ class Mulc(DesignSchema):
         # top module
         self.set_topmodule(name, fileset)
 
+
 if __name__ == "__main__":
-   d = Mulc()
-   d.write_fileset(f"mulc.f", fileset="rtl")
+    d = Mulc()
+    d.write_fileset("mulc.f", fileset="rtl")

@@ -23,6 +23,7 @@ class Sine(DesignSchema):
         # top module
         self.set_topmodule(name, fileset)
 
+
 if __name__ == "__main__":
-   d = Sine()
-   d.write_fileset(f"sine.f", fileset="rtl")
+    d = Sine()
+    d.write_fileset("sine.f", fileset="rtl")

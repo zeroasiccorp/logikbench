@@ -23,6 +23,7 @@ class Muladdc(DesignSchema):
         # top module
         self.set_topmodule(name, fileset)
 
+
 if __name__ == "__main__":
-   d = Muladdc()
-   d.write_fileset(f"muladdc.f", fileset="rtl")
+    d = Muladdc()
+    d.write_fileset("muladdc.f", fileset="rtl")

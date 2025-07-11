@@ -23,6 +23,7 @@ class Sum(DesignSchema):
         # top module
         self.set_topmodule(name, fileset)
 
+
 if __name__ == "__main__":
-   d = Sum()
-   d.write_fileset(f"sum.f", fileset="rtl")
+    d = Sum()
+    d.write_fileset("sum.f", fileset="rtl")

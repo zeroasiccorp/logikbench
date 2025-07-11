@@ -23,6 +23,7 @@ class Muladd(DesignSchema):
         # top module
         self.set_topmodule(name, fileset)
 
+
 if __name__ == "__main__":
-   d = Muladd()
-   d.write_fileset(f"muladd.f", fileset="rtl")
+    d = Muladd()
+    d.write_fileset("muladd.f", fileset="rtl")

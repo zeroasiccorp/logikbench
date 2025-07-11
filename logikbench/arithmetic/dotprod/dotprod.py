@@ -23,6 +23,7 @@ class Dotprod(DesignSchema):
         # top module
         self.set_topmodule(name, fileset)
 
+
 if __name__ == "__main__":
-   d = Dotprod()
-   d.write_fileset(f"dotprod.f", fileset="rtl")
+    d = Dotprod()
+    d.write_fileset("dotprod.f", fileset="rtl")

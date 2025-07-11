@@ -23,6 +23,7 @@ class Shiftb(DesignSchema):
         # top module
         self.set_topmodule(name, fileset)
 
+
 if __name__ == "__main__":
-   d = Shiftb()
-   d.write_fileset(f"shiftb.f", fileset="rtl")
+    d = Shiftb()
+    d.write_fileset("shiftb.f", fileset="rtl")

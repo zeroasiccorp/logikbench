@@ -23,6 +23,7 @@ class Counter(DesignSchema):
         # top module
         self.set_topmodule(name, fileset)
 
+
 if __name__ == "__main__":
-   d = Counter()
-   d.write_fileset(f"counter.f", fileset="rtl")
+    d = Counter()
+    d.write_fileset("counter.f", fileset="rtl")

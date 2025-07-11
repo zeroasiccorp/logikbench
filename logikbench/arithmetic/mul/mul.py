@@ -23,6 +23,7 @@ class Mul(DesignSchema):
         # top module
         self.set_topmodule(name, fileset)
 
+
 if __name__ == "__main__":
-   d = Mul()
-   d.write_fileset(f"mul.f", fileset="rtl")
+    d = Mul()
+    d.write_fileset("mul.f", fileset="rtl")

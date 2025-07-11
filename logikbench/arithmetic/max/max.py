@@ -23,6 +23,7 @@ class Max(DesignSchema):
         # top module
         self.set_topmodule(name, fileset)
 
+
 if __name__ == "__main__":
-   d = Max()
-   d.write_fileset(f"max.f", fileset="rtl")
+    d = Max()
+    d.write_fileset("max.f", fileset="rtl")

@@ -23,6 +23,7 @@ class Absdiff(DesignSchema):
         # top module
         self.set_topmodule(name, fileset)
 
+
 if __name__ == "__main__":
-   d = Absdiff()
-   d.write_fileset(f"absdiff.f", fileset="rtl")
+    d = Absdiff()
+    d.write_fileset("absdiff.f", fileset="rtl")

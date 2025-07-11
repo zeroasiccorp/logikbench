@@ -23,6 +23,7 @@ class Sqdiff(DesignSchema):
         # top module
         self.set_topmodule(name, fileset)
 
+
 if __name__ == "__main__":
-   d = Sqdiff()
-   d.write_fileset(f"sqdiff.f", fileset="rtl")
+    d = Sqdiff()
+    d.write_fileset("sqdiff.f", fileset="rtl")

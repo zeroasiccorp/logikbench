@@ -23,6 +23,7 @@ class Muls(DesignSchema):
         # top module
         self.set_topmodule(name, fileset)
 
+
 if __name__ == "__main__":
-   d = Muls()
-   d.write_fileset(f"muls.f", fileset="rtl")
+    d = Muls()
+    d.write_fileset("muls.f", fileset="rtl")

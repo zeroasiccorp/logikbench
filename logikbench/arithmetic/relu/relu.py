@@ -23,6 +23,7 @@ class Relu(DesignSchema):
         # top module
         self.set_topmodule(name, fileset)
 
+
 if __name__ == "__main__":
-   d = Relu()
-   d.write_fileset(f"relu.f", fileset="rtl")
+    d = Relu()
+    d.write_fileset("relu.f", fileset="rtl")

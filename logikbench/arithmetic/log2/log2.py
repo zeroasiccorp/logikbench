@@ -23,6 +23,7 @@ class Log2(DesignSchema):
         # top module
         self.set_topmodule(name, fileset)
 
+
 if __name__ == "__main__":
-   d = Log2()
-   d.write_fileset(f"log2.f", fileset="rtl")
+    d = Log2()
+    d.write_fileset("log2.f", fileset="rtl")

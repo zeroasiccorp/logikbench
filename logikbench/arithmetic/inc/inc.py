@@ -23,6 +23,7 @@ class Inc(DesignSchema):
         # top module
         self.set_topmodule(name, fileset)
 
+
 if __name__ == "__main__":
-   d = Inc()
-   d.write_fileset(f"inc.f", fileset="rtl")
+    d = Inc()
+    d.write_fileset("inc.f", fileset="rtl")

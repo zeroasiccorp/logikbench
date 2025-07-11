@@ -23,6 +23,7 @@ class Shiftr(DesignSchema):
         # top module
         self.set_topmodule(name, fileset)
 
+
 if __name__ == "__main__":
-   d = Shiftr()
-   d.write_fileset(f"shiftr.f", fileset="rtl")
+    d = Shiftr()
+    d.write_fileset("shiftr.f", fileset="rtl")

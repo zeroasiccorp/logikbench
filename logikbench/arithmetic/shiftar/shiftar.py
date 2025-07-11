@@ -23,6 +23,7 @@ class Shiftar(DesignSchema):
         # top module
         self.set_topmodule(name, fileset)
 
+
 if __name__ == "__main__":
-   d = Shiftar()
-   d.write_fileset(f"shiftar.f", fileset="rtl")
+    d = Shiftar()
+    d.write_fileset("shiftar.f", fileset="rtl")

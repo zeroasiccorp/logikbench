@@ -23,6 +23,7 @@ class Add(DesignSchema):
         # top module
         self.set_topmodule(name, fileset)
 
+
 if __name__ == "__main__":
-   d = Add()
-   d.write_fileset(f"add.f", fileset="rtl")
+    d = Add()
+    d.write_fileset("add.f", fileset="rtl")

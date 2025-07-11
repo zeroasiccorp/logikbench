@@ -23,6 +23,7 @@ class Round(DesignSchema):
         # top module
         self.set_topmodule(name, fileset)
 
+
 if __name__ == "__main__":
-   d = Round()
-   d.write_fileset(f"round.f", fileset="rtl")
+    d = Round()
+    d.write_fileset("round.f", fileset="rtl")

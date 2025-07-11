@@ -23,6 +23,7 @@ class Csa42(DesignSchema):
         # top module
         self.set_topmodule(name, fileset)
 
+
 if __name__ == "__main__":
-   d = Csa42()
-   d.write_fileset(f"csa42.f", fileset="rtl")
+    d = Csa42()
+    d.write_fileset("csa42.f", fileset="rtl")

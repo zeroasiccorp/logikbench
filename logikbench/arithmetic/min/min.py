@@ -23,6 +23,7 @@ class Min(DesignSchema):
         # top module
         self.set_topmodule(name, fileset)
 
+
 if __name__ == "__main__":
-   d = Min()
-   d.write_fileset(f"min.f", fileset="rtl")
+    d = Min()
+    d.write_fileset("min.f", fileset="rtl")
