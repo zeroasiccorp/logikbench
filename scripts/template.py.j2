@@ -23,6 +23,7 @@ class {{ class_name }}(DesignSchema):
         # top module
         self.set_topmodule(name, fileset)
 
+
 if __name__ == "__main__":
-   d = {{ class_name }}()
-   d.write_fileset(f"{{ module_name }}.f", fileset="rtl")
+    d = {{ class_name }}()
+    d.write_fileset("{{ module_name }}.f", fileset="rtl")
