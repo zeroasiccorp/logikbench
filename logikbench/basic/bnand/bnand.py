@@ -23,6 +23,7 @@ class Bnand(DesignSchema):
         # top module
         self.set_topmodule(name, fileset)
 
+
 if __name__ == "__main__":
-   d = Bnand()
-   d.write_fileset(f"bnand.f", fileset="rtl")
+    d = Bnand()
+    d.write_fileset("bnand.f", fileset="rtl")

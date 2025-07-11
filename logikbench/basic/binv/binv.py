@@ -23,6 +23,7 @@ class Binv(DesignSchema):
         # top module
         self.set_topmodule(name, fileset)
 
+
 if __name__ == "__main__":
-   d = Binv()
-   d.write_fileset(f"binv.f", fileset="rtl")
+    d = Binv()
+    d.write_fileset("binv.f", fileset="rtl")

@@ -23,6 +23,7 @@ class Bin2prio(DesignSchema):
         # top module
         self.set_topmodule(name, fileset)
 
+
 if __name__ == "__main__":
-   d = Bin2prio()
-   d.write_fileset(f"bin2prio.f", fileset="rtl")
+    d = Bin2prio()
+    d.write_fileset("bin2prio.f", fileset="rtl")

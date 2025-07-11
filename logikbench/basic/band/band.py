@@ -23,6 +23,7 @@ class Band(DesignSchema):
         # top module
         self.set_topmodule(name, fileset)
 
+
 if __name__ == "__main__":
-   d = Band()
-   d.write_fileset(f"band.f", fileset="rtl")
+    d = Band()
+    d.write_fileset("band.f", fileset="rtl")

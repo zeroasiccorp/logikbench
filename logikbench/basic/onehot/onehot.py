@@ -23,6 +23,7 @@ class Onehot(DesignSchema):
         # top module
         self.set_topmodule(name, fileset)
 
+
 if __name__ == "__main__":
-   d = Onehot()
-   d.write_fileset(f"onehot.f", fileset="rtl")
+    d = Onehot()
+    d.write_fileset("onehot.f", fileset="rtl")

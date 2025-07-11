@@ -23,6 +23,7 @@ class Gray2bin(DesignSchema):
         # top module
         self.set_topmodule(name, fileset)
 
+
 if __name__ == "__main__":
-   d = Gray2bin()
-   d.write_fileset(f"gray2bin.f", fileset="rtl")
+    d = Gray2bin()
+    d.write_fileset("gray2bin.f", fileset="rtl")

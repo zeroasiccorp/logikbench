@@ -23,6 +23,7 @@ class Dffasync(DesignSchema):
         # top module
         self.set_topmodule(name, fileset)
 
+
 if __name__ == "__main__":
-   d = Dffasync()
-   d.write_fileset(f"dffasync.f", fileset="rtl")
+    d = Dffasync()
+    d.write_fileset("dffasync.f", fileset="rtl")

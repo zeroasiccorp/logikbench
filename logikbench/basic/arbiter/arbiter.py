@@ -23,6 +23,7 @@ class Arbiter(DesignSchema):
         # top module
         self.set_topmodule(name, fileset)
 
+
 if __name__ == "__main__":
-   d = Arbiter()
-   d.write_fileset(f"arbiter.f", fileset="rtl")
+    d = Arbiter()
+    d.write_fileset("arbiter.f", fileset="rtl")

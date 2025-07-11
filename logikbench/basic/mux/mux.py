@@ -23,6 +23,7 @@ class Mux(DesignSchema):
         # top module
         self.set_topmodule(name, fileset)
 
+
 if __name__ == "__main__":
-   d = Mux()
-   d.write_fileset(f"mux.f", fileset="rtl")
+    d = Mux()
+    d.write_fileset("mux.f", fileset="rtl")

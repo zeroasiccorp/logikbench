@@ -23,6 +23,7 @@ class Bxnor(DesignSchema):
         # top module
         self.set_topmodule(name, fileset)
 
+
 if __name__ == "__main__":
-   d = Bxnor()
-   d.write_fileset(f"bxnor.f", fileset="rtl")
+    d = Bxnor()
+    d.write_fileset("bxnor.f", fileset="rtl")

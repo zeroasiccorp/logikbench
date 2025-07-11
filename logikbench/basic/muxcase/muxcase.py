@@ -23,6 +23,7 @@ class Muxcase(DesignSchema):
         # top module
         self.set_topmodule(name, fileset)
 
+
 if __name__ == "__main__":
-   d = Muxcase()
-   d.write_fileset(f"muxcase.f", fileset="rtl")
+    d = Muxcase()
+    d.write_fileset("muxcase.f", fileset="rtl")

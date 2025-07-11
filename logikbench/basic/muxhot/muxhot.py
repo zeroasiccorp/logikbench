@@ -23,6 +23,7 @@ class Muxhot(DesignSchema):
         # top module
         self.set_topmodule(name, fileset)
 
+
 if __name__ == "__main__":
-   d = Muxhot()
-   d.write_fileset(f"muxhot.f", fileset="rtl")
+    d = Muxhot()
+    d.write_fileset("muxhot.f", fileset="rtl")

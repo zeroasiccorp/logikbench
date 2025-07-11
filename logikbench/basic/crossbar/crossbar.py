@@ -23,6 +23,7 @@ class Crossbar(DesignSchema):
         # top module
         self.set_topmodule(name, fileset)
 
+
 if __name__ == "__main__":
-   d = Crossbar()
-   d.write_fileset(f"crossbar.f", fileset="rtl")
+    d = Crossbar()
+    d.write_fileset("crossbar.f", fileset="rtl")

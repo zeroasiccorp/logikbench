@@ -23,6 +23,7 @@ class Shiftreg(DesignSchema):
         # top module
         self.set_topmodule(name, fileset)
 
+
 if __name__ == "__main__":
-   d = Shiftreg()
-   d.write_fileset(f"shiftreg.f", fileset="rtl")
+    d = Shiftreg()
+    d.write_fileset("shiftreg.f", fileset="rtl")

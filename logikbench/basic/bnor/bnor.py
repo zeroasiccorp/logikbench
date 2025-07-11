@@ -23,6 +23,7 @@ class Bnor(DesignSchema):
         # top module
         self.set_topmodule(name, fileset)
 
+
 if __name__ == "__main__":
-   d = Bnor()
-   d.write_fileset(f"bnor.f", fileset="rtl")
+    d = Bnor()
+    d.write_fileset("bnor.f", fileset="rtl")

@@ -23,6 +23,7 @@ class Bbuf(DesignSchema):
         # top module
         self.set_topmodule(name, fileset)
 
+
 if __name__ == "__main__":
-   d = Bbuf()
-   d.write_fileset(f"bbuf.f", fileset="rtl")
+    d = Bbuf()
+    d.write_fileset("bbuf.f", fileset="rtl")

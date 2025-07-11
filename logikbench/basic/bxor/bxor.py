@@ -23,6 +23,7 @@ class Bxor(DesignSchema):
         # top module
         self.set_topmodule(name, fileset)
 
+
 if __name__ == "__main__":
-   d = Bxor()
-   d.write_fileset(f"bxor.f", fileset="rtl")
+    d = Bxor()
+    d.write_fileset("bxor.f", fileset="rtl")

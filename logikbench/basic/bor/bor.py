@@ -23,6 +23,7 @@ class Bor(DesignSchema):
         # top module
         self.set_topmodule(name, fileset)
 
+
 if __name__ == "__main__":
-   d = Bor()
-   d.write_fileset(f"bor.f", fileset="rtl")
+    d = Bor()
+    d.write_fileset("bor.f", fileset="rtl")

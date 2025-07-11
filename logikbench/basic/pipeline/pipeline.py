@@ -23,6 +23,7 @@ class Pipeline(DesignSchema):
         # top module
         self.set_topmodule(name, fileset)
 
+
 if __name__ == "__main__":
-   d = Pipeline()
-   d.write_fileset(f"pipeline.f", fileset="rtl")
+    d = Pipeline()
+    d.write_fileset("pipeline.f", fileset="rtl")

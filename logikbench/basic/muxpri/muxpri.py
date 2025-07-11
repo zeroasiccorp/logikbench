@@ -23,6 +23,7 @@ class Muxpri(DesignSchema):
         # top module
         self.set_topmodule(name, fileset)
 
+
 if __name__ == "__main__":
-   d = Muxpri()
-   d.write_fileset(f"muxpri.f", fileset="rtl")
+    d = Muxpri()
+    d.write_fileset("muxpri.f", fileset="rtl")
