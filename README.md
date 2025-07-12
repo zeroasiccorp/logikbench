@@ -19,19 +19,36 @@ pip install -e .
 
 # Quick Start Quide
 
-## Synthesis Examples
+## Basic synthesis
 
-**Run `basic` benchmarks**
+The project includes a basic baremetal script that loops over a set of benchmarks and provides a summary of the results.
+
+**Example: Run `basic` group**
 ```sh
 python examples/baremetal/make.py -g basic
 ```
 
-**Clean build dir and then run `arithmetic` and `basic' benchmarks
+**Example: Run multiple groups**
+```sh
+python examples/baremetal/make.py -g basic arithmetic
+```
+
+**Example: Specify a single benchmark**
+```sh
+python examples/baremetal/make.py -g basic arithmetic -n add
+```
+
+**Example: Specify name of output file**
+```sh
+python examples/baremetal/make.py -g basic arithmetic -n add -o results.csv
+```
+
+**Example: Clean up before running**
 ```sh
 python examples/baremetal/make.py -g basic arithmetic -clean
 ```
 
-**Run a single `memory` benchmark in vivado
+**Example: Run a single benchmark in vivado**
 ```sh
 python examples/baremetal/make.py -g memory -name ramsp -tool vivado
 ```
