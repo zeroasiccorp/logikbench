@@ -1,14 +1,14 @@
 LogikBench
 ==========================================================
 
-LogikBench is technology agnostic RTL benchmark suite developed to promote open and unbiased:
-- EDA tool benchmarks (synthesis, placement, routing, verification, ...)
-- Foundry process benchmark
-- Standard cell library bench-marking
-- FPGA device bench-marking
-- Architecture exploration
+An parametrized RTL benchmark suite for open and unbiased evaluation of:
+1. EDA tools and flows (synthesis, placement, routing, verification, ...)
+2. Foundry processes
+3. Standard cell librares
+4. FPGA devices
+5. Digital architectures
 
-**Installation**
+# Installation
 
 ```bash
 git clone https://github.com/zeroasiccorp/logikbench
@@ -17,11 +17,29 @@ pip install --upgrade pip
 pip install -e .
 ```
 
-**Examples**
+# Quick Start Quide
 
-Various examples demonstrating the LogikBench usage models can be found in the examples folder.
+## Synthesis Examples
 
+**Run `basic` benchmarks**
+```sh
+python examples/baremetal/make.py -g basic
+```
 
-## License
+**Clean build dir and then run `arithmetic` and `basic' benchmarks
+```sh
+python examples/baremetal/make.py -g basic arithmetic -clean
+```
 
-The LogikBench project is licensed under [MIT](LICENSE). Individual benchmark components are covered by licensed documented by the LICENSE file found in the root directory of each benchmark.
+**Run a single `memory` benchmark in vivado
+```sh
+python examples/baremetal/make.py -g memory -name ramsp -tool vivado
+```
+
+# Benchmark Listing
+
+TBD
+
+# License
+
+The LogikBench project is licensed under [MIT](LICENSE). Individual benchmarks are  are covered by licensed documented by the LICENSE file found in the root directory of each benchmark.
