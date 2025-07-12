@@ -1,5 +1,5 @@
-module fifoasync #(parameter DW = 16, // datawidth
-                   parameter AW = 10  // DEPTH = 1 << AW
+module fifoasync #(parameter DW = 16,
+                   parameter AW = 4 // DEPTH = 1 << AW
                    )
    (
     // write port

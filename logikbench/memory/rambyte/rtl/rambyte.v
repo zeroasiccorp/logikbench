@@ -1,5 +1,5 @@
-module rambyte #(parameter DW = 16, // Memory width
-                 parameter AW = 10  // Address width
+module rambyte #(parameter DW = 16,
+                 parameter AW = 8
                  )
    (input               clk,  // write clock
     input               ce,   // chip enable

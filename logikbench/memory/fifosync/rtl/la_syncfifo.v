@@ -1,8 +1,6 @@
-module la_syncfifo
-  #(
-    parameter DW = 32,  // datawidth
-    parameter DEPTH = 4 // FIFO depth
-    )
+module la_syncfifo #(parameter DW = 32,
+                     parameter DEPTH = 4 // FIFO depth
+                     )
    (// basic interface
     input           clk,
     input           nreset,  //async reset

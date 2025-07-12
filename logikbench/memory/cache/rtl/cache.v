@@ -1,6 +1,6 @@
-module cache #(parameter DW = 16,    // data width
-               parameter AW = 32,    // address width
-               parameter INDEXW = 10 // NUM_LINES = 1 << INDEXW
+module cache #(parameter DW = 64,
+               parameter AW = 64,
+               parameter INDEXW = 8 // NUM_LINES = 1 << INDEXW
                )
    (
     input wire          clk,
