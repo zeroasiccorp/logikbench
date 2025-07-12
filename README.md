@@ -27,38 +27,42 @@ pip install -e .
 
 # Quick Start Quide
 
-## Basic synthesis examples
+## SiliconCompiler
 
-The project includes a basic baremetal script that loops over a set of benchmarks and provides a summary of the results.
+TBD
+
+## Basic synthesis
+
+The project includes a basic synthesis script that loops over a set of benchmarks and provides a summary of the results as a csv or json file.
 
 **Run `basic` group**
 ```sh
-python examples/baremetal/make.py -g basic
+python examples/synthesis/make.py -g basic
 ```
 
 **Run multiple groups**
 ```sh
-python examples/baremetal/make.py -g basic arithmetic
+python examples/synthesis/make.py -g basic arithmetic
 ```
 
 **Specify a single benchmark**
 ```sh
-python examples/baremetal/make.py -g arithmetic -n add
+python examples/synthesis/make.py -g arithmetic -n add
 ```
 
 **Specify name of output file**
 ```sh
-python examples/baremetal/make.py -g arithmetic -n add -o results.csv
+python examples/synthesis/make.py -g arithmetic -n add -o results.csv
 ```
 
 **Clean up before re-running**
 ```sh
-python examples/baremetal/make.py -g arithmetic -clean
+python examples/synthesis/make.py -g arithmetic -clean
 ```
 
 **Run a single benchmark in vivado**
 ```sh
-python examples/baremetal/make.py -g memory -name ramsp -tool vivado
+python examples/synthesis/make.py -g memory -name ramsp -tool vivado
 ```
 
 # Benchmark Listing
