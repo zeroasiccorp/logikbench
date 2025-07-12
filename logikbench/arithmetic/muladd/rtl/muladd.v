@@ -1,5 +1,5 @@
 module muladd #(parameter DW = 16,
-                parameter OW = 32,
+                parameter OW = 32
 	        )
    (
     //Inputs
