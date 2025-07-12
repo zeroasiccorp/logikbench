@@ -32,7 +32,7 @@ python make.py -tool yosys -target ice40 -group  epfl -name mem_ctrl
                                  'memory',
                                  'arithmetic',
                                  'epfl',
-                                 'block'],
+                                 'blocks'],
                         required=True,
                         help="Benchmark group")
     parser.add_argument("-name","-n",
