@@ -28,7 +28,11 @@ python make.py -tool yosys -target ice40 -group  epfl -name mem_ctrl
 
     parser.add_argument("-group","-g",
                         nargs='+',
-                        choices=['basic', 'memory', 'arithmetic', 'epfl', 'block'],
+                        choices=['basic',
+                                 'memory',
+                                 'arithmetic',
+                                 'epfl',
+                                 'block'],
                         required=True,
                         help="Benchmark group")
     parser.add_argument("-name","-n",
@@ -36,10 +40,9 @@ python make.py -tool yosys -target ice40 -group  epfl -name mem_ctrl
                         help="Benchmark name")
     parser.add_argument("-tool",
                         choices=['yosys', 'vivado'],
-                        required=True,
+                        default="yosys",
                         help="Tool name")
     parser.add_argument("-target",
-                        required=True,
                         help="Compilation target")
     parser.add_argument('-clean','-c',
                         action='store_true',
@@ -51,11 +54,12 @@ python make.py -tool yosys -target ice40 -group  epfl -name mem_ctrl
     args = parser.parse_args()
 
     # resolving relative path
+    cwd = os.getcwd()
     scriptdir = Path(__file__).resolve().parent
     rootdir = Path(__file__).resolve().parent.parent.parent
 
     # generated local script
-    env = Environment(loader=FileSystemLoader('.'))
+    env = Environment(loader=FileSystemLoader(scriptdir))
     template = env.get_template(f'{args.tool}_template.j2')
 
     # global analysis
@@ -79,11 +83,12 @@ python make.py -tool yosys -target ice40 -group  epfl -name mem_ctrl
                 script = f"{name}.tcl"
                 cmd = ['vivado', '-mode batch', '-source', script]
 
-            # clean up old run
-            if args.clean: # create run dir.clean:
-                shutil.rmtree(f"build/{group}/{name}")
+            # clean up old results
+            if os.path.isdir(f"build/{group}/{name}"):
+                if args.clean: # create run dir.clean:
+                    shutil.rmtree(f"build/{group}/{name}")
 
-            # create run dir
+            # change dir
             os.makedirs(f"build/{group}/{name}", exist_ok=True)
             os.chdir(f"build/{group}/{name}")
 
@@ -131,8 +136,8 @@ python make.py -tool yosys -target ice40 -group  epfl -name mem_ctrl
                     data = json.load(f)
                 results["cells"][name] = data["design"]["num_cells"]
 
-            # go back home
-            os.chdir(scriptdir)
+            # go back to cwd
+            os.chdir(cwd)
 
 
     # writing results to file
