@@ -35,17 +35,17 @@ python examples/baremetal/make.py -g basic arithmetic
 
 **Specify a single benchmark**
 ```sh
-python examples/baremetal/make.py -g basic arithmetic -n add
+python examples/baremetal/make.py -g arithmetic -n add
 ```
 
 **Specify name of output file**
 ```sh
-python examples/baremetal/make.py -g basic arithmetic -n add -o results.csv
+python examples/baremetal/make.py -g arithmetic -n add -o results.csv
 ```
 
 **Clean up before re-running**
 ```sh
-python examples/baremetal/make.py -g basic arithmetic -clean
+python examples/baremetal/make.py -g arithmetic -clean
 ```
 
 **Run a single benchmark in vivado**
