@@ -8,6 +8,14 @@ An parametrized RTL benchmark suite for open and unbiased evaluation of:
 4. FPGA devices
 5. Digital architectures
 
+| Group      | Benchmarks | Description|
+|------------|------------|------------|
+| basic      | 23         | Logic benchmarks (mux, arbiter, crossbar,...)
+| arithmetic | 33         | Arithmetic (add, shift, mul,...)
+| memory     | 12         | Memory (sp, dp, sdp, fifo,...)
+| blocks     | 30         | Macro functions (ialu, spi ,ibex,..)
+| epfl       | 19         | EPFL benchmarks
+
 # Installation
 
 ```bash
@@ -53,15 +61,7 @@ python examples/baremetal/make.py -g arithmetic -clean
 python examples/baremetal/make.py -g memory -name ramsp -tool vivado
 ```
 
-# Benchmark Summary
-
-| Group      | Benchmarks | Description|
-|------------|------------|------------|
-| basic      | 23         | Logic benchmarks (mux, arbiter, crossbar,...)
-| arithmetic | 33         | Arithmetic (add, shift, mul,...)
-| memory     | 12         | Memory (sp, dp, sdp, fifo,...)
-| blocks     | 30         | Macro functions (ialu, spi ,ibex,..)
-| epfl       | 19         | EPFL benchmarks
+# Benchmark Listing
 
 # License
 
