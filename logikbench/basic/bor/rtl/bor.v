@@ -1,4 +1,4 @@
-module bor #(parameter DW = 32 // data width
+module bor #(parameter DW = 64
               )
    (
     input [DW-1:0] in,

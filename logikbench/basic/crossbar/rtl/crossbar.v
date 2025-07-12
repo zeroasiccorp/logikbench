@@ -1,5 +1,5 @@
-module crossbar #(parameter DW = 16, // data width
-                  parameter N = 8    // number of ports
+module crossbar #(parameter DW = 64,
+                  parameter N = 16   // number of ports
                   )
    (
     input [N*DW-1:0]      din, // N DW-wide input words, concatenated

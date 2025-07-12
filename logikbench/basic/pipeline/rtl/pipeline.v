@@ -1,5 +1,5 @@
-module pipeline #(parameter DW = 32, // data width
-                  parameter N = 8    // pipeline stages
+module pipeline #(parameter DW = 64,
+                  parameter N = 16   // pipeline stages
                   )
    (
     input           clk,

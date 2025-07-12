@@ -1,4 +1,4 @@
-module muxcase #(parameter DW = 8 // data width
+module muxcase #(parameter DW = 64
                  )
    (
     input [7:0]         sel, // binary select signal

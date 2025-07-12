@@ -1,5 +1,5 @@
-module muxpri #(parameter DW = 32, // data width
-                parameter N = 2    // number of inputs (power of 2)
+module muxpri #(parameter DW = 64,
+                parameter N = 2    // number of inputs
                 )
    (
     input [N-1:0]       sel,  // select signals

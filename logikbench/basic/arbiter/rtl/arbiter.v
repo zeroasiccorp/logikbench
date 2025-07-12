@@ -1,4 +1,4 @@
-module arbiter #(parameter N = 8)
+module arbiter #(parameter N = 16)
    (
     input [N-1:0]      request, // request inputs, [0] is highest priority
     output reg [N-1:0] grant    // one hot grant vector

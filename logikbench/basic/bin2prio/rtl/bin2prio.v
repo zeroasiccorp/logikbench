@@ -1,4 +1,4 @@
-module bin2prio #(parameter DW = 32) // data width
+module bin2prio #(parameter DW = 64)
    (
     input [DW-1:0]      in,   // binary input vector
     output reg [DW-1:0] out,  // one hot output

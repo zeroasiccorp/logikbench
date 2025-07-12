@@ -1,4 +1,4 @@
-module band #(parameter DW = 32 // data width
+module band #(parameter DW = 64
               )
    (
     input [DW-1:0] in,

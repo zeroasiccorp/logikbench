@@ -1,4 +1,4 @@
-module dffsync #(parameter DW = 16
+module dffsync #(parameter DW = 64
                  )
    (
     input               clk,

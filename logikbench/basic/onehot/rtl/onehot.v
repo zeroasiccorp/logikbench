@@ -1,4 +1,4 @@
-module onehot #(parameter DW = 32 // must be power of 2!
+module onehot #(parameter DW = 64 // must be power of 2
                 )
    (
     input wire [$clog2(DW)-1:0] in, // binary input

@@ -1,4 +1,4 @@
-module gray2bin #(parameter DW = 32) // data width
+module gray2bin #(parameter DW = 64)
    (
     input [DW-1:0]  in, // gray encoded input
     output [DW-1:0] out // binary output

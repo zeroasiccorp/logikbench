@@ -1,4 +1,4 @@
-module shiftreg # (parameter DW = 8
+module shiftreg # (parameter DW = 64
                    )
    (
     input           clk,

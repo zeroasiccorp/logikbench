@@ -1,5 +1,5 @@
-module mux #(parameter DW = 16, // data width
-             parameter N = 8    // number of inputs (power of 2)
+module mux #(parameter DW = 64,
+             parameter N = 16   // number of inputs (power of 2)
              )
    (
     input [$clog2(N)-1:0] sel,  // binary select signal

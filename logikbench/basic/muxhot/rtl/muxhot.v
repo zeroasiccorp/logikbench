@@ -1,5 +1,5 @@
-module muxhot #(parameter DW = 8, // data width
-                parameter N = 8   // number of vectors
+module muxhot #(parameter DW = 64,
+                parameter N = 16 // number of inputs
                 )
    (
     input [N-1:0]    sel, // select vector

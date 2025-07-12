@@ -1,4 +1,4 @@
-module bin2gray #(parameter DW = 32 // data width
+module bin2gray #(parameter DW = 64
                   )
    (
     input [DW-1:0]  in, // binary input

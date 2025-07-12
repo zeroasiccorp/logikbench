@@ -1,4 +1,4 @@
-module binv #(parameter DW = 32 // data width
+module binv #(parameter DW = 64
               )
    (
     input [DW-1:0]  in,
