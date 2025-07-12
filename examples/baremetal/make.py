@@ -1,7 +1,10 @@
 import argparse
 import subprocess
 import os
+import shutil
 import sys
+import json
+import csv
 from pathlib import Path
 from jinja2 import Environment, FileSystemLoader
 from logikbench import *
@@ -23,12 +26,12 @@ python make.py -tool yosys -target ice40 -group  epfl -name mem_ctrl
 
 """, formatter_class=argparse.RawDescriptionHelpFormatter)
 
-    parser.add_argument("-group",
+    parser.add_argument("-group","-g",
                         nargs='+',
                         choices=['basic', 'memory', 'arithmetic', 'epfl', 'block'],
                         required=True,
                         help="Benchmark group")
-    parser.add_argument("-name",
+    parser.add_argument("-name","-n",
                         nargs='+',
                         help="Benchmark name")
     parser.add_argument("-tool",
@@ -38,6 +41,12 @@ python make.py -tool yosys -target ice40 -group  epfl -name mem_ctrl
     parser.add_argument("-target",
                         required=True,
                         help="Compilation target")
+    parser.add_argument('-clean','-c',
+                        action='store_true',
+                        help='Clean up build directory')
+    parser.add_argument('-output','-o',
+                        default="build/results.json",
+                        help='Output file name')
 
     args = parser.parse_args()
 
@@ -48,6 +57,10 @@ python make.py -tool yosys -target ice40 -group  epfl -name mem_ctrl
     # generated local script
     env = Environment(loader=FileSystemLoader('.'))
     template = env.get_template(f'{args.tool}_template.j2')
+
+    # global analysis
+    results = {}
+    results["cells"] = {}
 
     # iterate over all groups
     for group in args.group:
@@ -66,19 +79,25 @@ python make.py -tool yosys -target ice40 -group  epfl -name mem_ctrl
                 script = f"{name}.tcl"
                 cmd = ['vivado', '-mode batch', '-source', script]
 
+            # clean up old run
+            if args.clean: # create run dir.clean:
+                shutil.rmtree(f"build/{group}/{name}")
+
             # create run dir
             os.makedirs(f"build/{group}/{name}", exist_ok=True)
             os.chdir(f"build/{group}/{name}")
 
-            # get top module (not always equal to module name)
+            # instance of benchmark class
             mod = sys.modules[f"logikbench.{group}.{name}.{name}"]
-            cls = getattr(mod, name.capitalize())
-            d = cls()
-            topmodule = d.get_topmodule(fileset='rtl')
+            bobj = getattr(mod, name.capitalize())
+            b = bobj()
 
-            # write out fileset locally
+            # get top module
+            topmodule = b.get_topmodule(fileset='rtl')
+
+            # write out design fileset
             cmdfile = f"{name}.f"
-            d.write_fileset(cmdfile, fileset='rtl')
+            b.write_fileset(cmdfile, fileset='rtl')
 
             # create tool script
             context = {
@@ -92,16 +111,48 @@ python make.py -tool yosys -target ice40 -group  epfl -name mem_ctrl
                 f.write(output)
 
             # run benchmark
-            try:
-                print(f"Running {name} benchmark ({group}). Logfile: build/{group}/{name}/{name}.log")
-                with open(f'{name}.log', "w") as log:
-                          result = subprocess.run(cmd,
-                                        stdout=log,
-                                        stderr=subprocess.STDOUT,
-                                        check=True)
+            if os.path.exists(f"{name}_stats.json"):
+                    print(f"Found previous results, skipping {name} benchmark ({group}).")
+            else:
+                try:
+                    print(f"Running {name} benchmark ({group}). Logfile: build/{group}/{name}/{name}.log")
+                    with open(f'{name}.log', "w") as log:
+                        result = subprocess.run(cmd,
+                                                stdout=log,
+                                                stderr=subprocess.STDOUT,
+                                                check=True)
 
-            except subprocess.CalledProcessError as e:
-                print(f"Error...see logfile!!")
+                except subprocess.CalledProcessError as e:
+                    print(f"Error...see logfile!!")
+
+            # collect results
+            if args.tool == 'yosys':
+                with open(f"{name}_stats.json") as f:
+                    data = json.load(f)
+                results["cells"][name] = data["design"]["num_cells"]
 
             # go back home
             os.chdir(scriptdir)
+
+
+    # writing results to file
+    _, ext = os.path.splitext(args.output)
+    if ext == ".json":
+        with open(args.output, "w") as f:
+            json.dump(results, f, indent=2)
+    elif ext == ".csv":
+        all_rows = set()
+        for col in results.values():
+            all_rows.update(col.keys())
+            all_rows = sorted(all_rows)
+        columns = sorted(results.keys())
+        with open(args.output, "w", newline="") as f:
+            writer = csv.writer(f)
+            # Write header
+            writer.writerow([""] + columns)
+            # Write each row
+            for row_key in all_rows:
+                row = [row_key]
+                for col_key in columns:
+                    row.append(results.get(col_key, {}).get(row_key, ""))
+                writer.writerow(row)
