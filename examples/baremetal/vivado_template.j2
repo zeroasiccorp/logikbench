@@ -1,0 +1,37 @@
+# === USER CONFIGURATION ===
+set proj_name "{{ name }}"
+set proj_dir "./vivado_project"
+set top_module "{{ top }}"
+set part "{{ target }}"
+set filelist "{{ filename }}"
+
+# === PROJECT SETUP ===
+create_project $proj_name $proj_dir -part $part -force
+
+# Read .f file and add RTL + includes
+set fp [open $filelist r]
+while {[gets $fp line] >= 0} {
+    set line [string trim $line]
+    if {[string match "#*" $line] || $line eq ""} {
+        continue ;# Skip comments and empty lines
+    } elseif {[string match "-I*" $line]} {
+        set incdir [string range $line 2 end]
+        set_property include_dirs [concat $incdir] [current_fileset]
+    } elseif {[file exists $line]} {
+        add_files $line
+    } else {
+        puts "Warning: Skipping unknown or missing entry: $line"
+    }
+}
+close $fp
+
+# Set top module
+set_property top $top_module [current_fileset]
+
+# === SYNTHESIS ===
+launch_runs synth_1
+wait_on_run synth_1
+
+# === REPORTING ===
+report_utilization -file "$proj_dir/post_synth_util.rpt"
+report_timing_summary -file "$proj_dir/post_synth_timing.rpt"

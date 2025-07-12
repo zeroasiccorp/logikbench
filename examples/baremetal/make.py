@@ -2,6 +2,8 @@
 # Simple script that loops over benchmarks using
 # a native yosys script running at the command line
 #####################################################################
+# TODO: use read_slang instead of read_verilog (vlist)
+#
 import argparse
 import subprocess
 import os
@@ -14,10 +16,12 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="""\
 
 LogikBench bare metal usage example
--Calls tools using single file scripts
+-Runs using single file jinja script template
 -No dependency on external run time infrastructures
+
 Example Usage:
-make.py -tool yosys -group epfl
+python make.py -tool yosys -target ice40 -group  epfl -name mem_ctrl
+
 """, formatter_class=argparse.RawDescriptionHelpFormatter)
 
     parser.add_argument("-group",
@@ -32,7 +36,6 @@ make.py -tool yosys -group epfl
                         required=True,
                         help="Benchmark tool")
     parser.add_argument("-target",
-                        choices=['ice40'],
                         required=True,
                         help="Benchmark target")
 
