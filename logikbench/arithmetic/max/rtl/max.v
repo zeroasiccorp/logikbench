@@ -1,5 +1,5 @@
-module max #(parameter DW = 8  // Operator width (8,16,32,64,128,...)
-	         )
+module max #(parameter DW = 16
+	     )
    (
     //Inputs
     input [DW-1:0]  a,

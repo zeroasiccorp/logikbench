@@ -1,4 +1,4 @@
-module shiftr #(parameter DW = 32
+module shiftr #(parameter DW = 16
 	       )
    (
     //Inputs

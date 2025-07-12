@@ -1,14 +1,14 @@
-module mul #(parameter N = 8, // input width
-             parameter M = 8  // output width(>=N)
+module mul #(parameter DW = 16,
+             parameter OW = 32
 	     )
    (
     //Inputs
-    input [N-1:0]  a, // a input (multiplier)
-    input [N-1:0]  b, // b input (multiplicand)
+    input [DW-1:0]  a, // a input (multiplier)
+    input [DW-1:0]  b, // b input (multiplicand)
     //Outputs
-    output [M-1:0] c  // a * b final product
+    output [OW-1:0] c  // a * b final product
     );
 
-   assign c[M-1:0] = a[N-1:0] * b[N-1:0];
+   assign c[DW-1:0] = a[DW-1:0] * b[DW-1:0];
 
 endmodule

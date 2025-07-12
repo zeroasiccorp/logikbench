@@ -1,4 +1,4 @@
-module counter #(parameter DW = 16  // counter width
+module counter #(parameter DW = 16
              )
    (
     input               clk,

@@ -1,4 +1,4 @@
-module log2 #(parameter DW = 8  // Operator width (8,16,32,64,128,...)
+module log2 #(parameter DW = 16
 	      )
    (
     input [DW-1:0]            in,

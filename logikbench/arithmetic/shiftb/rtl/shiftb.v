@@ -1,4 +1,4 @@
-module shiftb #(parameter DW = 32  // Data width
+module shiftb #(parameter DW = 16
                 )
    (
     input [DW-1:0]         a,     // Input data

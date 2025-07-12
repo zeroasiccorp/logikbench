@@ -1,5 +1,5 @@
-module round #(parameter DW = 8, // data width
-               parameter FW = 4  // frection width (<DW)
+module round #(parameter DW = 16,
+               parameter FW = 8 // frection width (<DW)
                )
    (
     //Inputs

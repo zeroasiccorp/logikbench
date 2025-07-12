@@ -1,15 +1,15 @@
-module muladdc #(parameter DW = 16,  // width of RE and IM inputs
-                 parameter ACCW = 40 // accumulator width
+module muladdc #(parameter DW = 16,
+                 parameter OW = 40
                  )
    (
-    input signed [DW-1:0]    a_re,
-    input signed [DW-1:0]    a_im,
-    input signed [DW-1:0]    b_re,
-    input signed [DW-1:0]    b_im,
-    input signed [ACCW-1:0]  c_re,
-    input signed [ACCW-1:0]  c_im,
-    output signed [ACCW-1:0] out_re,
-    output signed [ACCW-1:0] out_im
+    input signed [DW-1:0]  a_re,
+    input signed [DW-1:0]  a_im,
+    input signed [DW-1:0]  b_re,
+    input signed [DW-1:0]  b_im,
+    input signed [OW-1:0]  c_re,
+    input signed [OW-1:0]  c_im,
+    output signed [OW-1:0] out_re,
+    output signed [OW-1:0] out_im
     );
 
    wire [2*DW-1:0] prod_re;

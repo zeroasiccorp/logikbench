@@ -1,4 +1,4 @@
-module mulc #(parameter DW = 16 // width of RE and IM inputs
+module mulc #(parameter DW = 16
               )
    (
     input signed [DW-1:0]    a_re,

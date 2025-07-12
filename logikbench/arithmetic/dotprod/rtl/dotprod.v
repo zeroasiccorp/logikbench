@@ -1,5 +1,5 @@
-module dotprod #(parameter N = 8,  // Number of elements
-                 parameter DW = 16 // Bitwidth of each element
+module dotprod #(parameter N = 8,
+                 parameter DW = 16
                  )
    (
     input [N*DW-1:0]             a,  // concatenated input vector a

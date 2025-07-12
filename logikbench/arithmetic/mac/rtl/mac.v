@@ -1,13 +1,13 @@
-module mac #(parameter DW = 16,  // input data widths
-             parameter ACCW = 40 // accumulator width
+module mac #(parameter DW = 16,
+             parameter OW = 40
              )
    (
-    input                 clk,
-    input                 clear,
-    input                 en,
-    input [DW-1:0]        a,
-    input [DW-1:0]        b,
-    output reg [ACCW-1:0] acc
+    input               clk,
+    input               clear,
+    input               en,
+    input [DW-1:0]      a,
+    input [DW-1:0]      b,
+    output reg [OW-1:0] acc
     );
 
    always @(posedge clk) begin
