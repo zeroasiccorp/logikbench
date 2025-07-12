@@ -1,7 +1,7 @@
 # To run a yosys script simplydo "yosys -s name.ys" at the command line
 
-# read single file verilog ("pickled")
-read_verilog {{ filename }}
+# read command file
+read_slang -f {{ cmdfile }} --top {{ top }}
 
 # Check design hierarchy and set top module
 hierarchy -check -top {{ top }}  # Replace 'top' with your top module name

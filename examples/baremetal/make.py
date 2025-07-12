@@ -1,9 +1,3 @@
-#####################################################################
-# Simple script that loops over benchmarks using
-# a native yosys script running at the command line
-#####################################################################
-# TODO: use read_slang instead of read_verilog (vlist)
-#
 import argparse
 import subprocess
 import os
@@ -11,6 +5,11 @@ import sys
 from pathlib import Path
 from jinja2 import Environment, FileSystemLoader
 from logikbench import *
+
+#####################################################################
+# Simple benchmark runner that calls EDA tools directly using
+# scripts generated from simple Jinja templates.
+#####################################################################
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="""\
@@ -26,6 +25,7 @@ python make.py -tool yosys -target ice40 -group  epfl -name mem_ctrl
 
     parser.add_argument("-group",
                         nargs='+',
+                        choices=['basic', 'memory', 'arithmetic', 'epfl', 'block'],
                         required=True,
                         help="Benchmark group")
     parser.add_argument("-name",
@@ -34,10 +34,10 @@ python make.py -tool yosys -target ice40 -group  epfl -name mem_ctrl
     parser.add_argument("-tool",
                         choices=['yosys', 'vivado'],
                         required=True,
-                        help="Benchmark tool")
+                        help="Tool name")
     parser.add_argument("-target",
                         required=True,
-                        help="Benchmark target")
+                        help="Compilation target")
 
     args = parser.parse_args()
 
@@ -61,10 +61,14 @@ python make.py -tool yosys -target ice40 -group  epfl -name mem_ctrl
         for name in bench_list:
             if args.tool == 'yosys':
                 script = f"{name}.ys" # yosys corner case
-                cmd = ['yosys', f'{script}']
+                cmd = ['yosys', '-m', 'slang', '-s', script]
             elif args.tool == 'vivado':
                 script = f"{name}.tcl"
-                cmd = ['vivado', '-mode batch', f'-source {script}']
+                cmd = ['vivado', '-mode batch', '-source', script]
+
+            # create run dir
+            os.makedirs(f"build/{group}/{name}", exist_ok=True)
+            os.chdir(f"build/{group}/{name}")
 
             # get top module (not always equal to module name)
             mod = sys.modules[f"logikbench.{group}.{name}.{name}"]
@@ -72,16 +76,15 @@ python make.py -tool yosys -target ice40 -group  epfl -name mem_ctrl
             d = cls()
             topmodule = d.get_topmodule(fileset='rtl')
 
-            # create run dir
-            os.makedirs(f"build/{group}/{name}", exist_ok=True)
-            os.chdir(f"build/{group}/{name}")
-            filename = group_path / name / "rtl" / f"{name}.v"
+            # write out fileset locally
+            cmdfile = f"{name}.f"
+            d.write_fileset(cmdfile, fileset='rtl')
 
             # create tool script
             context = {
                 'name': name,
                 'top': topmodule,
-                'filename': filename,
+                'cmdfile': cmdfile,
                 'target': args.target,
             }
             output = template.render(context)
@@ -90,7 +93,7 @@ python make.py -tool yosys -target ice40 -group  epfl -name mem_ctrl
 
             # run benchmark
             try:
-                print(f"Running {name} benchmark in group '{group}'. Logfile: build/{group}/{name}/{name}.log")
+                print(f"Running {name} benchmark ({group}). Logfile: build/{group}/{name}/{name}.log")
                 with open(f'{name}.log', "w") as log:
                           result = subprocess.run(cmd,
                                         stdout=log,

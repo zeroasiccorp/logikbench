@@ -3,7 +3,7 @@ set proj_name "{{ name }}"
 set proj_dir "./vivado_project"
 set top_module "{{ top }}"
 set part "{{ target }}"
-set filelist "{{ filename }}"
+set filelist "{{ cmdfile }}"
 
 # === PROJECT SETUP ===
 create_project $proj_name $proj_dir -part $part -force
