@@ -20,14 +20,13 @@ The benchmark includes over 100 separate benchmarks split into logical groupings
 | epfl       | 19         | EPFL benchmarks
 
 The LogikBench project addresses a number of gaps in curren benchmarks:
-
-1.) Small datasets
-2.) Hard coded parameters (data width, etc)
-3.) Lack of provenance (who wrote the benchmark and does it work)
-4.) Poor diversity (addresses only one need, eg combinatorial synthesis)
-5.) Lack of execution infrastructrure
-6.) Hurdle for adoption
-7.) Lack of standardization, ie no SpecInt for X.
+ 1. Small datasets
+ 2. Hard coded parameters (data width, etc)
+ 3. Lack of provenance (who wrote the benchmark and does it work)
+ 4. Poor diversity (addresses only one need, eg combinatorial synthesis)
+ 5. Lack of execution infrastructrure
+ 6. Hurdle for adoption
+ 7. Lack of standardization, ie no SpecInt for X.
 
 # Installation
 
