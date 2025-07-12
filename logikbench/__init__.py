@@ -81,6 +81,7 @@ from .memory.rom.rom import Rom
 
 # Blocks
 from .blocks.aes.aes import Aes
+from .blocks.apbdev.apbdev import Apbdev
 from .blocks.axicrossbar.axicrossbar import Axicrossbar
 from .blocks.ethmac.ethmac import Ethmac
 from .blocks.fft.fft import Fft
@@ -92,10 +93,9 @@ from .blocks.lfsr.lfsr import Lfsr
 from .blocks.picorv32.picorv32 import Picorv32
 from .blocks.serv.serv import Serv
 from .blocks.uart.uart import Uart
-
+from .blocks.umidev.umidev import Umidev
 
 # EPFL
-
 from .epfl.adder.adder import Adder
 from .epfl.arbiter.arbiter import Arbiter
 from .epfl.bar.bar import Bar

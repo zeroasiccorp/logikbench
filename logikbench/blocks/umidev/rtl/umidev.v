@@ -26,11 +26,12 @@
  *   address range by setting the GRPOFFSET, GRPAW, and GRPID parameter.
  *   The address range [GRPOFFSET+:GRPAW] is checked against GRPID for a
  *   match. To disable the check, set the GRPAW to 0.
+ * - Modified from original umi_regif code to add an array of registers
  *
  *****************************************************************************/
 module umidev
   #(parameter RW = 32,        // register data width (RW<=DW)
-    parameter RAW = 32,       // register address width (RAW<=AW)
+    parameter RAW = 5,        // register address width (RAW<=AW)
     parameter GRPOFFSET = 24, // group address offset
     parameter GRPAW = 0,      // group address width
     parameter GRPID = 0,      // group ID
@@ -55,32 +56,34 @@ module umidev
     output reg [AW-1:0] udev_resp_dstaddr,
     output reg [AW-1:0] udev_resp_srcaddr,
     output reg [DW-1:0] udev_resp_data,
-    input               udev_resp_ready,
-    // single-port register interface
-    output              reg_write, // write enable
-    output              reg_read,  // read request
-    output [RAW-1:0]    reg_addr,  // address
-    output [RW-1:0]     reg_wdata, // write data
-    output [1:0]        reg_prot,  // protection
-    input [RW-1:0]      reg_rdata, // read data
-    input [1:0]         reg_err,   // device error
-    input               reg_ready  // device is ready
+    input               udev_resp_ready
     );
 
 `include "umi_messages.vh"
 
    // local state
    reg udev_req_safe_ready;
-
+   reg [RW-1:0] regs [(2**RAW)-1:0];
 
    // local wires
-   wire [CW-1:0] resp_cmd;
-   wire          cmd_read;
-   wire          cmd_write;
-   wire          cmd_posted;
-   wire          cmd_atomic;
-   wire          match;
-   wire          beat;
+   wire [CW-1:0]  resp_cmd;
+   wire           cmd_read;
+   wire           cmd_write;
+   wire           cmd_posted;
+   wire           cmd_atomic;
+   wire           match;
+   wire           beat;
+   wire           reg_ready;
+   wire [1:0]     reg_err;
+   wire [RAW-1:0] reg_addr;
+   wire [RW-1:0]  reg_wdata;
+   wire [RW-1:0]  reg_rdata;
+
+   //######################################
+   // Constants
+   //######################################
+   assign reg_ready = 1'b1;
+   assign reg_err[1:0] = 2'b00;
 
    //######################################
    // UMI Request
@@ -118,14 +121,20 @@ module umidev
    assign beat = udev_req_valid & udev_req_ready;
 
    //######################################
-   // Register Interface
+   // Register Access
    //######################################
 
    assign reg_write = (cmd_write | cmd_posted) & beat;
    assign reg_read = cmd_read & beat;
    assign reg_addr[RAW-1:0] = udev_req_dstaddr[RAW-1:0];
    assign reg_wdata[RW-1:0] = udev_req_data[RW-1:0];
-   assign reg_prot[1:0] = udev_req_cmd[21:20];
+
+   always @(posedge clk) begin
+      if (reg_write)
+        regs[reg_addr] <= reg_wdata[RW-1:0];
+   end
+
+   assign reg_rdata = regs[reg_addr];
 
    //######################################
    // UMI Response
