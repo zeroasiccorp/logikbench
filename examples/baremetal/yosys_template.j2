@@ -12,5 +12,8 @@ synth -top {{ top }}
 # Technology mapping
 synth_ice40 -top {{ top }}
 
+# Get stats
+tee -o {{ name }}_stats.json stat -top {{ top }} -json
+
 # Write synthesized netlist as Verilog
 write_verilog -noattr {{ name }}.vg
