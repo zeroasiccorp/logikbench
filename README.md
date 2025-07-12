@@ -1,11 +1,11 @@
 LogikBench
 ==========================================================
 
-An parametrized RTL benchmark suite for open and unbiased evaluation of:
+An parameterized RTL benchmark suite for open and unbiased evaluation of:
 
 1. EDA tools and flows (synthesis, placement, routing, verification, ...)
 2. Foundry processes
-3. Standard cell librares
+3. Standard cell libraries
 4. FPGA devices
 5. Digital architectures
 
@@ -19,12 +19,12 @@ The benchmark includes over 100 separate benchmarks split into logical groupings
 | blocks     | 30         | Macro functions (ialu, spi ,ibex,..)
 | epfl       | 19         | EPFL benchmarks
 
-The LogikBench project addresses a number of gaps in curren benchmarks:
+The LogikBench project addresses a number of gaps in current benchmarks:
  1. Small datasets
  2. Hard coded parameters (data width, etc)
  3. Lack of provenance (who wrote the benchmark and does it work)
  4. Poor diversity (addresses only one need, eg combinatorial synthesis)
- 5. Lack of execution infrastructrure
+ 5. Lack of execution infrastructure
  6. Hurdle for adoption
  7. Lack of standardization, ie no SpecInt for X.
 
@@ -37,15 +37,18 @@ pip install --upgrade pip
 pip install -e .
 ```
 
-# Quick Start Quide
+# Quick Start Guide
 
 ## SiliconCompiler
+An SiliconCompiler based reference run script is included in LogikBench in the `examples/sc` directory. It serves as a simple starting point for creating your own custom benchmark scripts. For complete documentation of the vast number of SiliconCompiler flows and options,  see https://github.com/siliconcompiler/siliconcompiler
 
 TBD
 
 ## Basic synthesis
 
-The project includes a basic synthesis script that loops over a set of benchmarks and provides a summary of the results as a csv or json file. The script is provided as a reference only. To create custom synthesis scripts, extract extensive metric reporting, and to run benchmarks in parallel, you should use the SiliconCompiler flow.
+The project includes a basic synthesis script that loops over a set of benchmarks and provides a summary of the results as a csv or json file. The script is provided as a reference only. A summary of the synthesis results are placed in build/results.json by default.
+
+To create custom synthesis scripts, extract extensive metric reporting, and to run benchmarks in parallel, you should use the SiliconCompiler flow.
 
 **Run `basic` group**
 ```sh
