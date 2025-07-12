@@ -61,8 +61,10 @@ python make.py -tool yosys -target ice40 -group  epfl -name mem_ctrl
         for name in bench_list:
             if args.tool == 'yosys':
                 script = f"{name}.ys" # yosys corner case
-            else:
+                cmd = ['yosys', f'{script}']
+            elif args.tool == 'vivado':
                 script = f"{name}.tcl"
+                cmd = ['vivado', '-mode batch', f'-source {script}']
 
             # get top module (not always equal to module name)
             mod = sys.modules[f"logikbench.{group}.{name}.{name}"]
@@ -88,9 +90,9 @@ python make.py -tool yosys -target ice40 -group  epfl -name mem_ctrl
 
             # run benchmark
             try:
-                print(f"Running {name} benchmark in group '{group}'. Lofile: build/{group}/{name}/{name}.log")
+                print(f"Running {name} benchmark in group '{group}'. Logfile: build/{group}/{name}/{name}.log")
                 with open(f'{name}.log', "w") as log:
-                          result = subprocess.run([args.tool, script],
+                          result = subprocess.run(cmd,
                                         stdout=log,
                                         stderr=subprocess.STDOUT,
                                         check=True)
