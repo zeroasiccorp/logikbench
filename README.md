@@ -33,7 +33,7 @@ TBD
 
 ## Basic synthesis
 
-The project includes a basic synthesis script that loops over a set of benchmarks and provides a summary of the results as a csv or json file.
+The project includes a basic synthesis script that loops over a set of benchmarks and provides a summary of the results as a csv or json file. The script is provided as a reference only. To create custom synthesis scripts, extract extensive metric reporting, and to run benchmarks in parallel, you should use the SiliconCompiler flow.
 
 **Run `basic` group**
 ```sh
