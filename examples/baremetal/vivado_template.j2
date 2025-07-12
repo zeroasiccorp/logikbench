@@ -8,7 +8,7 @@ set filelist "{{ filename }}"
 # === PROJECT SETUP ===
 create_project $proj_name $proj_dir -part $part -force
 
-# Read .f file and add RTL + includes
+# === READ CMD FILE ===
 set fp [open $filelist r]
 while {[gets $fp line] >= 0} {
     set line [string trim $line]
@@ -25,12 +25,13 @@ while {[gets $fp line] >= 0} {
 }
 close $fp
 
-# Set top module
+# === SET TOP ===
 set_property top $top_module [current_fileset]
 
 # === SYNTHESIS ===
 launch_runs synth_1
 wait_on_run synth_1
+open_run synth_1
 
 # === REPORTING ===
 report_utilization -file "$proj_dir/post_synth_util.rpt"
