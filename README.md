@@ -53,9 +53,15 @@ python examples/baremetal/make.py -g arithmetic -clean
 python examples/baremetal/make.py -g memory -name ramsp -tool vivado
 ```
 
-# Benchmark Listing
+# Benchmark Summary
 
-TBD
+| Group      | Benchmarks | Description|
+|------------|------------|------------|
+| basic      | 23         | Logic benchmarks (mux, arbiter, crossbar,...)
+| arithmetic | 33         | Arithmetic (add, shift, mul,...)
+| memory     | 12         | Memory (sp, dp, sdp, fifo,...)
+| blocks     | 30         | Macro functions (ialu, spi ,ibex,..)
+| epfl       | 19         | EPFL benchmarks
 
 # License
 
