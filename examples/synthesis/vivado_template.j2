@@ -34,6 +34,6 @@ wait_on_run synth_1
 open_run synth_1
 
 # === REPORTING ===
-report_utilization -file "post_synth_util.rpt"
-report_timing_summary -file "post_synth_timing.rpt"
-report_qor -name qor_summary -file "qor_summary.xml -format XML
+# TODO: Xilinx keeps breaking these, fix for latest version
+report_utilization -file "${top_module}_util.rpt"
+report_timing_summary -file "${top_module}_timing.rpt"

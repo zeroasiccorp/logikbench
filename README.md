@@ -60,9 +60,9 @@ python examples/synthesis/make.py -g arithmetic -n add -o results.csv
 python examples/synthesis/make.py -g arithmetic -clean
 ```
 
-**Run a single benchmark in vivado**
+**Run Vivado**
 ```sh
-python examples/synthesis/make.py -g memory -name ramsp -tool vivado
+python examples/synthesis/make.py -g arithmetic -n add -tool vivado -target xc7s50csga324-1
 ```
 
 # Benchmark Listing

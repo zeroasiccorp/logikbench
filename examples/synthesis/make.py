@@ -53,6 +53,11 @@ python make.py -tool yosys -target ice40 -group  epfl -name mem_ctrl
 
     args = parser.parse_args()
 
+    # Error checking
+    if args.tool == 'vivado' and args.target is None:
+        print("Target must be specified with Vivado tool.")
+        exit()
+
     # resolving relative path
     cwd = os.getcwd()
     scriptdir = Path(__file__).resolve().parent
@@ -81,7 +86,7 @@ python make.py -tool yosys -target ice40 -group  epfl -name mem_ctrl
                 cmd = ['yosys', '-m', 'slang', '-s', script]
             elif args.tool == 'vivado':
                 script = f"{name}.tcl"
-                cmd = ['vivado', '-mode batch', '-source', script]
+                cmd = ['vivado', '-mode', 'batch', '-source', script]
 
             # clean up old results
             if os.path.isdir(f"build/{group}/{name}"):
