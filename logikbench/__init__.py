@@ -93,6 +93,29 @@ from .blocks.picorv32.picorv32 import Picorv32
 from .blocks.serv.serv import Serv
 from .blocks.uart.uart import Uart
 
+
+# EPFL
+
+from .epfl.adder.adder import Adder
+from .epfl.arbiter.arbiter import Arbiter
+from .epfl.bar.bar import Bar
+from .epfl.cavlc.cavlc import Cavlc
+from .epfl.dec.dec import Dec
+from .epfl.div.div import Div
+from .epfl.hyp.hyp import Hyp
+from .epfl.i2c.i2c import I2c
+from .epfl.int2float.int2float import Int2float
+from .epfl.log2.log2 import Log2
+from .epfl.max.max import Max
+from .epfl.mem_ctrl.mem_ctrl import Mem_ctrl
+from .epfl.multiplier.multiplier import Multiplier
+from .epfl.priority.priority import Priority
+from .epfl.router.router import Router
+from .epfl.sin.sin import Sin
+from .epfl.sqrt.sqrt import Sqrt
+from .epfl.square.square import Square
+from .epfl.voter.voter import Voter
+
 #################################################
 # Define the public API
 #################################################

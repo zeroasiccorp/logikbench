@@ -36,7 +36,6 @@ make.py -tool yosys -group epfl
                         required=True,
                         help="Benchmark target")
 
-
     args = parser.parse_args()
 
     # resolving relative path
@@ -53,7 +52,7 @@ make.py -tool yosys -group epfl
         if args.name:
             bench_list = args.name
         else:
-            bench_list = [p.name for p in group_path.iterdir() if p.is_dir()]
+            bench_list = sorted([p.name for p in group_path.iterdir() if p.is_dir()])
 
         # iterate over all benchmarks in group
         for name in bench_list:
@@ -62,18 +61,11 @@ make.py -tool yosys -group epfl
             else:
                 script = f"{name}.tcl"
 
-            # get top module
-            # TODO: find module by string?
-            # TODO: generalize
-            mod = sys.modules["logikbench.basic.binv.binv"]
-            cls = getattr(mod, "Binv")
+            # get top module (not always equal to module name)
+            mod = sys.modules[f"logikbench.{group}.{name}.{name}"]
+            cls = getattr(mod, name.capitalize())
             d = cls()
-            print(d.get_topmodule(fileset='rtl'))
-
-            mod = importlib.import_module("logikbench.basic.binv.binv")
-            cls = getattr(mod, "Binv")
-            d = cls()
-            print(d.get_topmodule(fileset='rtl'))
+            topmodule = d.get_topmodule(fileset='rtl')
 
             # create run dir
             os.makedirs(f"build/{group}/{name}", exist_ok=True)
