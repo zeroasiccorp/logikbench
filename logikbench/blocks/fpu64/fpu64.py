@@ -2,7 +2,7 @@ from os.path import dirname, abspath
 from siliconcompiler.design import DesignSchema
 
 
-class Fpu32(DesignSchema):
+class Fpu64(DesignSchema):
     def __init__(self):
 
         name = 'fpu64'
@@ -37,5 +37,5 @@ class Fpu32(DesignSchema):
         self.set_topmodule(topmodule, fileset)
 
 if __name__ == "__main__":
-   d = Fpu32()
+   d = Fpu64()
    d.write_fileset(f"{d.name()}.f", fileset="rtl")

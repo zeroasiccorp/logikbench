@@ -2,7 +2,7 @@ from os.path import dirname, abspath
 from siliconcompiler.design import DesignSchema
 
 
-class Umidev(DesignSchema):
+class Umiregs(DesignSchema):
     def __init__(self):
 
         name = 'umiregs'

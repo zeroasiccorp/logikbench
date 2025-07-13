@@ -2,7 +2,7 @@ from os.path import dirname, abspath
 from siliconcompiler.design import DesignSchema
 
 
-class Apbdev(DesignSchema):
+class Apbregs(DesignSchema):
     def __init__(self):
 
         name = 'apbregs'

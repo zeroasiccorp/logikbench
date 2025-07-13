@@ -66,6 +66,7 @@ from .arithmetic.sub.sub import Sub
 from .arithmetic.sum.sum import Sum
 
 # Memory
+from .memory.axiram.axiram import Axiram
 from .memory.cache.cache import Cache
 from .memory.fifoasync.fifoasync import Fifoasync
 from .memory.fifosync.fifosync import Fifosync
@@ -81,19 +82,21 @@ from .memory.rom.rom import Rom
 
 # Blocks
 from .blocks.aes.aes import Aes
-from .blocks.apbdev.apbdev import Apbdev
+from .blocks.apbregs.apbregs import Apbregs
 from .blocks.axicrossbar.axicrossbar import Axicrossbar
 from .blocks.ethmac.ethmac import Ethmac
 from .blocks.fft.fft import Fft
 from .blocks.firfix.firfix import Firfix
 from .blocks.firprog.firprog import Firprog
+from .blocks.fpu32.fpu32 import Fpu32
+from .blocks.fpu64.fpu64 import Fpu64
 from .blocks.ialu.ialu import Ialu
 from .blocks.i2c.i2c import I2c
 from .blocks.lfsr.lfsr import Lfsr
 from .blocks.picorv32.picorv32 import Picorv32
 from .blocks.serv.serv import Serv
 from .blocks.uart.uart import Uart
-from .blocks.umidev.umidev import Umidev
+from .blocks.umiregs.umiregs import Umiregs
 
 # EPFL
 from .epfl.adder.adder import Adder
