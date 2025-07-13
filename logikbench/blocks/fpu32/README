@@ -1,0 +1,3 @@
+-downloaded from opencoreson Jul 14, 2025
+-removed debug logic that relied on synsopsys pragmas
+-some suspect practices like casex in code
