@@ -6,6 +6,7 @@ class {{ class_name }}(DesignSchema):
     def __init__(self):
 
         name = '{{ module_name }}'
+        topmodule = '{{ module_name }}'
         root = f'{name}_root'
         source = [f'rtl/{name}.v']
 
@@ -21,7 +22,7 @@ class {{ class_name }}(DesignSchema):
             self.add_file(item, fileset, package=root)
 
         # top module
-        self.set_topmodule(name, fileset)
+        self.set_topmodule(topmdule, fileset)
 
 
 if __name__ == "__main__":
