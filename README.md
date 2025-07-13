@@ -20,13 +20,15 @@ The benchmark includes over 100 separate benchmarks split into logical groupings
 | epfl       | 19         | EPFL benchmarks
 
 The LogikBench project addresses a number of gaps in current benchmarks:
- 1. Small datasets
- 2. Hard coded parameters (data width, etc)
+ 1. Small datasets (gcd, jpeg, aes, serv,...)
+ 2. Hard coded parameters (data width, constraints, ..)
  3. Lack of provenance (who wrote the benchmark and does it work)
  4. Poor diversity (addresses only one need, eg combinatorial synthesis)
- 5. Lack of execution infrastructure
- 6. Hurdle for adoption
- 7. Lack of standardization, ie no SpecInt for X.
+ 5. Lack of execution infrastructure (single threaded)
+ 6. Hurdle for adoption (eg hard coded for openroad)
+ 7. No standard scores, ie no SpecInt for EDA.
+ 8. No standard tool metrics (names, quantities)
+ 9. No standard data set (ie no imagenet for EDA)
 
 # Installation
 
