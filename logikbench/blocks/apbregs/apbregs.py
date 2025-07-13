@@ -5,7 +5,7 @@ from siliconcompiler.design import DesignSchema
 class Apbdev(DesignSchema):
     def __init__(self):
 
-        name = 'apbdev'
+        name = 'apbregs'
         root = f'{name}_root'
         source = [f'rtl/{name}.v']
 
@@ -25,4 +25,4 @@ class Apbdev(DesignSchema):
 
 if __name__ == "__main__":
    d = Apbdev()
-   d.write_fileset(f"apbdev.f", fileset="rtl")
+   d.write_fileset(f"{d.name()}.f", fileset="rtl")
