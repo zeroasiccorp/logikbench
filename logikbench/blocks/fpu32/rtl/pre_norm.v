@@ -121,7 +121,7 @@ assign exp_diff2  = (expa_dn | expb_dn) ? exp_diff1a : exp_diff1;
 assign  exp_diff  = (expa_dn & expb_dn) ? 8'h0 : exp_diff2;
 
 always @(posedge clk)	// If numbers are equal we should return zero
-	exp_dn_out <= #1 (!add_d & expa==expb & fracta==fractb) ? 8'h0 : exp_large;
+	exp_dn_out <= (!add_d & expa==expb & fracta==fractb) ? 8'h0 : exp_large;
 
 // ---------------------------------------------------------------------
 // Adjust the smaller fraction
@@ -129,7 +129,7 @@ always @(posedge clk)	// If numbers are equal we should return zero
 
 assign op_dn	  = expa_lt_expb ? expb_dn : expa_dn;
 assign adj_op     = expa_lt_expb ? fractb : fracta;
-assign adj_op_tmp = { ~op_dn, adj_op, 3'b0 };	// recover hidden bit (op_dn) 
+assign adj_op_tmp = { ~op_dn, adj_op, 3'b0 };	// recover hidden bit (op_dn)
 
 // adj_op_out is 27 bits wide, so can only be shifted 27 bits to the right
 assign exp_lt_27	= exp_diff  > 8'd27;
@@ -143,7 +143,7 @@ assign adj_op_out	= {adj_op_out_sft[26:1], adj_op_out_sft[0] | sticky };
 always @(exp_diff_sft or adj_op_tmp)
    case(exp_diff_sft)		// synopsys full_case parallel_case
 	00: sticky = 1'h0;
-	01: sticky =  adj_op_tmp[0]; 
+	01: sticky =  adj_op_tmp[0];
 	02: sticky = |adj_op_tmp[01:0];
 	03: sticky = |adj_op_tmp[02:0];
 	04: sticky = |adj_op_tmp[03:0];
@@ -186,10 +186,10 @@ assign fracta_s = fractb_lt_fracta ? fractb_n : fracta_n;
 assign fractb_s = fractb_lt_fracta ? fracta_n : fractb_n;
 
 always @(posedge clk)
-	fracta_out <= #1 fracta_s;
+	fracta_out <= fracta_s;
 
 always @(posedge clk)
-	fractb_out <= #1 fractb_s;
+	fractb_out <= fractb_s;
 
 // ---------------------------------------------------------------------
 // Determine sign for the output
@@ -212,35 +212,35 @@ always @(signa or signb or add or fractb_lt_fracta)
    endcase
 
 always @(posedge clk)
-	sign <= #1 sign_d;
+	sign <= sign_d;
 
 // Fix sign for ZERO result
 always @(posedge clk)
-	signa_r <= #1 signa;
+	signa_r <= signa;
 
 always @(posedge clk)
-	signb_r <= #1 signb;
+	signb_r <= signb;
 
 always @(posedge clk)
-	add_r <= #1 add;
+	add_r <= add;
 
 always @(posedge clk)
-	result_zero_sign <= #1	( add_r &  signa_r &  signb_r) |
+	result_zero_sign <= 	( add_r &  signa_r &  signb_r) |
 				(!add_r &  signa_r & !signb_r) |
 				( add_r & (signa_r |  signb_r) & (rmode==3)) |
 				(!add_r & (signa_r == signb_r) & (rmode==3));
 
 // Fix sign for NAN result
 always @(posedge clk)
-	fracta_lt_fractb <= #1 fracta < fractb;
+	fracta_lt_fractb <= fracta < fractb;
 
 always @(posedge clk)
-	fracta_eq_fractb <= #1 fracta == fractb;
+	fracta_eq_fractb <= fracta == fractb;
 
 assign nan_sign1 = fracta_eq_fractb ? (signa_r & signb_r) : fracta_lt_fractb ? signb_r : signa_r;
 
 always @(posedge clk)
-	nan_sign <= #1 (opa_nan & opb_nan) ? nan_sign1 : opb_nan ? signb_r : signa_r;
+	nan_sign <= (opa_nan & opb_nan) ? nan_sign1 : opb_nan ? signb_r : signa_r;
 
 ////////////////////////////////////////////////////////////////////////
 //
@@ -250,13 +250,13 @@ always @(posedge clk)
 // add: 1=Add; 0=Subtract
 always @(signa or signb or add)
    case({signa, signb, add})		// synopsys full_case parallel_case
-   
+
    	// Add
 	3'b0_0_1: add_d = 1;
 	3'b0_1_1: add_d = 0;
 	3'b1_0_1: add_d = 0;
 	3'b1_1_1: add_d = 1;
-	
+
 	// Sub
 	3'b0_0_0: add_d = 0;
 	3'b0_1_0: add_d = 1;
@@ -265,6 +265,6 @@ always @(signa or signb or add)
    endcase
 
 always @(posedge clk)
-	fasu_op <= #1 add_d;
+	fasu_op <= add_d;
 
 endmodule

@@ -66,10 +66,10 @@ output	[47:0]	prod;
 reg	[47:0]	prod1, prod;
 
 always @(posedge clk)
-	prod1 <= #1 opa * opb;
+	prod1 <= opa * opb;
 
 always @(posedge clk)
-	prod <= #1 prod1;
+	prod <= prod1;
 
 endmodule
 
@@ -87,17 +87,15 @@ output	[49:0]	quo, rem;
 reg	[49:0]	quo, rem, quo1, remainder;
 
 always @(posedge clk)
-	quo1 <= #1 opa / opb;
+	quo1 <= opa / opb;
 
 always @(posedge clk)
-	quo <= #1 quo1;
+	quo <= quo1;
 
 always @(posedge clk)
-	remainder <= #1 opa % opb;
+	remainder <= opa % opb;
 
 always @(posedge clk)
-	rem <= #1 remainder;
+	rem <= remainder;
 
 endmodule
-
-
