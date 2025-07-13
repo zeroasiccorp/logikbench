@@ -134,6 +134,7 @@ python make.py -tool yosys -target ice40 -group  epfl -name mem_ctrl
 
                 except subprocess.CalledProcessError as e:
                     print(f"Error...see logfile!!")
+                    exit()
 
             # collect results
             if args.tool == 'yosys':
