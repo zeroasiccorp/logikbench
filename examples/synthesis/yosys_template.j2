@@ -6,10 +6,7 @@ read_slang -f {{ cmdfile }} --top {{ top }}
 # Check design hierarchy and set top module
 hierarchy -check -top {{ top }}  # Replace 'top' with your top module name
 
-# Generic synthesis
-synth -top {{ top }}
-
-# Technology mapping
+# FPGA synthesis + technology mapping
 synth_ice40 -top {{ top }}
 
 # Get stats
