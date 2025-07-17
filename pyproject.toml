@@ -8,7 +8,7 @@ authors = [{name = "Zero ASIC"}]
 description = "Tech agnostic RTL benchmark suite"
 readme = "README.md"
 urls = {Homepage = "https://github.com/zeroasiccorp/logikbench"}
-requires-python = ">= 3.12"
+requires-python = ">= 3.10"
 license = {file = "LICENSE"}
 dependencies = ["siliconcompiler >= 0.32.3"]
 dynamic = ['version']
@@ -24,7 +24,7 @@ testpaths = "tests"
 timeout = "60"
 
 [project.optional-dependencies]
-dev = [
+test = [
     "flake8 >= 5.0.0",
     "pytest >= 6.2.4",
     "pytest-timeout >= 2.1.0"

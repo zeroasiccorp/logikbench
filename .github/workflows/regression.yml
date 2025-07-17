@@ -15,8 +15,16 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Install
+        run: |
+          python3 -m venv .venv
+          . .venv/bin/activate
+          pip install --upgrade pip
+          pip install .[test]
+
       - name: Run pytest
         run: |
-          python3 -m pip install --upgrade pip
-          python3 -m pip install .[test]
+          python3 -m venv .venv
+          . .venv/bin/activate
+
           pytest
