@@ -24,7 +24,7 @@ testpaths = "tests"
 timeout = "60"
 
 [project.optional-dependencies]
-dev = [
+test = [
     "flake8 >= 5.0.0",
     "pytest >= 6.2.4",
     "pytest-timeout >= 2.1.0"
