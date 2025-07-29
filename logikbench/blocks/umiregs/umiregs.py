@@ -13,19 +13,20 @@ class Umiregs(DesignSchema):
         super().__init__(name)
 
         # set data home directory
-        self.register_package(root, dirname(abspath(__file__)))
+        self.set_dataroot(root, dirname(abspath(__file__)))
 
         # rtl files
         fileset = 'rtl'
         for item in source:
-            self.add_file(item, fileset, package=root)
+            self.add_file(item, fileset, dataroot=root)
 
         # idir
-        self.add_idir('rtl', fileset, package=root)
+        self.add_idir('rtl', fileset, dataroot=root)
 
         # top module
-        self.set_topmodule(name, fileset)
+        self.set_topmodule('umidev', fileset)
+
 
 if __name__ == "__main__":
-   d = Umidev()
-   d.write_fileset(f"{d.name()}.f", fileset="rtl")
+    d = Umiregs()
+    d.write_fileset(f"{d.name()}.f", fileset="rtl")
