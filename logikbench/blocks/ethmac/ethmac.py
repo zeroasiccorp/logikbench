@@ -13,7 +13,7 @@ class Ethmac(DesignSchema):
         super().__init__(name)
 
         # set data home directory
-        self.register_package(root, dirname(abspath(__file__)))
+        self.set_dataroot(root, dirname(abspath(__file__)))
 
         # rtl files
         fileset = 'rtl'
@@ -22,7 +22,7 @@ class Ethmac(DesignSchema):
                      'rtl/axis_gmii_rx.v',
                      'rtl/axis_gmii_tx.v',
                      'rtl/eth_lfsr.v'):
-            self.add_file(item, fileset, package=root)
+            self.add_file(item, fileset, dataroot=root)
 
         # top module
         self.set_topmodule(name, fileset)
