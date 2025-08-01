@@ -5,6 +5,9 @@ from siliconcompiler.design import DesignSchema
 class Sqrt(DesignSchema):
     def __init__(self):
 
+        # RTL for this module is not yet Implmented
+        raise NotImplementedError
+
         name = 'sqrt'
         root = f'{name}_root'
         source = [f'rtl/{name}.v']

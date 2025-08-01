@@ -51,7 +51,7 @@ def load_benchmark(group, name):
         bobj = getattr(mod, name.capitalize())
         bench = bobj()
         return bench
-    except KeyError:
+    except (KeyError, NotImplementedError):
         return None
 
 
@@ -124,11 +124,10 @@ def make_dirs():
 def thierry_run():
     make_dirs()
 
-    pool = ThreadPool(processes=15)
-
-    for group in ["arithmetic"]:
-        benchmarks = load_benchmark_group(group)
-        for synth_directive in ["AreaOptimized_high", "PerformanceOptimized"]:
+    for group in ["arithmetic", "basic", "blocks", "epfl", "memory"]:
+        for synth_directive in ["PerformanceOptimized", "AreaOptimized_high"]:
+            pool = ThreadPool(processes=40)
+            benchmarks = load_benchmark_group(group)
             results = [result.synth_results for result in pool.starmap(
                 synth_vivado,
                 [(bench, synth_directive) for bench in benchmarks]
@@ -142,8 +141,8 @@ def rice_run():
     pool = ThreadPool(processes=15)
 
     for group in ["basic"]:
-        benchmarks = load_benchmark_group(group)
         for synth_directive in ["AreaOptimized_high", "PerformanceOptimized"]:
+            benchmarks = load_benchmark_group(group)
             results = [result.synth_results for result in pool.starmap(
                 synth_vivado,
                 [(bench, synth_directive) for bench in benchmarks]
@@ -154,11 +153,11 @@ def rice_run():
 def aes():
     make_dirs()
 
-    pool = ThreadPool(processes=15)
+    pool = ThreadPool(processes=20)
 
     for group in ["blocks"]:
-        benchmarks = load_benchmark_group(group)
         for synth_directive in ["AreaOptimized_high"]:
+            benchmarks = load_benchmark_group(group)
             results = [result.synth_results for result in pool.starmap(
                 synth_vivado,
                 [(bench, synth_directive) for bench in benchmarks if bench.name == "aes"]
@@ -200,6 +199,7 @@ def synth_vivado(benchmark: BenchmarkMetaData, synth_directive: str):
 
     chip.set('option', 'jobname', benchmark.group + "_" + benchmark.name + "_" + synth_directive)
     chip.set('tool', 'vivado', 'task', 'syn_fpga', 'var', 'synth_directive', synth_directive)
+    chip.set('option', 'loglevel', 'warning')
     chip.dashboard(type="cli")
     if chip.run():
         luts = chip.get("metric", "luts", step='syn_fpga', index=0)
@@ -232,34 +232,37 @@ def synth_vivado(benchmark: BenchmarkMetaData, synth_directive: str):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="""\
+    thierry_run()
 
-LogikBench bare metal usage example
--Runs using single file jinja script template
--No dependency on external run time infrastructures
 
-Example Usage:
-python make.py -target xc7a100tcsg423-1 -group basic -name arbiter
-
-""", formatter_class=argparse.RawDescriptionHelpFormatter)
-
-    parser.add_argument("-group", "-g",
-                        nargs='+',
-                        choices=['basic',
-                                 'memory',
-                                 'arithmetic',
-                                 'epfl',
-                                 'blocks'],
-                        required=True,
-                        help="Benchmark group")
-    parser.add_argument("-name", "-n",
-                        nargs='+',
-                        help="Benchmark name")
-    parser.add_argument("-target",
-                        help="Compilation target")
-    parser.add_argument('-output', '-o',
-                        default="build/results.csv",
-                        help='Output file name')
-
-    args = parser.parse_args()
-    run(None, None)
+#    parser = argparse.ArgumentParser(description="""\
+#
+#LogikBench bare metal usage example
+#-Runs using single file jinja script template
+#-No dependency on external run time infrastructures
+#
+#Example Usage:
+#python make.py -target xc7a100tcsg423-1 -group basic -name arbiter
+#
+#""", formatter_class=argparse.RawDescriptionHelpFormatter)
+#
+#    parser.add_argument("-group", "-g",
+#                        nargs='+',
+#                        choices=['basic',
+#                                 'memory',
+#                                 'arithmetic',
+#                                 'epfl',
+#                                 'blocks'],
+#                        required=True,
+#                        help="Benchmark group")
+#    parser.add_argument("-name", "-n",
+#                        nargs='+',
+#                        help="Benchmark name")
+#    parser.add_argument("-target",
+#                        help="Compilation target")
+#    parser.add_argument('-output', '-o',
+#                        default="build/results.csv",
+#                        help='Output file name')
+#
+#    args = parser.parse_args()
+#    run(None, None)
