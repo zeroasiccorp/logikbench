@@ -4,7 +4,7 @@ from siliconcompiler.design import DesignSchema
 
 class Hyp(DesignSchema):
     def __init__(self):
-
+        raise NotImplementedError
         name = 'hyp'
         root = f'{name}_root'
         source = [f'rtl/{name}.v']

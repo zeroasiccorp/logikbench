@@ -1,16 +1,19 @@
-import argparse
 import os
 import sys
-import json
 import csv
-from multiprocessing import Queue
-from multiprocessing.pool import ThreadPool
+import argparse
 from pathlib import Path
-from siliconcompiler.flows import fpgaflow
-from siliconcompiler import Chip
-from logikbench import *
-from typing import List, Any
+from multiprocessing.pool import ThreadPool
 from dataclasses import dataclass
+from typing import List, Any
+
+from siliconcompiler import Chip
+from siliconcompiler.flows import fpgaflow
+
+from logikbench import *
+
+from parse_verilog_ports import extract_modules_from_file
+from gen_verilog_wrapper import gen_verilog_wrapper
 
 
 @dataclass
@@ -32,17 +35,6 @@ def write_dict_as_csv(filename, data):
             writer.writerow(list(result.values()))
 
 
-def filter_for_benchmarks_peter_cares_about(
-        benchmarks: List[BenchmarkMetaData]) -> List[BenchmarkMetaData]:
-    benchmark_names = []
-    with open("z1060_synth_only_logikbench_metrics_baseline_6lut.csv") as file:
-        reader = csv.DictReader(file)
-        for row in reader:
-            benchmark_names.append(row["benchmark"])
-
-    return [b for b in benchmarks if b.name in benchmark_names]
-
-
 def load_benchmark(group, name):
     bench = None
     try:
@@ -56,7 +48,6 @@ def load_benchmark(group, name):
 
 
 def load_benchmark_group(group: str) -> List[BenchmarkMetaData]:
-
     rootdir = Path(__file__).resolve().parent.parent.parent
 
     benchmarks = []
@@ -83,31 +74,6 @@ def load_all_benchmarks() -> List[BenchmarkMetaData]:
     return benchmarks
 
 
-def peter_run():
-    try:
-        os.mkdir("build")
-    except OSError:
-        pass
-
-    try:
-        os.mkdir("build/cmdfile_dir")
-    except OSError:
-        pass
-
-    pool = ThreadPool(processes=15)
-
-    benchmarks = load_all_benchmarks()
-
-    benchmarks = filter_for_benchmarks_peter_cares_about(benchmarks)
-
-    for synth_directive in ["AreaOptimized_high", "PerformanceOptimized"]:
-        results = [result.synth_results for result in pool.starmap(
-            synth_vivado,
-            [(bench, synth_directive) for bench in benchmarks]
-        )]
-        write_dict_as_csv(f"{synth_directive}_results.csv", results)
-
-
 def make_dirs():
     dirs = [
         "build",
@@ -121,51 +87,10 @@ def make_dirs():
             pass
 
 
-def thierry_run():
-    make_dirs()
-
-    for group in ["arithmetic", "basic", "blocks", "epfl", "memory"]:
-        for synth_directive in ["PerformanceOptimized", "AreaOptimized_high"]:
-            pool = ThreadPool(processes=40)
-            benchmarks = load_benchmark_group(group)
-            results = [result.synth_results for result in pool.starmap(
-                synth_vivado,
-                [(bench, synth_directive) for bench in benchmarks]
-            )]
-            write_dict_as_csv(f"{group}_{synth_directive}_results.csv", results)
-
-
-def rice_run():
-    make_dirs()
-
-    pool = ThreadPool(processes=15)
-
-    for group in ["basic"]:
-        for synth_directive in ["AreaOptimized_high", "PerformanceOptimized"]:
-            benchmarks = load_benchmark_group(group)
-            results = [result.synth_results for result in pool.starmap(
-                synth_vivado,
-                [(bench, synth_directive) for bench in benchmarks]
-            )]
-            write_dict_as_csv(f"{group}_{synth_directive}_results.csv", results)
-
-
-def aes():
-    make_dirs()
-
-    pool = ThreadPool(processes=20)
-
-    for group in ["blocks"]:
-        for synth_directive in ["AreaOptimized_high"]:
-            benchmarks = load_benchmark_group(group)
-            results = [result.synth_results for result in pool.starmap(
-                synth_vivado,
-                [(bench, synth_directive) for bench in benchmarks if bench.name == "aes"]
-            )]
-            write_dict_as_csv(f"{group}_{synth_directive}_results.csv", results)
-
-
-def synth_vivado(benchmark: BenchmarkMetaData, synth_directive: str):
+def synth_vivado(
+        benchmark: BenchmarkMetaData,
+        synth_directive: str,
+        partname: str = "xc7a100tcsg324-1"):
     # get top module
     topmodule = benchmark.bench_obj.get_topmodule(fileset='rtl')
 
@@ -174,32 +99,45 @@ def synth_vivado(benchmark: BenchmarkMetaData, synth_directive: str):
     benchmark.bench_obj.write_fileset(cmdfile, fileset='rtl')
 
     top_wrapper_module_name = f"{benchmark.group}_{benchmark.name}_{synth_directive}_top"
-    top_wrapper_path = f"build/verilog_wrapper_dir/{top_wrapper_module_name}.v"
-    wrapper = f"""
-        module {top_wrapper_module_name}();
-            (* DONT_TOUCH = "TRUE" *)
-            {topmodule} {topmodule}_inst();
-        endmodule
-
-    """
-
-    with open(top_wrapper_path, "w") as f:
-        f.write(wrapper)
 
     chip = Chip(top_wrapper_module_name)
 
     chip.import_flist(cmdfile)
-    chip.input("synth_const.xdc")
-    chip.input(top_wrapper_path)
 
-    chip.use(fpgaflow, fpgaflow_type="vivado", partname="xc7a100tcsg324-1")
-    chip.set("fpga", "partname", "xc7a100tcsg324-1")
+    ##############################################
+    # Create top level wrapper
+    ##############################################
+
+    # Find source file with top level module
+    top_level_verilog_file = None
+    print(f"{chip.find_files('input', 'rtl', 'verilog')}")
+    for verilog_file in chip.find_files('input', 'rtl', 'verilog'):
+        print(f"looking in verilog file {verilog_file}")
+        if topmodule in extract_modules_from_file(filepath=verilog_file):
+            top_level_verilog_file = verilog_file
+            break
+    assert top_level_verilog_file is not None, f"Error, Could not find top level module '{topmodule}'"
+
+    top_wrapper_path = f"build/verilog_wrapper_dir/{top_wrapper_module_name}.v"
+    gen_verilog_wrapper(
+        top_level_module=topmodule,
+        wrapper_module_name=top_wrapper_module_name,
+        input_file=Path(top_level_verilog_file),
+        output_file=Path(top_wrapper_path)
+    )
+
+    chip.import_flist(cmdfile)
+    chip.input(top_wrapper_path)
+    chip.input("synth_const.xdc")
+
+    chip.use(fpgaflow, fpgaflow_type="vivado", partname=partname)
+    chip.set("fpga", "partname", partname)
     chip.set('option', 'flow', 'fpgaflow')
     chip.set('option', 'to', 'syn_fpga')
 
     chip.set('option', 'jobname', benchmark.group + "_" + benchmark.name + "_" + synth_directive)
     chip.set('tool', 'vivado', 'task', 'syn_fpga', 'var', 'synth_directive', synth_directive)
-    chip.set('option', 'loglevel', 'warning')
+
     chip.dashboard(type="cli")
     if chip.run():
         luts = chip.get("metric", "luts", step='syn_fpga', index=0)
@@ -231,38 +169,53 @@ def synth_vivado(benchmark: BenchmarkMetaData, synth_directive: str):
     return benchmark
 
 
+def run_benchmarks(groups: List[str], names: List[str] = None, parallel: bool = True):
+    make_dirs()
+
+    for group in groups:
+        for synth_directive in ["PerformanceOptimized", "AreaOptimized_high"]:
+            benchmarks = load_benchmark_group(group)
+
+            # Filter by names of benchmarks if provided
+            if names:
+                benchmarks = [bench for bench in benchmarks if bench.name in names]
+
+            results = []
+
+            if parallel:
+                pool = ThreadPool(processes=10)
+                results = [result.synth_results for result in pool.starmap(
+                    synth_vivado,
+                    [(bench, synth_directive) for bench in benchmarks]
+                )]
+            else:
+                for bench in benchmarks:
+                    results.append(synth_vivado(bench, synth_directive))
+
+            write_dict_as_csv(f"{group}_{synth_directive}_results.csv", results)
+
+
 if __name__ == "__main__":
-    thierry_run()
+    parser = argparse.ArgumentParser(description="""\
 
+LogikBench silicon compiler usage example
 
-#    parser = argparse.ArgumentParser(description="""\
-#
-#LogikBench bare metal usage example
-#-Runs using single file jinja script template
-#-No dependency on external run time infrastructures
-#
-#Example Usage:
-#python make.py -target xc7a100tcsg423-1 -group basic -name arbiter
-#
-#""", formatter_class=argparse.RawDescriptionHelpFormatter)
-#
-#    parser.add_argument("-group", "-g",
-#                        nargs='+',
-#                        choices=['basic',
-#                                 'memory',
-#                                 'arithmetic',
-#                                 'epfl',
-#                                 'blocks'],
-#                        required=True,
-#                        help="Benchmark group")
-#    parser.add_argument("-name", "-n",
-#                        nargs='+',
-#                        help="Benchmark name")
-#    parser.add_argument("-target",
-#                        help="Compilation target")
-#    parser.add_argument('-output', '-o',
-#                        default="build/results.csv",
-#                        help='Output file name')
-#
-#    args = parser.parse_args()
-#    run(None, None)
+Example Usage:
+python make.py -group basic arithmetic
+
+""", formatter_class=argparse.RawDescriptionHelpFormatter)
+
+    parser.add_argument("-group", "-g",
+                        nargs='+',
+                        choices=['basic',
+                                 'memory',
+                                 'arithmetic',
+                                 'epfl',
+                                 'blocks'],
+                        required=True,
+                        help="Benchmark group")
+    parser.add_argument("-name", "-n",
+                        nargs='+',
+                        help="Benchmark name")
+    args = parser.parse_args()
+    run_benchmarks(args.group, args.name)
