@@ -164,7 +164,12 @@ def make_dirs():
             pass
 
 
-def run_benchmarks(groups: List[str], names: List[str] = None, parallel: bool = True):
+def run_benchmarks(
+        groups: List[str],
+        names: List[str] = None,
+        target: str = "xc7a100tcsg324-1",
+        threads: int = 1):
+
     # TODO: make_dirs feels a bit hacky
     # talk to Andreas / Gadfort about if there is a cleaner way to structure this
     make_dirs()
@@ -177,23 +182,30 @@ def run_benchmarks(groups: List[str], names: List[str] = None, parallel: bool = 
             if names:
                 benchmarks = [bench for bench in benchmarks if bench.name in names]
 
+            assert len(benchmarks) > 0, "Error, No benchmarks found!"
+
             results = []
 
-            if parallel:
+            if threads > 1:
                 pool = ThreadPool(processes=10)
-                results = [result.synth_results for result in pool.starmap(
+                results = [result for result in pool.starmap(
                     synth_vivado,
-                    [(bench, synth_directive) for bench in benchmarks]
+                    [(bench, synth_directive, target) for bench in benchmarks]
                 )]
             else:
                 for bench in benchmarks:
-                    results.append(synth_vivado(bench, synth_directive))
+                    results.append(synth_vivado(
+                        benchmark=bench,
+                        synth_directive=synth_directive,
+                        partname=target))
 
             # Filter out None results
-            results = [res for res in results if res is not None]
+            results = [res.synth_results for res in results if res is not None]
+
+            assert len(results) > 0, "Error: no results generated from run"
 
             # Write results to CSV
-            write_dict_as_csv(f"{group}_{synth_directive}_results.csv", results)
+            write_dict_as_csv(f"build/{group}_{synth_directive}_results.csv", results)
 
 
 if __name__ == "__main__":
@@ -217,5 +229,12 @@ python make.py -group basic arithmetic
     parser.add_argument("-name", "-n",
                         nargs='+',
                         help="Benchmark name")
+    parser.add_argument("-target", "-t",
+                        default="xc7a100tcsg324-1",
+                        help="Compilation target")
+    parser.add_argument("-threads", "-j",
+                        type=int,
+                        default=1,
+                        help="Number of threads to use")
     args = parser.parse_args()
-    run_benchmarks(args.group, args.name)
+    run_benchmarks(args.group, args.name, args.target, args.threads)
