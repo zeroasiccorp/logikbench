@@ -165,7 +165,8 @@ def make_dirs():
 
 
 def run_benchmarks(groups: List[str], names: List[str] = None, parallel: bool = True):
-    # TODO: make_dirs should not be needed, think of a better way to handle this
+    # TODO: make_dirs feels a bit hacky
+    # talk to Andreas / Gadfort about if there is a cleaner way to structure this
     make_dirs()
 
     for group in groups:
