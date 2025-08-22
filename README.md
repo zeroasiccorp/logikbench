@@ -42,9 +42,33 @@ pip install -e .
 # Quick Start Guide
 
 ## SiliconCompiler
-An SiliconCompiler based reference run script is included in LogikBench in the `examples/sc` directory. It serves as a simple starting point for creating your own custom benchmark scripts. For complete documentation of the vast number of SiliconCompiler flows and options,  see https://github.com/siliconcompiler/siliconcompiler
+A SiliconCompiler based reference run script is included in LogikBench in the `examples/sc` directory. It serves as a simple starting point for creating your own custom benchmark scripts. A summary of the synthesis results are placed in build/\<group\>_\<synth_directive\>_results.csv 
+for complete documentation of the vast number of SiliconCompiler flows and options,  see https://github.com/siliconcompiler/siliconcompiler
 
-TBD
+**Run `basic` group**
+```sh
+python examples/sc/make.py -g basic
+```
+
+**Run multiple groups**
+```sh
+python examples/sc/make.py -g basic arithmetic
+```
+
+**Specify a single benchmark**
+```sh
+python examples/sc/make.py -g arithmetic -n add
+```
+
+**Specify number of threads to use**
+```sh
+python examples/sc/make.py -g basic -j 10
+```
+
+**Specify Vivado target**
+```sh
+python examples/sc/make.py -g arithmetic -n add -target xc7s50csga324-1
+```
 
 ## Basic synthesis
 
