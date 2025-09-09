@@ -10,7 +10,9 @@ readme = "README.md"
 urls = {Homepage = "https://github.com/zeroasiccorp/logikbench"}
 requires-python = ">= 3.10"
 license = {file = "LICENSE"}
-dependencies = ["siliconcompiler >= 0.32.3"]
+dependencies = [
+             "siliconcompiler @ git+https://github.com/siliconcompiler/siliconcompiler.git@main"
+      ]
 dynamic = ['version']
 
 [project.scripts]
