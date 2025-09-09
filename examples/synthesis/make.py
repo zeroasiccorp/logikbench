@@ -7,7 +7,12 @@ import json
 import csv
 from pathlib import Path
 from jinja2 import Environment, FileSystemLoader
-from logikbench import *
+
+from logikbench import basic
+from logikbench import arithmetic
+from logikbench import memory
+from logikbench import blocks
+from logikbench import epfl
 
 #####################################################################
 # Simple benchmark runner that calls EDA tools directly using
@@ -67,20 +72,24 @@ python make.py -tool yosys -target ice40 -group  epfl -name mem_ctrl
     env = Environment(loader=FileSystemLoader(scriptdir))
     template = env.get_template(f'{args.tool}_template.j2')
 
+    # get list of benchmarks
+    benchmarks = {}
+    benchmarks['basic'] = basic.__all__
+    benchmarks['arithmetic'] = arithmetic.__all__
+    benchmarks['memory'] = memory.__all__
+    benchmarks['blocks'] = blocks.__all__
+    benchmarks['epfl'] = epfl.__all__
+
     # global analysis
     results = {}
     results["cells"] = {}
 
     # iterate over all groups
     for group in args.group:
-        group_path = rootdir / "logikbench" / group
-        if args.name:
-            bench_list = args.name
-        else:
-            bench_list = sorted([p.name for p in group_path.iterdir() if p.is_dir()])
-
+        bench_list = benchmarks[group]
         # iterate over all benchmarks in group
-        for name in bench_list:
+        for item in bench_list:
+            name = item.lower()
             if args.tool == 'yosys':
                 script = f"{name}.ys" # yosys corner case
                 cmd = ['yosys', '-m', 'slang', '-s', script]
