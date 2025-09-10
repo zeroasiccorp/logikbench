@@ -2,10 +2,16 @@
 requires = ["setuptools >= 61.2"]
 build-backend = "setuptools.build_meta"
 
+[tool.setuptools]
+include-package-data = true
+packages = [
+    "logikbench"
+]
+
 [project]
 name = "logikbench"
 authors = [{name = "Zero ASIC"}]
-description = "Tech agnostic RTL benchmark suite"
+description = "Parameterized RTL benchmark suite"
 readme = "README.md"
 urls = {Homepage = "https://github.com/zeroasiccorp/logikbench"}
 requires-python = ">= 3.10"
@@ -16,7 +22,7 @@ dependencies = [
 dynamic = ['version']
 
 [project.scripts]
-lb = "siliconcompiler.apps.lb:main"
+lb = "logikbench.apps.lb:main"
 
 [tool.setuptools.dynamic]
 version = {attr = "logikbench.__version__"}
