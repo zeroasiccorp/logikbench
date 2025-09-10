@@ -16,7 +16,7 @@ dependencies = [
 dynamic = ['version']
 
 [project.scripts]
-lb = "logikbench.lb:main"
+lb = "siliconcompiler.apps.lb:main"
 
 [tool.setuptools.dynamic]
 version = {attr = "logikbench.__version__"}
