@@ -45,12 +45,7 @@ if __name__ == "__main__":
     all_metrics = ['cells']
 
     parser = argparse.ArgumentParser(description="""\
-
-LogikBench runner script.
-
-Example Usage:
-python lb -g basic -n crossbar -t yosys
-
+Simple LogikBench runner.
 """, formatter_class=argparse.RawDescriptionHelpFormatter)
 
     parser.add_argument("-g", "--group",
@@ -70,7 +65,7 @@ python lb -g basic -n crossbar -t yosys
                         metavar="CMD",
                         help=f"Metrics to track (choices: {all_metrics}")
 
-    parser.add_argument("-t", "--target",
+    parser.add_argument("-c", "--cmd",
                         choices=all_cmds,
                         default="synth_fpga",
                         metavar="CMD",
@@ -133,7 +128,7 @@ python lb -g basic -n crossbar -t yosys
             name = item.lower()
             if args.tool == 'yosys':
                 script = f"{name}.ys"
-                cmd = ['yosys', '-m', 'slang', '-s', script]
+                cmd = ['yosys', '-m', 'slang', '-m', 'yosys-syn', '-s', script]
             elif args.tool == 'vivado':
                 script = f"{name}.tcl"
                 cmd = ['vivado', '-mode', 'batch', '-source', script]
@@ -156,15 +151,15 @@ python lb -g basic -n crossbar -t yosys
             topmodule = b.get_topmodule(fileset='rtl')
 
             # write out design fileset
-            cmdfile = f"{name}.f"
-            b.write_fileset(cmdfile, fileset='rtl')
+            filesetfile = f"{name}.f"
+            b.write_fileset(filesetfile, fileset='rtl')
 
             # create tool script
             context = {
                 'name': name,
                 'top': topmodule,
-                'cmdfile': cmdfile,
-                'target': args.target,
+                'filesetfile': filesetfile,
+                'cmd': args.cmd,
             }
             output = template.render(context)
             with open(script, 'w') as f:
