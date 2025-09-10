@@ -5,7 +5,7 @@ module round #(parameter DW = 16,
     //Inputs
     input signed [DW-1:0] a,
     //Outputs
-    output [DW-1:0]       z
+    output [DW-1:0]       out
     );
 
    wire [DW-FW-1:0] intval = a[DW-1:FW];

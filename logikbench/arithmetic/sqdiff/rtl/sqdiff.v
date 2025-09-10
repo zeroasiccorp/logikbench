@@ -5,12 +5,12 @@ module sqdiff #(parameter DW = 16
     input signed [DW-1:0] a,
     input signed [DW-1:0] b,
     //Outputs
-    output [2*DW-1:0]     z
+    output [2*DW-1:0]     out
     );
 
    wire signed [DW:0] diff;
 
    assign diff = a - b;
-   assign z = diff * diff;
+   assign out = diff * diff;
 
 endmodule

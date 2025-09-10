@@ -4,7 +4,7 @@ module sum #(parameter N = 8,
    (
     input [N*DW-1:0]             a,  // concatenated input vector a
     input [N*DW-1:0]             b,  // concatenated input vector b
-    output [DW + $clog2(N) -1:0] out // Sum of products
+    output [DW + $clog2(N) -1:0] out // sum of products
     );
 
    // Internal variables

@@ -7,14 +7,14 @@ module mac #(parameter DW = 16,
     input               en,
     input [DW-1:0]      a,
     input [DW-1:0]      b,
-    output reg [OW-1:0] acc
+    output reg [OW-1:0] c
     );
 
    always @(posedge clk) begin
       if (clear)
-        acc <= 0;
+        c <= 0;
       else if (en)
-        acc <= acc + a * b;
+        c <= c + a * b;
    end
 
 endmodule

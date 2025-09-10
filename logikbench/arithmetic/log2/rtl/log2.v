@@ -1,7 +1,7 @@
 module log2 #(parameter DW = 16
 	      )
    (
-    input [DW-1:0]            in,
+    input [DW-1:0]            a,
     output reg [$clog2(DW):0] out
     );
 
@@ -9,7 +9,7 @@ module log2 #(parameter DW = 16
    always @(*) begin
       out = 0;
       for (i = DW - 1; i >= 0; i = i - 1) begin
-         if (in[i])
+         if (a[i])
            out = i;
       end
    end

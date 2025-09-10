@@ -7,9 +7,9 @@ module add #(parameter DW = 16
     input           cin,
     //Outputs
     output          cout,
-    output [DW-1:0] z
+    output [DW-1:0] sum
     );
 
-   assign {cout, z} = a + b + cin;
+   assign {cout, sum} = a + b + cin;
 
 endmodule

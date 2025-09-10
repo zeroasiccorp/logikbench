@@ -5,9 +5,9 @@ module max #(parameter DW = 16
     input [DW-1:0]  a,
     input [DW-1:0]  b,
     //Outputs
-    output [DW-1:0] z
+    output [DW-1:0] out
     );
 
-   assign z = (a > b) ? a : b;
+   assign out = (a > b) ? a : b;
 
 endmodule

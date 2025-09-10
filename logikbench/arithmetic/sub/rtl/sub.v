@@ -5,9 +5,9 @@ module sub #(parameter DW = 16
     input [DW-1:0]  a,
     input [DW-1:0]  b,
     //Outputs
-    output [DW-1:0] z
+    output [DW-1:0] out
     );
 
-   assign {cout, z[DW-1:0]} = a[DW-1:0] - b[DW-1:0];
+   assign {cout, out[DW-1:0]} = a[DW-1:0] - b[DW-1:0];
 
 endmodule

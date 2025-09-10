@@ -5,12 +5,12 @@ module absdiffs #(parameter DW = 16
     input signed [DW-1:0] a,
     input signed [DW-1:0] b,
     //Outputs
-    output [DW-1:0]       z
+    output [DW-1:0]       out
     );
 
    wire [DW-1:0] diff;
 
    assign diff = a - b;
-   assign z    = (diff < 0) ? -diff : diff;
+   assign out = (diff < 0) ? -diff : diff;
 
 endmodule
