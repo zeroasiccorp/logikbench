@@ -1,15 +1,15 @@
 LogikBench
 ==========================================================
 
-An parameterized RTL benchmark suite for open and unbiased evaluation of:
+LogikBench is a parameterized RTL benchmark suite for open and unbiased evaluation of:
 
-1. EDA tools and flows (synthesis, placement, routing, verification, ...)
+1. EDA tools and flows (synthesis, PNR, verification)
 2. Foundry processes
-3. Standard cell libraries
-4. FPGA devices
+3. Cell libraries
+4. FPGA device architectures
 5. Digital architectures
 
-The benchmark includes over 100 separate benchmarks split into logical groupings as shown in the following table.
+The benchmark includes over 100 benchmark circuits split into logical groupings.
 
 | Group      | Benchmarks | Description|
 |------------|------------|------------|
@@ -20,15 +20,16 @@ The benchmark includes over 100 separate benchmarks split into logical groupings
 | epfl       | 19         | EPFL benchmarks
 
 The LogikBench project addresses a number of gaps in current benchmarks:
- 1. Small datasets (gcd, jpeg, aes, serv,...)
- 2. Hard coded parameters (data width, constraints, ..)
- 3. Lack of provenance (who wrote the benchmark and does it work)
- 4. Poor diversity (addresses only one need, eg combinatorial synthesis)
- 5. Lack of execution infrastructure (single threaded)
- 6. Hurdle for adoption (eg hard coded for openroad)
- 7. No standard scores, ie no SpecInt for EDA.
- 8. No standard tool metrics (names, quantities)
- 9. No standard data set (ie no imagenet for EDA)
+
+ 1. Small datasets
+ 2. Hard coded circuit values
+ 3. Limited diversity
+ 4. Lack of execution infrastructure
+ 5. Hard coded eda flows
+ 6. Lack of standard scores ("no SpecInt/Dhrystone for EDA")
+ 7. Lack of standardized metrics
+ 8. Lack of standard data sets ("no imagenet for EDA")
+ 9. Lack of provenance (eg. anonymous BLIF circuits)
 
 # Installation
 
@@ -39,35 +40,18 @@ pip install --upgrade pip
 pip install -e .
 ```
 
+# Prerequisites
+
+If you want to run the benchmarks using the example scripts, you will need to install the required tools and plugins.
+
+* [Yosys](https://github.com/YosysHQ/yosys)
+* [Yosys-slang](https://github.com/povik/yosys-slang)
+* [Yosys-syn](https://github.com/zeroasiccorp/yosys-syn/)
+
 # Quick Start Guide
 
-## SiliconCompiler
-A SiliconCompiler based reference run script is included in LogikBench in the `examples/sc` directory. It serves as a simple starting point for creating your own custom benchmark scripts. A summary of the synthesis results are placed in build/\<group\>_\<synth_directive\>_results.csv 
-for complete documentation of the vast number of SiliconCompiler flows and options,  see https://github.com/siliconcompiler/siliconcompiler
-
-**Run `basic` group**
-```sh
-python examples/sc/make.py -g basic
 ```
-
-**Run multiple groups**
-```sh
-python examples/sc/make.py -g basic arithmetic
-```
-
-**Specify a single benchmark**
-```sh
-python examples/sc/make.py -g arithmetic -n add
-```
-
-**Specify number of threads to use**
-```sh
-python examples/sc/make.py -g basic -j 10
-```
-
-**Specify Vivado target**
-```sh
-python examples/sc/make.py -g arithmetic -n add -target xc7s50csga324-1
+python examples/synthesis/make.py -g basic -command "synth_fpga" -options -o results.csv
 ```
 
 ## Basic synthesis
@@ -101,13 +85,6 @@ python examples/synthesis/make.py -g arithmetic -n add -o results.csv
 python examples/synthesis/make.py -g arithmetic -clean
 ```
 
-**Run Vivado**
-```sh
-python examples/synthesis/make.py -g arithmetic -n add -tool vivado -target xc7s50csga324-1
-```
-
-# Benchmark Listing
-
 # License
 
-The LogikBench project is licensed under [MIT](LICENSE). Individual benchmarks are  are covered by licensed documented by the LICENSE file found in the root directory of each benchmark.
+The LogikBench project is licensed under [MIT](LICENSE) unless otherwise noted inside the individual benchmarks.

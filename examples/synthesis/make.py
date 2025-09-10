@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import argparse
 import subprocess
 import os
@@ -20,38 +21,63 @@ from logikbench import epfl
 #####################################################################
 
 if __name__ == "__main__":
+
+    all_groups = ['basic',
+                  'memory',
+                  'arithmetic',
+                  'epfl',
+                  'blocks']
+
+    all_tools = ['yosys',
+                 'vivado']
+
+    all_targets = ['synth_fpga',
+                   'synth_efinix',
+                   'synth_ice40',
+                   'synth_microchip',
+                   'synth_quicklogic',
+                   'synth_xilinx'],
+
     parser = argparse.ArgumentParser(description="""\
 
-LogikBench bare metal usage example
--Runs using single file jinja script template
--No dependency on external run time infrastructures
+A Simple LogikBench synthesis script.
 
 Example Usage:
-python make.py -tool yosys -target ice40 -group  epfl -name mem_ctrl
+python syn -g basic -n crossbar -t yosys
 
 """, formatter_class=argparse.RawDescriptionHelpFormatter)
 
-    parser.add_argument("-group","-g",
+
+    parser.add_argument("-g", "--group",
                         nargs='+',
-                        choices=['basic',
-                                 'memory',
-                                 'arithmetic',
-                                 'epfl',
-                                 'blocks'],
+                        choices=all_groups,
+                        metavar="GROUP",
                         required=True,
-                        help="Benchmark group")
-    parser.add_argument("-name","-n",
+                        help=f"Benchmark group (choices: {all_groups})")
+
+    parser.add_argument("-n", "--name",
                         nargs='+',
                         help="Benchmark name")
+
     parser.add_argument("-tool",
-                        choices=['yosys', 'vivado'],
+                        choices=all_tools,
                         default="yosys",
-                        help="Tool name")
-    parser.add_argument("-target",
-                        help="Compilation target")
-    parser.add_argument('-clean','-c',
+                        metavar="TOOL",
+                        help=f"Synthesis tool (choices: {all_tools})")
+
+    parser.add_argument("-t", "--target",
+                        choices=all_targets,
+                        metavar="TARGET",
+                        help=f"Synthesis target (choices: {all_cmds})")
+
+    parser.add_argument("-opt",
+                        nargs='+',
+                        help="Synthesis options for command")
+
+    parser.add_argument('-clean',
                         action='store_true',
                         help='Clean up build directory')
+
     parser.add_argument('-output','-o',
                         default="build/results.json",
                         help='Output file name')
