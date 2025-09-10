@@ -20,6 +20,9 @@ class Sine(DesignSchema):
         for item in source:
             self.add_file(item, fileset, dataroot=root)
 
+        # include dir
+        self.add_idir("rtl", fileset, dataroot=root)
+
         # top module
         self.set_topmodule(name, fileset)
 
