@@ -12,14 +12,11 @@ from jinja2 import Environment, FileSystemLoader
 
 import logikbench as lb
 
-#####################################################################
-# Simple benchmark runner that calls EDA tools directly using
-# scripts generated from simple Jinja templates.
-#####################################################################
+def main():
 
-if __name__ == "__main__":
-
-    print(os.path.dirname(lb.__file__))
+    #################################################
+    # Scope
+    #################################################
 
     all_groups = ['basic',
                   'memory',
@@ -43,6 +40,10 @@ if __name__ == "__main__":
 
     # TODO: implement
     all_metrics = ['cells']
+
+    #################################################
+    # Commandline Interface
+    #################################################
 
     parser = argparse.ArgumentParser(description="""\
 Simple LogikBench runner.
@@ -119,6 +120,10 @@ Simple LogikBench runner.
     # global analysis
     results = {}
     results["cells"] = {}
+
+    #################################################
+    # Loop
+    #################################################
 
     # iterate over all groups
     for group in args.group:
@@ -212,3 +217,6 @@ Simple LogikBench runner.
                 for col_key in columns:
                     row.append(results.get(col_key, {}).get(row_key, ""))
                 writer.writerow(row)
+
+if __name__ == "__main__":
+    sys.exit(main())
