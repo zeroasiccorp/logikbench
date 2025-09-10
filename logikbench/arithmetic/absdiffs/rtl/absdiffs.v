@@ -11,6 +11,6 @@ module absdiffs #(parameter DW = 16
    wire [DW-1:0] diff;
 
    assign diff = a - b;
-   assign diff = (diff < 0) ? -diff : diff;
+   assign z    = (diff < 0) ? -diff : diff;
 
 endmodule
