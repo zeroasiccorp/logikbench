@@ -25,11 +25,11 @@ THE SOFTWARE.
 module axil_ram #
 (
     // Width of data bus in bits
-    parameter DATA_WIDTH = 32,
+    parameter DW = 32,
     // Width of address bus in bits
-    parameter ADDR_WIDTH = 16,
+    parameter AW = 16,
     // Width of wstrb (width of data bus in words)
-    parameter STRB_WIDTH = (DATA_WIDTH/8),
+    parameter STRB_WIDTH = (DW/8),
     // Extra pipeline register on output
     parameter PIPELINE_OUTPUT = 0
 )
@@ -37,30 +37,30 @@ module axil_ram #
     input  wire                   clk,
     input  wire                   rst,
 
-    input  wire [ADDR_WIDTH-1:0]  s_axil_awaddr,
+    input  wire [AW-1:0]  s_axil_awaddr,
     input  wire [2:0]             s_axil_awprot,
     input  wire                   s_axil_awvalid,
     output wire                   s_axil_awready,
-    input  wire [DATA_WIDTH-1:0]  s_axil_wdata,
+    input  wire [DW-1:0]  s_axil_wdata,
     input  wire [STRB_WIDTH-1:0]  s_axil_wstrb,
     input  wire                   s_axil_wvalid,
     output wire                   s_axil_wready,
     output wire [1:0]             s_axil_bresp,
     output wire                   s_axil_bvalid,
     input  wire                   s_axil_bready,
-    input  wire [ADDR_WIDTH-1:0]  s_axil_araddr,
+    input  wire [AW-1:0]  s_axil_araddr,
     input  wire [2:0]             s_axil_arprot,
     input  wire                   s_axil_arvalid,
     output wire                   s_axil_arready,
-    output wire [DATA_WIDTH-1:0]  s_axil_rdata,
+    output wire [DW-1:0]  s_axil_rdata,
     output wire [1:0]             s_axil_rresp,
     output wire                   s_axil_rvalid,
     input  wire                   s_axil_rready
 );
 
-parameter VALID_ADDR_WIDTH = ADDR_WIDTH - $clog2(STRB_WIDTH);
+parameter VALID_AW = AW - $clog2(STRB_WIDTH);
 parameter WORD_WIDTH = STRB_WIDTH;
-parameter WORD_SIZE = DATA_WIDTH/WORD_WIDTH;
+parameter WORD_SIZE = DW/WORD_WIDTH;
 
 reg mem_wr_en;
 reg mem_rd_en;
@@ -69,16 +69,16 @@ reg s_axil_awready_reg = 1'b0, s_axil_awready_next;
 reg s_axil_wready_reg = 1'b0, s_axil_wready_next;
 reg s_axil_bvalid_reg = 1'b0, s_axil_bvalid_next;
 reg s_axil_arready_reg = 1'b0, s_axil_arready_next;
-reg [DATA_WIDTH-1:0] s_axil_rdata_reg = {DATA_WIDTH{1'b0}}, s_axil_rdata_next;
+reg [DW-1:0] s_axil_rdata_reg = {DW{1'b0}}, s_axil_rdata_next;
 reg s_axil_rvalid_reg = 1'b0, s_axil_rvalid_next;
-reg [DATA_WIDTH-1:0] s_axil_rdata_pipe_reg = {DATA_WIDTH{1'b0}};
+reg [DW-1:0] s_axil_rdata_pipe_reg = {DW{1'b0}};
 reg s_axil_rvalid_pipe_reg = 1'b0;
 
 // (* RAM_STYLE="BLOCK" *)
-reg [DATA_WIDTH-1:0] mem[(2**VALID_ADDR_WIDTH)-1:0];
+reg [DW-1:0] mem[(2**VALID_AW)-1:0];
 
-wire [VALID_ADDR_WIDTH-1:0] s_axil_awaddr_valid = s_axil_awaddr >> (ADDR_WIDTH - VALID_ADDR_WIDTH);
-wire [VALID_ADDR_WIDTH-1:0] s_axil_araddr_valid = s_axil_araddr >> (ADDR_WIDTH - VALID_ADDR_WIDTH);
+wire [VALID_AW-1:0] s_axil_awaddr_valid = s_axil_awaddr >> (AW - VALID_AW);
+wire [VALID_AW-1:0] s_axil_araddr_valid = s_axil_araddr >> (AW - VALID_AW);
 
 assign s_axil_awready = s_axil_awready_reg;
 assign s_axil_wready = s_axil_wready_reg;
@@ -94,8 +94,8 @@ integer i, j;
 initial begin
     // two nested loops for smaller number of iterations per loop
     // workaround for synthesizer complaints about large loop counts
-    for (i = 0; i < 2**VALID_ADDR_WIDTH; i = i + 2**(VALID_ADDR_WIDTH/2)) begin
-        for (j = i; j < i + 2**(VALID_ADDR_WIDTH/2); j = j + 1) begin
+    for (i = 0; i < 2**VALID_AW; i = i + 2**(VALID_AW/2)) begin
+        for (j = i; j < i + 2**(VALID_AW/2); j = j + 1) begin
             mem[j] = 0;
         end
     end

@@ -1,6 +1,6 @@
 module regfile
   # (parameter AW = 6,  // address with (regs = 2**AW)
-     parameter RW = 32, // register width
+     parameter DW = 32, // register width
      parameter RP = 2,  // # read ports
      parameter WP = 1   // # write prots
      )
@@ -9,18 +9,18 @@ module regfile
     // Write Ports (concatenated)
     input [WP-1:0]     wr_valid, // write access
     input [WP*AW-1:0]  wr_addr,  // register address
-    input [WP*RW-1:0]  wr_data,  // write data
+    input [WP*DW-1:0]  wr_data,  // write data
     // Read Ports (concatenated)
     input [RP-1:0]     rd_valid, // read access
     input [RP*AW-1:0]  rd_addr,  // register address
-    output [RP*RW-1:0] rd_data   // output data
+    output [RP*DW-1:0] rd_data   // output data
     );
 
    localparam REGS = (2**AW);
 
-   reg [RW-1:0]        mem[REGS-1:0];
+   reg [DW-1:0]        mem[REGS-1:0];
    wire [WP-1:0]       write_en [REGS-1:0];
-   reg [RW-1:0]        mux [REGS-1:0];
+   reg [DW-1:0]        mux [REGS-1:0];
 
    genvar 	       i,j;
 
@@ -45,8 +45,8 @@ module regfile
           begin
 	     mux[i] = 'b0;
 	     for(k=0;k<WP;k=k+1)
-	       mux[i] = mux[i] | ({(RW){write_en[i][k]}} &
-                                  wr_data[((k+1)*RW-1)-:RW]);
+	       mux[i] = mux[i] | ({(DW){write_en[i][k]}} &
+                                  wr_data[((k+1)*DW-1)-:DW]);
           end
      end
 
@@ -64,7 +64,7 @@ module regfile
    //#########################################
 
    for (i=0;i<RP;i=i+1) begin: gen_rdport
-      assign rd_data[i*RW+:RW] = {(RW){rd_valid[i]}} &
+      assign rd_data[i*DW+:DW] = {(DW){rd_valid[i]}} &
 				 mem[rd_addr[i*AW+:AW]];
    end
 
