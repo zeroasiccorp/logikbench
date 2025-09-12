@@ -3,7 +3,7 @@ module sine #(parameter DW = 8
    (
     input               clk,
     input               nreset,
-    input [DW-1:0]      phase,
+    input [DW-1:0]      a,
     output reg [DW-1:0] out
     );
 
@@ -20,7 +20,7 @@ module sine #(parameter DW = 8
      if (nreset)
        out <= 'b0;
      else
-       out <= sine_table[phase];
+       out <= sine_table[a];
 
    //#############################
    // tables
