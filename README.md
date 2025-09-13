@@ -1,37 +1,77 @@
 LogikBench
 ==========================================================
 
-LogikBench is a parameterized RTL benchmark suite for open and unbiased evaluation of:
+LogikBench is a parametrized RTL benchmark suite designed to provide unbiased evaluation of:
 
-1. EDA tools and flows (synthesis, PNR, verification)
-2. Foundry processes
-3. Cell libraries
-4. FPGA device architectures
-5. Digital architectures
+1. EDA tools
+2. Design flows
+3. Foundry processes
+4. IP libraries
+4. FPGA devices
+5. Processing architectures
 
-The benchmark includes over 100 benchmark circuits split into logical groupings.
+LogikBench addresses a number of gaps in existing RTL benchmark suites, including:
+
+ 1. Small datasets
+ 2. Hard coded circuit sizes
+ 3. Limited circuit diversity
+ 4. Ambiguous licenses
+ 5. No execution infrastructure
+ 6. No standard metrics
+ 7. No standard data sets ("no imagenet for EDA")
+ 8. No standard scores ("no SpecInt/Dhrystone for EDA")
+ 9. Limited benchmark provenance ("who wrote it")
+
+LogikBench includes over 100 different parametrized benchmark circuits split into five groupings. The number of groups and total benchmark counts are expected to grow significantly over time.
 
 | Group      | Benchmarks | Description|
 |------------|------------|------------|
-| basic      | 23         | Logic benchmarks (mux, arbiter, crossbar,...)
-| arithmetic | 33         | Arithmetic (add, shift, mul,...)
-| memory     | 12         | Memory (sp, dp, sdp, fifo,...)
-| blocks     | 30         | Macro functions (ialu, spi ,ibex,..)
-| epfl       | 19         | EPFL benchmarks
+| [basic](logikbench/basic/README.md)      | 23         | Logic (mux, encoder, arbiter, crossbar, ...)
+| [arithmetic](logikbench/arithmetic/README.md) | 33         | Arithmetic (add, shift, mul, ...)
+| [memory](logikbench/memory/README.md)     | 12         | Memory (sp, dp, sdp, fifo, ...)
+| [blocks](logikbench/blocks/README.md)     | 30         | Subsystems (fpu, spi ,picorv32, ...)
+| [epfl](logikbench/epfl/README.md)       | 19         | EPFL benchmarks
 
-The LogikBench project addresses a number of gaps in current benchmarks:
+When accounting for all possible parameter configurations, the LogikBench suite represents 10K+ unique circuits.
 
- 1. Small datasets
- 2. Hard coded circuit values
- 3. Limited diversity
- 4. Lack of execution infrastructure
- 5. Hard coded eda flows
- 6. Lack of standard scores ("no SpecInt/Dhrystone for EDA")
- 7. Lack of standardized metrics
- 8. Lack of standard data sets ("no imagenet for EDA")
- 9. Lack of provenance (eg. anonymous BLIF circuits)
+A LogikBench benchmark circuit consists of:
+* A set of tech agnostic RTL Verilog files.
+* A SiliconCompiler Design object.
 
-# Installation
+The SiliconCompiler design object captures benchmark data as a set of files, parameters, topmodule name (and other settings) grouped together as a `fileset`. Every circuit in the LogikBench suite has a Python setup module that looks similar to the [`mux`](basic/mux/rtl/mux.v) setup code shown below.
+
+```python
+from os.path import dirname, abspath
+from siliconcompiler.design import DesignSchema
+
+class Mux(DesignSchema):
+    def __init__(self):
+        name = 'mux'
+        fileset = 'rtl'
+        rootname = f'{name}_root'
+        super().__init__(name)
+        self.set_dataroot(rootname, dirname(abspath(__file__)))
+        self.add_file(f'rtl/{name}.v', fileset, dataroot=rootname)
+        self.set_topmodule(name, fileset)
+```
+
+To use one of the benchmark circuits in a program, simply instantiate the circuit object. d you have access to all the methods inherited from SiliconCompiler.  The example below shows how to instantiate the `Mux` circuit in a program and then write out the RTL settings in a standard command format that can be read directly by tools like Icarus, Verilator, and slang.
+
+```python
+import logiklib as lb
+d = lb.basic.Mux()
+d.write_fileset("mux.f")
+```
+
+## Installation
+
+The fastest way to start using LogikBench is to install it via PyPI:
+
+```bash
+pip install logikbench
+```
+
+Developers looking to contribute to the project, should clone the repo and install package locally as shown below. 
 
 ```bash
 git clone https://github.com/zeroasiccorp/logikbench
@@ -40,51 +80,39 @@ pip install --upgrade pip
 pip install -e .
 ```
 
-# Prerequisites
+## Running Benchmarks
 
-If you want to run the benchmarks using the example scripts, you will need to install the required tools and plugins.
+The LogikBench Python package ships with the simple `lb` script for iterating through all the benchmark circuits.
+
+If you want to run the benchmarks using this `lb`script, you will need to install the following required tools and plugins.
 
 * [Yosys](https://github.com/YosysHQ/yosys)
 * [Yosys-slang](https://github.com/povik/yosys-slang)
 * [Yosys-syn](https://github.com/zeroasiccorp/yosys-syn/)
 
-# Quick Start Guide
 
-```
-python examples/synthesis/make.py -g basic -command "synth_fpga" -options -o results.csv
-```
-
-## Basic synthesis
-
-The project includes a basic synthesis script that loops over a set of benchmarks and provides a summary of the results as a csv or json file. The script is provided as a reference only. A summary of the synthesis results are placed in build/results.json by default.
-
-To create custom synthesis scripts, extract extensive metric reporting, and to run benchmarks in parallel, you should use the SiliconCompiler flow.
-
-**Run `basic` group**
-```sh
-python examples/synthesis/make.py -g basic
+The example below shows how to use `lb` to synthesize all the circuits in the arithmetic group using the `synth_fpga` command in `yosys` and then output all runtime metrics into a single formatted json file.
+```bash
+lb -g arithmetic -t yosys -cmd synth_fpga -o results.json
 ```
 
-**Run multiple groups**
-```sh
-python examples/synthesis/make.py -g basic arithmetic
-```
+Enter `lb -h` to get the full list of options available in the lb script.
 
-**Specify a single benchmark**
-```sh
-python examples/synthesis/make.py -g arithmetic -n add
-```
+## License
 
-**Specify name of output file**
-```sh
-python examples/synthesis/make.py -g arithmetic -n add -o results.csv
-```
+The LogikBench project is licensed under the [MIT](LICENSE) license unless specified otherwise inside the individual benchmark folders.
 
-**Clean up before re-running**
-```sh
-python examples/synthesis/make.py -g arithmetic -clean
-```
+## Benchmark Reference List
 
-# License
+### Basic
 
-The LogikBench project is licensed under [MIT](LICENSE) unless otherwise noted inside the individual benchmarks.
+### Arithmetic
+
+### Memory
+
+### EPFL
+
+### Blocks
+
+
+

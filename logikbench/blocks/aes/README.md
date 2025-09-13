@@ -15,5 +15,5 @@ MIT. See LICENSE for more details.
 - Added SDC timing constraints
 - Updated verilog to use standard verilog attributes
 - Removed timescale
-- Changed top level from 'aes' to 'aes'
+- Changed top level to 'aes'
 - Added LICENSE file from [here](http://asics.ws/v6/free-ip-cores).
