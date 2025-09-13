@@ -3,7 +3,7 @@
 
 module ethmac
   # (
-     parameter DATA_WIDTH = 8,
+     parameter DW = 8,
      parameter ENABLE_PADDING = 1,
      parameter MIN_FRAME_LENGTH = 64,
      parameter PTP_TS_ENABLE = 0,
@@ -26,7 +26,7 @@ module ethmac
     /*
      * AXI input
      */
-    input  wire [DATA_WIDTH-1:0]        tx_axis_tdata,
+    input  wire [DW-1:0]        tx_axis_tdata,
     input  wire                         tx_axis_tvalid,
     output wire                         tx_axis_tready,
     input  wire                         tx_axis_tlast,
@@ -35,7 +35,7 @@ module ethmac
     /*
      * AXI output
      */
-    output wire [DATA_WIDTH-1:0]        rx_axis_tdata,
+    output wire [DW-1:0]        rx_axis_tdata,
     output wire                         rx_axis_tvalid,
     output wire                         rx_axis_tlast,
     output wire [RX_USER_WIDTH-1:0]     rx_axis_tuser,
@@ -43,10 +43,10 @@ module ethmac
     /*
      * GMII interface
      */
-    input  wire [DATA_WIDTH-1:0]        gmii_rxd,
+    input  wire [DW-1:0]        gmii_rxd,
     input  wire                         gmii_rx_dv,
     input  wire                         gmii_rx_er,
-    output wire [DATA_WIDTH-1:0]        gmii_txd,
+    output wire [DW-1:0]        gmii_txd,
     output wire                         gmii_tx_en,
     output wire                         gmii_tx_er,
 
@@ -129,7 +129,7 @@ module ethmac
 
    eth_mac_1g
      # (
-        .DATA_WIDTH(DATA_WIDTH),
+        .DATA_WIDTH(DW),
         .ENABLE_PADDING(ENABLE_PADDING),
         .MIN_FRAME_LENGTH(MIN_FRAME_LENGTH),
         .PTP_TS_ENABLE(PTP_TS_ENABLE),

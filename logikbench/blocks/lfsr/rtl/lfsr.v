@@ -34,7 +34,7 @@ THE SOFTWARE.
 module lfsr #
 (
     // width of LFSR
-    parameter LFSR_WIDTH = 31,
+    parameter LFSRW = 31,
     // LFSR polynomial
     parameter LFSR_POLY = 31'h10000001,
     // LFSR configuration: "GALOIS", "FIBONACCI"
@@ -44,47 +44,47 @@ module lfsr #
     // bit-reverse input and output
     parameter REVERSE = 0,
     // width of data input
-    parameter DATA_WIDTH = 8,
+    parameter DW = 8,
     // implementation style: "AUTO", "LOOP", "REDUCTION"
     parameter STYLE = "AUTO"
 )
 (
-    input  wire [DATA_WIDTH-1:0] data_in,
-    input  wire [LFSR_WIDTH-1:0] state_in,
-    output wire [DATA_WIDTH-1:0] data_out,
-    output wire [LFSR_WIDTH-1:0] state_out
+    input  wire [DW-1:0] data_in,
+    input  wire [LFSRW-1:0] state_in,
+    output wire [DW-1:0] data_out,
+    output wire [LFSRW-1:0] state_out
 );
 
 /*
 
 Fully parametrizable combinatorial parallel LFSR/CRC module.  Implements an unrolled LFSR
-next state computation, shifting DATA_WIDTH bits per pass through the module.  Input data
+next state computation, shifting DW bits per pass through the module.  Input data
 is XORed with LFSR feedback path, tie data_in to zero if this is not required.
 
 Works in two parts: statically computes a set of bit masks, then uses these bit masks to
-select bits for XORing to compute the next state.  
+select bits for XORing to compute the next state.
 
 Ports:
 
 data_in
 
-Data bits to be shifted through the LFSR (DATA_WIDTH bits)
+Data bits to be shifted through the LFSR (DW bits)
 
 state_in
 
-LFSR/CRC current state input (LFSR_WIDTH bits)
+LFSR/CRC current state input (LFSRW bits)
 
 data_out
 
-Data bits shifted out of LFSR (DATA_WIDTH bits)
+Data bits shifted out of LFSR (DW bits)
 
 state_out
 
-LFSR/CRC next state output (LFSR_WIDTH bits)
+LFSR/CRC next state output (LFSRW bits)
 
 Parameters:
 
-LFSR_WIDTH
+LFSRW
 
 Specify width of LFSR/CRC register
 
@@ -99,7 +99,7 @@ would be represented as
 32'h04c11db7
 
 Note that the largest term (x^32) is suppressed.  This term is generated automatically based
-on LFSR_WIDTH.
+on LFSRW.
 
 LFSR_CONFIG
 
@@ -159,11 +159,11 @@ REVERSE
 
 Bit-reverse LFSR input and output.  Shifts MSB first by default, set REVERSE for LSB first.
 
-DATA_WIDTH
+DW
 
 Specify width of input and output data bus.  The module will perform one shift per input
-data bit, so if the input data bus is not required tie data_in to zero and set DATA_WIDTH
-to the required number of shifts per clock cycle.  
+data bit, so if the input data bus is not required tie data_in to zero and set DW
+to the required number of shifts per clock cycle.
 
 STYLE
 
@@ -201,29 +201,29 @@ PRBS31      Fibonacci, inverted     31      31'h10000001    any
 
 */
 
-function [LFSR_WIDTH+DATA_WIDTH-1:0] lfsr_mask(input [31:0] index);
-    reg [LFSR_WIDTH-1:0] lfsr_mask_state[LFSR_WIDTH-1:0];
-    reg [DATA_WIDTH-1:0] lfsr_mask_data[LFSR_WIDTH-1:0];
-    reg [LFSR_WIDTH-1:0] output_mask_state[DATA_WIDTH-1:0];
-    reg [DATA_WIDTH-1:0] output_mask_data[DATA_WIDTH-1:0];
+function [LFSRW+DW-1:0] lfsr_mask(input [31:0] index);
+    reg [LFSRW-1:0] lfsr_mask_state[LFSRW-1:0];
+    reg [DW-1:0] lfsr_mask_data[LFSRW-1:0];
+    reg [LFSRW-1:0] output_mask_state[DW-1:0];
+    reg [DW-1:0] output_mask_data[DW-1:0];
 
-    reg [LFSR_WIDTH-1:0] state_val;
-    reg [DATA_WIDTH-1:0] data_val;
+    reg [LFSRW-1:0] state_val;
+    reg [DW-1:0] data_val;
 
-    reg [DATA_WIDTH-1:0] data_mask;
+    reg [DW-1:0] data_mask;
 
     integer i, j;
 
     begin
         // init bit masks
-        for (i = 0; i < LFSR_WIDTH; i = i + 1) begin
+        for (i = 0; i < LFSRW; i = i + 1) begin
             lfsr_mask_state[i] = 0;
             lfsr_mask_state[i][i] = 1'b1;
             lfsr_mask_data[i] = 0;
         end
-        for (i = 0; i < DATA_WIDTH; i = i + 1) begin
+        for (i = 0; i < DW; i = i + 1) begin
             output_mask_state[i] = 0;
-            if (i < LFSR_WIDTH) begin
+            if (i < LFSRW) begin
                 output_mask_state[i][i] = 1'b1;
             end
             output_mask_data[i] = 0;
@@ -232,15 +232,15 @@ function [LFSR_WIDTH+DATA_WIDTH-1:0] lfsr_mask(input [31:0] index);
         // simulate shift register
         if (LFSR_CONFIG == "FIBONACCI") begin
             // Fibonacci configuration
-            for (data_mask = {1'b1, {DATA_WIDTH-1{1'b0}}}; data_mask != 0; data_mask = data_mask >> 1) begin
+            for (data_mask = {1'b1, {DW-1{1'b0}}}; data_mask != 0; data_mask = data_mask >> 1) begin
                 // determine shift in value
                 // current value in last FF, XOR with input data bit (MSB first)
-                state_val = lfsr_mask_state[LFSR_WIDTH-1];
-                data_val = lfsr_mask_data[LFSR_WIDTH-1];
+                state_val = lfsr_mask_state[LFSRW-1];
+                data_val = lfsr_mask_data[LFSRW-1];
                 data_val = data_val ^ data_mask;
 
                 // add XOR inputs from correct indicies
-                for (j = 1; j < LFSR_WIDTH; j = j + 1) begin
+                for (j = 1; j < LFSRW; j = j + 1) begin
                     if ((LFSR_POLY >> j) & 1) begin
                         state_val = lfsr_mask_state[j-1] ^ state_val;
                         data_val = lfsr_mask_data[j-1] ^ data_val;
@@ -248,11 +248,11 @@ function [LFSR_WIDTH+DATA_WIDTH-1:0] lfsr_mask(input [31:0] index);
                 end
 
                 // shift
-                for (j = LFSR_WIDTH-1; j > 0; j = j - 1) begin
+                for (j = LFSRW-1; j > 0; j = j - 1) begin
                     lfsr_mask_state[j] = lfsr_mask_state[j-1];
                     lfsr_mask_data[j] = lfsr_mask_data[j-1];
                 end
-                for (j = DATA_WIDTH-1; j > 0; j = j - 1) begin
+                for (j = DW-1; j > 0; j = j - 1) begin
                     output_mask_state[j] = output_mask_state[j-1];
                     output_mask_data[j] = output_mask_data[j-1];
                 end
@@ -260,7 +260,7 @@ function [LFSR_WIDTH+DATA_WIDTH-1:0] lfsr_mask(input [31:0] index);
                 output_mask_data[0] = data_val;
                 if (LFSR_FEED_FORWARD) begin
                     // only shift in new input data
-                    state_val = {LFSR_WIDTH{1'b0}};
+                    state_val = {LFSRW{1'b0}};
                     data_val = data_mask;
                 end
                 lfsr_mask_state[0] = state_val;
@@ -268,19 +268,19 @@ function [LFSR_WIDTH+DATA_WIDTH-1:0] lfsr_mask(input [31:0] index);
             end
         end else if (LFSR_CONFIG == "GALOIS") begin
             // Galois configuration
-            for (data_mask = {1'b1, {DATA_WIDTH-1{1'b0}}}; data_mask != 0; data_mask = data_mask >> 1) begin
+            for (data_mask = {1'b1, {DW-1{1'b0}}}; data_mask != 0; data_mask = data_mask >> 1) begin
                 // determine shift in value
                 // current value in last FF, XOR with input data bit (MSB first)
-                state_val = lfsr_mask_state[LFSR_WIDTH-1];
-                data_val = lfsr_mask_data[LFSR_WIDTH-1];
+                state_val = lfsr_mask_state[LFSRW-1];
+                data_val = lfsr_mask_data[LFSRW-1];
                 data_val = data_val ^ data_mask;
 
                 // shift
-                for (j = LFSR_WIDTH-1; j > 0; j = j - 1) begin
+                for (j = LFSRW-1; j > 0; j = j - 1) begin
                     lfsr_mask_state[j] = lfsr_mask_state[j-1];
                     lfsr_mask_data[j] = lfsr_mask_data[j-1];
                 end
-                for (j = DATA_WIDTH-1; j > 0; j = j - 1) begin
+                for (j = DW-1; j > 0; j = j - 1) begin
                     output_mask_state[j] = output_mask_state[j-1];
                     output_mask_data[j] = output_mask_data[j-1];
                 end
@@ -288,14 +288,14 @@ function [LFSR_WIDTH+DATA_WIDTH-1:0] lfsr_mask(input [31:0] index);
                 output_mask_data[0] = data_val;
                 if (LFSR_FEED_FORWARD) begin
                     // only shift in new input data
-                    state_val = {LFSR_WIDTH{1'b0}};
+                    state_val = {LFSRW{1'b0}};
                     data_val = data_mask;
                 end
                 lfsr_mask_state[0] = state_val;
                 lfsr_mask_data[0] = data_val;
 
                 // add XOR inputs at correct indicies
-                for (j = 1; j < LFSR_WIDTH; j = j + 1) begin
+                for (j = 1; j < LFSRW; j = j + 1) begin
                     if ((LFSR_POLY >> j) & 1) begin
                         lfsr_mask_state[j] = lfsr_mask_state[j] ^ state_val;
                         lfsr_mask_data[j] = lfsr_mask_data[j] ^ data_val;
@@ -309,34 +309,34 @@ function [LFSR_WIDTH+DATA_WIDTH-1:0] lfsr_mask(input [31:0] index);
 
         // reverse bits if selected
         if (REVERSE) begin
-            if (index < LFSR_WIDTH) begin
+            if (index < LFSRW) begin
                 state_val = 0;
-                for (i = 0; i < LFSR_WIDTH; i = i + 1) begin
-                    state_val[i] = lfsr_mask_state[LFSR_WIDTH-index-1][LFSR_WIDTH-i-1];
+                for (i = 0; i < LFSRW; i = i + 1) begin
+                    state_val[i] = lfsr_mask_state[LFSRW-index-1][LFSRW-i-1];
                 end
 
                 data_val = 0;
-                for (i = 0; i < DATA_WIDTH; i = i + 1) begin
-                    data_val[i] = lfsr_mask_data[LFSR_WIDTH-index-1][DATA_WIDTH-i-1];
+                for (i = 0; i < DW; i = i + 1) begin
+                    data_val[i] = lfsr_mask_data[LFSRW-index-1][DW-i-1];
                 end
             end else begin
                 state_val = 0;
-                for (i = 0; i < LFSR_WIDTH; i = i + 1) begin
-                    state_val[i] = output_mask_state[DATA_WIDTH-(index-LFSR_WIDTH)-1][LFSR_WIDTH-i-1];
+                for (i = 0; i < LFSRW; i = i + 1) begin
+                    state_val[i] = output_mask_state[DW-(index-LFSRW)-1][LFSRW-i-1];
                 end
 
                 data_val = 0;
-                for (i = 0; i < DATA_WIDTH; i = i + 1) begin
-                    data_val[i] = output_mask_data[DATA_WIDTH-(index-LFSR_WIDTH)-1][DATA_WIDTH-i-1];
+                for (i = 0; i < DW; i = i + 1) begin
+                    data_val[i] = output_mask_data[DW-(index-LFSRW)-1][DW-i-1];
                 end
             end
         end else begin
-            if (index < LFSR_WIDTH) begin
+            if (index < LFSRW) begin
                 state_val = lfsr_mask_state[index];
                 data_val = lfsr_mask_data[index];
             end else begin
-                state_val = output_mask_state[index-LFSR_WIDTH];
-                data_val = output_mask_data[index-LFSR_WIDTH];
+                state_val = output_mask_state[index-LFSRW];
+                data_val = output_mask_data[index-LFSRW];
             end
         end
         lfsr_mask = {data_val, state_val};
@@ -367,12 +367,12 @@ if (STYLE_INT == "REDUCTION") begin
     // slightly smaller than generated code with Quartus
     // --> better for simulation
 
-    for (n = 0; n < LFSR_WIDTH; n = n + 1) begin : lfsr_state
-        wire [LFSR_WIDTH+DATA_WIDTH-1:0] mask = lfsr_mask(n);
+    for (n = 0; n < LFSRW; n = n + 1) begin : lfsr_state
+        wire [LFSRW+DW-1:0] mask = lfsr_mask(n);
         assign state_out[n] = ^({data_in, state_in} & mask);
     end
-    for (n = 0; n < DATA_WIDTH; n = n + 1) begin : lfsr_data
-        wire [LFSR_WIDTH+DATA_WIDTH-1:0] mask = lfsr_mask(n+LFSR_WIDTH);
+    for (n = 0; n < DW; n = n + 1) begin : lfsr_data
+        wire [LFSRW+DW-1:0] mask = lfsr_mask(n+LFSRW);
         assign data_out[n] = ^({data_in, state_in} & mask);
     end
 
@@ -384,8 +384,8 @@ end else if (STYLE_INT == "LOOP") begin
     // same size as generated code with Quartus
     // --> better for synthesis
 
-    for (n = 0; n < LFSR_WIDTH; n = n + 1) begin : lfsr_state
-        wire [LFSR_WIDTH+DATA_WIDTH-1:0] mask = lfsr_mask(n);
+    for (n = 0; n < LFSRW; n = n + 1) begin : lfsr_state
+        wire [LFSRW+DW-1:0] mask = lfsr_mask(n);
 
         reg state_reg;
 
@@ -395,20 +395,20 @@ end else if (STYLE_INT == "LOOP") begin
 
         always @* begin
             state_reg = 1'b0;
-            for (i = 0; i < LFSR_WIDTH; i = i + 1) begin
+            for (i = 0; i < LFSRW; i = i + 1) begin
                 if (mask[i]) begin
                     state_reg = state_reg ^ state_in[i];
                 end
             end
-            for (i = 0; i < DATA_WIDTH; i = i + 1) begin
-                if (mask[i+LFSR_WIDTH]) begin
+            for (i = 0; i < DW; i = i + 1) begin
+                if (mask[i+LFSRW]) begin
                     state_reg = state_reg ^ data_in[i];
                 end
             end
         end
     end
-    for (n = 0; n < DATA_WIDTH; n = n + 1) begin : lfsr_data
-        wire [LFSR_WIDTH+DATA_WIDTH-1:0] mask = lfsr_mask(n+LFSR_WIDTH);
+    for (n = 0; n < DW; n = n + 1) begin : lfsr_data
+        wire [LFSRW+DW-1:0] mask = lfsr_mask(n+LFSRW);
 
         reg data_reg;
 
@@ -418,13 +418,13 @@ end else if (STYLE_INT == "LOOP") begin
 
         always @* begin
             data_reg = 1'b0;
-            for (i = 0; i < LFSR_WIDTH; i = i + 1) begin
+            for (i = 0; i < LFSRW; i = i + 1) begin
                 if (mask[i]) begin
                     data_reg = data_reg ^ state_in[i];
                 end
             end
-            for (i = 0; i < DATA_WIDTH; i = i + 1) begin
-                if (mask[i+LFSR_WIDTH]) begin
+            for (i = 0; i < DW; i = i + 1) begin
+                if (mask[i+LFSRW]) begin
                     data_reg = data_reg ^ data_in[i];
                 end
             end
