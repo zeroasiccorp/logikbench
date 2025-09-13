@@ -58,9 +58,9 @@ class Mux(DesignSchema):
 To use one of the benchmark circuits in a program, simply instantiate the circuit object. d you have access to all the methods inherited from SiliconCompiler.  The example below shows how to instantiate the `Mux` circuit in a program and then write out the RTL settings in a standard command format that can be read directly by tools like Icarus, Verilator, and slang.
 
 ```python
-import logiklib as lb
+import logikbench as lb
 d = lb.basic.Mux()
-d.write_fileset("mux.f")
+d.write_fileset('mux.f', fileset='rtl')
 ```
 
 ## Installation
@@ -71,7 +71,7 @@ The fastest way to start using LogikBench is to install it via PyPI:
 pip install logikbench
 ```
 
-Developers looking to contribute to the project, should clone the repo and install package locally as shown below. 
+Developers looking to contribute to the project, should clone the repo and install package locally as shown below.
 
 ```bash
 git clone https://github.com/zeroasiccorp/logikbench
@@ -113,6 +113,3 @@ The LogikBench project is licensed under the [MIT](LICENSE) license unless speci
 ### EPFL
 
 ### Blocks
-
-
-
