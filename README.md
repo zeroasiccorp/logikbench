@@ -24,13 +24,13 @@ LogikBench addresses a number of gaps in existing RTL benchmark suites, includin
 
 LogikBench includes over 100 different parametrized benchmark circuits split into five groupings. The number of groups and total benchmark counts are expected to grow significantly over time.
 
-| Group      | Benchmarks | Description|
-|------------|------------|------------|
-| [basic](logikbench/basic/README.md)      | 23         | Logic (mux, encoder, arbiter, crossbar, ...)
+| Group                                         | Benchmarks | Description|
+|-----------------------------------------------|------------|------------|
+| [basic](logikbench/basic/README.md)           | 23         | Logic (mux, encoder, arbiter, crossbar, ...)
 | [arithmetic](logikbench/arithmetic/README.md) | 33         | Arithmetic (add, shift, mul, ...)
-| [memory](logikbench/memory/README.md)     | 12         | Memory (sp, dp, sdp, fifo, ...)
-| [blocks](logikbench/blocks/README.md)     | 30         | Subsystems (fpu, spi ,picorv32, ...)
-| [epfl](logikbench/epfl/README.md)       | 19         | EPFL benchmarks
+| [memory](logikbench/memory/README.md)         | 12         | Memory (sp, dp, sdp, fifo, ...)
+| [blocks](logikbench/blocks/README.md)         | 30         | Subsystems (fpu, spi ,picorv32, ...)
+| [epfl](logikbench/epfl/README.md)             | 19         | EPFL benchmarks
 
 When accounting for all possible parameter configurations, the LogikBench suite represents 10K+ unique circuits.
 
@@ -101,15 +101,3 @@ Enter `lb -h` to get the full list of options available in the lb script.
 ## License
 
 The LogikBench project is licensed under the [MIT](LICENSE) license unless specified otherwise inside the individual benchmark folders.
-
-## Benchmark Reference List
-
-### Basic
-
-### Arithmetic
-
-### Memory
-
-### EPFL
-
-### Blocks
