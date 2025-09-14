@@ -253,13 +253,12 @@ module uart_rfifo #(
 
     // Additional logic for detection of error conditions (parity and framing) inside the FIFO
     // for the Line Status Register bit 7
-    reg error_det;
+    reg [FIFO_DEPTH-1:0] error_det;
     always @(*) begin
-        error_det = 1'b0;
         for (i = 0; i < FIFO_DEPTH; i = i + 1) begin
-            error_det |= |fifo[i];
+            error_det[i] = |fifo[i];
         end
     end
-    assign error_bit = error_det;
+    assign error_bit = |error_det;
 
 endmodule
