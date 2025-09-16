@@ -1,8 +1,8 @@
 from os.path import dirname, abspath
-from siliconcompiler.design import DesignSchema
+from siliconcompiler import Design
 
 
-class Gray2bin(DesignSchema):
+class Gray2bin(Design):
     def __init__(self):
 
         name = 'gray2bin'

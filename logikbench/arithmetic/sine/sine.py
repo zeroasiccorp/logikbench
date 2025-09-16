@@ -1,5 +1,5 @@
 from os.path import dirname, abspath
-from siliconcompiler.design import DesignSchema
+from siliconcompiler import Design
 import math
 
 def sinetable(N):
@@ -21,7 +21,7 @@ def sinetable(N):
     print("};")
 
 
-class Sine(DesignSchema):
+class Sine(Design):
     def __init__(self):
 
         name = 'sine'

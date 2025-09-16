@@ -3,7 +3,7 @@ import subprocess
 
 def run_icarus(dlist):
     for item in dlist:
-        name = item.name()
+        name = item.name
         ifile = f'{name}.f'
         ofile = f'{name}.vvp'
         item.write_fileset(ifile, fileset='rtl')

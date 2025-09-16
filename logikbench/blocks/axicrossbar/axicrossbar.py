@@ -1,7 +1,7 @@
 from os.path import dirname, abspath
-from siliconcompiler.design import DesignSchema
+from siliconcompiler import Design
 
-class Axicrossbar(DesignSchema):
+class Axicrossbar(Design):
     def __init__(self):
 
         name = 'axicrossbar'

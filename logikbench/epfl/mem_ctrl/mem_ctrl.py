@@ -1,8 +1,8 @@
 from os.path import dirname, abspath
-from siliconcompiler.design import DesignSchema
+from siliconcompiler import Design
 
 
-class Mem_ctrl(DesignSchema):
+class Mem_ctrl(Design):
     def __init__(self):
 
         name = 'mem_ctrl'

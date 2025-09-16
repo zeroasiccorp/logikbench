@@ -1,8 +1,8 @@
 from os.path import dirname, abspath
-from siliconcompiler.design import DesignSchema
+from siliconcompiler import Design
 
 
-class Shiftb(DesignSchema):
+class Shiftb(Design):
     def __init__(self):
 
         name = 'shiftb'

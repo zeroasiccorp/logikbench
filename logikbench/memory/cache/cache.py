@@ -1,8 +1,8 @@
 from os.path import dirname, abspath
-from siliconcompiler.design import DesignSchema
+from siliconcompiler import Design
 
 
-class Cache(DesignSchema):
+class Cache(Design):
     def __init__(self):
 
         name = 'cache'
