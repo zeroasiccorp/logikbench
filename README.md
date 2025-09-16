@@ -42,9 +42,9 @@ The SiliconCompiler design object captures benchmark data as a set of files, par
 
 ```python
 from os.path import dirname, abspath
-from siliconcompiler.design import DesignSchema
+from siliconcompiler import Design
 
-class Mux(DesignSchema):
+class Mux(Design):
     def __init__(self):
         name = 'mux'
         fileset = 'rtl'

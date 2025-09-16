@@ -1,8 +1,8 @@
 from os.path import dirname, abspath
-from siliconcompiler.design import DesignSchema
+from siliconcompiler import Design
 
 
-class Fpu32(DesignSchema):
+class Fpu32(Design):
     def __init__(self):
 
         name = 'fpu32'

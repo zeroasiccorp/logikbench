@@ -1,8 +1,8 @@
 from os.path import dirname, abspath
-from siliconcompiler.design import DesignSchema
+from siliconcompiler import Design
 
 
-class Csa42(DesignSchema):
+class Csa42(Design):
     def __init__(self):
 
         name = 'csa42'

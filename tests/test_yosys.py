@@ -24,7 +24,7 @@ write_verilog {{ netlist }}
     template = Template(yosys_template)
 
     for item in dlist:
-        name = item.name()
+        name = item.name
         cmdfile = f'{name}.f'
         netlist =  f'{name}.vg'
 

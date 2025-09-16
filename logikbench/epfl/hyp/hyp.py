@@ -1,8 +1,8 @@
 from os.path import dirname, abspath
-from siliconcompiler.design import DesignSchema
+from siliconcompiler import Design
 
 
-class Hyp(DesignSchema):
+class Hyp(Design):
     def __init__(self):
 
         name = 'hyp'
