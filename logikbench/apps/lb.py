@@ -32,7 +32,7 @@ def main():
                 'synth_ice40',
                 'synth_microchip',
                 'synth_quicklogic',
-                'synth_xilinx'],
+                'synth_xilinx']
 
     all_flows = ['syn',
                  'rtlgds',
@@ -133,7 +133,7 @@ Simple LogikBench runner.
             name = item.lower()
             if args.tool == 'yosys':
                 script = f"{name}.ys"
-                cmd = ['yosys', '-m', 'slang', '-m', 'yosys-syn', '-s', script]
+                cmd = ['yosys', '-m', 'slang', '-m', 'wildebeest', '-s', script]
             elif args.tool == 'vivado':
                 script = f"{name}.tcl"
                 cmd = ['vivado', '-mode', 'batch', '-source', script]

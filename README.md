@@ -91,7 +91,7 @@ If you want to run the benchmarks using this `lb`script, you will need to instal
 
 The example below shows how to use `lb` to synthesize all the circuits in the arithmetic group using the `synth_fpga` command in `yosys` and then output all runtime metrics into a single formatted json file.
 ```bash
-lb -g arithmetic -t yosys -cmd synth_ice40 -o results.json
+lb -g arithmetic -t yosys -c synth_ice40 -o results.json
 ```
 
 Enter `lb -h` to get the full list of options available in the lb script.
