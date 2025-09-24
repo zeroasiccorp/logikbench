@@ -9,6 +9,6 @@ module mul #(parameter DW = 16,
     output [OW-1:0] out // a * b final product
     );
 
-   assign out[DW-1:0] = a[DW-1:0] * b[DW-1:0];
+	assign out[OW-1:0] = a[DW-1:0] * b[DW-1:0];
 
 endmodule

@@ -1,8 +1,8 @@
 from os.path import dirname, abspath
-from siliconcompiler.design import DesignSchema
+from siliconcompiler import Design
 
 
-class Ethmac(DesignSchema):
+class Ethmac(Design):
     def __init__(self):
 
         name = 'ethmac'

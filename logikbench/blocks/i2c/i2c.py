@@ -1,8 +1,8 @@
 from os.path import dirname, abspath
-from siliconcompiler.design import DesignSchema
+from siliconcompiler import Design
 
 
-class I2c(DesignSchema):
+class I2c(Design):
     def __init__(self):
 
         name = 'i2c'

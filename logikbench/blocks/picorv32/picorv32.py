@@ -1,8 +1,8 @@
 from os.path import dirname, abspath
-from siliconcompiler.design import DesignSchema
+from siliconcompiler import Design
 
 
-class Picorv32(DesignSchema):
+class Picorv32(Design):
     def __init__(self):
 
         name = 'picorv32'

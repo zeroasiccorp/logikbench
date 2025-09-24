@@ -1,8 +1,8 @@
 from os.path import dirname, abspath
-from siliconcompiler.design import DesignSchema
+from siliconcompiler import Design
 
 
-class Ramspnc(DesignSchema):
+class Ramspnc(Design):
     def __init__(self):
 
         name = 'ramspnc'
