@@ -8,28 +8,34 @@ on:
 
 jobs:
   build_wheels:
-    name: Wheels
+    name: Wheels lambdalib
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v5
+      with:
+        submodules: true
     - uses: hynek/build-and-inspect-python-package@v2
 
   publish:
     needs: [build_wheels]
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
     if: github.event_name == 'release' && github.event.action == 'published'
 
     steps:
-    - uses: zeroasiccorp/za_logikbench/.github/actions/add@main
+    - uses: actions/download-artifact@v5
       with:
-        token: ${{ secrets.ZA_TOKEN }}
-        package_name: logikbench
+        name: Packages
+        path: dist
+
+    - name: Publish
+      uses: pypa/gh-action-pypi-publish@v1.13.0
 
   save:
-    needs: [build_wheels]
+    needs: [publish]
     runs-on: ubuntu-latest
-    if: github.event_name == 'release' && github.event.action == 'published'
 
     permissions:
       contents: write
