@@ -17,7 +17,9 @@ urls = {Homepage = "https://github.com/zeroasiccorp/logikbench"}
 requires-python = ">= 3.10"
 license = {file = "LICENSE"}
 dependencies = [
-    "siliconcompiler >= 0.36.5"
+             "siliconcompiler >= 0.37.12",
+             "lambdapdk >= 0.2.11",
+             "lambdalib >= 0.12.3"
 ]
 dynamic = ['version']
 
