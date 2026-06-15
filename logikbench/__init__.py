@@ -1,6 +1,9 @@
 
-# LogikBench version number
-__version__ = "0.0.1"
+try:
+    from logikbench._version import __version__ as __version__
+except ImportError:
+    # This only exists in installations
+    __version__ = None
 
 # Sub-modules
 from logikbench import basic

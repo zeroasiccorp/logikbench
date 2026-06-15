@@ -20,6 +20,7 @@ __pycache__/
 *.so
 
 # Distribution / packaging
+logikbench/_version.py
 .Python
 build/
 develop-eggs/
