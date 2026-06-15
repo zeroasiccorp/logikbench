@@ -221,16 +221,25 @@ import logikbench as lb
 d = lb.basic.Mux()
 d.write_fileset('mux.f', fileset='rtl')
 ```
+### Prerequisites
+
+You will need properly installed synthesis tools installed to run benchmarks. Follow the install instructions for indidivual repos to properly install plugins.
+There is no dependency linkage between yosys and plugins. The recommendation is to isntall everything cleanly and to use versions from main.
+In Ubuntu, shared yosys libraries are placed at /usr/local/share/yosys/plugins/*.so
+
+* [Yosys](https://github.com/YosysHQ/yosys) - Open-source synthesis tool
+* [Yosys-slang](https://github.com/povik/yosys-slang) - SystemVerilog frontend plugin
+* [Wildebeest](https://github.com/zeroasiccorp/wildebeest)
 
 ## Installation
 
-The fastest way to start using LogikBench is to install it via PyPI:
+Install logikbench via PyPI:
 
 ```bash
 pip install logikbench
 ```
 
-Developers looking to contribute to the project, should clone the repo and install package locally as shown below.
+Developers should clone the repo and install package locally as shown below.
 
 ```bash
 git clone https://github.com/zeroasiccorp/logikbench
@@ -243,12 +252,7 @@ pip install -e .
 
 LogikBench includes the `lb` command-line tool for batch processing benchmarks.
 
-### Prerequisites
 
-To run benchmarks with the `lb` script, install:
-
-* [Yosys](https://github.com/YosysHQ/yosys) - Open-source synthesis tool
-* [Yosys-slang](https://github.com/povik/yosys-slang) - SystemVerilog frontend plugin
 
 ### Example
 
