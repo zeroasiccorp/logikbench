@@ -252,17 +252,41 @@ pip install -e .
 
 LogikBench includes the `lb` command-line tool for batch processing benchmarks.
 
+### Options
 
-
-### Example
-
-Synthesize all arithmetic benchmarks for iCE40 FPGA and export metrics:
-
-```bash
-lb -g arithmetic -t yosys -c synth_ice40 -o results.json
-```
+| Flag | Description |
+|------|-------------|
+| `-g`, `--group` | Benchmark group(s) to run: `basic`, `memory`, `arithmetic`, `epfl`, `blocks` (required) |
+| `-n`, `--name` | Run only the named benchmark(s) within the selected group(s) |
+| `-c`, `--cmd` | Synthesis command: `synth_fpga` (default), `synth_efinix`, `synth_ice40`, `synth_microchip`, `synth_quicklogic`, `synth_xilinx` |
+| `--tool` | Synthesis tool: `yosys` (default) or `vivado` |
+| `--part` | FPGA part name (required when `--tool vivado`) |
+| `--opt` | Extra synthesis command options, as a quoted string (e.g. `--opt="-flatten -noabc9"`) |
+| `-m`, `--metric` | Metrics to collect: `cells` (default) |
+| `--clean` | Remove a benchmark's build directory before running |
+| `-o`, `--output` | Results file; `.json` or `.csv` selected by extension (default `build/results.json`) |
 
 Run `lb -h` to see all available options.
+
+### Examples
+
+Synthesize all arithmetic benchmarks for iCE40 and export metrics to JSON:
+
+```bash
+lb -g arithmetic --tool yosys -c synth_ice40 -o results.json
+```
+
+Run a single benchmark with extra synthesis options:
+
+```bash
+lb -g basic -n binv --opt="-flatten" -o results.csv
+```
+
+Re-run multiple groups from scratch:
+
+```bash
+lb -g basic arithmetic --clean -o results.json
+```
 
 ## Contributing
 
