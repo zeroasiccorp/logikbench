@@ -251,41 +251,72 @@ pip install -e .
 ## Running Benchmarks
 
 LogikBench includes the `lb` command-line tool for batch processing benchmarks.
+It takes a mandatory sub-command:
 
-### Options
+- `lb run` — synthesize benchmarks and collect metrics.
+- `lb collect` — gather metrics from existing build results, without synthesis.
+
+Run `lb -h`, `lb run -h`, or `lb collect -h` to see all available options.
+
+### Common options (both sub-commands)
 
 | Flag | Description |
 |------|-------------|
-| `-g`, `--group` | Benchmark group(s) to run: `basic`, `memory`, `arithmetic`, `epfl`, `blocks` (required) |
-| `-n`, `--name` | Run only the named benchmark(s) within the selected group(s) |
-| `-c`, `--cmd` | Synthesis command: `synth_fpga` (default), `synth_efinix`, `synth_ice40`, `synth_microchip`, `synth_quicklogic`, `synth_xilinx` |
-| `--tool` | Synthesis tool: `yosys` (default) or `vivado` |
-| `--part` | FPGA part name (required when `--tool vivado`) |
-| `--opt` | Extra synthesis command options, as a quoted string (e.g. `--opt="-flatten -noabc9"`) |
-| `-m`, `--metric` | Metrics to collect: `cells` (default) |
-| `--clean` | Remove a benchmark's build directory before running |
+| `-g`, `--group` | Benchmark group(s): `basic`, `memory`, `arithmetic`, `epfl`, `blocks` (default: all) |
+| `-n`, `--name` | Restrict to the named benchmark(s) within the selected group(s) (default: all) |
+| `-m`, `--metric` | Metrics to track: `cells` (default) |
+| `-t`, `--tool` | Synthesis tool: `yosys` (default) or `vivado` |
 | `-o`, `--output` | Results file; `.json` or `.csv` selected by extension (default `build/results.json`) |
 
-Run `lb -h` to see all available options.
+### `run`-only options
+
+| Flag | Description |
+|------|-------------|
+| `-s`, `--script` | Path to the synthesis script (TCL), e.g. `results/fpga/zeroasic/synth.tcl` (required) |
+| `-c`, `--cmd` | Synthesis command: `synth_fpga` (default), `synth_efinix`, `synth_ice40`, `synth_microchip`, `synth_quicklogic`, `synth_xilinx` |
+| `--part` | FPGA part name (required when `--tool vivado`) |
+| `--opt` | Extra synthesis command options, as a quoted string (e.g. `--opt="-opt area"`) |
+| `--clean` | Remove a benchmark's build directory before running |
+| `--timeout` | Per-benchmark timeout in seconds; a run that exceeds it is killed, recorded as failed, and the sweep continues (`0` = no limit, default) |
 
 ### Examples
+
+The synthesis recipe is supplied as a TCL script via `-s`/`--script`. Per-target
+scripts live under `results/<flow>/<vendor>/`, e.g. `results/fpga/zeroasic/synth.tcl`.
+For each benchmark `lb run` writes a `params.tcl` into the run directory
+(`build/<group>/<name>/`) defining `top`, `fileset`, `name`, `cmd`, `options`, and
+`part`; the synthesis script `source`s it. Because the parameters live on disk next
+to the run, any benchmark can be reproduced by hand from its build directory with
+`yosys -c <path>/synth.tcl`.
+
+Run every benchmark in every group (the default when `-g` is omitted):
+
+```bash
+lb run -s results/fpga/zeroasic/synth.tcl -o results.json
+```
 
 Synthesize all arithmetic benchmarks for iCE40 and export metrics to JSON:
 
 ```bash
-lb -g arithmetic --tool yosys -c synth_ice40 -o results.json
+lb run -g arithmetic -t yosys -c synth_ice40 -s results/fpga/zeroasic/synth.tcl -o results.json
 ```
 
 Run a single benchmark with extra synthesis options:
 
 ```bash
-lb -g basic -n binv --opt="-flatten" -o results.csv
+lb run -g basic -n binv -s results/fpga/zeroasic/synth.tcl --opt="-opt area" -o results.csv
 ```
 
 Re-run multiple groups from scratch:
 
 ```bash
-lb -g basic arithmetic --clean -o results.json
+lb run -g basic arithmetic -s results/fpga/zeroasic/synth.tcl --clean -o results.json
+```
+
+Collect metrics from an already-synthesized run into a CSV (no synthesis):
+
+```bash
+lb collect -g basic -o results.csv
 ```
 
 ## Contributing
