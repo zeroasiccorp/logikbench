@@ -21,8 +21,8 @@
  ***************************************************************************/
 module firprog
   #(parameter DW = 16,   // data width
-    parameter ACCW = 16, // accumulator width
-    parameter N = 8      // number of taps
+    parameter ACCW = 32, // accumulator width
+    parameter N = 16     // number of taps
     )
    (
     input                        clk,

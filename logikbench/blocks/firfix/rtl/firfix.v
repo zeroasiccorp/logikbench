@@ -20,9 +20,9 @@
  *
  ***************************************************************************/
 module firfix
-  #(parameter            DW = 16,                     // data width
-    parameter            ACCW = 16,                   // accumulator width
-    parameter            N = 8,                       // number of taps
+  #(parameter            DW = 16,                         // data width
+    parameter            ACCW = 32,                       // accumulator width
+    parameter            N = 16,                          // number of taps
     parameter [DW*N-1:0] H = {(N){{(DW-2){1'b0}}, 2'b11}} // taps coeffs
     )
    (
