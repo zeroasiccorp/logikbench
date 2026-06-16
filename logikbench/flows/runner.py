@@ -152,6 +152,29 @@ def read_asic_metrics(name, builddir="build", jobname="job0"):
     return _read_manifest_metrics(name, builddir, jobname, ASIC_METRIC_STEP)
 
 
+# final flow node whose success means the whole flow completed
+_FLOW_FINAL_STEP = {"fpga": "synthesis", "asic": "timing"}
+
+
+def is_complete(name, flow="fpga", builddir="build", jobname="job0"):
+    """True if a prior run of this benchmark completed successfully.
+
+    Checks the SiliconCompiler-recorded status of the flow's final node in the
+    job manifest, so an incremental run can skip benchmarks already done.
+    """
+    manifest = os.path.join(builddir, name, jobname, f"{name}.pkg.json")
+    if not os.path.isfile(manifest):
+        return False
+    with open(manifest) as f:
+        data = json.load(f)
+    step = _FLOW_FINAL_STEP[flow]
+    try:
+        status = data["record"]["status"]["node"][step][_INDEX]["value"]
+    except (KeyError, TypeError):
+        return False
+    return status == "success"
+
+
 def run_one(group, item, flow="fpga", builddir="build", pdk="nangate45", quiet=True):
     """Run a single benchmark (by group + class name); return a result tuple.
 

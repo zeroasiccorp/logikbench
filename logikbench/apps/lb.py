@@ -11,7 +11,7 @@ from concurrent.futures import ProcessPoolExecutor, as_completed
 
 from logikbench.flows.runner import (
     METRICS, ASIC_METRICS, ASIC_PDKS,
-    run_one, read_metrics, read_asic_metrics,
+    run_one, read_metrics, read_asic_metrics, is_complete,
 )
 
 
@@ -99,6 +99,11 @@ Simple LogikBench runner.
                         help='Collect metrics from existing build results '
                              'without synthesizing')
 
+    parser.add_argument('--incremental',
+                        action='store_true',
+                        help='Skip benchmarks whose build already completed '
+                             'successfully; only synthesize the rest')
+
     parser.add_argument('-v', '--verbose',
                         action='store_true',
                         help='Show full SiliconCompiler tool/scheduler logs '
@@ -168,6 +173,23 @@ Simple LogikBench runner.
                        if namefilter is None or it.lower() in namefilter)
         print(f"Collected {len(collected)}/{expected} benchmark(s).")
     else:
+        # incremental: skip benchmarks already completed, reusing their metrics;
+        # only the remaining benchmarks are (re-)synthesized.
+        runlist = worklist
+        if args.incremental:
+            runlist = []
+            for group, item in worklist:
+                name = item.lower()
+                if is_complete(name, args.flow, args.builddir):
+                    if args.flow == 'asic':
+                        metrics = read_asic_metrics(name, builddir=args.builddir)
+                    else:
+                        metrics = read_metrics(name, builddir=args.builddir)
+                    print(f"Skipping {name} benchmark ({group}): already complete.")
+                    store(group, item, metrics)
+                else:
+                    runlist.append((group, item))
+
         # job-level parallelism: each benchmark is an independent SC run, so we
         # fan them out over a process pool (synthesis is the expensive part).
         quiet = not args.verbose
@@ -175,7 +197,7 @@ Simple LogikBench runner.
             with ProcessPoolExecutor(max_workers=args.jobs) as pool:
                 futures = [pool.submit(run_one, group, item, args.flow,
                                        args.builddir, args.pdk, quiet)
-                           for group, item in worklist]
+                           for group, item in runlist]
                 for future in as_completed(futures):
                     group, item, metrics, error = future.result()
                     name = item.lower()
@@ -187,7 +209,7 @@ Simple LogikBench runner.
                     print(f"Finished {name} benchmark ({group}).")
                     store(group, item, metrics)
         else:
-            for group, item in worklist:
+            for group, item in runlist:
                 print(f"Running {item.lower()} benchmark ({group}).")
                 _, _, metrics, error = run_one(group, item, args.flow,
                                                args.builddir, args.pdk, quiet)
