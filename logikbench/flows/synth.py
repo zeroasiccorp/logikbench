@@ -7,7 +7,7 @@ differ only in which target's synth.tcl they select.
 
 from siliconcompiler import Flowgraph
 
-from logikbench.tools.yosys import YosysTask
+from logikbench.tools.yosys.yosys import Synthesis
 from logikbench.tools.opensta import OpenStaTask
 
 
@@ -22,7 +22,7 @@ class FPGASynthesis(Flowgraph):
     def __init__(self, name="fpga_synth"):
         super().__init__()
         self.set_name(name)
-        self.node("synthesis", YosysTask())
+        self.node("synthesis", Synthesis())
 
 
 class ASICSynthesis(Flowgraph):
@@ -36,6 +36,6 @@ class ASICSynthesis(Flowgraph):
     def __init__(self, name="asic_synth"):
         super().__init__()
         self.set_name(name)
-        self.node("synthesis", YosysTask())
+        self.node("synthesis", Synthesis())
         self.node("timing", OpenStaTask())
         self.edge("synthesis", "timing")
