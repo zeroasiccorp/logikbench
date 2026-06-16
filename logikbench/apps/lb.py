@@ -1,23 +1,18 @@
 #!/usr/bin/env python3
 
 import argparse
-import subprocess
 import os
-import shutil
 import sys
 import json
 import csv
-from pathlib import Path
 
 import logikbench as lb
+from concurrent.futures import ProcessPoolExecutor, as_completed
 
-
-def collect_stats(statsfile, name, tool, results):
-    """Read a tool stats file and record the requested metrics."""
-    if tool == 'yosys' and 'cells' in results:
-        with open(statsfile) as f:
-            data = json.load(f)
-        results["cells"][name] = data["design"]["num_cells"]
+from logikbench.flows.runner import (
+    METRICS, ASIC_METRICS, ASIC_PDKS,
+    run_one, read_metrics, read_asic_metrics,
+)
 
 
 def main():
@@ -32,18 +27,11 @@ def main():
                   'epfl',
                   'blocks']
 
-    all_tools = ['yosys',
-                 'vivado']
+    all_flows = ['fpga', 'asic']
 
-    all_cmds = ['synth_fpga',
-                'synth_efinix',
-                'synth_ice40',
-                'synth_microchip',
-                'synth_quicklogic',
-                'synth_xilinx']
-
-    # TODO: implement
-    all_metrics = ['cells']
+    # metrics depend on the flow; the union is the set of valid -m choices
+    flow_metrics = {'fpga': METRICS, 'asic': ASIC_METRICS}
+    all_metrics = list(dict.fromkeys(METRICS + ASIC_METRICS))
 
     #################################################
     # Commandline Interface
@@ -64,23 +52,31 @@ def main():
                         nargs='+',
                         help="Benchmark name(s); defaults to all in the group")
 
+    common.add_argument("-f", "--flow",
+                        choices=all_flows,
+                        default="fpga",
+                        metavar="FLOW",
+                        help=f"Synthesis flow (default: fpga; "
+                             f"choices: {all_flows})")
+
     common.add_argument("-m", "--metric",
                         nargs='+',
-                        default=["cells"],
+                        default=None,
                         choices=all_metrics,
                         metavar="METRIC",
-                        help=f"Metrics to track (choices: {all_metrics})")
+                        help="Metrics to track (default: all metrics for the "
+                             f"selected flow; choices: {all_metrics})")
 
-    common.add_argument("-t", "--tool",
-                        choices=all_tools,
-                        default="yosys",
-                        metavar="TOOL",
-                        help=f"Synthesis tool (default: yosys; "
-                             f"choices: {all_tools})")
+    common.add_argument('-b', '--builddir',
+                        default="build",
+                        metavar="DIR",
+                        help='Build directory root; per-benchmark work goes in '
+                             '<builddir>/<name> (default: build)')
 
     common.add_argument('-o', '--output',
-                        default="build/results.json",
-                        help='Output file name (default: build/results.json)')
+                        default=None,
+                        help='Output file name (default: '
+                             '<builddir>/results.json)')
 
     parser = argparse.ArgumentParser(description="""\
 Simple LogikBench runner.
@@ -96,38 +92,24 @@ Simple LogikBench runner.
                           parents=[common],
                           help="Synthesize benchmarks and collect metrics")
 
-    prun.add_argument('-s', '--script',
-                      required=True,
-                      metavar="PATH",
-                      help='Path to the synthesis script (TCL), e.g. '
-                           'results/fpga/zeroasic/synth.tcl. It should '
-                           'source the generated params.tcl for per-benchmark '
-                           'values (top, fileset, name, cmd, options, part)')
-
-    prun.add_argument("-c", "--cmd",
-                      choices=all_cmds,
-                      default="synth_fpga",
-                      metavar="CMD",
-                      help=f"Synthesis command (default: synth_fpga; "
-                           f"choices: {all_cmds})")
-
-    prun.add_argument("--part",
-                      default=None,
-                      help='FPGA part name (required for Vivado)')
-
-    prun.add_argument("--opt",
-                      default="",
-                      help='Extra synthesis command options, as a quoted '
-                           'string (e.g. --opt="-opt area")')
+    prun.add_argument('-j', '--jobs',
+                      type=int,
+                      default=1,
+                      metavar="N",
+                      help='Number of benchmarks to synthesize in parallel '
+                           '(default: 1)')
 
     prun.add_argument('--clean',
                       action='store_true',
-                      help='Clean up build directory before running')
+                      help='Force a fresh synthesis (do not reuse prior runs)')
 
-    prun.add_argument('--timeout',
-                      type=int,
-                      default=0,
-                      help='Per-benchmark timeout in seconds (0 = no limit)')
+    prun.add_argument('--pdk',
+                      choices=ASIC_PDKS,
+                      default=ASIC_PDKS[0],
+                      metavar="PDK",
+                      help=f"Standard-cell library for the asic flow "
+                           f"(default: {ASIC_PDKS[0]}; choices: {ASIC_PDKS}); "
+                           f"ignored for the fpga flow")
 
     # 'collect' sub-command: gather metrics from existing build results.
     sub.add_parser("collect",
@@ -141,7 +123,13 @@ Simple LogikBench runner.
     # Setup
     #################################################
 
-    cwd = os.getcwd()
+    # default the results file into the build directory
+    if args.output is None:
+        args.output = os.path.join(args.builddir, "results.json")
+
+    # metrics default to the full set produced by the selected flow
+    if args.metric is None:
+        args.metric = flow_metrics[args.flow]
 
     # get list of benchmarks (keyed by group, value is list of class names)
     benchmarks = {group: getattr(lb, group).__all__ for group in all_groups}
@@ -155,111 +143,72 @@ Simple LogikBench runner.
     # track failures so one bad benchmark does not abort the whole sweep
     failures = []
 
-    # 'run'-only validation and synthesis script resolution
-    if args.command == 'run':
-        if args.tool == 'vivado' and args.part is None:
-            print("Error: --part must be specified with the Vivado tool.")
-            sys.exit(1)
-        # resolved to absolute, since the loop chdir's into build directories
-        scriptpath = Path(args.script).resolve()
-        if not scriptpath.is_file():
-            print(f"Error: synthesis script not found: {args.script}")
-            sys.exit(1)
+    # work list of (group, class-name) honoring the group/name filters
+    worklist = [(group, item)
+                for group in args.group
+                for item in benchmarks[group]
+                if namefilter is None or item.lower() in namefilter]
+
+    def store(group, item, metrics):
+        name = item.lower()
+        for metric in args.metric:
+            results[metric][name] = metrics.get(metric)
 
     #################################################
     # Loop
     #################################################
 
-    # iterate over all groups
-    for group in args.group:
-        bench_list = benchmarks[group]
-        # iterate over all benchmarks in group
-        for item in bench_list:
-            name = item.lower()
-
-            # optional name filter
-            if namefilter is not None and name not in namefilter:
-                continue
-
-            rundir = f"build/{group}/{name}"
-            statsfile = f"{name}_stats.json"
-
-            # 'collect': read existing stats only, no synthesis
-            if args.command == 'collect':
-                statspath = os.path.join(rundir, statsfile)
-                if not os.path.isfile(statspath):
-                    print(f"No results for {name} benchmark ({group}), "
-                          f"skipping.")
-                    continue
-                collect_stats(statspath, name, args.tool, results)
-                continue
-
-            # 'run': synthesize the benchmark
-            if args.tool == 'yosys':
-                cmd = ['yosys', '-c', str(scriptpath)]
-            elif args.tool == 'vivado':
-                cmd = ['vivado', '-mode', 'batch', '-source', str(scriptpath)]
-
-            # clean up old results
-            if args.clean and os.path.isdir(rundir):
-                shutil.rmtree(rundir)
-
-            os.makedirs(rundir, exist_ok=True)
-            os.chdir(rundir)
-            try:
-                # instance of benchmark class (class name comes from __all__)
-                bobj = getattr(getattr(lb, group), item)
-                b = bobj()
-
-                # get top module
-                topmodule = b.get_topmodule(fileset='rtl')
-
-                # write out design fileset
-                filesetfile = f"{name}.f"
-                b.write_fileset(filesetfile, fileset='rtl')
-
-                # per-benchmark parameters written to a TCL file that the
-                # synthesis script sources (cwd is the per-benchmark build dir)
-                with open('params.tcl', 'w') as p:
-                    p.write("# Auto-generated by lb; sourced by the "
-                            "synthesis script.\n")
-                    p.write(f"set top {{{topmodule}}}\n")
-                    p.write(f"set fileset {{{filesetfile}}}\n")
-                    p.write(f"set name {{{name}}}\n")
-                    p.write(f"set cmd {{{args.cmd}}}\n")
-                    p.write(f"set options {{{args.opt}}}\n")
-                    p.write(f"set part {{{args.part or ''}}}\n")
-
-                # run benchmark (skip if results already exist)
-                if os.path.exists(statsfile):
-                    print(f"Found previous results, skipping {name} "
-                          f"benchmark ({group}).")
-                else:
-                    print(f"Running {name} benchmark ({group}).")
-                    print(f"Logfile: {rundir}/{name}.log")
-                    try:
-                        with open(f'{name}.log', "w") as log:
-                            subprocess.run(cmd,
-                                           stdout=log,
-                                           stderr=subprocess.STDOUT,
-                                           check=True,
-                                           timeout=args.timeout or None)
-                    except subprocess.CalledProcessError:
-                        print(f"Error running {name} ({group}), see "
-                              f"{rundir}/{name}.log")
+    if args.command == 'run':
+        # job-level parallelism: each benchmark is an independent SC run, so we
+        # fan them out over a process pool (synthesis is the expensive part).
+        if args.jobs > 1:
+            with ProcessPoolExecutor(max_workers=args.jobs) as pool:
+                futures = [pool.submit(run_one, group, item, args.flow,
+                                       args.builddir, args.clean, args.pdk)
+                           for group, item in worklist]
+                for future in as_completed(futures):
+                    group, item, metrics, error = future.result()
+                    name = item.lower()
+                    if error is not None:
+                        print(f"Error synthesizing {name} ({group}): {error}")
                         failures.append(f"{group}/{name}")
                         continue
-                    except subprocess.TimeoutExpired:
-                        print(f"Timeout ({args.timeout}s) running {name} "
-                              f"({group}), see {rundir}/{name}.log")
-                        failures.append(f"{group}/{name} (timeout)")
-                        continue
+                    print(f"Finished {name} benchmark ({group}).")
+                    store(group, item, metrics)
+        else:
+            for group, item in worklist:
+                print(f"Running {item.lower()} benchmark ({group}).")
+                _, _, metrics, error = run_one(group, item, args.flow,
+                                               args.builddir, args.clean,
+                                               args.pdk)
+                if error is not None:
+                    print(f"Error synthesizing {item.lower()} ({group}): {error}")
+                    failures.append(f"{group}/{item.lower()}")
+                    continue
+                store(group, item, metrics)
+    else:
+        # 'collect': read existing metrics only, no synthesis (fast, serial)
+        for group, item in worklist:
+            name = item.lower()
+            if args.flow == 'asic':
+                metrics = read_asic_metrics(name, builddir=args.builddir)
+            else:
+                metrics = read_metrics(name, builddir=args.builddir)
+            if metrics is None:
+                if namefilter is not None:
+                    # only warn about benchmarks the user explicitly named
+                    print(f"No results for {name} benchmark ({group}).")
+                continue
+            store(group, item, metrics)
 
-                # collect results
-                collect_stats(statsfile, name, args.tool, results)
-            finally:
-                # always return to the original working directory
-                os.chdir(cwd)
+    # collect coverage summary (count, not a line per missing benchmark)
+    if args.command == 'collect':
+        collected = set()
+        for col in results.values():
+            collected.update(col.keys())
+        expected = sum(1 for g in args.group for it in benchmarks[g]
+                       if namefilter is None or it.lower() in namefilter)
+        print(f"Collected {len(collected)}/{expected} benchmark(s).")
 
     #################################################
     # Output
