@@ -10,7 +10,7 @@ import logikbench as lb
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
 from logikbench.flows.runner import (
-    METRICS, ASIC_METRICS, ASIC_PDKS,
+    METRICS, ASIC_METRICS, TARGETS, FPGA_TARGETS, STEPS,
     run_one, read_metrics, read_asic_metrics, is_complete,
 )
 
@@ -27,9 +27,7 @@ def main():
                   'epfl',
                   'blocks']
 
-    all_flows = ['fpga', 'asic']
-
-    # metrics tracked are determined by the selected flow
+    # metrics tracked are determined by the run mode (fpga vs asic synthesis)
     flow_metrics = {'fpga': METRICS, 'asic': ASIC_METRICS}
 
     #################################################
@@ -55,23 +53,17 @@ LogikBench commandline runner.
                              "selected group(s), so each runs in whichever "
                              "group defines it (default: all of them)")
 
-    parser.add_argument("-f", "--flow",
-                        choices=all_flows,
-                        default="fpga",
-                        metavar="FLOW",
-                        help=f"Synthesis flow (default: fpga; "
-                             f"choices: {all_flows})")
-
     parser.add_argument('-b', '--builddir',
                         default="build",
                         metavar="DIR",
                         help='Build directory root; per-benchmark work goes in '
-                             '<builddir>/<name> (default: build)')
+                             '<builddir>/<target>/<name> (target is the --target '
+                             "name, or 'fpga' when none; default root: build)")
 
     parser.add_argument('-o', '--output',
                         default=None,
                         help='Output file name (default: '
-                             '<builddir>/results.json)')
+                             '<builddir>/<target>/results.json)')
 
     parser.add_argument('-j', '--jobs',
                         type=int,
@@ -80,13 +72,37 @@ LogikBench commandline runner.
                         help='Number of benchmarks to synthesize in parallel '
                              '(default: 1)')
 
-    parser.add_argument('--pdk',
-                        choices=ASIC_PDKS,
-                        default=ASIC_PDKS[0],
-                        metavar="PDK",
-                        help=f"Standard-cell library for the asic flow "
-                             f"(default: {ASIC_PDKS[0]}; choices: {ASIC_PDKS}); "
-                             f"ignored for the fpga flow")
+    parser.add_argument('--target',
+                        choices=TARGETS,
+                        default=None,
+                        metavar="TARGET",
+                        help=f"Synthesis target (choices: {TARGETS}); an FPGA "
+                             f"target (e.g. ice40, xilinx, zeroasic) picks the "
+                             f"yosys synth command, a plain PDK name runs the "
+                             f"lbflow ASIC path, and a '<pdk>_demo' name runs "
+                             f"the SC demo target via asicflow. Omit for "
+                             f"default FPGA synthesis (zeroasic)")
+
+    parser.add_argument('--options',
+                        default="",
+                        metavar="OPTS",
+                        help="Extra options passed verbatim as arguments to "
+                             "the FPGA synth command (e.g. --options "
+                             "'-abc9 -nocarry')")
+
+    parser.add_argument('--start',
+                        choices=STEPS,
+                        default=None,
+                        metavar="STEP",
+                        help=f"First flow step to run (choices: {STEPS}; "
+                             f"default: from the start)")
+
+    parser.add_argument('--stop',
+                        choices=STEPS,
+                        default=None,
+                        metavar="STEP",
+                        help=f"Last flow step to run (choices: {STEPS}; "
+                             f"default: to the end)")
 
     parser.add_argument('--collect_only',
                         action='store_true',
@@ -109,12 +125,21 @@ LogikBench commandline runner.
     # Setup
     #################################################
 
-    # default the results file into the build directory
-    if args.output is None:
-        args.output = os.path.join(args.builddir, "results.json")
+    # An FPGA target (or no target) means FPGA synthesis; a PDK/demo target
+    # means ASIC. The FPGA target list is owned by the runner.
+    mode = 'fpga' if (args.target is None or args.target in FPGA_TARGETS) \
+        else 'asic'
 
-    # metrics tracked are the full set produced by the selected flow
-    metric_names = flow_metrics[args.flow]
+    # segregate builds by target so different targets do not collide:
+    # <builddir>/<target>/<benchmark>/... (FPGA, no target -> 'fpga')
+    builddir = os.path.join(args.builddir, args.target or "fpga")
+
+    # default the results file into the target's build directory
+    if args.output is None:
+        args.output = os.path.join(builddir, "results.json")
+
+    # metrics tracked are the full set produced by the run mode
+    metric_names = flow_metrics[mode]
 
     # get list of benchmarks (keyed by group, value is list of class names)
     benchmarks = {group: getattr(lb, group).__all__ for group in all_groups}
@@ -147,10 +172,10 @@ LogikBench commandline runner.
         # read existing metrics only, no synthesis (fast, serial)
         for group, item in worklist:
             name = item.lower()
-            if args.flow == 'asic':
-                metrics = read_asic_metrics(name, builddir=args.builddir)
+            if mode == 'asic':
+                metrics = read_asic_metrics(name, builddir=builddir)
             else:
-                metrics = read_metrics(name, builddir=args.builddir)
+                metrics = read_metrics(name, METRICS, builddir=builddir)
             if metrics is None:
                 if namefilter is not None:
                     # only warn about benchmarks the user explicitly named
@@ -173,11 +198,11 @@ LogikBench commandline runner.
             runlist = []
             for group, item in worklist:
                 name = item.lower()
-                if is_complete(name, args.flow, args.builddir):
-                    if args.flow == 'asic':
-                        metrics = read_asic_metrics(name, builddir=args.builddir)
+                if is_complete(name, builddir):
+                    if mode == 'asic':
+                        metrics = read_asic_metrics(name, builddir=builddir)
                     else:
-                        metrics = read_metrics(name, builddir=args.builddir)
+                        metrics = read_metrics(name, METRICS, builddir=builddir)
                     print(f"Skipping {name} benchmark ({group}): already complete.")
                     store(group, item, metrics)
                 else:
@@ -188,8 +213,9 @@ LogikBench commandline runner.
         quiet = not args.verbose
         if args.jobs > 1:
             with ProcessPoolExecutor(max_workers=args.jobs) as pool:
-                futures = [pool.submit(run_one, group, item, args.flow,
-                                       args.builddir, args.pdk, quiet)
+                futures = [pool.submit(run_one, group, item, args.target,
+                                       args.options, builddir, quiet,
+                                       args.start, args.stop)
                            for group, item in runlist]
                 for future in as_completed(futures):
                     group, item, metrics, error = future.result()
@@ -204,8 +230,9 @@ LogikBench commandline runner.
         else:
             for group, item in runlist:
                 print(f"Running {item.lower()} benchmark ({group}).")
-                _, _, metrics, error = run_one(group, item, args.flow,
-                                               args.builddir, args.pdk, quiet)
+                _, _, metrics, error = run_one(group, item, args.target,
+                                               args.options, builddir, quiet,
+                                               args.start, args.stop)
                 if error is not None:
                     print(f"Error synthesizing {item.lower()} ({group}): {error}",
                           file=sys.stderr)
