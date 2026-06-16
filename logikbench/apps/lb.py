@@ -29,29 +29,31 @@ def main():
 
     all_flows = ['fpga', 'asic']
 
-    # metrics depend on the flow; the union is the set of valid -m choices
+    # metrics tracked are determined by the selected flow
     flow_metrics = {'fpga': METRICS, 'asic': ASIC_METRICS}
-    all_metrics = list(dict.fromkeys(METRICS + ASIC_METRICS))
 
     #################################################
     # Commandline Interface
     #################################################
 
     parser = argparse.ArgumentParser(description="""\
-Simple LogikBench runner.
+LogikBench commandline runner.
 """, formatter_class=argparse.RawDescriptionHelpFormatter)
 
     parser.add_argument("-g", "--group",
                         nargs='+',
                         choices=all_groups,
                         metavar="GROUP",
-                        default=all_groups,
-                        help=f"Benchmark group(s); defaults to all "
+                        required=True,
+                        help=f"Benchmark group(s) to run "
                              f"(choices: {all_groups})")
 
     parser.add_argument("-n", "--name",
                         nargs='+',
-                        help="Benchmark name(s); defaults to all in the group")
+                        help="Only run benchmark(s) with these name(s); names "
+                             "are matched against the benchmarks in the "
+                             "selected group(s), so each runs in whichever "
+                             "group defines it (default: all of them)")
 
     parser.add_argument("-f", "--flow",
                         choices=all_flows,
@@ -59,14 +61,6 @@ Simple LogikBench runner.
                         metavar="FLOW",
                         help=f"Synthesis flow (default: fpga; "
                              f"choices: {all_flows})")
-
-    parser.add_argument("-m", "--metric",
-                        nargs='+',
-                        default=None,
-                        choices=all_metrics,
-                        metavar="METRIC",
-                        help="Metrics to track (default: all metrics for the "
-                             f"selected flow; choices: {all_metrics})")
 
     parser.add_argument('-b', '--builddir',
                         default="build",
@@ -119,9 +113,8 @@ Simple LogikBench runner.
     if args.output is None:
         args.output = os.path.join(args.builddir, "results.json")
 
-    # metrics default to the full set produced by the selected flow
-    if args.metric is None:
-        args.metric = flow_metrics[args.flow]
+    # metrics tracked are the full set produced by the selected flow
+    metric_names = flow_metrics[args.flow]
 
     # get list of benchmarks (keyed by group, value is list of class names)
     benchmarks = {group: getattr(lb, group).__all__ for group in all_groups}
@@ -130,7 +123,7 @@ Simple LogikBench runner.
     namefilter = set(n.lower() for n in args.name) if args.name else None
 
     # global analysis
-    results = {metric: {} for metric in args.metric}
+    results = {metric: {} for metric in metric_names}
 
     # track failures so one bad benchmark does not abort the whole sweep
     failures = []
@@ -143,7 +136,7 @@ Simple LogikBench runner.
 
     def store(group, item, metrics):
         name = item.lower()
-        for metric in args.metric:
+        for metric in metric_names:
             results[metric][name] = metrics.get(metric)
 
     #################################################
