@@ -37,10 +37,11 @@ def main():
     # Commandline Interface
     #################################################
 
-    # Arguments shared by all sub-commands.
-    common = argparse.ArgumentParser(add_help=False)
+    parser = argparse.ArgumentParser(description="""\
+Simple LogikBench runner.
+""", formatter_class=argparse.RawDescriptionHelpFormatter)
 
-    common.add_argument("-g", "--group",
+    parser.add_argument("-g", "--group",
                         nargs='+',
                         choices=all_groups,
                         metavar="GROUP",
@@ -48,18 +49,18 @@ def main():
                         help=f"Benchmark group(s); defaults to all "
                              f"(choices: {all_groups})")
 
-    common.add_argument("-n", "--name",
+    parser.add_argument("-n", "--name",
                         nargs='+',
                         help="Benchmark name(s); defaults to all in the group")
 
-    common.add_argument("-f", "--flow",
+    parser.add_argument("-f", "--flow",
                         choices=all_flows,
                         default="fpga",
                         metavar="FLOW",
                         help=f"Synthesis flow (default: fpga; "
                              f"choices: {all_flows})")
 
-    common.add_argument("-m", "--metric",
+    parser.add_argument("-m", "--metric",
                         nargs='+',
                         default=None,
                         choices=all_metrics,
@@ -67,55 +68,41 @@ def main():
                         help="Metrics to track (default: all metrics for the "
                              f"selected flow; choices: {all_metrics})")
 
-    common.add_argument('-b', '--builddir',
+    parser.add_argument('-b', '--builddir',
                         default="build",
                         metavar="DIR",
                         help='Build directory root; per-benchmark work goes in '
                              '<builddir>/<name> (default: build)')
 
-    common.add_argument('-o', '--output',
+    parser.add_argument('-o', '--output',
                         default=None,
                         help='Output file name (default: '
                              '<builddir>/results.json)')
 
-    parser = argparse.ArgumentParser(description="""\
-Simple LogikBench runner.
-""", formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument('-j', '--jobs',
+                        type=int,
+                        default=1,
+                        metavar="N",
+                        help='Number of benchmarks to synthesize in parallel '
+                             '(default: 1)')
 
-    sub = parser.add_subparsers(dest="command",
-                                required=True,
-                                metavar="{run,collect}",
-                                help="Sub-command to execute")
+    parser.add_argument('--pdk',
+                        choices=ASIC_PDKS,
+                        default=ASIC_PDKS[0],
+                        metavar="PDK",
+                        help=f"Standard-cell library for the asic flow "
+                             f"(default: {ASIC_PDKS[0]}; choices: {ASIC_PDKS}); "
+                             f"ignored for the fpga flow")
 
-    # 'run' sub-command: synthesize benchmarks and collect metrics.
-    prun = sub.add_parser("run",
-                          parents=[common],
-                          help="Synthesize benchmarks and collect metrics")
+    parser.add_argument('--collect_only',
+                        action='store_true',
+                        help='Collect metrics from existing build results '
+                             'without synthesizing')
 
-    prun.add_argument('-j', '--jobs',
-                      type=int,
-                      default=1,
-                      metavar="N",
-                      help='Number of benchmarks to synthesize in parallel '
-                           '(default: 1)')
-
-    prun.add_argument('--clean',
-                      action='store_true',
-                      help='Force a fresh synthesis (do not reuse prior runs)')
-
-    prun.add_argument('--pdk',
-                      choices=ASIC_PDKS,
-                      default=ASIC_PDKS[0],
-                      metavar="PDK",
-                      help=f"Standard-cell library for the asic flow "
-                           f"(default: {ASIC_PDKS[0]}; choices: {ASIC_PDKS}); "
-                           f"ignored for the fpga flow")
-
-    # 'collect' sub-command: gather metrics from existing build results.
-    sub.add_parser("collect",
-                   parents=[common],
-                   help="Collect metrics from existing build results "
-                        "(no synthesis)")
+    parser.add_argument('-v', '--verbose',
+                        action='store_true',
+                        help='Show full SiliconCompiler tool/scheduler logs '
+                             '(quieted by default)')
 
     args = parser.parse_args()
 
@@ -158,36 +145,8 @@ Simple LogikBench runner.
     # Loop
     #################################################
 
-    if args.command == 'run':
-        # job-level parallelism: each benchmark is an independent SC run, so we
-        # fan them out over a process pool (synthesis is the expensive part).
-        if args.jobs > 1:
-            with ProcessPoolExecutor(max_workers=args.jobs) as pool:
-                futures = [pool.submit(run_one, group, item, args.flow,
-                                       args.builddir, args.clean, args.pdk)
-                           for group, item in worklist]
-                for future in as_completed(futures):
-                    group, item, metrics, error = future.result()
-                    name = item.lower()
-                    if error is not None:
-                        print(f"Error synthesizing {name} ({group}): {error}")
-                        failures.append(f"{group}/{name}")
-                        continue
-                    print(f"Finished {name} benchmark ({group}).")
-                    store(group, item, metrics)
-        else:
-            for group, item in worklist:
-                print(f"Running {item.lower()} benchmark ({group}).")
-                _, _, metrics, error = run_one(group, item, args.flow,
-                                               args.builddir, args.clean,
-                                               args.pdk)
-                if error is not None:
-                    print(f"Error synthesizing {item.lower()} ({group}): {error}")
-                    failures.append(f"{group}/{item.lower()}")
-                    continue
-                store(group, item, metrics)
-    else:
-        # 'collect': read existing metrics only, no synthesis (fast, serial)
+    if args.collect_only:
+        # read existing metrics only, no synthesis (fast, serial)
         for group, item in worklist:
             name = item.lower()
             if args.flow == 'asic':
@@ -201,14 +160,43 @@ Simple LogikBench runner.
                 continue
             store(group, item, metrics)
 
-    # collect coverage summary (count, not a line per missing benchmark)
-    if args.command == 'collect':
+        # coverage summary (count, not a line per missing benchmark)
         collected = set()
         for col in results.values():
             collected.update(col.keys())
         expected = sum(1 for g in args.group for it in benchmarks[g]
                        if namefilter is None or it.lower() in namefilter)
         print(f"Collected {len(collected)}/{expected} benchmark(s).")
+    else:
+        # job-level parallelism: each benchmark is an independent SC run, so we
+        # fan them out over a process pool (synthesis is the expensive part).
+        quiet = not args.verbose
+        if args.jobs > 1:
+            with ProcessPoolExecutor(max_workers=args.jobs) as pool:
+                futures = [pool.submit(run_one, group, item, args.flow,
+                                       args.builddir, args.pdk, quiet)
+                           for group, item in worklist]
+                for future in as_completed(futures):
+                    group, item, metrics, error = future.result()
+                    name = item.lower()
+                    if error is not None:
+                        print(f"Error synthesizing {name} ({group}): {error}",
+                              file=sys.stderr)
+                        failures.append(f"{group}/{name}")
+                        continue
+                    print(f"Finished {name} benchmark ({group}).")
+                    store(group, item, metrics)
+        else:
+            for group, item in worklist:
+                print(f"Running {item.lower()} benchmark ({group}).")
+                _, _, metrics, error = run_one(group, item, args.flow,
+                                               args.builddir, args.pdk, quiet)
+                if error is not None:
+                    print(f"Error synthesizing {item.lower()} ({group}): {error}",
+                          file=sys.stderr)
+                    failures.append(f"{group}/{item.lower()}")
+                    continue
+                store(group, item, metrics)
 
     #################################################
     # Output

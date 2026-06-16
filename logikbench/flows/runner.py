@@ -6,7 +6,9 @@ the 'lb' app (and a future sweep) can stay small.
 """
 
 import json
+import logging
 import os
+import shutil
 
 from siliconcompiler import Project
 from siliconcompiler.metrics import FPGAMetricsSchema, ASICMetricsSchema
@@ -54,19 +56,25 @@ def default_sdc(target):
     return os.path.join(here, "targets", *target.split("/"), "default.sdc")
 
 
-def _project(design, builddir, metric_schema):
+def _project(design, builddir, metric_schema, quiet=True):
     """Build a base Project for a benchmark Design.
 
     A base Project does not register the design metrics (cells, luts, fmax,
     ...), so we attach the relevant SC metric schema (FPGA or ASIC); that is
     the only thing needed beyond base classes to record/read SC-standard
     metrics without an FPGA/ASIC project (and its device/PDK requirements).
+
+    When quiet (the default), SiliconCompiler's tool output and scheduler
+    logging are suppressed; pass quiet=False for full SC logs.
     """
     proj = Project(design)
     EditableSchema(proj).insert("metric", metric_schema, clobber=True)
     proj.set("option", "builddir", builddir)
     # batch synthesis: no interactive CLI dashboard
     proj.set("option", "nodashboard", True)
+    if quiet:
+        proj.set("option", "quiet", True)
+        proj.logger.setLevel(logging.ERROR)
     return proj
 
 
@@ -91,14 +99,12 @@ def _read_manifest_metrics(name, builddir, jobname, metric_step):
     return out
 
 
-def run_design(design, builddir="build", clean=False):
+def run_design(design, builddir="build", quiet=True):
     """Synthesize one benchmark Design (FPGA flow); return {metric: value}.
 
     Raises on run failure so the caller can record it and continue.
     """
-    proj = _project(design, builddir, FPGAMetricsSchema())
-    if clean:
-        proj.set("option", "clean", True)
+    proj = _project(design, builddir, FPGAMetricsSchema(), quiet=quiet)
     proj.add_fileset("rtl")
     proj.set_flow(FPGASynthesis())
     # configure the task via the project (persists through node reconstruction)
@@ -113,7 +119,8 @@ def read_metrics(name, builddir="build", jobname="job0"):
         name, builddir, jobname, {m: _STEP for m in METRICS})
 
 
-def run_asic_design(design, builddir="build", clean=False, pdk="nangate45", sdc=None):
+def run_asic_design(design, builddir="build", pdk="nangate45",
+                    sdc=None, quiet=True):
     """Run the 2-node ASIC flow (Yosys synthesis + OpenSTA); return metrics.
 
     pdk selects the standard-cell library/recipe (see ASIC_PDKS). Raises on run
@@ -124,9 +131,7 @@ def run_asic_design(design, builddir="build", clean=False, pdk="nangate45", sdc=
     liberty = cfg["liberty"]()
     sdc = sdc if sdc is not None else default_sdc(target)
 
-    proj = _project(design, builddir, ASICMetricsSchema())
-    if clean:
-        proj.set("option", "clean", True)
+    proj = _project(design, builddir, ASICMetricsSchema(), quiet=quiet)
     proj.add_fileset("rtl")
     proj.set_flow(ASICSynthesis())
 
@@ -147,7 +152,7 @@ def read_asic_metrics(name, builddir="build", jobname="job0"):
     return _read_manifest_metrics(name, builddir, jobname, ASIC_METRIC_STEP)
 
 
-def run_one(group, item, flow="fpga", builddir="build", clean=False, pdk="nangate45"):
+def run_one(group, item, flow="fpga", builddir="build", pdk="nangate45", quiet=True):
     """Run a single benchmark (by group + class name); return a result tuple.
 
     Returns (group, item, metrics, error). Catches errors and returns them so a
@@ -156,11 +161,14 @@ def run_one(group, item, flow="fpga", builddir="build", clean=False, pdk="nangat
     """
     import logikbench
     design = getattr(getattr(logikbench, group), item)()
+    # remove the prior job directory so SiliconCompiler always runs fresh
+    # (avoids SC's incremental build reuse)
+    shutil.rmtree(os.path.join(builddir, item.lower()), ignore_errors=True)
     try:
         if flow == "asic":
-            metrics = run_asic_design(design, builddir=builddir, clean=clean, pdk=pdk)
+            metrics = run_asic_design(design, builddir=builddir, pdk=pdk, quiet=quiet)
         else:
-            metrics = run_design(design, builddir=builddir, clean=clean)
+            metrics = run_design(design, builddir=builddir, quiet=quiet)
         return (group, item, metrics, None)
     except Exception as e:  # noqa: BLE001 - report to parent, keep the sweep going
         return (group, item, None, str(e))
