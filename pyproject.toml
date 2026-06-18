@@ -17,9 +17,9 @@ __version__ = "{version}"
 
 [tool.setuptools]
 include-package-data = true
-packages = [
-    "logikbench"
-]
+
+[tool.setuptools.packages.find]
+include = ["logikbench*"]
 
 [project]
 name = "logikbench"

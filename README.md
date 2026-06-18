@@ -251,72 +251,91 @@ pip install -e .
 ## Running Benchmarks
 
 LogikBench includes the `lb` command-line tool for batch processing benchmarks.
-It takes a mandatory sub-command:
+It drives synthesis through [SiliconCompiler](https://github.com/siliconcompiler/siliconcompiler):
+each benchmark is a SiliconCompiler `Design`, and `--target` selects what runs.
 
-- `lb run` — synthesize benchmarks and collect metrics.
-- `lb collect` — gather metrics from existing build results, without synthesis.
+Targets:
 
-Run `lb -h`, `lb run -h`, or `lb collect -h` to see all available options.
+- *(no `--target`)* — FPGA synthesis via LogikBench's `lbflow` (Yosys `synth_fpga`).
+- `freepdk45` — ASIC synthesis + OpenSTA timing via `lbflow` (pre-layout STA, so
+  it reports `fmax` without place & route).
+- `<pdk>_demo` (`freepdk45_demo`, `asap7_demo`, `skywater130_demo`, `gf180_demo`,
+  `ihp130_demo`) — the official SiliconCompiler demo target for that PDK, run
+  through SC's `asicflow` (full RTL→GDS). Use `--stop` to limit how far it runs.
 
-### Common options (both sub-commands)
+`--start`/`--stop` restrict the run to a step range, named by stage:
+`synthesis`, `floorplan`, `place`, `cts`, `route` (each mapped to the
+appropriate SC node). For example `--stop synthesis` runs synthesis only.
+
+By default `lb` synthesizes the selected benchmarks and records metrics; pass
+`--collect_only` to read metrics from existing build results without
+synthesizing. Run `lb -h` to see all available options.
+
+### Options
 
 | Flag | Description |
 |------|-------------|
-| `-g`, `--group` | Benchmark group(s): `basic`, `memory`, `arithmetic`, `epfl`, `blocks` (default: all) |
-| `-n`, `--name` | Restrict to the named benchmark(s) within the selected group(s) (default: all) |
-| `-m`, `--metric` | Metrics to track: `cells` (default) |
-| `-t`, `--tool` | Synthesis tool: `yosys` (default) or `vivado` |
-| `-o`, `--output` | Results file; `.json` or `.csv` selected by extension (default `build/results.json`) |
+| `-g`, `--group` | Benchmark group(s) to run: `basic`, `memory`, `arithmetic`, `epfl`, `blocks` (required) |
+| `-n`, `--name` | Only run benchmark(s) with these name(s); matched against the benchmarks in the selected group(s), so each runs in whichever group defines it (default: all of them) |
+| `--target` | ASIC target: a PDK name (`freepdk45`, runs lbflow) or a `<pdk>_demo` name (runs the SC demo target via asicflow). Omit for FPGA synthesis |
+| `--start` / `--stop` | First / last stage to run: `synthesis`, `floorplan`, `place`, `cts`, `route` (default: full flow) |
+| `-b`, `--builddir` | Build directory root; per-benchmark work goes in `<builddir>/<target>/<name>` (target is the `--target` name, or `fpga` when none; default root: `build`) |
+| `-o`, `--output` | Results file; `.json` or `.csv` selected by extension (default: `<builddir>/<target>/results.json`) |
+| `-j`, `--jobs` | Number of benchmarks to synthesize in parallel (default: 1); each is an independent SiliconCompiler run, fanned out over a process pool |
+| `--incremental` | Skip benchmarks whose build already completed successfully; only synthesize the rest |
+| `--collect_only` | Read metrics from existing build results without synthesizing |
+| `-v`, `--verbose` | Show full SiliconCompiler tool/scheduler logs (quieted by default) |
 
-### `run`-only options
+Metrics are fixed by the run mode: `cells`, `luts`, `nets`, `pins`, `tasktime`
+for FPGA; `cells`, `cellarea`, `fmax`, `setupslack` for ASIC.
 
-| Flag | Description |
-|------|-------------|
-| `-s`, `--script` | Path to the synthesis script (TCL), e.g. `results/fpga/zeroasic/synth.tcl` (required) |
-| `-c`, `--cmd` | Synthesis command: `synth_fpga` (default), `synth_efinix`, `synth_ice40`, `synth_microchip`, `synth_quicklogic`, `synth_xilinx` |
-| `--part` | FPGA part name (required when `--tool vivado`) |
-| `--opt` | Extra synthesis command options, as a quoted string (e.g. `--opt="-opt area"`) |
-| `--clean` | Remove a benchmark's build directory before running |
-| `--timeout` | Per-benchmark timeout in seconds; a run that exceeds it is killed, recorded as failed, and the sweep continues (`0` = no limit, default) |
+By default each run removes the benchmark's build directory beforehand, so
+synthesis always runs fresh (no SiliconCompiler build reuse). Use
+`--incremental` to skip benchmarks already completed, or `--collect_only` to
+read metrics from existing builds without synthesizing.
 
 ### Examples
 
-The synthesis recipe is supplied as a TCL script via `-s`/`--script`. Per-target
-scripts live under `results/<flow>/<vendor>/`, e.g. `results/fpga/zeroasic/synth.tcl`.
-For each benchmark `lb run` writes a `params.tcl` into the run directory
-(`build/<group>/<name>/`) defining `top`, `fileset`, `name`, `cmd`, `options`, and
-`part`; the synthesis script `source`s it. Because the parameters live on disk next
-to the run, any benchmark can be reproduced by hand from its build directory with
-`yosys -c <path>/synth.tcl`.
-
-Run every benchmark in every group (the default when `-g` is omitted):
+Synthesize all benchmarks in a group and export metrics to JSON:
 
 ```bash
-lb run -s results/fpga/zeroasic/synth.tcl -o results.json
+lb -g arithmetic -o results.json
 ```
 
-Synthesize all arithmetic benchmarks for iCE40 and export metrics to JSON:
+Run several groups at once:
 
 ```bash
-lb run -g arithmetic -t yosys -c synth_ice40 -s results/fpga/zeroasic/synth.tcl -o results.json
+lb -g basic arithmetic memory -o results.json
 ```
 
-Run a single benchmark with extra synthesis options:
+Run a single benchmark into a CSV:
 
 ```bash
-lb run -g basic -n binv -s results/fpga/zeroasic/synth.tcl --opt="-opt area" -o results.csv
+lb -g basic -n binv -o results.csv
 ```
 
-Re-run multiple groups from scratch:
+Run a group 8 benchmarks at a time (job-level parallelism):
 
 ```bash
-lb run -g basic arithmetic -s results/fpga/zeroasic/synth.tcl --clean -o results.json
+lb -g basic -j 8 -o results.json
 ```
 
-Collect metrics from an already-synthesized run into a CSV (no synthesis):
+Collect metrics from an already-synthesized run (no synthesis):
 
 ```bash
-lb collect -g basic -o results.csv
+lb -g basic --collect_only -o results.csv
+```
+
+Run ASIC synthesis + timing (`lbflow`) on the freepdk45 PDK:
+
+```bash
+lb -g basic --target freepdk45 -o results.csv
+```
+
+Run the asap7 demo target (SC asicflow), synthesis only:
+
+```bash
+lb -g basic --target asap7_demo --stop synthesis -o results.csv
 ```
 
 ## Contributing
