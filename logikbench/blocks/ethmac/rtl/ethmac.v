@@ -1,6 +1,8 @@
 //This wraps up the eth_mac_1g module to hide the unused cfg pin interface
 //on the block, reducing the port count by about a factor of 5.
 
+`timescale 1ns / 1ps
+
 module ethmac
   # (
      parameter DW = 8,
