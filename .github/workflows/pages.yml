@@ -1,0 +1,51 @@
+name: Dashboard
+
+# Regenerate and publish the results dashboard to GitHub Pages. This only
+# renders the committed results/db.json into static HTML (Jinja2 only -- no
+# synthesis, no SiliconCompiler). Refresh the data offline with 'lb run' +
+# 'lb collect' + 'python dashboard/build_db.py', then commit results/db.json.
+on:
+  push:
+    branches: [main]
+    paths:
+      - results/db.json
+      - dashboard/**
+      - .github/workflows/pages.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# allow one concurrent deployment; newer pushes cancel in-progress builds
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install Jinja2
+        run: pip install "jinja2>=3.0"
+      - name: Generate site
+        run: python dashboard/generate.py --db results/db.json --out site
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
