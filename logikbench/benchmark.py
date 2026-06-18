@@ -35,7 +35,8 @@ _LBFLOW_ASIC_RECIPE = "asic/freepdk45"
 # this list (or no target) runs FPGA synthesis; anything else is an ASIC PDK.
 FPGA_TARGETS = ["zeroasic", "microchip", "fabulous", "gatemate", "gowin",
                 "ice40", "xilinx", "efinix", "achronix", "quicklogic", "intel"]
-_DEFAULT_FPGA_TARGET = "zeroasic"
+
+DEFAULT_FPGA_TARGET = "zeroasic"
 
 
 def _nangate45_liberty():
@@ -159,8 +160,7 @@ def _run_fpga(design, target, options, builddir, quiet, start, stop):
     proj.add_fileset("rtl")
     proj.set_flow(FPGASynthesis())
     proj.set("tool", "yosys", "task", "synthesis", "var", "mode", "fpga")
-    proj.set("tool", "yosys", "task", "synthesis", "var", "target",
-             target or _DEFAULT_FPGA_TARGET)
+    proj.set("tool", "yosys", "task", "synthesis", "var", "target", target)
     proj.set("tool", "yosys", "task", "synthesis", "var", "options", options)
     _set_range(proj, start, stop)
     proj.run()
