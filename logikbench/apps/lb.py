@@ -4,14 +4,13 @@ import argparse
 import os
 import sys
 import json
-import csv
 
 import logikbench as lb
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
 from logikbench.benchmark import (
     METRICS, ASIC_METRICS, TARGETS, FPGA_TARGETS, DEFAULT_FPGA_TARGET, STEPS,
-    run_one, read_metrics, read_asic_metrics, is_complete,
+    run_one, read_metrics, read_asic_metrics, read_tool_var, is_complete,
 )
 
 # benchmark groups available to both subcommands
@@ -40,33 +39,6 @@ def make_worklist(args):
             for group in args.group
             for item in benchmarks[group]
             if namefilter is None or item.lower() in namefilter]
-
-
-def write_results(output, results):
-    """Write the results dict to a .json or .csv file (by extension)."""
-    outdir = os.path.dirname(output)
-    if outdir:
-        os.makedirs(outdir, exist_ok=True)
-    _, ext = os.path.splitext(output)
-    if ext == ".json":
-        with open(output, "w") as f:
-            json.dump(results, f, indent=2)
-    elif ext == ".csv":
-        all_rows = set()
-        for col in results.values():
-            all_rows.update(col.keys())
-        all_rows = sorted(all_rows)
-        columns = sorted(results.keys())
-        with open(output, "w", newline="") as f:
-            writer = csv.writer(f)
-            # Write header
-            writer.writerow([""] + columns)
-            # Write each row
-            for row_key in all_rows:
-                row = [row_key]
-                for col_key in columns:
-                    row.append(results.get(col_key, {}).get(row_key, ""))
-                writer.writerow(row)
 
 
 def run_target(target, args, worklist):
@@ -126,8 +98,12 @@ def run_target(target, args, worklist):
 
 def collect_target(target, args, worklist):
     """Read metrics for the specified benchmarks from a single target's build
-    tree and write them, aggregated, to <output_dir>/<target>.json. No
-    synthesis. Returns the number of benchmarks collected."""
+    tree and write a self-describing <output_dir>/<target>.json. No synthesis.
+
+    The payload records the target, the synthesis 'options' the run was driven
+    with (recovered from the manifest, since lb fed them in at run time), and
+    the {metric: {benchmark: value}} matrix. Returns the count collected.
+    """
     mode = target_mode(target)
     builddir = target_builddir(args, target)
     metric_names = FLOW_METRICS[mode]
@@ -135,7 +111,8 @@ def collect_target(target, args, worklist):
     outdir = args.output or args.builddir
     output = os.path.join(outdir, f"{target}.json")
 
-    results = {metric: {} for metric in metric_names}
+    metrics_out = {metric: {} for metric in metric_names}
+    options = None
     for group, item in worklist:
         name = item.lower()
         if mode == 'asic':
@@ -148,13 +125,20 @@ def collect_target(target, args, worklist):
                 print(f"No results for {name} benchmark ({group}).")
             continue
         for metric in metric_names:
-            results[metric][name] = metrics.get(metric)
+            metrics_out[metric][name] = metrics.get(metric)
+        # options are uniform across a target's sweep; read once from a built one
+        if options is None:
+            options = read_tool_var(name, "yosys", "synthesis", "options",
+                                    builddir=builddir)
 
-    write_results(output, results)
+    payload = {"target": target, "options": options, "metrics": metrics_out}
+    os.makedirs(outdir, exist_ok=True)
+    with open(output, "w") as f:
+        json.dump(payload, f, indent=2)
 
     # coverage summary (count, not a line per missing benchmark)
     collected = set()
-    for col in results.values():
+    for col in metrics_out.values():
         collected.update(col.keys())
     print(f"Collected {len(collected)}/{len(worklist)} benchmark(s) "
           f"for {target}.")
@@ -222,9 +206,10 @@ LogikBench commandline runner.
     run_p.add_argument('--options',
                        default="",
                        metavar="OPTS",
-                       help="Extra options passed verbatim as arguments to "
-                            "the FPGA synth command (e.g. --options "
-                            "'-abc9 -nocarry')")
+                       help="Extra options passed verbatim as arguments to the "
+                            "FPGA synth command. Use the '=' form so leading "
+                            "dashes are not parsed as flags: --options=-abc9 "
+                            "(quote multiple: --options='-abc9 -nocarry')")
     run_p.add_argument('--start',
                        choices=STEPS,
                        default=None,

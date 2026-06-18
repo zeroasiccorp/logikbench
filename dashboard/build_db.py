@@ -38,7 +38,11 @@ METRIC_INFO = {
 
 
 def benchmark_order():
-    """(group, benchmark-name) pairs in canonical group/definition order."""
+    """(group, benchmark-name) pairs in canonical group/definition order.
+
+    Benchmark names are assumed unique across groups (results key by name and
+    share a build dir per target); a duplicate would show a row in each group.
+    """
     order = []
     for group in GROUPS:
         for item in getattr(lb, group).__all__:
@@ -47,7 +51,10 @@ def benchmark_order():
 
 
 def load_targets(results_dirs):
-    """{target: {metric: {benchmark: value}}} from <target>.json files."""
+    """{target: payload} from <target>.json files written by 'lb collect'.
+
+    Each payload is {"target", "options", "metrics": {metric: {bench: value}}}.
+    """
     collected = {}
     for d in results_dirs:
         for path in sorted(glob.glob(os.path.join(d, "*.json"))):
@@ -60,15 +67,15 @@ def load_targets(results_dirs):
 
 
 def build_section(targets, metric_names, collected):
-    """Assemble one flow's slice: column order, metric metadata, group layout,
-    and the {benchmark: {target: {metric: value}}} matrix. Benchmarks with no
-    recorded value on any target are omitted."""
+    """Assemble one flow's slice: column order, per-target settings, metric
+    metadata, group layout, and the {benchmark: {target: {metric: value}}}
+    matrix. Benchmarks with no recorded value on any target are omitted."""
     data = {}
     by_group = {}
     for group, bench in benchmark_order():
         per_target = {}
         for target in targets:
-            tm = collected.get(target, {})
+            tm = collected.get(target, {}).get("metrics", {})
             vals = {m: tm.get(m, {}).get(bench) for m in metric_names}
             if any(v is not None for v in vals.values()):
                 per_target[target] = vals
@@ -78,6 +85,10 @@ def build_section(targets, metric_names, collected):
 
     return {
         "targets": targets,
+        # synthesis settings each column was produced with (shown under the
+        # target name); empty string means defaults.
+        "settings": {t: (collected.get(t, {}).get("options") or "")
+                     for t in targets},
         "metrics": [{"key": m, **METRIC_INFO[m]} for m in metric_names],
         "groups": [{"name": g, "benchmarks": by_group[g]}
                    for g in GROUPS if g in by_group],

@@ -43,9 +43,15 @@
   th, td { padding: 0; text-align: center; white-space: nowrap; }
   thead th {
     position: sticky; top: 0; z-index: 3; background: var(--panel-2); color: var(--txt);
-    font-weight: 600; font-size: 12.5px; padding: 12px 14px; border-bottom: 1px solid var(--line);
+    font-weight: 600; font-size: 12.5px; padding: 12px 14px 4px;
   }
-  thead th.bench { text-align: left; z-index: 4; left: 0; }
+  /* settings sub-row sits directly under each target name (top set in JS) */
+  thead tr.settings th {
+    z-index: 3; background: var(--panel-2); border-bottom: 1px solid var(--line);
+    font-weight: 500; font-size: 11px; color: var(--txt-dim); padding: 1px 14px 10px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  thead th.bench { text-align: left; z-index: 4; left: 0; padding: 12px 16px; border-bottom: 1px solid var(--line); }
   tbody th.bench {
     position: sticky; left: 0; z-index: 2; background: var(--panel); text-align: left;
     font-weight: 600; padding: 0 16px; border-right: 1px solid var(--line); color: var(--txt);
@@ -131,8 +137,20 @@ function renderTabs(){
 function render(){
   renderTabs();
   const targets = SECTION.targets, m = metric();
-  document.getElementById("thead").innerHTML =
-    `<tr><th class="bench">Benchmark</th>${targets.map(t => `<th>${t}</th>`).join("")}</tr>`;
+  const settings = SECTION.settings || {};
+  const thead = document.getElementById("thead");
+  thead.innerHTML =
+    `<tr><th class="bench" rowspan="2">Benchmark</th>${targets.map(t => `<th>${t}</th>`).join("")}</tr>` +
+    `<tr class="settings">${targets.map(t => {
+      const s = settings[t] || "";
+      return `<th title="${s ? s : "default settings"}">${s ? s : "default"}</th>`;
+    }).join("")}</tr>`;
+  // stack the settings sub-row flush under the target-name row when sticky
+  const nameTh = thead.querySelector("tr:first-child th:not(.bench)");
+  if (nameTh){
+    const h = nameTh.getBoundingClientRect().height;
+    thead.querySelectorAll("tr.settings th").forEach(el => { el.style.position = "sticky"; el.style.top = h + "px"; });
+  }
   const tb = document.getElementById("tbody"); tb.innerHTML = "";
   SECTION.groups.forEach(group => {
     const gr = document.createElement("tr"); gr.className = "grp";

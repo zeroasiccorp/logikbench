@@ -140,6 +140,28 @@ def read_asic_metrics(name, builddir="build", jobname="job0"):
     return read_metrics(name, ASIC_METRICS, builddir, jobname)
 
 
+def read_tool_var(name, tool, task, var, builddir="build", jobname="job0"):
+    """Read a tool/task variable value recorded in a benchmark's manifest.
+
+    Used to recover the settings a run was driven with (e.g. the FPGA synth
+    'options' string that lb passed through). Returns the value, or None if the
+    manifest or variable is absent.
+    """
+    manifest = os.path.join(builddir, name, jobname, f"{name}.pkg.json")
+    if not os.path.isfile(manifest):
+        return None
+    with open(manifest) as f:
+        data = json.load(f)
+    nodes = (data.get("tool", {}).get(tool, {}).get("task", {}).get(task, {})
+             .get("var", {}).get(var, {}).get("node", {}))
+    for idxs in nodes.values():
+        for rec in idxs.values():
+            val = rec.get("value")
+            if val is not None:
+                return val
+    return None
+
+
 def is_complete(name, builddir="build", jobname="job0"):
     """True if a prior run finished with every node in 'success' status."""
     manifest = os.path.join(builddir, name, jobname, f"{name}.pkg.json")
