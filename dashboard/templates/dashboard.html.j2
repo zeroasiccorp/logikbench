@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LogikBench {{ flow_label }} Results</title>
+<style>
+  :root {
+    --bg: #0f1115; --panel: #161922; --panel-2: #1c2030; --line: #262b38;
+    --txt: #e7e9ee; --txt-dim: #9aa3b2; --accent: #6ea8fe;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg); color: var(--txt);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-size: 14px; line-height: 1.45; -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 28px 22px 60px; }
+  header { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; flex-wrap: wrap; margin-bottom: 22px; }
+  .brand h1 { font-size: 22px; margin: 0; letter-spacing: -0.01em; }
+  .brand h1 .mark { color: var(--accent); }
+  .brand p { margin: 4px 0 0; color: var(--txt-dim); font-size: 13px; }
+  .flow { display: inline-flex; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 3px; }
+  .flow a { text-decoration: none; color: var(--txt-dim); font-weight: 600; padding: 7px 16px; border-radius: 7px; }
+  .flow a.on { background: var(--panel-2); color: var(--txt); box-shadow: 0 1px 0 rgba(255,255,255,.04) inset; }
+  .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 0 0 14px; }
+  .tabs button {
+    appearance: none; border: 1px solid var(--line); background: var(--panel); color: var(--txt-dim);
+    font: inherit; font-weight: 600; padding: 8px 14px; border-radius: 9px; cursor: pointer; transition: .12s;
+  }
+  .tabs button:hover { color: var(--txt); border-color: #343b4d; }
+  .tabs button.on { background: var(--accent); border-color: var(--accent); color: #08101f; }
+  .tabs button .dir { font-weight: 500; opacity: .7; font-size: 12px; }
+  .meta { display:flex; align-items:center; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 12px; }
+  .hint { color: var(--txt-dim); font-size: 12.5px; }
+  .legend { display: flex; align-items: center; gap: 9px; font-size: 12px; color: var(--txt-dim); }
+  .legend .bar { width: 150px; height: 10px; border-radius: 6px;
+    background: linear-gradient(90deg, hsl(0 75% 52%), hsl(45 80% 52%), hsl(130 55% 45%), hsl(200 70% 50%), hsl(235 75% 58%)); }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+  .scroll { overflow: auto; max-height: 72vh; }
+  table { border-collapse: separate; border-spacing: 0; width: 100%; }
+  th, td { padding: 0; text-align: center; white-space: nowrap; }
+  thead th {
+    position: sticky; top: 0; z-index: 3; background: var(--panel-2); color: var(--txt);
+    font-weight: 600; font-size: 12.5px; padding: 12px 14px; border-bottom: 1px solid var(--line);
+  }
+  thead th.bench { text-align: left; z-index: 4; left: 0; }
+  tbody th.bench {
+    position: sticky; left: 0; z-index: 2; background: var(--panel); text-align: left;
+    font-weight: 600; padding: 0 16px; border-right: 1px solid var(--line); color: var(--txt);
+  }
+  tbody td { font-variant-numeric: tabular-nums; font-weight: 600; padding: 11px 14px; border-bottom: 1px solid rgba(255,255,255,.03); }
+  tbody tr:last-child td, tbody tr:last-child th { border-bottom: 0; }
+  tbody td.empty { color: #5b6373; font-weight: 400; background: transparent !important; }
+  .cell-val { color: #0c0f16; text-shadow: 0 1px 0 rgba(255,255,255,.18); }
+  tr.grp th { position: sticky; left: 0; background: #11141c; color: var(--txt-dim);
+    text-align: left; padding: 7px 16px; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; font-weight: 700;
+    border-bottom: 1px solid var(--line); z-index: 2; }
+  footer { margin-top: 16px; color: var(--txt-dim); font-size: 12px; display:flex; justify-content: space-between; gap: 12px; flex-wrap: wrap;}
+  code { background: var(--panel-2); padding: 1px 6px; border-radius: 5px; color: #cdd4e0; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <h1><span class="mark">Logik</span>Bench &mdash; {{ flow_label }} Results</h1>
+      <p>Quality-of-results across synthesis targets. Per benchmark, <strong>blue = best</strong>, <strong>red = worst</strong>.</p>
+    </div>
+    <nav class="flow">
+      {% for f in flows %}<a href="{{ f.href }}"{% if f.key == flow %} class="on"{% endif %}>{{ f.label }}</a>{% endfor %}
+    </nav>
+  </header>
+
+  <div class="tabs" id="tabs"></div>
+
+  <div class="meta">
+    <div class="hint" id="hint"></div>
+    <div class="legend"><span>worst</span><span class="bar"></span><span>best</span></div>
+  </div>
+
+  <div class="card">
+    <div class="scroll">
+      <table>
+        <thead id="thead"></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <footer>
+    <span>{{ subtitle }}</span>
+    <span>Generated from <code>results/db.json</code></span>
+  </footer>
+</div>
+
+<script>
+const SECTION = {{ section_json }};
+let metricKey = SECTION.metrics[0].key;
+function metric(){ return SECTION.metrics.find(m => m.key === metricKey); }
+
+// normalized 0=worst .. 1=best -> hue 0(red) .. 235(blue), through roygbiv
+function cellStyle(norm){ return `background: hsl(${(norm*235).toFixed(0)} 72% 56%);`; }
+
+function fmt(v, m){
+  if (v === null || v === undefined) return "&mdash;";
+  switch (m.unit){
+    case "s":    return v.toFixed(2) + "s";
+    case "MHz":  return Math.round(v) + " MHz";
+    case "ns":   return v.toFixed(2) + " ns";
+    case "um^2": return Math.round(v).toLocaleString() + " um^2";
+    default:     return Math.round(v).toLocaleString();
+  }
+}
+
+function renderTabs(){
+  const t = document.getElementById("tabs"); t.innerHTML = "";
+  SECTION.metrics.forEach(m => {
+    const b = document.createElement("button");
+    b.className = m.key === metricKey ? "on" : "";
+    b.innerHTML = `${m.label} <span class="dir">${m.dir === "lower" ? "&darr; lower better" : "&uarr; higher better"}</span>`;
+    b.onclick = () => { metricKey = m.key; render(); };
+    t.appendChild(b);
+  });
+  const m = metric();
+  document.getElementById("hint").innerHTML =
+    `Showing <strong>${m.label}</strong> across ${SECTION.targets.length} target(s) &middot; ${m.dir === "lower" ? "lower is better" : "higher is better"}`;
+}
+
+function render(){
+  renderTabs();
+  const targets = SECTION.targets, m = metric();
+  document.getElementById("thead").innerHTML =
+    `<tr><th class="bench">Benchmark</th>${targets.map(t => `<th>${t}</th>`).join("")}</tr>`;
+  const tb = document.getElementById("tbody"); tb.innerHTML = "";
+  SECTION.groups.forEach(group => {
+    const gr = document.createElement("tr"); gr.className = "grp";
+    gr.innerHTML = `<th colspan="${targets.length + 1}">${group.name}</th>`; tb.appendChild(gr);
+    group.benchmarks.forEach(bench => {
+      const row = SECTION.data[bench] || {};
+      const vals = targets.map(t => (row[t] ? row[t][m.key] : null));
+      const present = vals.filter(v => v !== null && v !== undefined);
+      const lo = Math.min(...present), hi = Math.max(...present);
+      let cells = `<th class="bench">${bench}</th>`;
+      vals.forEach(v => {
+        if (v === null || v === undefined){ cells += `<td class="empty">&mdash;</td>`; return; }
+        let norm = (hi === lo) ? 1 : (v - lo) / (hi - lo);   // 0..1 along value range
+        if (m.dir === "lower") norm = 1 - norm;              // best(low) -> 1 -> blue
+        cells += `<td style="${cellStyle(norm)}"><span class="cell-val">${fmt(v, m)}</span></td>`;
+      });
+      const tr = document.createElement("tr"); tr.innerHTML = cells; tb.appendChild(tr);
+    });
+  });
+}
+render();
+</script>
+</body>
+</html>

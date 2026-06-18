@@ -23,6 +23,9 @@ __pycache__/
 logikbench/_version.py
 .Python
 build/
+
+# generated dashboard site (CI rebuilds it from results/db.json)
+site/
 develop-eggs/
 dist/
 downloads/
