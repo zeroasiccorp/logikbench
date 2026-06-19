@@ -137,7 +137,11 @@ def collect_target(target, args, worklist):
                 print(f"No results for {name} benchmark ({group}).")
             continue
         for metric in metric_names:
-            metrics_out[metric][name] = metrics.get(metric)
+            value = metrics.get(metric)
+            # report runtime to 2 decimal places (0.xx)
+            if metric == "tasktime" and value is not None:
+                value = round(value, 2)
+            metrics_out[metric][name] = value
         # options are uniform across a target's sweep; read once from a built one
         if options is None:
             options = read_tool_var(name, "yosys", "synthesis", "options",
