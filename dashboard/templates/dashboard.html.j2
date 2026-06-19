@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>LogikBench {{ flow_label }} Results</title>
+<title>LogikBench FPGA Results ({{ config }})</title>
 <style>
   :root {
     --bg: #0f1115; --panel: #161922; --panel-2: #1c2030; --line: #262b38;
@@ -71,11 +71,11 @@
 <div class="wrap">
   <header>
     <div class="brand">
-      <h1><span class="mark">Logik</span>Bench &mdash; {{ flow_label }} Results</h1>
-      <p>Quality-of-results across synthesis targets. Per benchmark, the <strong>winner is green</strong> (ties green); 2nd place is <strong>yellow</strong>, shading linearly to <strong>red at 10&times; the winner</strong> (10&times; or worse is solid red).</p>
+      <h1><span class="mark">Logik</span>Bench &mdash; FPGA Results <span style="color:var(--txt-dim);font-weight:600">/ {{ config }}</span></h1>
+      <p>Quality-of-results across synthesis targets. Per benchmark, the <strong>winner is green</strong> (ties green); 2nd place is <strong>yellow</strong>, shading logarithmically to <strong>red at 10&times; the winner</strong> (10&times; or worse is solid red).</p>
     </div>
     <nav class="flow">
-      {% for f in flows %}<a href="{{ f.href }}"{% if f.key == flow %} class="on"{% endif %}>{{ f.label }}</a>{% endfor %}
+      {% for c in configs %}<a href="{{ c.href }}"{% if c.key == config %} class="on"{% endif %}>{{ c.label }}</a>{% endfor %}
     </nav>
   </header>
 
