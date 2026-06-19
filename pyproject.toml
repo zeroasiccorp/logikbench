@@ -18,6 +18,10 @@ __version__ = "{version}"
 [tool.setuptools]
 include-package-data = true
 
+[tool.setuptools.exclude-package-data]
+# never ship JSON (collected results / dashboard databases) inside the wheel
+"*" = ["*.json"]
+
 [tool.setuptools.packages.find]
 include = ["logikbench*"]
 
@@ -29,6 +33,13 @@ readme = "README.md"
 urls = {Homepage = "https://github.com/zeroasiccorp/logikbench"}
 requires-python = ">= 3.10"
 license = {file = "LICENSE"}
+keywords = ["benchmark", "rtl", "verilog", "fpga", "asic", "synthesis", "eda"]
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Intended Audience :: Developers",
+    "Topic :: Scientific/Engineering :: Electronic Design Automation (EDA)",
+    "Operating System :: OS Independent",
+]
 dependencies = [
              "siliconcompiler >= 0.37.12",
              "lambdapdk >= 0.2.11",
