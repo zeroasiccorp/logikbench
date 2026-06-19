@@ -19,6 +19,14 @@ from siliconcompiler.tools.yosys import YosysTask
 _TOOLDIR = os.path.dirname(os.path.abspath(__file__))
 
 
+def _is_lut(cell):
+    """True if a yosys cell type is a LUT primitive. Vendor names vary: generic
+    $lut, LUTn (xilinx/gowin/lattice/...), SB_LUT4 (ice40); microchip PolarFire
+    names its 1-4 input LUTs CFG1..CFG4."""
+    name = cell.lower()
+    return "lut" in name or re.fullmatch(r"cfg[1-4]", name) is not None
+
+
 class Synthesis(YosysTask):
     """Run scripts/<refdir>/synthesis.tcl and record synthesis metrics."""
 
@@ -70,9 +78,8 @@ class Synthesis(YosysTask):
         """Record the FPGA LUT count, which SC's base does not break out.
 
         'cells' is the total cell count; the LUTs are a subset reported per
-        type in stat.json. Vendor LUT primitive names differ ($lut, SB_LUT4,
-        LUT1..LUT6, ...), so sum every type whose name contains 'lut'. ASIC
-        netlists have no LUTs, so nothing is recorded there.
+        type in stat.json. ASIC netlists have no LUTs, so nothing is recorded
+        there.
         """
         stat_json = "reports/stat.json"
         if not os.path.exists(stat_json):
@@ -81,7 +88,7 @@ class Synthesis(YosysTask):
             stats = json.load(f)
         design = stats.get("design", stats)
         by_type = design.get("num_cells_by_type", {})
-        luts = sum(n for cell, n in by_type.items() if "lut" in cell.lower())
+        luts = sum(n for cell, n in by_type.items() if _is_lut(cell))
         if luts:
             self.record_metric("luts", luts, source_file=stat_json)
 
