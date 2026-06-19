@@ -86,6 +86,11 @@ def build_section(targets, metric_names, collected):
 
     return {
         "targets": targets,
+        # display name per column: the real target, suffix-free (the stem may be
+        # a --suffix variant like xilinx_virtex7_small; configs are told apart
+        # by the settings row, not the header).
+        "labels": {t: (collected.get(t, {}).get("target") or t)
+                   for t in targets},
         # synthesis settings each column was produced with (shown under the
         # target name); empty string means defaults.
         "settings": {t: (collected.get(t, {}).get("options") or "")

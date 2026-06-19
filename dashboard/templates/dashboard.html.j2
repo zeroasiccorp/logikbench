@@ -36,7 +36,7 @@
   .hint { color: var(--txt-dim); font-size: 12.5px; }
   .legend { display: flex; align-items: center; gap: 9px; font-size: 12px; color: var(--txt-dim); }
   .legend .bar { width: 150px; height: 10px; border-radius: 6px;
-    background: linear-gradient(90deg, hsl(0 75% 52%), hsl(45 80% 52%), hsl(130 55% 45%), hsl(200 70% 50%), hsl(235 75% 58%)); }
+    background: linear-gradient(90deg, hsl(0 85% 50%), hsl(30 85% 50%), hsl(60 85% 50%) 70%, hsl(120 85% 50%)); }
   .card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
   .scroll { overflow: auto; max-height: 72vh; }
   table { border-collapse: separate; border-spacing: 0; width: 100%; }
@@ -72,7 +72,7 @@
   <header>
     <div class="brand">
       <h1><span class="mark">Logik</span>Bench &mdash; {{ flow_label }} Results</h1>
-      <p>Quality-of-results across synthesis targets. Per benchmark, <strong>blue = best</strong>, <strong>red = worst</strong>.</p>
+      <p>Quality-of-results across synthesis targets. Per benchmark, the <strong>winner is green</strong> (ties green); 2nd place is <strong>yellow</strong>, shading linearly to <strong>red at 10&times; the winner</strong> (10&times; or worse is solid red).</p>
     </div>
     <nav class="flow">
       {% for f in flows %}<a href="{{ f.href }}"{% if f.key == flow %} class="on"{% endif %}>{{ f.label }}</a>{% endfor %}
@@ -83,7 +83,7 @@
 
   <div class="meta">
     <div class="hint" id="hint"></div>
-    <div class="legend"><span>worst</span><span class="bar"></span><span>best</span></div>
+    <div class="legend"><span>&ge;10&times;</span><span class="bar"></span><span>winner</span></div>
   </div>
 
   <div class="card">
@@ -106,8 +106,30 @@ const SECTION = {{ section_json }};
 let metricKey = SECTION.metrics[0].key;
 function metric(){ return SECTION.metrics.find(m => m.key === metricKey); }
 
-// normalized 0=worst .. 1=best -> hue 0(red) .. 235(blue), through roygbiv
-function cellStyle(norm){ return `background: hsl(${(norm*235).toFixed(0)} 72% 56%);`; }
+function cellStyle(hue){ return `background: hsl(${hue.toFixed(0)} 85% 50%);`; }
+
+// "how many times worse than the winner" (>= 1); direction-aware.
+function ratioToWinner(v, best, dir){
+  if (dir === "lower") return best > 0 ? v / best : (v <= best ? 1 : Infinity);
+  return v > 0 ? best / v : Infinity;
+}
+
+// Color rule, per row:
+//   winner (and exact ties)            -> green  (the only green cell(s))
+//   2nd place                          -> yellow (start of the gradient)
+//   2nd place .. 10x the winner        -> yellow .. red, LOG in the ratio
+//                                         (moderate multiples redden quickly)
+//   10x the winner or worse            -> red
+// 'second' is the runner-up value (best among the non-winners).
+function cellHue(v, best, second, dir){
+  if (v === best) return 120;                          // winner(s): green
+  const r = ratioToWinner(v, best, dir);
+  const rs = ratioToWinner(second, best, dir);         // runner-up ratio (>1)
+  if (r >= 10 || !(rs < 10)) return 0;                 // beyond 10x: red
+  // log scale anchored at 2nd place (yellow) and 10x (red)
+  const frac = (Math.log(r) - Math.log(rs)) / (Math.log(10) - Math.log(rs));
+  return 60 * (1 - Math.max(0, Math.min(1, frac)));    // yellow(60) .. red(0)
+}
 
 function fmt(v, m){
   if (v === null || v === undefined) return "&mdash;";
@@ -138,9 +160,10 @@ function render(){
   renderTabs();
   const targets = SECTION.targets, m = metric();
   const settings = SECTION.settings || {};
+  const labels = SECTION.labels || {};
   const thead = document.getElementById("thead");
   thead.innerHTML =
-    `<tr><th class="bench" rowspan="2">Benchmark</th>${targets.map(t => `<th>${t}</th>`).join("")}</tr>` +
+    `<tr><th class="bench" rowspan="2">Benchmark</th>${targets.map(t => `<th>${labels[t] || t}</th>`).join("")}</tr>` +
     `<tr class="settings">${targets.map(t => {
       const s = settings[t] || "";
       return `<th title="${s ? s : "default settings"}">${s ? s : "default"}</th>`;
@@ -159,13 +182,16 @@ function render(){
       const row = SECTION.data[bench] || {};
       const vals = targets.map(t => (row[t] ? row[t][m.key] : null));
       const present = vals.filter(v => v !== null && v !== undefined);
-      const lo = Math.min(...present), hi = Math.max(...present);
+      const best = m.dir === "lower" ? Math.min(...present) : Math.max(...present);
+      // runner-up: best value among the non-winners (anchors yellow)
+      const losers = present.filter(v => v !== best);
+      const second = losers.length
+        ? (m.dir === "lower" ? Math.min(...losers) : Math.max(...losers))
+        : best;
       let cells = `<th class="bench">${bench}</th>`;
       vals.forEach(v => {
         if (v === null || v === undefined){ cells += `<td class="empty">&mdash;</td>`; return; }
-        let norm = (hi === lo) ? 1 : (v - lo) / (hi - lo);   // 0..1 along value range
-        if (m.dir === "lower") norm = 1 - norm;              // best(low) -> 1 -> blue
-        cells += `<td style="${cellStyle(norm)}"><span class="cell-val">${fmt(v, m)}</span></td>`;
+        cells += `<td style="${cellStyle(cellHue(v, best, second, m.dir))}"><span class="cell-val">${fmt(v, m)}</span></td>`;
       });
       const tr = document.createElement("tr"); tr.innerHTML = cells; tb.appendChild(tr);
     });
