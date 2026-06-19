@@ -111,9 +111,10 @@ def main():
     if not collected:
         ap.error(f"no <target>.json files found under: {', '.join(args.results)}")
 
-    # split targets by flow, keeping a sensible column order
-    fpga = [t for t in FPGA_TARGETS if t in collected]
-    asic = sorted(t for t in collected if t not in FPGA_TARGETS)
+    # split targets by flow; columns are ordered alphabetically z->a (left
+    # to right)
+    fpga = sorted((t for t in collected if t in FPGA_TARGETS), reverse=True)
+    asic = sorted((t for t in collected if t not in FPGA_TARGETS), reverse=True)
 
     db = {}
     if fpga:
