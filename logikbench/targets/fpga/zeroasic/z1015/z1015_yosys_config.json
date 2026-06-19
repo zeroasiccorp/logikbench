@@ -46,7 +46,7 @@
   },
   "dsps": {
     "family": "mae",
-    "techmap": "/tech_dsp_mae.v",
+    "techmap": "/tech_dsp.v",
     "techmap_parameters": {
       "DSP_SIGNEDONLY": "1",
       "DSP_A_MAXWIDTH": "18",
