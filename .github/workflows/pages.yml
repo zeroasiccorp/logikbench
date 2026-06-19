@@ -1,14 +1,15 @@
 name: Dashboard
 
 # Regenerate and publish the results dashboard to GitHub Pages. This only
-# renders the committed results/db.json into static HTML (Jinja2 only -- no
-# synthesis, no SiliconCompiler). Refresh the data offline with 'lb run' +
-# 'lb collect' + 'python dashboard/build_db.py', then commit results/db.json.
+# renders the committed per-config databases (results/fpga/<config>.json) into
+# static HTML (Jinja2 only -- no synthesis, no SiliconCompiler). Refresh the
+# data offline with 'lb run' + 'lb collect --suffix _<config>' +
+# 'python dashboard/build_db.py', then commit results/fpga/<config>.json.
 on:
   push:
     branches: [main]
     paths:
-      - results/db.json
+      - results/fpga/*.json
       - dashboard/**
       - .github/workflows/pages.yml
   workflow_dispatch:
@@ -34,7 +35,7 @@ jobs:
       - name: Install Jinja2
         run: pip install "jinja2>=3.0"
       - name: Generate site
-        run: python dashboard/generate.py --db results/db.json --out site
+        run: python dashboard/generate.py --db results/fpga --out site
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
