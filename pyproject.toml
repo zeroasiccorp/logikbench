@@ -22,6 +22,12 @@ include-package-data = true
 # never ship JSON (collected results / dashboard databases) inside the wheel
 "*" = ["*.json"]
 
+[tool.check-wheel-contents]
+# W002 flags identical-content files at different paths. Expected here: each
+# benchmark bundles its own LICENSE/SDC and some share RTL (e.g. la_dsync.v),
+# so duplicate content across benchmark dirs is intentional, not a packaging bug.
+ignore = ["W002"]
+
 [tool.setuptools.packages.find]
 include = ["logikbench*"]
 
