@@ -41,57 +41,67 @@ def make_worklist(args):
             if namefilter is None or item.lower() in namefilter]
 
 
-def run_target(target, args, worklist):
-    """Synthesize every benchmark for a single target; return the failures.
-
-    Pure build: metrics are not read or written here. Use the 'collect'
-    subcommand afterwards to harvest results from the build tree.
-    """
+def target_runlist(target, args, worklist):
+    """(group, item) pairs to synthesize for a target, applying --resume
+    (skip benchmarks whose build already completed successfully)."""
+    if not args.resume:
+        return list(worklist)
     builddir = target_builddir(args, target)
+    runlist = []
+    for group, item in worklist:
+        if is_complete(item.lower(), builddir):
+            print(f"Skipping {item.lower()} ({target}/{group}): "
+                  f"already complete.")
+        else:
+            runlist.append((group, item))
+    return runlist
 
-    # incremental: skip benchmarks whose build already completed successfully;
-    # only the remaining benchmarks are (re-)synthesized.
-    runlist = worklist
-    if args.incremental:
-        runlist = []
-        for group, item in worklist:
-            if is_complete(item.lower(), builddir):
-                print(f"Skipping {item.lower()} benchmark ({group}): "
-                      f"already complete.")
-            else:
-                runlist.append((group, item))
 
-    # track failures so one bad benchmark does not abort the whole sweep
+def run_sweep(args, targets, worklist):
+    """Synthesize the whole target x benchmark matrix; return the failures.
+
+    Each (target, benchmark) is an independent SC run, so -j fans them out over
+    a single process pool across the entire matrix -- it speeds up sweeps that
+    are wide in benchmarks, wide in targets, or both. Pure build: metrics are
+    not read or written here (use 'collect' afterwards).
+    """
+    # flat task list over all targets and their (post-resume-filter) benchmarks
+    tasks = [(target, group, item)
+             for target in targets
+             for group, item in target_runlist(target, args, worklist)]
+
+    quiet = not args.verbose
     failures = []
 
-    # job-level parallelism: each benchmark is an independent SC run, so we
-    # fan them out over a process pool (synthesis is the expensive part).
-    quiet = not args.verbose
+    def record(target, group, item, error):
+        name = item.lower()
+        if error is not None:
+            print(f"Error synthesizing {name} ({target}/{group}): {error}",
+                  file=sys.stderr)
+            failures.append(f"{target}/{group}/{name}")
+        else:
+            print(f"Finished {name} benchmark ({target}/{group}).")
+
     if args.jobs > 1:
         with ProcessPoolExecutor(max_workers=args.jobs) as pool:
-            futures = [pool.submit(run_one, group, item, target,
-                                   args.options, builddir, quiet,
-                                   args.start, args.stop)
-                       for group, item in runlist]
-            for future in as_completed(futures):
-                group, item, _, error = future.result()
-                name = item.lower()
-                if error is not None:
-                    print(f"Error synthesizing {name} ({group}): {error}",
-                          file=sys.stderr)
-                    failures.append(f"{target}/{group}/{name}")
-                    continue
-                print(f"Finished {name} benchmark ({group}).")
-    else:
-        for group, item in runlist:
-            print(f"Running {item.lower()} benchmark ({group}).")
-            _, _, _, error = run_one(group, item, target,
+            futures = {}
+            for target, group, item in tasks:
+                builddir = target_builddir(args, target)
+                future = pool.submit(run_one, group, item, target,
                                      args.options, builddir, quiet,
                                      args.start, args.stop)
-            if error is not None:
-                print(f"Error synthesizing {item.lower()} ({group}): {error}",
-                      file=sys.stderr)
-                failures.append(f"{target}/{group}/{item.lower()}")
+                futures[future] = (target, group, item)
+            for future in as_completed(futures):
+                target, group, item = futures[future]
+                _, _, _, error = future.result()
+                record(target, group, item, error)
+    else:
+        for target, group, item in tasks:
+            print(f"Running {item.lower()} benchmark ({target}/{group}).")
+            builddir = target_builddir(args, target)
+            _, _, _, error = run_one(group, item, target, args.options,
+                                     builddir, quiet, args.start, args.stop)
+            record(target, group, item, error)
 
     return failures
 
@@ -161,13 +171,14 @@ def add_common_args(parser):
                              "selected group(s), so each runs in whichever "
                              "group defines it (default: all of them)")
 
-    parser.add_argument('-b', '--builddir',
+    parser.add_argument('-b',
+                        dest='builddir',
                         default="build",
                         metavar="DIR",
                         help='Build directory root; per-benchmark work goes in '
                              '<builddir>/<target>/<name> (default root: build)')
 
-    parser.add_argument('--target',
+    parser.add_argument('-t', '--target',
                         nargs='+',
                         choices=TARGETS,
                         default=None,
@@ -197,7 +208,8 @@ LogikBench commandline runner.
     # ---- run: synthesize benchmarks (no metric collection) ----
     run_p = sub.add_parser("run", help="Synthesize benchmarks")
     add_common_args(run_p)
-    run_p.add_argument('-j', '--jobs',
+    run_p.add_argument('-j',
+                       dest='jobs',
                        type=int,
                        default=1,
                        metavar="N",
@@ -210,19 +222,22 @@ LogikBench commandline runner.
                             "FPGA synth command. Use the '=' form so leading "
                             "dashes are not parsed as flags: --options=-abc9 "
                             "(quote multiple: --options='-abc9 -nocarry')")
-    run_p.add_argument('--start',
+    # 'from' is a Python keyword, so keep the dest names start/stop
+    run_p.add_argument('--from',
+                       dest='start',
                        choices=STEPS,
                        default=None,
                        metavar="STEP",
                        help=f"First flow step to run (choices: {STEPS}; "
                             f"default: from the start)")
-    run_p.add_argument('--stop',
+    run_p.add_argument('--to',
+                       dest='stop',
                        choices=STEPS,
                        default=None,
                        metavar="STEP",
                        help=f"Last flow step to run (choices: {STEPS}; "
                             f"default: to the end)")
-    run_p.add_argument('--incremental',
+    run_p.add_argument('--resume',
                        action='store_true',
                        help='Skip benchmarks whose build already completed '
                             'successfully; only synthesize the rest')
@@ -258,11 +273,7 @@ LogikBench commandline runner.
     #################################################
 
     if args.command == "run":
-        failures = []
-        for target in targets:
-            if len(targets) > 1:
-                print(f"=== target: {target} ===")
-            failures.extend(run_target(target, args, worklist))
+        failures = run_sweep(args, targets, worklist)
         # signal failure to the caller (e.g. CI) without losing partial results
         if failures:
             print(f"\n{len(failures)} benchmark(s) failed: "
