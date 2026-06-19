@@ -28,9 +28,9 @@ class Synthesis(YosysTask):
             "mode", "str",
             "synthesis core to run: 'fpga' or 'asic'", "fpga")
         self.add_parameter(
-            "target", "str",
-            "FPGA target selecting the yosys synth command "
-            "(e.g. zeroasic, ice40, xilinx)", "zeroasic")
+            "command", "str",
+            "resolved yosys FPGA synth command line (mapped from the target "
+            "in benchmark.py), e.g. 'synth_xilinx -family xc7'", "")
         self.add_parameter(
             "options", "str",
             "extra options appended verbatim to the FPGA synth command", "")

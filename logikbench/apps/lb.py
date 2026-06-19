@@ -9,7 +9,7 @@ import logikbench as lb
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
 from logikbench.benchmark import (
-    FPGA_METRICS, ASIC_METRICS, TARGETS, FPGA_TARGETS, DEFAULT_FPGA_TARGET, STEPS,
+    FPGA_METRICS, ASIC_METRICS, TARGETS, FPGA_TARGETS, STEPS,
     run_one, read_metrics, read_asic_metrics, read_tool_var, is_complete,
 )
 
@@ -181,15 +181,15 @@ def add_common_args(parser):
     parser.add_argument('-t', '--target',
                         nargs='+',
                         choices=TARGETS,
-                        default=None,
+                        required=True,
                         metavar="TARGET",
-                        help=f"Synthesis target(s) (choices: {TARGETS}); an FPGA "
-                             f"target (e.g. ice40, xilinx, zeroasic) picks the "
-                             f"yosys synth command, a plain PDK name runs the "
+                        help=f"Synthesis target(s) (choices: {TARGETS}). An FPGA "
+                             f"target is named '<vendor>_<partname>' (e.g. "
+                             f"xilinx_virtex7, zeroasic_z1010) and picks the "
+                             f"yosys synth command; a plain PDK name runs the "
                              f"lbflow ASIC path, and a '<pdk>_demo' name runs "
                              f"the SC demo target via asicflow. Pass several to "
-                             f"sweep them in turn. Omit for default FPGA "
-                             f"synthesis ({DEFAULT_FPGA_TARGET})")
+                             f"sweep them in turn.")
 
 
 def main():
@@ -263,8 +263,8 @@ LogikBench commandline runner.
     # Setup
     #################################################
 
-    # targets to sweep: no --target means default FPGA synthesis
-    targets = args.target or [DEFAULT_FPGA_TARGET]
+    # targets to sweep (--target is required)
+    targets = args.target
 
     worklist = make_worklist(args)
 

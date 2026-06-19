@@ -12,7 +12,7 @@ set sc_rtl [concat \
     [sc_cfg_get_fileset $sc_designlib $fileset systemverilog] \
     [sc_cfg_get_fileset $sc_designlib $fileset verilog]]
 set sc_mode [sc_cfg_tool_task_get var mode]
-set sc_target [sc_cfg_tool_task_get var target]
+set sc_command [sc_cfg_tool_task_get var command]
 set sc_options [sc_cfg_tool_task_get var options]
 set sc_liberty [sc_cfg_tool_task_get var liberty]
 

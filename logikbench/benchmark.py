@@ -31,15 +31,28 @@ ASIC_METRICS = ["cells", "cellarea", "fmax", "setupslack"]
 _INDEX = "0"
 _LBFLOW_ASIC_RECIPE = "asic/freepdk45"
 
-# FPGA target names decoded by scripts/fpga/synthesis_fpga.tcl. A --target in
-# this list (or no target) runs FPGA synthesis; anything else is an ASIC PDK.
-# 'intel' is dropped: yosys' synth_intel is experimental and reads a per-family
-# techmap (intel/<family>/dsp_map.v) that the yosys build does not ship, so it
-# errors for every family. Re-add once yosys installs the intel data files.
-FPGA_TARGETS = ["zeroasic", "microchip", "fabulous", "gatemate", "gowin",
-                "ice40", "xilinx", "efinix", "achronix", "quicklogic"]
-
-DEFAULT_FPGA_TARGET = "zeroasic"
+# FPGA targets, named "<vendor>_<partname>", mapped to the yosys synth command
+# (with family/tech/partname args) that implements them. The command is passed
+# verbatim to scripts/fpga/synthesis_fpga.tcl, which runs it (a ';' separates a
+# plugin load from the synth command, as the zeroasic parts need wildebeest) and
+# appends -top plus the user's --options.
+# 'intel' is intentionally absent: yosys' synth_intel is experimental and reads
+# a per-family techmap (intel/<family>/dsp_map.v) the yosys build does not ship.
+FPGA_TARGETS = {
+    "xilinx_virtex7":      "synth_xilinx -family xc7",
+    "quicklogic_polarpro": "synth_quicklogic -family pp3",
+    "microchip_polarfire": "synth_microchip -family polarfire",
+    "lattice_ice40":       "synth_ice40",
+    "lattice_ecp5":        "synth_lattice -family ecp5",
+    "gowin_gw5a":          "synth_gowin -family gw5a",
+    "achronix_speedster":  "synth_achronix",
+    "adi_flex16ffc":       "synth_analogdevices -tech t16ffc",
+    "efinix_trion":        "synth_efinix",
+    "fabulous_generic":    "synth_fabulous",
+    "gatemate_cologne":    "synth_gatemate",
+    "zeroasic_z1010":      "plugin -i wildebeest; synth_fpga -partname z1010",
+    "zeroasic_z1060":      "plugin -i wildebeest; synth_fpga -partname z1060",
+}
 
 
 def _nangate45_liberty():
@@ -63,8 +76,8 @@ _DEMO_TARGETS = {
 }
 
 # all valid --target values, and the subset the custom lbflow supports
-TARGETS = FPGA_TARGETS + list(_LBFLOW_PDKS) + list(_DEMO_TARGETS)
-LBFLOW_TARGETS = FPGA_TARGETS + list(_LBFLOW_PDKS)
+TARGETS = list(FPGA_TARGETS) + list(_LBFLOW_PDKS) + list(_DEMO_TARGETS)
+LBFLOW_TARGETS = list(FPGA_TARGETS) + list(_LBFLOW_PDKS)
 
 # Friendly stage names -> SC node names. A stage spans several SC nodes, so
 # --start maps to its first node and --stop to its last.
@@ -180,12 +193,13 @@ def is_complete(name, builddir="build", jobname="job0"):
 
 
 def _run_fpga(design, target, options, builddir, quiet, start, stop):
-    """lbflow FPGA synthesis; target picks the yosys synth command."""
+    """lbflow FPGA synthesis; the target name maps to a yosys synth command."""
     proj = _base_project(design, builddir, FPGAMetricsSchema(), quiet)
     proj.add_fileset("rtl")
     proj.set_flow(FPGASynthesis())
     proj.set("tool", "yosys", "task", "synthesis", "var", "mode", "fpga")
-    proj.set("tool", "yosys", "task", "synthesis", "var", "target", target)
+    proj.set("tool", "yosys", "task", "synthesis", "var", "command",
+             FPGA_TARGETS[target])
     proj.set("tool", "yosys", "task", "synthesis", "var", "options", options)
     _set_range(proj, start, stop)
     proj.run()
@@ -250,7 +264,7 @@ def run_one(group, item, target=None, options="", builddir="build", quiet=True,
         elif target in _LBFLOW_PDKS:
             _run_lbflow_asic(design, target, builddir, quiet, start, stop)
             metrics = read_metrics(name, ASIC_METRICS, builddir)
-        elif target is None or target in FPGA_TARGETS:
+        elif target in FPGA_TARGETS:
             _run_fpga(design, target, options, builddir, quiet, start, stop)
             metrics = read_metrics(name, FPGA_METRICS, builddir)
         else:

@@ -1,35 +1,22 @@
-# Map the FPGA target string to a yosys synth command. lb keeps the list of
-# targets decoded here (see logikbench/flows/runner.py FPGA_TARGETS); a target
-# not in that list selects the ASIC flow instead.
-#
-# synth_microchip
-# synth_fabulous
-# synth_gatemate
-# synth_gowin
-# synth_ice40
-# synth_xilinx
-# synth_efinix
-# synth_achronix
-# synth_quicklogic
-# synth_intel
-# zeroasic --> synth_fpga + plugin wildebeest
+# Run the resolved FPGA synth command. $sc_command is the yosys synth command
+# line for this target, mapped from "<vendor>_<partname>" in benchmark.py
+# (FPGA_TARGETS), e.g. "synth_xilinx -family xc7". It may be a ';'-separated
+# sequence when a plugin must load first (the zeroasic parts need wildebeest:
+# "plugin -i wildebeest; synth_fpga -partname z1010"). Run each part as a yosys
+# command; append -top and the user's --options to the final (synth) part only,
+# since a leading plugin load takes neither.
 
-switch -- $sc_target {
-    microchip   { set synth_cmd synth_microchip }
-    fabulous    { set synth_cmd synth_fabulous }
-    gatemate    { set synth_cmd synth_gatemate }
-    gowin       { set synth_cmd synth_gowin }
-    ice40       { set synth_cmd synth_ice40 }
-    xilinx      { set synth_cmd synth_xilinx }
-    efinix      { set synth_cmd synth_efinix }
-    achronix    { set synth_cmd synth_achronix }
-    quicklogic  { set synth_cmd synth_quicklogic }
-    intel       { set synth_cmd synth_intel }
-    default     { yosys plugin -i wildebeest; set synth_cmd synth_fpga }
+set sc_parts [split $sc_command ";"]
+set sc_last [expr {[llength $sc_parts] - 1}]
+for {set i 0} {$i < [llength $sc_parts]} {incr i} {
+    set sc_part [string trim [lindex $sc_parts $i]]
+    if {$sc_part eq ""} continue
+    if {$i == $sc_last} {
+        yosys {*}$sc_part -top $sc_topmodule {*}$sc_options
+    } else {
+        yosys {*}$sc_part
+    }
 }
-
-# options from lb are appended verbatim as arguments to the synth command
-yosys $synth_cmd -top $sc_topmodule {*}$sc_options
 
 # Logic depth
 yosys ltp -noff
