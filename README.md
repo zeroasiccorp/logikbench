@@ -6,7 +6,7 @@
 [![CI](https://github.com/zeroasiccorp/logikbench/actions/workflows/ci.yml/badge.svg)](https://github.com/zeroasiccorp/logikbench/actions)
 [![Downloads](https://static.pepy.tech/badge/logikbench)](https://pepy.tech/project/logikbench)
 
-**119 parametrized RTL benchmarks for unbiased EDA evaluation**
+**103 parametrized RTL benchmarks for unbiased EDA evaluation**
 
 ## Problem
 
@@ -43,8 +43,8 @@ The suite covers five major categories targeting different evaluation needs:
 | [basic](logikbench/basic/README.md)           | 22         | Logic primitives and combinational blocks|
 | [arithmetic](logikbench/arithmetic/README.md) | 33         | Arithmetic operators and datapaths       |
 | [memory](logikbench/memory/README.md)         | 13         | Memory structures and storage elements   |
-| [blocks](logikbench/blocks/README.md)         | 31         | Complex subsystems and IP blocks         |
-| [epfl](logikbench/epfl/README.md)             | 20         | EPFL arithmetic and control benchmarks   |
+| [blocks](logikbench/blocks/README.md)         | 16         | Complex subsystems and IP blocks         |
+| [epfl](logikbench/epfl/README.md)             | 19         | EPFL arithmetic and control benchmarks   |
 
 ## Benchmark Inventory
 
@@ -52,7 +52,7 @@ The suite covers five major categories targeting different evaluation needs:
 
 | Benchmark | Description | Verilog |
 |-----------|-------------|---------|
-| arbiter | Priority arbiter | [arbiter.v](logikbench/basic/arbiter/rtl/arbiter.v) |
+| arbfix | Fixed-priority arbiter | [arbfix.v](logikbench/basic/arbfix/rtl/arbfix.v) |
 | band | Bitwise AND | [band.v](logikbench/basic/band/rtl/band.v) |
 | bbuf | Buffer | [bbuf.v](logikbench/basic/bbuf/rtl/bbuf.v) |
 | bin2gray | Binary to Gray code converter | [bin2gray.v](logikbench/basic/bin2gray/rtl/bin2gray.v) |
@@ -117,7 +117,7 @@ The suite covers five major categories targeting different evaluation needs:
 
 | Benchmark | Description | Verilog |
 |-----------|-------------|---------|
-| axiram | AXI RAM interface | [axiram.v](logikbench/memory/axiram/rtl/axiram.v) |
+| axiram | AXI RAM interface | [axil_ram.v](logikbench/memory/axiram/rtl/axil_ram.v) |
 | cache | Cache memory | [cache.v](logikbench/memory/cache/rtl/cache.v) |
 | fifoasync | Asynchronous FIFO | [fifoasync.v](logikbench/memory/fifoasync/rtl/fifoasync.v) |
 | fifosync | Synchronous FIFO | [fifosync.v](logikbench/memory/fifosync/rtl/fifosync.v) |
@@ -131,43 +131,28 @@ The suite covers five major categories targeting different evaluation needs:
 | regfile | Register file | [regfile.v](logikbench/memory/regfile/rtl/regfile.v) |
 | rom | Read-only memory | [rom.v](logikbench/memory/rom/rtl/rom.v) |
 
-### Complex Blocks (31 benchmarks)
+### Complex Blocks (16 benchmarks)
 
 | Benchmark | Description | Verilog |
 |-----------|-------------|---------|
 | aes | AES encryption | [aes.v](logikbench/blocks/aes/rtl/aes.v) |
 | apbregs | APB register block | [apbregs.v](logikbench/blocks/apbregs/rtl/apbregs.v) |
-| axicrossbar | AXI crossbar | [axicrossbar.v](logikbench/blocks/axicrossbar/rtl/axicrossbar.v) |
-| axidev | AXI device | [axidev.v](logikbench/blocks/axidev/rtl/axidev.v) |
-| axihost | AXI host | [axihost.v](logikbench/blocks/axihost/rtl/axihost.v) |
-| conv2d | 2D convolution engine | [conv2d.v](logikbench/blocks/conv2d/rtl/conv2d.v) |
-| en8b10b | 8b/10b encoder | [en8b10b.v](logikbench/blocks/en8b10b/rtl/en8b10b.v) |
+| axicrossbar | AXI crossbar | [axi_crossbar.v](logikbench/blocks/axicrossbar/rtl/axi_crossbar.v) |
 | ethmac | Ethernet MAC | [ethmac.v](logikbench/blocks/ethmac/rtl/ethmac.v) |
 | fft | Fast Fourier Transform | [fft.v](logikbench/blocks/fft/rtl/fft.v) |
 | firfix | Fixed-point FIR filter | [firfix.v](logikbench/blocks/firfix/rtl/firfix.v) |
 | firprog | Programmable FIR filter | [firprog.v](logikbench/blocks/firprog/rtl/firprog.v) |
-| fpu32 | 32-bit floating-point unit | [fpu32.v](logikbench/blocks/fpu32/rtl/fpu32.v) |
-| fpu64 | 64-bit floating-point unit | [fpu64.v](logikbench/blocks/fpu64/rtl/fpu64.v) |
-| hamming | Hamming encoder/decoder | [hamming.v](logikbench/blocks/hamming/rtl/hamming.v) |
+| fpu32 | 32-bit floating-point unit | [fpu.v](logikbench/blocks/fpu32/rtl/fpu.v) |
+| fpu64 | 64-bit floating-point unit | [ct_vfdsu_double.v](logikbench/blocks/fpu64/rtl/ct_vfdsu_double.v) |
 | i2c | I2C controller | [i2c.v](logikbench/blocks/i2c/rtl/i2c.v) |
 | ialu | Integer ALU | [ialu.v](logikbench/blocks/ialu/rtl/ialu.v) |
-| ibex | Ibex RISC-V core | [ibex.v](logikbench/blocks/ibex/rtl/ibex.v) |
 | lfsr | Linear feedback shift register | [lfsr.v](logikbench/blocks/lfsr/rtl/lfsr.v) |
-| matmul | Matrix multiplication | [matmul.v](logikbench/blocks/matmul/rtl/matmul.v) |
-| median3x3 | 3x3 median filter | [median3x3.v](logikbench/blocks/median3x3/rtl/median3x3.v) |
-| nvdla | NVIDIA Deep Learning Accelerator | [nvdla.v](logikbench/blocks/nvdla/rtl/nvdla.v) |
-| ofdm | OFDM modulator | [ofdm.v](logikbench/blocks/ofdm/rtl/ofdm.v) |
 | picorv32 | PicoRV32 RISC-V core | [picorv32.v](logikbench/blocks/picorv32/rtl/picorv32.v) |
-| sad8x8 | 8x8 sum of absolute differences | [sad8x8.v](logikbench/blocks/sad8x8/rtl/sad8x8.v) |
-| serv | SERV bit-serial RISC-V core | [serv.v](logikbench/blocks/serv/rtl/serv.v) |
-| sobel3x3 | 3x3 Sobel filter | [sobel3x3.v](logikbench/blocks/sobel3x3/rtl/sobel3x3.v) |
-| spi | SPI controller | [spi.v](logikbench/blocks/spi/rtl/spi.v) |
+| serv | SERV bit-serial RISC-V core | [serv_top.v](logikbench/blocks/serv/rtl/serv_top.v) |
 | uart | UART | [uart.v](logikbench/blocks/uart/rtl/uart.v) |
-| umihost | UMI host interface | [umihost.v](logikbench/blocks/umihost/rtl/umihost.v) |
 | umiregs | UMI register block | [umiregs.v](logikbench/blocks/umiregs/rtl/umiregs.v) |
-| viterbi | Viterbi decoder | [viterbi.v](logikbench/blocks/viterbi/rtl/viterbi.v) |
 
-### EPFL Benchmarks (20 benchmarks)
+### EPFL Benchmarks (19 benchmarks)
 
 | Benchmark | Description | Verilog |
 |-----------|-------------|---------|
@@ -252,90 +237,117 @@ pip install -e .
 
 LogikBench includes the `lb` command-line tool for batch processing benchmarks.
 It drives synthesis through [SiliconCompiler](https://github.com/siliconcompiler/siliconcompiler):
-each benchmark is a SiliconCompiler `Design`, and `--target` selects what runs.
+each benchmark is a SiliconCompiler `Design`, and `lb` has two subcommands:
 
-Targets:
+- `lb run` synthesizes the selected benchmarks for one or more targets.
+- `lb collect` harvests metrics from existing build results (no synthesis).
 
-- *(no `--target`)* — FPGA synthesis via LogikBench's `lbflow` (Yosys `synth_fpga`).
-- `freepdk45` — ASIC synthesis + OpenSTA timing via `lbflow` (pre-layout STA, so
-  it reports `fmax` without place & route).
+Both take `-g/--group` and the required `-t/--target`. Run `lb run -h` or
+`lb collect -h` for the full option list.
+
+### Targets
+
+`-t/--target` selects what runs and is required; pass several to sweep them in
+turn. FPGA targets are named `<vendor>_<partname>` and map to a Yosys synth
+command:
+
+| Target | Synth command |
+|--------|---------------|
+| `xilinx_virtex7` | `synth_xilinx -family xc7` |
+| `quicklogic_polarpro` | `synth_quicklogic -family pp3` |
+| `microchip_polarfire` | `synth_microchip -family polarfire` |
+| `lattice_ice40` | `synth_ice40` |
+| `lattice_ecp5` | `synth_lattice -family ecp5` |
+| `gowin_gw5a` | `synth_gowin -family gw5a` |
+| `achronix_speedster` | `synth_achronix` |
+| `adi_flex16ffc` | `synth_analogdevices -tech t16ffc` |
+| `efinix_trion` | `synth_efinix` |
+| `fabulous_generic` | `synth_fabulous` |
+| `gatemate_cologne` | `synth_gatemate` |
+| `zeroasic_z1015` | `synth_fpga -config <arch>` (wildebeest) |
+| `zeroasic_z1060` | `synth_fpga -config <arch>` (wildebeest) |
+
+The `zeroasic_*` targets load the [Wildebeest](https://github.com/zeroasiccorp/wildebeest)
+plugin and run `synth_fpga -config <arch>`, where `<arch>` is the per-part
+architecture config vendored under `logikbench/targets/fpga/zeroasic/`.
+
+ASIC targets:
+
+- `freepdk45` -- ASIC synthesis + OpenSTA timing via LogikBench's `lbflow`
+  (pre-layout STA, so it reports `fmax` without place & route).
 - `<pdk>_demo` (`freepdk45_demo`, `asap7_demo`, `skywater130_demo`, `gf180_demo`,
-  `ihp130_demo`) — the official SiliconCompiler demo target for that PDK, run
-  through SC's `asicflow` (full RTL→GDS). Use `--stop` to limit how far it runs.
+  `ihp130_demo`) -- the official SiliconCompiler demo target for that PDK, run
+  through SC's `asicflow` (full RTL-to-GDS). Use `--to` to limit how far it runs.
 
-`--start`/`--stop` restrict the run to a step range, named by stage:
-`synthesis`, `floorplan`, `place`, `cts`, `route` (each mapped to the
-appropriate SC node). For example `--stop synthesis` runs synthesis only.
-
-By default `lb` synthesizes the selected benchmarks and records metrics; pass
-`--collect_only` to read metrics from existing build results without
-synthesizing. Run `lb -h` to see all available options.
+Metrics are fixed by the run mode: `luts`, `logicdepth`, `tasktime` for FPGA;
+`cells`, `cellarea`, `fmax`, `setupslack` for ASIC.
 
 ### Options
 
+Shared by both subcommands:
+
 | Flag | Description |
 |------|-------------|
-| `-g`, `--group` | Benchmark group(s) to run: `basic`, `memory`, `arithmetic`, `epfl`, `blocks` (required) |
-| `-n`, `--name` | Only run benchmark(s) with these name(s); matched against the benchmarks in the selected group(s), so each runs in whichever group defines it (default: all of them) |
-| `--target` | ASIC target: a PDK name (`freepdk45`, runs lbflow) or a `<pdk>_demo` name (runs the SC demo target via asicflow). Omit for FPGA synthesis |
-| `--start` / `--stop` | First / last stage to run: `synthesis`, `floorplan`, `place`, `cts`, `route` (default: full flow) |
-| `-b`, `--builddir` | Build directory root; per-benchmark work goes in `<builddir>/<target>/<name>` (target is the `--target` name, or `fpga` when none; default root: `build`) |
-| `-o`, `--output` | Results file; `.json` or `.csv` selected by extension (default: `<builddir>/<target>/results.json`) |
-| `-j`, `--jobs` | Number of benchmarks to synthesize in parallel (default: 1); each is an independent SiliconCompiler run, fanned out over a process pool |
-| `--incremental` | Skip benchmarks whose build already completed successfully; only synthesize the rest |
-| `--collect_only` | Read metrics from existing build results without synthesizing |
+| `-g`, `--group` | Benchmark group(s): `basic`, `memory`, `arithmetic`, `epfl`, `blocks` (required) |
+| `-n`, `--name` | Only act on benchmark(s) with these name(s), matched against the selected group(s) (default: all of them) |
+| `-t`, `--target` | Synthesis target(s) to sweep (required); see the Targets table above |
+| `-b` | Build directory root; per-benchmark work goes in `<builddir>/<target>/<name>` (default: `build`) |
+
+`lb run` only:
+
+| Flag | Description |
+|------|-------------|
+| `-j` | Number of benchmarks to synthesize in parallel across the target x benchmark matrix (default: 1) |
+| `--options` | Extra args passed verbatim to the FPGA synth command. Use the `=` form so leading dashes are not parsed as flags: `--options=-abc9` (quote multiple: `--options='-abc9 -nocarry'`) |
+| `--from` | First flow step to run: `synthesis`, `floorplan`, `place`, `cts`, `route` (default: from the start) |
+| `--to` | Last flow step to run (same choices; default: to the end) |
+| `--resume` | Skip benchmarks whose build already completed successfully; only synthesize the rest |
+| `--timeout` | Per-step wall-clock cap in seconds; a step that exceeds it is killed and marked failed (default: none) |
 | `-v`, `--verbose` | Show full SiliconCompiler tool/scheduler logs (quieted by default) |
 
-Metrics are fixed by the run mode: `cells`, `luts`, `nets`, `pins`, `tasktime`
-for FPGA; `cells`, `cellarea`, `fmax`, `setupslack` for ASIC.
+`lb collect` only:
 
-By default each run removes the benchmark's build directory beforehand, so
-synthesis always runs fresh (no SiliconCompiler build reuse). Use
-`--incremental` to skip benchmarks already completed, or `--collect_only` to
-read metrics from existing builds without synthesizing.
+| Flag | Description |
+|------|-------------|
+| `-o`, `--output` | Output directory; one aggregated `<target><suffix>.json` is written per target (default: the build dir root, `-b`) |
+| `--suffix` | Append to each output filename (`<target><suffix>.json`), so collecting the same target under different configs does not overwrite (e.g. `--suffix _abc9`) |
+
+`lb run` wipes each benchmark's build directory before synthesizing, so runs are
+always fresh (no SiliconCompiler build reuse); use `--resume` to skip completed
+benchmarks. `lb collect` then writes one JSON file per target.
 
 ### Examples
 
-Synthesize all benchmarks in a group and export metrics to JSON:
+Synthesize an FPGA target for a whole group, then collect its metrics:
 
 ```bash
-lb -g arithmetic -o results.json
+lb run -g arithmetic -t xilinx_virtex7
+lb collect -g arithmetic -t xilinx_virtex7 -o results
 ```
 
-Run several groups at once:
+Synthesize a single benchmark for a Zero ASIC part (needs the wildebeest plugin):
 
 ```bash
-lb -g basic arithmetic memory -o results.json
+lb run -g basic -n mux -t zeroasic_z1015
 ```
 
-Run a single benchmark into a CSV:
+Sweep several FPGA targets at once, 8 benchmarks in parallel:
 
 ```bash
-lb -g basic -n binv -o results.csv
+lb run -g basic -t xilinx_virtex7 lattice_ice40 gowin_gw5a -j 8
 ```
 
-Run a group 8 benchmarks at a time (job-level parallelism):
+Run ASIC synthesis + timing (`lbflow`) on the freepdk45 PDK, then collect:
 
 ```bash
-lb -g basic -j 8 -o results.json
-```
-
-Collect metrics from an already-synthesized run (no synthesis):
-
-```bash
-lb -g basic --collect_only -o results.csv
-```
-
-Run ASIC synthesis + timing (`lbflow`) on the freepdk45 PDK:
-
-```bash
-lb -g basic --target freepdk45 -o results.csv
+lb run -g basic -t freepdk45
+lb collect -g basic -t freepdk45 -o results
 ```
 
 Run the asap7 demo target (SC asicflow), synthesis only:
 
 ```bash
-lb -g basic --target asap7_demo --stop synthesis -o results.csv
+lb run -g basic -t asap7_demo --to synthesis
 ```
 
 ## Contributing

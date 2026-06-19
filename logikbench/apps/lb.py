@@ -191,7 +191,7 @@ def add_common_args(parser):
                         metavar="TARGET",
                         help=f"Synthesis target(s) (choices: {TARGETS}). An FPGA "
                              f"target is named '<vendor>_<partname>' (e.g. "
-                             f"xilinx_virtex7, zeroasic_z1010) and picks the "
+                             f"xilinx_virtex7, zeroasic_z1015) and picks the "
                              f"yosys synth command; a plain PDK name runs the "
                              f"lbflow ASIC path, and a '<pdk>_demo' name runs "
                              f"the SC demo target via asicflow. Pass several to "
