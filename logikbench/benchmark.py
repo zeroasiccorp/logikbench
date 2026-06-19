@@ -119,11 +119,14 @@ def _quiet(proj, quiet):
         proj.logger.setLevel(logging.ERROR)
 
 
-def _base_project(design, builddir, metric_schema, quiet):
+def _base_project(design, builddir, metric_schema, quiet, timeout=None):
     """Base Project for the custom lbflow (attaches the metric schema)."""
     proj = Project(design)
     EditableSchema(proj).insert("metric", metric_schema, clobber=True)
     proj.set("option", "builddir", builddir)
+    if timeout is not None:
+        # per-step wall-clock cap (seconds); SC kills the tool tree on expiry
+        proj.set("option", "timeout", timeout)
     _quiet(proj, quiet)
     return proj
 
@@ -192,9 +195,9 @@ def is_complete(name, builddir="build", jobname="job0"):
     return bool(statuses) and all(s == "success" for s in statuses)
 
 
-def _run_fpga(design, target, options, builddir, quiet, start, stop):
+def _run_fpga(design, target, options, builddir, quiet, start, stop, timeout):
     """lbflow FPGA synthesis; the target name maps to a yosys synth command."""
-    proj = _base_project(design, builddir, FPGAMetricsSchema(), quiet)
+    proj = _base_project(design, builddir, FPGAMetricsSchema(), quiet, timeout)
     proj.add_fileset("rtl")
     proj.set_flow(FPGASynthesis())
     proj.set("tool", "yosys", "task", "synthesis", "var", "mode", "fpga")
@@ -205,10 +208,10 @@ def _run_fpga(design, target, options, builddir, quiet, start, stop):
     proj.run()
 
 
-def _run_lbflow_asic(design, target, builddir, quiet, start, stop):
+def _run_lbflow_asic(design, target, builddir, quiet, start, stop, timeout):
     """lbflow ASIC (Yosys synthesis + OpenSTA timing) for a single-liberty PDK."""
     liberty = _LBFLOW_PDKS[target]()
-    proj = _base_project(design, builddir, ASICMetricsSchema(), quiet)
+    proj = _base_project(design, builddir, ASICMetricsSchema(), quiet, timeout)
     proj.add_fileset("rtl")
     proj.set_flow(ASICSynthesis())
     proj.set("tool", "yosys", "task", "synthesis", "var", "mode", "asic")
@@ -220,10 +223,12 @@ def _run_lbflow_asic(design, target, builddir, quiet, start, stop):
     proj.run()
 
 
-def _run_demo(design, target, builddir, quiet, start, stop):
+def _run_demo(design, target, builddir, quiet, start, stop, timeout):
     """Official SC demo target (PDK + libs + scenarios) run through asicflow."""
     proj = ASIC(design)
     proj.set("option", "builddir", builddir)
+    if timeout is not None:
+        proj.set("option", "timeout", timeout)
     _quiet(proj, quiet)
     _DEMO_TARGETS[target](proj)
     # benchmarks ship no SDC; attach a generic clock so STA can constrain
@@ -243,11 +248,13 @@ def _run_demo(design, target, builddir, quiet, start, stop):
 
 
 def run_one(group, item, target=None, options="", builddir="build", quiet=True,
-            start=None, stop=None):
+            start=None, stop=None, timeout=None):
     """Run a single benchmark; return (group, item, metrics, error).
 
     Dispatches on --target. Catches errors and returns them so a pool worker
     never crashes the parent. Module-level so it is picklable for the pool.
+    'timeout' (seconds, or None) caps each step's wall clock; SC kills the tool
+    tree on expiry and the step fails, so one hung synth cannot stall a sweep.
     """
     import logikbench
     design = getattr(getattr(logikbench, group), item)()
@@ -259,13 +266,13 @@ def run_one(group, item, target=None, options="", builddir="build", quiet=True,
         shutil.rmtree(os.path.join(builddir, name), ignore_errors=True)
     try:
         if target in _DEMO_TARGETS:
-            _run_demo(design, target, builddir, quiet, start, stop)
+            _run_demo(design, target, builddir, quiet, start, stop, timeout)
             metrics = read_metrics(name, ASIC_METRICS, builddir)
         elif target in _LBFLOW_PDKS:
-            _run_lbflow_asic(design, target, builddir, quiet, start, stop)
+            _run_lbflow_asic(design, target, builddir, quiet, start, stop, timeout)
             metrics = read_metrics(name, ASIC_METRICS, builddir)
         elif target in FPGA_TARGETS:
-            _run_fpga(design, target, options, builddir, quiet, start, stop)
+            _run_fpga(design, target, options, builddir, quiet, start, stop, timeout)
             metrics = read_metrics(name, FPGA_METRICS, builddir)
         else:
             raise ValueError(

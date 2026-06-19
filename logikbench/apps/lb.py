@@ -89,7 +89,7 @@ def run_sweep(args, targets, worklist):
                 builddir = target_builddir(args, target)
                 future = pool.submit(run_one, group, item, target,
                                      args.options, builddir, quiet,
-                                     args.start, args.stop)
+                                     args.start, args.stop, args.timeout)
                 futures[future] = (target, group, item)
             for future in as_completed(futures):
                 target, group, item = futures[future]
@@ -100,7 +100,8 @@ def run_sweep(args, targets, worklist):
             print(f"Running {item.lower()} benchmark ({target}/{group}).")
             builddir = target_builddir(args, target)
             _, _, _, error = run_one(group, item, target, args.options,
-                                     builddir, quiet, args.start, args.stop)
+                                     builddir, quiet, args.start, args.stop,
+                                     args.timeout)
             record(target, group, item, error)
 
     return failures
@@ -241,6 +242,13 @@ LogikBench commandline runner.
                        action='store_true',
                        help='Skip benchmarks whose build already completed '
                             'successfully; only synthesize the rest')
+    run_p.add_argument('--timeout',
+                       type=float,
+                       default=None,
+                       metavar="SEC",
+                       help='Per-step wall-clock cap in seconds; a step that '
+                            'exceeds it is killed and marked failed, so one '
+                            'hung synth cannot stall the sweep (default: none)')
     run_p.add_argument('-v', '--verbose',
                        action='store_true',
                        help='Show full SiliconCompiler tool/scheduler logs '
