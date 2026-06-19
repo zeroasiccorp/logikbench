@@ -30,3 +30,6 @@ switch -- $sc_target {
 
 # options from lb are appended verbatim as arguments to the synth command
 yosys $synth_cmd -top $sc_topmodule {*}$sc_options
+
+# Logic depth
+yosys ltp -noff
