@@ -146,7 +146,7 @@ def collect_target(target, args, worklist):
     payload = {"target": target, "options": options, "metrics": metrics_out}
     os.makedirs(outdir, exist_ok=True)
     with open(output, "w") as f:
-        json.dump(payload, f, indent=2)
+        json.dump(payload, f, indent=2, sort_keys=True)
 
     # coverage summary (count, not a line per missing benchmark)
     collected = set()
