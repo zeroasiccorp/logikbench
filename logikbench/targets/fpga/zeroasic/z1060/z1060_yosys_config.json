@@ -1,0 +1,51 @@
+{
+  "version": 1,
+  "partname": "z1060",
+  "lut_size": 6,
+  "flipflops": {
+    "features": [
+      "async_reset",
+      "sync_reset",
+      "sync_set",
+      "flop_enable"
+    ],
+    "models": {
+      "dff": "cad/techlib_custom_plugin/dff.v",
+      "dffe": "cad/techlib_custom_plugin/dffe.v",
+      "dffer": "cad/techlib_custom_plugin/dffer.v",
+      "dffr": "cad/techlib_custom_plugin/dffr.v"
+    },
+    "legalize_list": [
+      "$_DFFE_PN0P_",
+      "$_DFFE_PP_",
+      "$_DFF_PN0_",
+      "$_DFF_P_",
+      "$_SDFFE_PN0P_",
+      "$_SDFFE_PN1P_",
+      "$_SDFF_PN0_",
+      "$_SDFF_PN1_"
+    ],
+    "techmap": "tech_flops.v"
+  },
+  "brams": {
+    "memory_libmap": [
+      "/bram_memory_map.txt"
+    ],
+    "techmap": [
+      "/tech_bram.v"
+    ]
+  },
+  "dsps": {
+    "family": "mae",
+    "techmap": "/tech_dsp.v",
+    "techmap_parameters": {
+      "DSP_SIGNEDONLY": "1",
+      "DSP_A_MAXWIDTH": "18",
+      "DSP_B_MAXWIDTH": "18",
+      "DSP_A_MINWIDTH": "2",
+      "DSP_B_MINWIDTH": "2",
+      "DSP_Y_MINWIDTH": "2",
+      "DSP_NAME": "_dsp_block_"
+    }
+  }
+}

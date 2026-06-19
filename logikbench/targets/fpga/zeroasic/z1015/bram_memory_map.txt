@@ -1,0 +1,102 @@
+ram block $__tech_spram__ {
+    abits 14;
+    widths 1 2 4 8 16 32 per_port;
+    cost 48;
+    init none;
+    
+    port srsw "A" {
+      
+      clock posedge;
+      clken;
+      rden;
+      # read/write modes; adapted from techlibs/microchip/LSRAM.txt
+      # Which read/write modes are enumerated here depends on the
+      # selected value for the ram_collision_model.  As the collision
+      # model becomes more pessimistic, indicating that the underlying
+      # SRAM macro has less and less built-in support for collision
+      # resolution, fewer read/write modes are appended here to force
+      # yosys to insert read/write mode emulation logic.
+      portoption "WRITE_MODE" "UNDEFINED" {
+      	rdwr undefined;
+      	wrtrans all old;
+      }
+      
+      portoption "WRITE_MODE" "NO_CHANGE" {
+      	rdwr no_change;
+      	wrtrans all old;
+      }
+      
+      
+      
+    }
+}
+
+ram block $__tech_sdpram__ {
+    abits 14;
+    widths 1 2 4 8 16 per_port;
+    cost 48;
+    init none;
+    
+    port sw "A" {
+      
+      option "SYNC_MODE" 1 {
+        clock posedge "C";
+      }
+      option "SYNC_MODE" 0 {
+        clock posedge;
+      }
+      clken;
+      # read/write modes; adapted from techlibs/microchip/LSRAM.txt
+      wrtrans all old;
+    }
+    port sr "B" {
+      option "SYNC_MODE" 1 {
+        clock posedge "C";
+      }
+      option "SYNC_MODE" 0 {
+        clock posedge;
+      }
+      clken;
+      rden;
+      # Setting up read mode on the read only port is not
+      # allowed in yosys, so nothing to add here.  Let the
+      # tool do the work.
+    }
+}
+
+ram block $__tech_tdpram__ {
+    abits 14;
+    widths 1 2 4 8 16 per_port;
+    cost 48;
+    init none;
+    
+    port srsw "A" "B" {
+      
+      option "SYNC_MODE" 1 {
+        clock posedge "C";
+      }
+      option "SYNC_MODE" 0 {
+        clock posedge;
+      }
+      clken;
+      rden;
+
+      # Allow ports here to be optional; this gives yosys some flexibility
+      # to instantiate a TDP port when its ports are not fully utilized
+      optional_rw;
+
+      # read/write modes; adapted from techlibs/microchip/LSRAM.txt
+      portoption "WRITE_MODE" "UNDEFINED" {
+      	rdwr undefined;
+      	wrtrans all old;
+      }
+      
+      portoption "WRITE_MODE" "NO_CHANGE" {
+      	rdwr no_change;
+      	wrtrans all old;
+      }
+      
+      
+      
+    }
+}
