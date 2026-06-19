@@ -7,7 +7,6 @@ class Aes(Design):
 
         name = 'aes'
         root = f'{name}_root'
-        source = [f'rtl/{name}.v']
 
         # create a Design object
         super().__init__(name)
@@ -28,6 +27,7 @@ class Aes(Design):
         # top module
         self.set_topmodule(name, fileset)
 
+
 if __name__ == "__main__":
-   d = Aes()
-   d.write_fileset(f"aes.f", fileset="rtl")
+    d = Aes()
+    d.write_fileset("aes.f", fileset="rtl")

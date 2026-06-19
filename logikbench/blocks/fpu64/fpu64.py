@@ -11,7 +11,7 @@ class Fpu64(Design):
         source = ['rtl/ct_vfdsu_ctrl.v',
                   'rtl/ct_vfdsu_pack.v',
                   'rtl/ct_vfdsu_scalar_dp.v',
-		  'rtl/ct_vfdsu_srt_radix16_with_sqrt.v',
+                  'rtl/ct_vfdsu_srt_radix16_with_sqrt.v',
                   'rtl/gated_clk_cell.v',
                   'rtl/ct_vfdsu_double.v',
                   'rtl/ct_vfdsu_prepare.v',
@@ -36,6 +36,7 @@ class Fpu64(Design):
         # top module
         self.set_topmodule(topmodule, fileset)
 
+
 if __name__ == "__main__":
-   d = Fpu64()
-   d.write_fileset(f"{d.name()}.f", fileset="rtl")
+    d = Fpu64()
+    d.write_fileset(f"{d.name()}.f", fileset="rtl")

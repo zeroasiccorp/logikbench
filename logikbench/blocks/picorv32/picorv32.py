@@ -23,6 +23,7 @@ class Picorv32(Design):
         # top module
         self.set_topmodule(name, fileset)
 
+
 if __name__ == "__main__":
-   d = Picorv32()
-   d.write_fileset(f"picorv32.f", fileset="rtl")
+    d = Picorv32()
+    d.write_fileset("picorv32.f", fileset="rtl")

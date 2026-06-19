@@ -23,6 +23,7 @@ class Firprog(Design):
         # top module
         self.set_topmodule(name, fileset)
 
+
 if __name__ == "__main__":
-   d = Fir()
-   d.write_fileset(f"firprog.f", fileset="rtl")
+    d = Firprog()
+    d.write_fileset("firprog.f", fileset="rtl")

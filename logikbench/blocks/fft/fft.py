@@ -39,7 +39,8 @@ class Fft(Design):
             else:
                 print(f"sine_lut[{i}] = 16'sd{val};")
 
+
 if __name__ == "__main__":
-   d = Fft()
-   d.write_fileset(f"fft.f", fileset="rtl")
-   d.sin_table()
+    d = Fft()
+    d.write_fileset("fft.f", fileset="rtl")
+    d.sin_table()

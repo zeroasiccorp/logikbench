@@ -7,7 +7,6 @@ class Ethmac(Design):
 
         name = 'ethmac'
         root = f'{name}_root'
-        source = [f'rtl/{name}.v']
 
         # create a Design object
         super().__init__(name)
@@ -27,6 +26,7 @@ class Ethmac(Design):
         # top module
         self.set_topmodule(name, fileset)
 
+
 if __name__ == "__main__":
-   d = Ethmac()
-   d.write_fileset(f"ethmac.f", fileset="rtl")
+    d = Ethmac()
+    d.write_fileset("ethmac.f", fileset="rtl")

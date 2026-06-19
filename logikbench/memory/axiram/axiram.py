@@ -8,7 +8,7 @@ class Axiram(Design):
         name = 'axiram'
         root = f'{name}_root'
         topmodule = 'axil_ram'
-        source = [f'rtl/axil_ram.v']
+        source = ['rtl/axil_ram.v']
 
         # create a Design object
         super().__init__(name)

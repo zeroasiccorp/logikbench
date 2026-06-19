@@ -23,6 +23,7 @@ class Ialu(Design):
         # top module
         self.set_topmodule(name, fileset)
 
+
 if __name__ == "__main__":
-   d = Ialu()
-   d.write_fileset(f"ialu.f", fileset="rtl")
+    d = Ialu()
+    d.write_fileset("ialu.f", fileset="rtl")

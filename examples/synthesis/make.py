@@ -47,7 +47,6 @@ python syn -g basic -n crossbar -t yosys
 
 """, formatter_class=argparse.RawDescriptionHelpFormatter)
 
-
     parser.add_argument("-g", "--group",
                         nargs='+',
                         choices=all_groups,
@@ -68,7 +67,7 @@ python syn -g basic -n crossbar -t yosys
     parser.add_argument("-t", "--target",
                         choices=all_targets,
                         metavar="TARGET",
-                        help=f"Synthesis target (choices: {all_cmds})")
+                        help=f"Synthesis target (choices: {all_targets})")
 
     parser.add_argument("-opt",
                         nargs='+',
@@ -78,7 +77,7 @@ python syn -g basic -n crossbar -t yosys
                         action='store_true',
                         help='Clean up build directory')
 
-    parser.add_argument('-output','-o',
+    parser.add_argument('-output', '-o',
                         default="build/results.json",
                         help='Output file name')
 
@@ -117,7 +116,7 @@ python syn -g basic -n crossbar -t yosys
         for item in bench_list:
             name = item.lower()
             if args.tool == 'yosys':
-                script = f"{name}.ys" # yosys corner case
+                script = f"{name}.ys"  # yosys corner case
                 cmd = ['yosys', '-m', 'slang', '-s', script]
             elif args.tool == 'vivado':
                 script = f"{name}.tcl"
@@ -125,7 +124,7 @@ python syn -g basic -n crossbar -t yosys
 
             # clean up old results
             if os.path.isdir(f"build/{group}/{name}"):
-                if args.clean: # create run dir.clean:
+                if args.clean:  # create run dir.clean:
                     shutil.rmtree(f"build/{group}/{name}")
 
             # change dir
@@ -157,7 +156,7 @@ python syn -g basic -n crossbar -t yosys
 
             # run benchmark
             if os.path.exists(f"{name}_stats.json"):
-                    print(f"Found previous results, skipping {name} benchmark ({group}).")
+                print(f"Found previous results, skipping {name} benchmark ({group}).")
             else:
                 try:
                     print(f"Running {name} benchmark ({group}). Logfile: build/{group}/{name}/{name}.log")
@@ -167,8 +166,8 @@ python syn -g basic -n crossbar -t yosys
                                                 stderr=subprocess.STDOUT,
                                                 check=True)
 
-                except subprocess.CalledProcessError as e:
-                    print(f"Error...see logfile!!")
+                except subprocess.CalledProcessError:
+                    print("Error...see logfile!!")
                     exit()
 
             # collect results
@@ -179,7 +178,6 @@ python syn -g basic -n crossbar -t yosys
 
             # go back to cwd
             os.chdir(cwd)
-
 
     # writing results to file
     _, ext = os.path.splitext(args.output)
