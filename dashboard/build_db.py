@@ -112,10 +112,14 @@ def main():
     if not collected:
         ap.error(f"no <target>.json files found under: {', '.join(args.results)}")
 
-    # split targets by flow; columns are ordered alphabetically z->a (left
-    # to right)
-    fpga = sorted((t for t in collected if t in FPGA_TARGETS), reverse=True)
-    asic = sorted((t for t in collected if t not in FPGA_TARGETS), reverse=True)
+    # Each loaded file is one column, keyed by its filename stem (which may be a
+    # --suffix variant like xilinx_virtex7_abc9). The flow is decided by the
+    # embedded real target (payload["target"]), not the stem. Columns ordered
+    # alphabetically z->a (left to right).
+    def is_fpga(col):
+        return collected[col].get("target", col) in FPGA_TARGETS
+    fpga = sorted((c for c in collected if is_fpga(c)), reverse=True)
+    asic = sorted((c for c in collected if not is_fpga(c)), reverse=True)
 
     db = {}
     if fpga:

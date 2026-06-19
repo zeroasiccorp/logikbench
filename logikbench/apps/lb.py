@@ -118,9 +118,10 @@ def collect_target(target, args, worklist):
     mode = target_mode(target)
     builddir = target_builddir(args, target)
     metric_names = FLOW_METRICS[mode]
-    # --output names a directory; one aggregated <target>.json lands inside it
+    # --output names a directory; one aggregated <target><suffix>.json lands in
+    # it (the --suffix keeps configs of the same target from overwriting)
     outdir = args.output or args.builddir
-    output = os.path.join(outdir, f"{target}.json")
+    output = os.path.join(outdir, f"{target}{args.suffix}.json")
 
     metrics_out = {metric: {} for metric in metric_names}
     options = None
@@ -264,6 +265,13 @@ LogikBench commandline runner.
                            help='Output directory; collect writes one '
                                 'aggregated <target>.json per target into it '
                                 '(default: the build dir root, -b)')
+    collect_p.add_argument('--suffix',
+                           default="",
+                           metavar="STR",
+                           help='Append STR to each output filename '
+                                '(<target><suffix>.json), so collecting the '
+                                'same target under different configs does not '
+                                'overwrite (e.g. --suffix _abc9)')
 
     args = parser.parse_args()
 
