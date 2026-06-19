@@ -1,0 +1,48 @@
+name: Update Zeroasic Architectures
+
+# Vendor the FPGA architecture files needed by 'synth_fpga -config' from the
+# latest stable siliconcompiler/logiklib release into
+# logikbench/targets/fpga/zeroasic and open a PR when anything changes.
+
+on:
+  schedule:
+    - cron: "0 6 * * 1"          # weekly, Monday 06:00 UTC
+  workflow_dispatch:
+  repository_dispatch:
+    types: [logiklib-release]    # optional: sent by a logiklib release workflow
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update:
+    name: Fetch and open PR
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Fetch latest logiklib architectures
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python scripts/fetch_zeroasic_arch.py --clean
+
+      - name: Open PR with changes
+        uses: peter-evans/create-pull-request@v6
+        with:
+          branch: bot/update-zeroasic-arch
+          title: "Update zeroasic FPGA architectures from logiklib"
+          commit-message: "Update zeroasic FPGA architectures from logiklib"
+          body: |
+            Automated vendor of the latest stable logiklib release
+            `*_cad.tar.gz` assets: the `synth_fpga -config` JSON plus the
+            techmap/memory-libmap files it references, one directory per part
+            under `logikbench/targets/fpga/zeroasic/`.
+
+            See `SOURCE.json` for the release tag this was generated from.
+          labels: automated
