@@ -2,10 +2,10 @@ from os.path import dirname, abspath
 from siliconcompiler import Design
 
 
-class Arbiter(Design):
+class Arbfix(Design):
     def __init__(self):
 
-        name = 'arbiter'
+        name = 'arbfix'
         root = f'{name}_root'
         source = [f'rtl/{name}.v']
 
@@ -25,5 +25,5 @@ class Arbiter(Design):
 
 
 if __name__ == "__main__":
-    d = Arbiter()
+    d = Arbfix()
     d.write_fileset("arbiter.f", fileset="rtl")

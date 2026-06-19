@@ -221,16 +221,25 @@ import logikbench as lb
 d = lb.basic.Mux()
 d.write_fileset('mux.f', fileset='rtl')
 ```
+### Prerequisites
+
+You will need properly installed synthesis tools installed to run benchmarks. Follow the install instructions for indidivual repos to properly install plugins.
+There is no dependency linkage between yosys and plugins. The recommendation is to isntall everything cleanly and to use versions from main.
+In Ubuntu, shared yosys libraries are placed at /usr/local/share/yosys/plugins/*.so
+
+* [Yosys](https://github.com/YosysHQ/yosys) - Open-source synthesis tool
+* [Yosys-slang](https://github.com/povik/yosys-slang) - SystemVerilog frontend plugin
+* [Wildebeest](https://github.com/zeroasiccorp/wildebeest)
 
 ## Installation
 
-The fastest way to start using LogikBench is to install it via PyPI:
+Install logikbench via PyPI:
 
 ```bash
 pip install logikbench
 ```
 
-Developers looking to contribute to the project, should clone the repo and install package locally as shown below.
+Developers should clone the repo and install package locally as shown below.
 
 ```bash
 git clone https://github.com/zeroasiccorp/logikbench
@@ -242,23 +251,92 @@ pip install -e .
 ## Running Benchmarks
 
 LogikBench includes the `lb` command-line tool for batch processing benchmarks.
+It drives synthesis through [SiliconCompiler](https://github.com/siliconcompiler/siliconcompiler):
+each benchmark is a SiliconCompiler `Design`, and `--target` selects what runs.
 
-### Prerequisites
+Targets:
 
-To run benchmarks with the `lb` script, install:
+- *(no `--target`)* — FPGA synthesis via LogikBench's `lbflow` (Yosys `synth_fpga`).
+- `freepdk45` — ASIC synthesis + OpenSTA timing via `lbflow` (pre-layout STA, so
+  it reports `fmax` without place & route).
+- `<pdk>_demo` (`freepdk45_demo`, `asap7_demo`, `skywater130_demo`, `gf180_demo`,
+  `ihp130_demo`) — the official SiliconCompiler demo target for that PDK, run
+  through SC's `asicflow` (full RTL→GDS). Use `--stop` to limit how far it runs.
 
-* [Yosys](https://github.com/YosysHQ/yosys) - Open-source synthesis tool
-* [Yosys-slang](https://github.com/povik/yosys-slang) - SystemVerilog frontend plugin
+`--start`/`--stop` restrict the run to a step range, named by stage:
+`synthesis`, `floorplan`, `place`, `cts`, `route` (each mapped to the
+appropriate SC node). For example `--stop synthesis` runs synthesis only.
 
-### Example
+By default `lb` synthesizes the selected benchmarks and records metrics; pass
+`--collect_only` to read metrics from existing build results without
+synthesizing. Run `lb -h` to see all available options.
 
-Synthesize all arithmetic benchmarks for iCE40 FPGA and export metrics:
+### Options
+
+| Flag | Description |
+|------|-------------|
+| `-g`, `--group` | Benchmark group(s) to run: `basic`, `memory`, `arithmetic`, `epfl`, `blocks` (required) |
+| `-n`, `--name` | Only run benchmark(s) with these name(s); matched against the benchmarks in the selected group(s), so each runs in whichever group defines it (default: all of them) |
+| `--target` | ASIC target: a PDK name (`freepdk45`, runs lbflow) or a `<pdk>_demo` name (runs the SC demo target via asicflow). Omit for FPGA synthesis |
+| `--start` / `--stop` | First / last stage to run: `synthesis`, `floorplan`, `place`, `cts`, `route` (default: full flow) |
+| `-b`, `--builddir` | Build directory root; per-benchmark work goes in `<builddir>/<target>/<name>` (target is the `--target` name, or `fpga` when none; default root: `build`) |
+| `-o`, `--output` | Results file; `.json` or `.csv` selected by extension (default: `<builddir>/<target>/results.json`) |
+| `-j`, `--jobs` | Number of benchmarks to synthesize in parallel (default: 1); each is an independent SiliconCompiler run, fanned out over a process pool |
+| `--incremental` | Skip benchmarks whose build already completed successfully; only synthesize the rest |
+| `--collect_only` | Read metrics from existing build results without synthesizing |
+| `-v`, `--verbose` | Show full SiliconCompiler tool/scheduler logs (quieted by default) |
+
+Metrics are fixed by the run mode: `cells`, `luts`, `nets`, `pins`, `tasktime`
+for FPGA; `cells`, `cellarea`, `fmax`, `setupslack` for ASIC.
+
+By default each run removes the benchmark's build directory beforehand, so
+synthesis always runs fresh (no SiliconCompiler build reuse). Use
+`--incremental` to skip benchmarks already completed, or `--collect_only` to
+read metrics from existing builds without synthesizing.
+
+### Examples
+
+Synthesize all benchmarks in a group and export metrics to JSON:
 
 ```bash
-lb -g arithmetic -t yosys -c synth_ice40 -o results.json
+lb -g arithmetic -o results.json
 ```
 
-Run `lb -h` to see all available options.
+Run several groups at once:
+
+```bash
+lb -g basic arithmetic memory -o results.json
+```
+
+Run a single benchmark into a CSV:
+
+```bash
+lb -g basic -n binv -o results.csv
+```
+
+Run a group 8 benchmarks at a time (job-level parallelism):
+
+```bash
+lb -g basic -j 8 -o results.json
+```
+
+Collect metrics from an already-synthesized run (no synthesis):
+
+```bash
+lb -g basic --collect_only -o results.csv
+```
+
+Run ASIC synthesis + timing (`lbflow`) on the freepdk45 PDK:
+
+```bash
+lb -g basic --target freepdk45 -o results.csv
+```
+
+Run the asap7 demo target (SC asicflow), synthesis only:
+
+```bash
+lb -g basic --target asap7_demo --stop synthesis -o results.csv
+```
 
 ## Contributing
 

@@ -2,11 +2,12 @@ from os.path import dirname, abspath
 from siliconcompiler import Design
 import math
 
+
 def sinetable(N):
 
     # create table
-    AMP = N/2-1 # amplitude
-    OFFSET = N/2 # shift to make all values positive
+    AMP = N/2-1  # amplitude
+    OFFSET = N/2  # shift to make all values positive
     values = []
     for i in range(N):
         angle = 2 * math.pi * i / N
@@ -49,4 +50,4 @@ class Sine(Design):
 if __name__ == "__main__":
     d = Sine()
     d.write_fileset("sine.f", fileset="rtl")
-    #sinetable(256)
+    # sinetable(256)

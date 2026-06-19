@@ -1,15 +1,18 @@
+import matplotlib.pyplot as plt
 import numpy as np
 import matplotlib
 matplotlib.use('Agg')  # Non-interactive backend for saving files
-import matplotlib.pyplot as plt
 
 #######################################################
 # WARNING: !!!WIP!!!
 #######################################################
+
+
 def generate_sine_wave(freq, sample_rate, n_samples):
     t = np.arange(n_samples) / sample_rate
     sine_wave = np.sin(2 * np.pi * freq * t)
     return t, sine_wave
+
 
 def save_input_data(time, signal, filename="input_signal.txt"):
     with open(filename, 'w') as f:
@@ -17,6 +20,7 @@ def save_input_data(time, signal, filename="input_signal.txt"):
         for t, s in zip(time, signal):
             f.write(f"{t:.9f},{s:.9f}\n")
     print(f"Input signal data saved as {filename}")
+
 
 def plot_signal(time, signal, filename="input_signal.png"):
     plt.figure(figsize=(10, 4))
@@ -28,6 +32,7 @@ def plot_signal(time, signal, filename="input_signal.png"):
     plt.savefig(filename)
     plt.close()
     print(f"Input signal plot saved as {filename}")
+
 
 def plot_and_save_fft(signal, sample_rate, fft_size=64,
                       plot_filename="fft_output.png",
@@ -60,6 +65,7 @@ def plot_and_save_fft(signal, sample_rate, fft_size=64,
         for freq, mag, ph in zip(fft_freqs, magnitude, phase):
             f.write(f"{freq:.6f},{mag:.6f},{ph:.6f}\n")
     print(f"Full FFT data saved as {data_filename}")
+
 
 if __name__ == "__main__":
     fs = 1024  # Sample rate in Hz

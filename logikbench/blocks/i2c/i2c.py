@@ -29,6 +29,7 @@ class I2c(Design):
         # top module
         self.set_topmodule(name, fileset)
 
+
 if __name__ == "__main__":
-   d = I2c()
-   d.write_fileset(f"i2c.f", fileset="rtl")
+    d = I2c()
+    d.write_fileset("i2c.f", fileset="rtl")

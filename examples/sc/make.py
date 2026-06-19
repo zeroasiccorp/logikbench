@@ -10,7 +10,6 @@ from typing import List, Any
 from siliconcompiler import Chip
 from siliconcompiler.flows import fpgaflow
 
-from logikbench import *
 
 from verilog_parsing_utils import extract_modules_from_file
 from gen_verilog_wrapper import gen_verilog_wrapper

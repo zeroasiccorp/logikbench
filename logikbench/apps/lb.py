@@ -1,222 +1,313 @@
 #!/usr/bin/env python3
 
 import argparse
-import subprocess
 import os
-import shutil
 import sys
 import json
-import csv
-from pathlib import Path
-from jinja2 import Environment, FileSystemLoader
 
 import logikbench as lb
+from concurrent.futures import ProcessPoolExecutor, as_completed
+
+from logikbench.benchmark import (
+    FPGA_METRICS, ASIC_METRICS, TARGETS, FPGA_TARGETS, STEPS,
+    run_one, read_metrics, read_asic_metrics, read_tool_var, is_complete,
+)
+
+# benchmark groups available to both subcommands
+ALL_GROUPS = ['basic', 'memory', 'arithmetic', 'epfl', 'blocks']
+
+# metrics tracked are determined by the run mode (fpga vs asic synthesis)
+FLOW_METRICS = {'fpga': FPGA_METRICS, 'asic': ASIC_METRICS}
+
+
+def target_mode(target):
+    """'fpga' for an FPGA target, 'asic' for a PDK/demo target."""
+    return 'fpga' if target in FPGA_TARGETS else 'asic'
+
+
+def target_builddir(args, target):
+    """Per-target build tree: <builddir>/<target>/<benchmark>/..."""
+    return os.path.join(args.builddir, target)
+
+
+def make_worklist(args):
+    """(group, class-name) pairs honoring the group/name filters; shared across
+    targets (the benchmark set is the same for every target)."""
+    benchmarks = {group: getattr(lb, group).__all__ for group in ALL_GROUPS}
+    namefilter = set(n.lower() for n in args.name) if args.name else None
+    return [(group, item)
+            for group in args.group
+            for item in benchmarks[group]
+            if namefilter is None or item.lower() in namefilter]
+
+
+def target_runlist(target, args, worklist):
+    """(group, item) pairs to synthesize for a target, applying --resume
+    (skip benchmarks whose build already completed successfully)."""
+    if not args.resume:
+        return list(worklist)
+    builddir = target_builddir(args, target)
+    runlist = []
+    for group, item in worklist:
+        if is_complete(item.lower(), builddir):
+            print(f"Skipping {item.lower()} ({target}/{group}): "
+                  f"already complete.")
+        else:
+            runlist.append((group, item))
+    return runlist
+
+
+def run_sweep(args, targets, worklist):
+    """Synthesize the whole target x benchmark matrix; return the failures.
+
+    Each (target, benchmark) is an independent SC run, so -j fans them out over
+    a single process pool across the entire matrix -- it speeds up sweeps that
+    are wide in benchmarks, wide in targets, or both. Pure build: metrics are
+    not read or written here (use 'collect' afterwards).
+    """
+    # flat task list over all targets and their (post-resume-filter) benchmarks
+    tasks = [(target, group, item)
+             for target in targets
+             for group, item in target_runlist(target, args, worklist)]
+
+    quiet = not args.verbose
+    failures = []
+
+    def record(target, group, item, error):
+        name = item.lower()
+        if error is not None:
+            print(f"Error synthesizing {name} ({target}/{group}): {error}",
+                  file=sys.stderr)
+            failures.append(f"{target}/{group}/{name}")
+        else:
+            print(f"Finished {name} benchmark ({target}/{group}).")
+
+    if args.jobs > 1:
+        with ProcessPoolExecutor(max_workers=args.jobs) as pool:
+            futures = {}
+            for target, group, item in tasks:
+                builddir = target_builddir(args, target)
+                future = pool.submit(run_one, group, item, target,
+                                     args.options, builddir, quiet,
+                                     args.start, args.stop, args.timeout)
+                futures[future] = (target, group, item)
+            for future in as_completed(futures):
+                target, group, item = futures[future]
+                _, _, _, error = future.result()
+                record(target, group, item, error)
+    else:
+        for target, group, item in tasks:
+            print(f"Running {item.lower()} benchmark ({target}/{group}).")
+            builddir = target_builddir(args, target)
+            _, _, _, error = run_one(group, item, target, args.options,
+                                     builddir, quiet, args.start, args.stop,
+                                     args.timeout)
+            record(target, group, item, error)
+
+    return failures
+
+
+def collect_target(target, args, worklist):
+    """Read metrics for the specified benchmarks from a single target's build
+    tree and write a self-describing <output_dir>/<target>.json. No synthesis.
+
+    The payload records the target, the synthesis 'options' the run was driven
+    with (recovered from the manifest, since lb fed them in at run time), and
+    the {metric: {benchmark: value}} matrix. Returns the count collected.
+    """
+    mode = target_mode(target)
+    builddir = target_builddir(args, target)
+    metric_names = FLOW_METRICS[mode]
+    # --output names a directory; one aggregated <target><suffix>.json lands in
+    # it (the --suffix keeps configs of the same target from overwriting)
+    outdir = args.output or args.builddir
+    output = os.path.join(outdir, f"{target}{args.suffix}.json")
+
+    metrics_out = {metric: {} for metric in metric_names}
+    options = None
+    for group, item in worklist:
+        name = item.lower()
+        if mode == 'asic':
+            metrics = read_asic_metrics(name, builddir=builddir)
+        else:
+            metrics = read_metrics(name, FPGA_METRICS, builddir=builddir)
+        if metrics is None:
+            if args.name is not None:
+                # only warn about benchmarks the user explicitly named
+                print(f"No results for {name} benchmark ({group}).")
+            continue
+        for metric in metric_names:
+            value = metrics.get(metric)
+            # report runtime to 2 decimal places (0.xx)
+            if metric == "tasktime" and value is not None:
+                value = round(value, 2)
+            metrics_out[metric][name] = value
+        # options are uniform across a target's sweep; read once from a built one
+        if options is None:
+            options = read_tool_var(name, "yosys", "synthesis", "options",
+                                    builddir=builddir)
+
+    payload = {"target": target, "options": options, "metrics": metrics_out}
+    os.makedirs(outdir, exist_ok=True)
+    with open(output, "w") as f:
+        json.dump(payload, f, indent=2, sort_keys=True)
+
+    # coverage summary (count, not a line per missing benchmark)
+    collected = set()
+    for col in metrics_out.values():
+        collected.update(col.keys())
+    print(f"Collected {len(collected)}/{len(worklist)} benchmark(s) "
+          f"for {target}.")
+    return len(collected)
+
+
+def add_common_args(parser):
+    """Arguments shared by the 'run' and 'collect' subcommands."""
+    parser.add_argument("-g", "--group",
+                        nargs='+',
+                        choices=ALL_GROUPS,
+                        metavar="GROUP",
+                        required=True,
+                        help=f"Benchmark group(s) (choices: {ALL_GROUPS})")
+
+    parser.add_argument("-n", "--name",
+                        nargs='+',
+                        help="Only act on benchmark(s) with these name(s); "
+                             "names are matched against the benchmarks in the "
+                             "selected group(s), so each runs in whichever "
+                             "group defines it (default: all of them)")
+
+    parser.add_argument('-b',
+                        dest='builddir',
+                        default="build",
+                        metavar="DIR",
+                        help='Build directory root; per-benchmark work goes in '
+                             '<builddir>/<target>/<name> (default root: build)')
+
+    parser.add_argument('-t', '--target',
+                        nargs='+',
+                        choices=TARGETS,
+                        required=True,
+                        metavar="TARGET",
+                        help=f"Synthesis target(s) (choices: {TARGETS}). An FPGA "
+                             f"target is named '<vendor>_<partname>' (e.g. "
+                             f"xilinx_virtex7, zeroasic_z1010) and picks the "
+                             f"yosys synth command; a plain PDK name runs the "
+                             f"lbflow ASIC path, and a '<pdk>_demo' name runs "
+                             f"the SC demo target via asicflow. Pass several to "
+                             f"sweep them in turn.")
+
 
 def main():
-
-    #################################################
-    # Scope
-    #################################################
-
-    all_groups = ['basic',
-                  'memory',
-                  'arithmetic',
-                  'epfl',
-                  'blocks']
-
-    all_tools = ['yosys',
-                 'vivado']
-
-    all_cmds = ['synth_fpga',
-                'synth_efinix',
-                'synth_ice40',
-                'synth_microchip',
-                'synth_quicklogic',
-                'synth_xilinx']
-
-    all_flows = ['syn',
-                 'rtlgds',
-                 'rtl2bits']
-
-    # TODO: implement
-    all_metrics = ['cells']
 
     #################################################
     # Commandline Interface
     #################################################
 
     parser = argparse.ArgumentParser(description="""\
-Simple LogikBench runner.
+LogikBench commandline runner.
 """, formatter_class=argparse.RawDescriptionHelpFormatter)
 
-    parser.add_argument("-g", "--group",
-                        nargs='+',
-                        choices=all_groups,
-                        metavar="GROUP",
-                        required=True,
-                        help=f"Benchmark group (choices: {all_groups})")
+    sub = parser.add_subparsers(dest="command", required=True,
+                                metavar="{run,collect}")
 
-    parser.add_argument("-n", "--name",
-                        nargs='+',
-                        help="Benchmark name")
+    # ---- run: synthesize benchmarks (no metric collection) ----
+    run_p = sub.add_parser("run", help="Synthesize benchmarks")
+    add_common_args(run_p)
+    run_p.add_argument('-j',
+                       dest='jobs',
+                       type=int,
+                       default=1,
+                       metavar="N",
+                       help='Number of benchmarks to synthesize in parallel '
+                            '(default: 1)')
+    run_p.add_argument('--options',
+                       default="",
+                       metavar="OPTS",
+                       help="Extra options passed verbatim as arguments to the "
+                            "FPGA synth command. Use the '=' form so leading "
+                            "dashes are not parsed as flags: --options=-abc9 "
+                            "(quote multiple: --options='-abc9 -nocarry')")
+    # 'from' is a Python keyword, so keep the dest names start/stop
+    run_p.add_argument('--from',
+                       dest='start',
+                       choices=STEPS,
+                       default=None,
+                       metavar="STEP",
+                       help=f"First flow step to run (choices: {STEPS}; "
+                            f"default: from the start)")
+    run_p.add_argument('--to',
+                       dest='stop',
+                       choices=STEPS,
+                       default=None,
+                       metavar="STEP",
+                       help=f"Last flow step to run (choices: {STEPS}; "
+                            f"default: to the end)")
+    run_p.add_argument('--resume',
+                       action='store_true',
+                       help='Skip benchmarks whose build already completed '
+                            'successfully; only synthesize the rest')
+    run_p.add_argument('--timeout',
+                       type=float,
+                       default=None,
+                       metavar="SEC",
+                       help='Per-step wall-clock cap in seconds; a step that '
+                            'exceeds it is killed and marked failed, so one '
+                            'hung synth cannot stall the sweep (default: none)')
+    run_p.add_argument('-v', '--verbose',
+                       action='store_true',
+                       help='Show full SiliconCompiler tool/scheduler logs '
+                            '(quieted by default)')
 
-    parser.add_argument("-m", "--metric",
-                        nargs='+',
-                        default="cells",
-                        metavar="CMD",
-                        help=f"Metrics to track (choices: {all_metrics}")
-
-    parser.add_argument("-c", "--cmd",
-                        choices=all_cmds,
-                        default="synth_fpga",
-                        metavar="CMD",
-                        help=f"Synthesis command (choices: {all_cmds}")
-
-    parser.add_argument("-part",
-                        default="build/results.json",
-                        help='Part name')
-
-    parser.add_argument("-opt",
-                        nargs='+',
-                        help="Synthesis options")
-
-    parser.add_argument("-tool",
-                        choices=all_tools,
-                        default="yosys",
-                        metavar="TOOL",
-                        help=f"Synthesis tool (choices: {all_tools})")
-
-    parser.add_argument('-clean',
-                        action='store_true',
-                        help='Clean up build directory')
-
-    parser.add_argument('-o', '--output',
-                        default="build/results.json",
-                        help='Output file name')
+    # ---- collect: harvest metrics from existing build results ----
+    collect_p = sub.add_parser("collect",
+                               help="Collect metrics from build results")
+    add_common_args(collect_p)
+    collect_p.add_argument('-o', '--output',
+                           default=None,
+                           metavar="DIR",
+                           help='Output directory; collect writes one '
+                                'aggregated <target>.json per target into it '
+                                '(default: the build dir root, -b)')
+    collect_p.add_argument('--suffix',
+                           default="",
+                           metavar="STR",
+                           help='Append STR to each output filename '
+                                '(<target><suffix>.json), so collecting the '
+                                'same target under different configs does not '
+                                'overwrite (e.g. --suffix _abc9)')
 
     args = parser.parse_args()
 
-    # Error checking
-    if args.tool == 'vivado' and args.target is None:
-        print("Target must be specified with Vivado tool.")
-        exit()
-
-    # resolving relative path
-    cwd = os.getcwd()
-    scriptdir = Path(lb.__file__).parent / "data" / "templates"
-
-    # generated local script
-    env = Environment(loader=FileSystemLoader(scriptdir))
-    template = env.get_template(f'{args.tool}_template.j2')
-
-    # get list of benchmarks
-    benchmarks = {}
-    benchmarks['basic'] = lb.basic.__all__
-    benchmarks['arithmetic'] = lb.arithmetic.__all__
-    benchmarks['memory'] = lb.memory.__all__
-    benchmarks['blocks'] = lb.blocks.__all__
-    benchmarks['epfl'] = lb.epfl.__all__
-
-    # global analysis
-    results = {}
-    results["cells"] = {}
-
     #################################################
-    # Loop
+    # Setup
     #################################################
 
-    # iterate over all groups
-    for group in args.group:
-        bench_list = benchmarks[group]
-        # iterate over all benchmarks in group
-        for item in bench_list:
-            name = item.lower()
-            if args.tool == 'yosys':
-                script = f"{name}.ys"
-                cmd = ['yosys', '-m', 'slang', '-m', 'wildebeest', '-s', script]
-            elif args.tool == 'vivado':
-                script = f"{name}.tcl"
-                cmd = ['vivado', '-mode', 'batch', '-source', script]
+    # targets to sweep (--target is required)
+    targets = args.target
 
-            # clean up old results
-            if os.path.isdir(f"build/{group}/{name}"):
-                if args.clean:
-                    shutil.rmtree(f"build/{group}/{name}")
+    worklist = make_worklist(args)
 
-            # change dir
-            os.makedirs(f"build/{group}/{name}", exist_ok=True)
-            os.chdir(f"build/{group}/{name}")
+    #################################################
+    # Dispatch
+    #################################################
 
-            # instance of benchmark class
-            mod = sys.modules[f"logikbench.{group}.{name}.{name}"]
-            bobj = getattr(mod, name.capitalize())
-            b = bobj()
+    if args.command == "run":
+        failures = run_sweep(args, targets, worklist)
+        # signal failure to the caller (e.g. CI) without losing partial results
+        if failures:
+            print(f"\n{len(failures)} benchmark(s) failed: "
+                  f"{', '.join(failures)}")
+            return 1
+        return 0
 
-            # get top module
-            topmodule = b.get_topmodule(fileset='rtl')
+    # collect: each target writes its own <output_dir>/<target>.json
+    for target in targets:
+        if len(targets) > 1:
+            print(f"=== target: {target} ===")
+        collect_target(target, args, worklist)
+    return 0
 
-            # write out design fileset
-            filesetfile = f"{name}.f"
-            b.write_fileset(filesetfile, fileset='rtl')
-
-            # create tool script
-            context = {
-                'name': name,
-                'top': topmodule,
-                'filesetfile': filesetfile,
-                'cmd': args.cmd,
-            }
-            output = template.render(context)
-            with open(script, 'w') as f:
-                f.write(output)
-
-            # run benchmark
-            if os.path.exists(f"{name}_stats.json"):
-                print(f"Found previous results, skipping {name} benchmark ({group}).")
-            else:
-                try:
-                    print(f"Running {name} benchmark ({group}).")
-                    print(f"Logfile: build/{group}/{name}/{name}.log")
-                    with open(f'{name}.log', "w") as log:
-                        result = subprocess.run(cmd,
-                                                stdout=log,
-                                                stderr=subprocess.STDOUT,
-                                                check=True)
-
-                except subprocess.CalledProcessError:
-                    print("Error...see logfile!!")
-                    sys.exit()
-
-            # collect results
-            if args.tool == 'yosys':
-                with open(f"{name}_stats.json") as f:
-                    data = json.load(f)
-                results["cells"][name] = data["design"]["num_cells"]
-
-            # go back to cwd
-            os.chdir(cwd)
-
-    # writing results to file
-    _, ext = os.path.splitext(args.output)
-    if ext == ".json":
-        with open(args.output, "w") as f:
-            json.dump(results, f, indent=2)
-    elif ext == ".csv":
-        all_rows = set()
-        for col in results.values():
-            all_rows.update(col.keys())
-            all_rows = sorted(all_rows)
-        columns = sorted(results.keys())
-        with open(args.output, "w", newline="") as f:
-            writer = csv.writer(f)
-            # Write header
-            writer.writerow([""] + columns)
-            # Write each row
-            for row_key in all_rows:
-                row = [row_key]
-                for col_key in columns:
-                    row.append(results.get(col_key, {}).get(row_key, ""))
-                writer.writerow(row)
 
 if __name__ == "__main__":
     sys.exit(main())

@@ -41,6 +41,7 @@ class Serv(Design):
         # top module
         self.set_topmodule(topmodule, fileset)
 
+
 if __name__ == "__main__":
-   d = Serv()
-   d.write_fileset(f"serv.f", fileset="rtl")
+    d = Serv()
+    d.write_fileset("serv.f", fileset="rtl")

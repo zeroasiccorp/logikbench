@@ -10,7 +10,7 @@ class Fpu32(Design):
         root = f'{name}_root'
         source = ['rtl/fpu.v',
                   'rtl/post_norm.v',
-	          'rtl/except.v',
+                  'rtl/except.v',
                   'rtl/pre_norm_fmul.v',
                   'rtl/pre_norm.v',
                   'rtl/primitives.v']
@@ -29,6 +29,7 @@ class Fpu32(Design):
         # top module
         self.set_topmodule(topmodule, fileset)
 
+
 if __name__ == "__main__":
-   d = Fpu32()
-   d.write_fileset(f"{d.name()}.f", fileset="rtl")
+    d = Fpu32()
+    d.write_fileset(f"{d.name()}.f", fileset="rtl")

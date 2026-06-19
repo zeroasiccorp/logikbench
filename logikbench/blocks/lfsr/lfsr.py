@@ -23,6 +23,7 @@ class Lfsr(Design):
         # top module
         self.set_topmodule(name, fileset)
 
+
 if __name__ == "__main__":
-   d = Lfsr()
-   d.write_fileset(f"lfsr.f", fileset="rtl")
+    d = Lfsr()
+    d.write_fileset("lfsr.f", fileset="rtl")

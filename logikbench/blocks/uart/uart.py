@@ -32,6 +32,7 @@ class Uart(Design):
         # top module
         self.set_topmodule(name, fileset)
 
+
 if __name__ == "__main__":
-   d = Uart()
-   d.write_fileset(f"uart.f", fileset="rtl")
+    d = Uart()
+    d.write_fileset("uart.f", fileset="rtl")

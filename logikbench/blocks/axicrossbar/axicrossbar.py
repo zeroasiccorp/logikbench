@@ -1,6 +1,7 @@
 from os.path import dirname, abspath
 from siliconcompiler import Design
 
+
 class Axicrossbar(Design):
     def __init__(self):
 
@@ -9,7 +10,7 @@ class Axicrossbar(Design):
         root = f'{name}_root'
         source = ['rtl/arbiter.v',
                   'rtl/axi_crossbar_addr.v',
-	          'rtl/axi_crossbar_rd.v',
+                  'rtl/axi_crossbar_rd.v',
                   'rtl/axi_crossbar.v',
                   'rtl/axi_crossbar_wr.v',
                   'rtl/axi_register_rd.v',
@@ -30,6 +31,7 @@ class Axicrossbar(Design):
         # top module
         self.set_topmodule(topmodule, fileset)
 
+
 if __name__ == "__main__":
-   d = Axicrossbar()
-   d.write_fileset(f"axicrossbar.f", fileset="rtl")
+    d = Axicrossbar()
+    d.write_fileset("axicrossbar.f", fileset="rtl")

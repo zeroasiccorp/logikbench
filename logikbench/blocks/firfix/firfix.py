@@ -23,6 +23,7 @@ class Firfix(Design):
         # top module
         self.set_topmodule(name, fileset)
 
+
 if __name__ == "__main__":
-   d = Fir()
-   d.write_fileset(f"firfix.f", fileset="rtl")
+    d = Firfix()
+    d.write_fileset("firfix.f", fileset="rtl")
