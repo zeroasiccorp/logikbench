@@ -25,7 +25,7 @@ from siliconcompiler.targets import (
 from logikbench.flows.synth import FPGASynthesis, ASICSynthesis
 
 # SC-standard metric names tracked per run mode.
-METRICS = ["cells", "luts", "nets", "pins", "tasktime"]
+FPGA_METRICS = ["luts", "logicdepth", "tasktime"]
 ASIC_METRICS = ["cells", "cellarea", "fmax", "setupslack"]
 
 _INDEX = "0"
@@ -33,8 +33,11 @@ _LBFLOW_ASIC_RECIPE = "asic/freepdk45"
 
 # FPGA target names decoded by scripts/fpga/synthesis_fpga.tcl. A --target in
 # this list (or no target) runs FPGA synthesis; anything else is an ASIC PDK.
+# 'intel' is dropped: yosys' synth_intel is experimental and reads a per-family
+# techmap (intel/<family>/dsp_map.v) that the yosys build does not ship, so it
+# errors for every family. Re-add once yosys installs the intel data files.
 FPGA_TARGETS = ["zeroasic", "microchip", "fabulous", "gatemate", "gowin",
-                "ice40", "xilinx", "efinix", "achronix", "quicklogic", "intel"]
+                "ice40", "xilinx", "efinix", "achronix", "quicklogic"]
 
 DEFAULT_FPGA_TARGET = "zeroasic"
 
@@ -249,7 +252,7 @@ def run_one(group, item, target=None, options="", builddir="build", quiet=True,
             metrics = read_metrics(name, ASIC_METRICS, builddir)
         elif target is None or target in FPGA_TARGETS:
             _run_fpga(design, target, options, builddir, quiet, start, stop)
-            metrics = read_metrics(name, METRICS, builddir)
+            metrics = read_metrics(name, FPGA_METRICS, builddir)
         else:
             raise ValueError(
                 f"target '{target}' is not supported by lbflow; "

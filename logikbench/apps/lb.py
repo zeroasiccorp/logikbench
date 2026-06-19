@@ -9,7 +9,7 @@ import logikbench as lb
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
 from logikbench.benchmark import (
-    METRICS, ASIC_METRICS, TARGETS, FPGA_TARGETS, DEFAULT_FPGA_TARGET, STEPS,
+    FPGA_METRICS, ASIC_METRICS, TARGETS, FPGA_TARGETS, DEFAULT_FPGA_TARGET, STEPS,
     run_one, read_metrics, read_asic_metrics, read_tool_var, is_complete,
 )
 
@@ -17,7 +17,7 @@ from logikbench.benchmark import (
 ALL_GROUPS = ['basic', 'memory', 'arithmetic', 'epfl', 'blocks']
 
 # metrics tracked are determined by the run mode (fpga vs asic synthesis)
-FLOW_METRICS = {'fpga': METRICS, 'asic': ASIC_METRICS}
+FLOW_METRICS = {'fpga': FPGA_METRICS, 'asic': ASIC_METRICS}
 
 
 def target_mode(target):
@@ -128,7 +128,7 @@ def collect_target(target, args, worklist):
         if mode == 'asic':
             metrics = read_asic_metrics(name, builddir=builddir)
         else:
-            metrics = read_metrics(name, METRICS, builddir=builddir)
+            metrics = read_metrics(name, FPGA_METRICS, builddir=builddir)
         if metrics is None:
             if args.name is not None:
                 # only warn about benchmarks the user explicitly named

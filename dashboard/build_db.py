@@ -9,7 +9,7 @@ GitHub Action needs (dashboard/generate.py renders it with only Jinja2).
 
 Metric *presentation* (labels, better-is-lower/higher, display units) lives
 here, not in logikbench: it is a dashboard concern. logikbench owns only the
-metric *names* (METRICS / ASIC_METRICS) and the benchmark group structure.
+metric *names* (FPGA_METRICS / ASIC_METRICS) and the benchmark group structure.
 """
 
 import argparse
@@ -18,7 +18,7 @@ import json
 import os
 
 import logikbench as lb
-from logikbench.benchmark import METRICS, ASIC_METRICS, FPGA_TARGETS
+from logikbench.benchmark import FPGA_METRICS, ASIC_METRICS, FPGA_TARGETS
 
 # benchmark groups, in display order
 GROUPS = ['basic', 'memory', 'arithmetic', 'epfl', 'blocks']
@@ -28,6 +28,7 @@ GROUPS = ['basic', 'memory', 'arithmetic', 'epfl', 'blocks']
 METRIC_INFO = {
     "cells":      {"label": "Cells",       "dir": "lower",  "unit": ""},
     "luts":       {"label": "LUTs",        "dir": "lower",  "unit": ""},
+    "logicdepth": {"label": "Logic depth", "dir": "lower",  "unit": ""},
     "nets":       {"label": "Nets",        "dir": "lower",  "unit": ""},
     "pins":       {"label": "Pins",        "dir": "lower",  "unit": ""},
     "tasktime":   {"label": "Runtime",     "dir": "lower",  "unit": "s"},
@@ -118,7 +119,7 @@ def main():
 
     db = {}
     if fpga:
-        db["fpga"] = build_section(fpga, METRICS, collected)
+        db["fpga"] = build_section(fpga, FPGA_METRICS, collected)
     if asic:
         db["asic"] = build_section(asic, ASIC_METRICS, collected)
 
