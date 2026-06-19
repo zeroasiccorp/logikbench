@@ -16,7 +16,7 @@
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     font-size: 14px; line-height: 1.45; -webkit-font-smoothing: antialiased;
   }
-  .wrap { max-width: 1180px; margin: 0 auto; padding: 28px 22px 60px; }
+  .wrap { width: 100%; max-width: 1600px; margin: 0 auto; padding: 28px 22px 60px; }
   header { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; flex-wrap: wrap; margin-bottom: 22px; }
   .brand h1 { font-size: 22px; margin: 0; letter-spacing: -0.01em; }
   .brand h1 .mark { color: var(--accent); }
@@ -43,20 +43,23 @@
   th, td { padding: 0; text-align: center; white-space: nowrap; }
   thead th {
     position: sticky; top: 0; z-index: 3; background: var(--panel-2); color: var(--txt);
-    font-weight: 600; font-size: 12.5px; padding: 12px 14px 4px;
+    font-weight: 600; font-size: 12.5px; padding: 10px 8px 4px;
   }
+  /* two-line target header: vendor on top, part below */
+  thead th .t-vendor { display: block; }
+  thead th .t-part { display: block; font-weight: 500; font-size: 11.5px; color: var(--txt-dim); }
   /* settings sub-row sits directly under each target name (top set in JS) */
   thead tr.settings th {
     z-index: 3; background: var(--panel-2); border-bottom: 1px solid var(--line);
-    font-weight: 500; font-size: 11px; color: var(--txt-dim); padding: 1px 14px 10px;
+    font-weight: 500; font-size: 11px; color: var(--txt-dim); padding: 1px 8px 10px;
     font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   }
-  thead th.bench { text-align: left; z-index: 4; left: 0; padding: 12px 16px; border-bottom: 1px solid var(--line); }
+  thead th.bench { text-align: left; z-index: 4; left: 0; padding: 12px 14px; border-bottom: 1px solid var(--line); }
   tbody th.bench {
     position: sticky; left: 0; z-index: 2; background: var(--panel); text-align: left;
-    font-weight: 600; padding: 0 16px; border-right: 1px solid var(--line); color: var(--txt);
+    font-weight: 600; padding: 0 14px; border-right: 1px solid var(--line); color: var(--txt);
   }
-  tbody td { font-variant-numeric: tabular-nums; font-weight: 600; padding: 11px 14px; border-bottom: 1px solid rgba(255,255,255,.03); }
+  tbody td { font-variant-numeric: tabular-nums; font-weight: 600; padding: 10px 8px; border-bottom: 1px solid rgba(255,255,255,.03); }
   tbody tr:last-child td, tbody tr:last-child th { border-bottom: 0; }
   tbody td.empty { color: #5b6373; font-weight: 400; background: transparent !important; }
   .cell-val { color: #0c0f16; text-shadow: 0 1px 0 rgba(255,255,255,.18); }
@@ -162,8 +165,18 @@ function render(){
   const settings = SECTION.settings || {};
   const labels = SECTION.labels || {};
   const thead = document.getElementById("thead");
+  // target column header is "<vendor>_<part>"; show vendor and part on two lines
+  const splitTarget = label => {
+    const i = label.indexOf("_");
+    return i < 0 ? { vendor: label, part: "" }
+                 : { vendor: label.slice(0, i), part: label.slice(i + 1) };
+  };
   thead.innerHTML =
-    `<tr><th class="bench" rowspan="2">Benchmark</th>${targets.map(t => `<th>${labels[t] || t}</th>`).join("")}</tr>` +
+    `<tr><th class="bench" rowspan="2">Benchmark</th>${targets.map(t => {
+      const s = splitTarget(labels[t] || t);
+      return `<th title="${labels[t] || t}"><span class="t-vendor">${s.vendor}</span>` +
+             `<span class="t-part">${s.part || "&nbsp;"}</span></th>`;
+    }).join("")}</tr>` +
     `<tr class="settings">${targets.map(t => {
       const s = settings[t] || "";
       return `<th title="${s ? s : "default settings"}">${s ? s : "default"}</th>`;
