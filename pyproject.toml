@@ -49,7 +49,8 @@ classifiers = [
 dependencies = [
              "siliconcompiler >= 0.37.12",
              "lambdapdk >= 0.2.11",
-             "lambdalib >= 0.12.3"
+             "lambdalib >= 0.12.3",
+             "jinja2 >= 3.0"
 ]
 dynamic = ['version']
 
@@ -65,8 +66,10 @@ markers = [
 
 [project.optional-dependencies]
 test = [
-    "pytest == 8.4.2",
+    "pytest == 9.0.3",
+    "pytest-xdist==3.8.0",
+    "pytest-split==0.11.0",
     "pytest-timeout == 2.4.0",
-    "flake8 == 7.3.0",
-    "jinja2 >= 3.0"
+    "tclint==0.8.0",
+    "flake8 == 7.3.0"
 ]
