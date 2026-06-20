@@ -72,15 +72,20 @@ def run_sweep(args, targets, worklist):
 
     quiet = not args.verbose
     failures = []
+    total = len(tasks)
+    done = 0  # completed-job counter; printed 0-based as [i/N] progress
 
     def record(target, group, item, error):
+        nonlocal done
         name = item.lower()
+        prefix = f"[{done}/{total}]"
+        done += 1
         if error is not None:
-            print(f"Error synthesizing {name} ({target}/{group}): {error}",
-                  file=sys.stderr)
+            print(f"{prefix} Error synthesizing {name} ({target}/{group}): "
+                  f"{error}", file=sys.stderr)
             failures.append(f"{target}/{group}/{name}")
         else:
-            print(f"Finished {name} benchmark ({target}/{group}).")
+            print(f"{prefix} Finished {name} benchmark ({target}/{group}).")
 
     if args.jobs > 1:
         with ProcessPoolExecutor(max_workers=args.jobs) as pool:
