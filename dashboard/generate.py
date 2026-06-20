@@ -56,9 +56,6 @@ def main():
     if not configs:
         ap.error(f"no <config>.json databases found under {args.db}")
 
-    nav = [{"key": name, "label": name, "href": f"{name}.html"}
-           for name, _ in configs]
-
     env = Environment(loader=FileSystemLoader(os.path.join(_HERE, "templates")),
                       autoescape=False)
     template = env.get_template("dashboard.html.j2")
@@ -66,14 +63,7 @@ def main():
     os.makedirs(args.out, exist_ok=True)
     for name, section in configs:
         n = len(section["data"])
-        subtitle = (f"{n} benchmark(s) across {len(section['targets'])} "
-                    f"FPGA targets ({name} config)")
-        html = template.render(
-            config=name,
-            configs=nav,
-            subtitle=subtitle,
-            section_json=json.dumps(section),
-        )
+        html = template.render(section_json=json.dumps(section))
         path = os.path.join(args.out, f"{name}.html")
         with open(path, "w") as fh:
             fh.write(html)

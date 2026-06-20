@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """Build per-config dashboard databases from collected FPGA results.
 
-'lb collect --suffix _<config>' writes one file per (target, config) as
-results/fpga/<target>_<config>.json. This groups those by config and writes one
-self-describing database per config to results/fpga/<config>.json, which
-dashboard/generate.py renders as one page per config.
+Each config is a subdirectory of results/fpga (e.g. results/fpga/small,
+results/fpga/fast) holding per-target <target>.json files from 'lb collect -o
+results/fpga/<config>'. This writes one self-describing database per config to
+results/fpga/<config>.json, which dashboard/generate.py renders as one page
+per config.
 
 Run offline (imports logikbench). The committed <config>.json databases are all
 the GitHub Action needs (generate.py renders them with only Jinja2).
@@ -58,20 +59,26 @@ def _is_payload(data):
 
 
 def load_configs(results_dir):
-    """{config: {target: payload}} from the <target>_<config>.json collect files
-    in results_dir. Section/db files (which lack a "target" key) are skipped, so
-    re-running over the same directory is safe."""
+    """{config: {target: payload}} -- one config per subdirectory of results_dir
+    (e.g. results/fpga/small -> config 'small'), reading the per-target
+    <target>.json collect files inside each. Non-payload files are skipped."""
     configs = {}
-    for path in sorted(glob.glob(os.path.join(results_dir, "*.json"))):
-        with open(path) as f:
-            data = json.load(f)
-        if not _is_payload(data):
-            continue
-        target = data["target"]
-        stem = os.path.splitext(os.path.basename(path))[0]
-        # config = the suffix lb collect appended after the target name
-        config = stem[len(target) + 1:] if stem.startswith(target + "_") else ""
-        configs.setdefault(config, {})[target] = data
+    for sub in sorted(glob.glob(os.path.join(results_dir, "*", ""))):
+        config = os.path.basename(os.path.normpath(sub))
+        collected = {}
+        for path in sorted(glob.glob(os.path.join(sub, "*.json"))):
+            if not os.path.isfile(path):
+                continue   # a "*.json" glob can match directories; skip them
+            with open(path) as f:
+                data = json.load(f)
+            if _is_payload(data):
+                # key by file stem, not the embedded target, so variants of one
+                # target (e.g. zeroasic_z1015 and zeroasic_z1015opt) are kept as
+                # separate columns instead of overwriting each other.
+                stem = os.path.splitext(os.path.basename(path))[0]
+                collected[stem] = data
+        if collected:
+            configs[config] = collected
     return configs
 
 
@@ -94,11 +101,11 @@ def build_section(targets, metric_names, collected):
             by_group.setdefault(group, []).append(bench)
 
     return {
+        # columns are keyed/labeled by file stem (e.g. zeroasic_z1015,
+        # zeroasic_z1015opt); the dashboard header shows the stem directly.
         "targets": targets,
-        # display name per column (here the clean target; one config per db)
-        "labels": {t: (collected.get(t, {}).get("target") or t) for t in targets},
         # synthesis settings each column was produced with (shown under the
-        # target name); empty string means defaults.
+        # column name); empty string means defaults.
         "settings": {t: (collected.get(t, {}).get("options") or "")
                      for t in targets},
         "metrics": [{"key": m, **METRIC_INFO[m]} for m in metric_names],
@@ -113,13 +120,14 @@ def main():
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--results", default=os.path.join("results", "fpga"),
                     metavar="DIR",
-                    help="Directory with the <target>_<config>.json collect "
-                         "files (default: results/fpga)")
+                    help="Directory whose subdirectories are configs (each "
+                         "holding per-target <target>.json collect files), "
+                         "e.g. results/fpga/{small,fast} (default: results/fpga)")
     args = ap.parse_args()
 
     configs = load_configs(args.results)
     if not configs:
-        ap.error(f"no <target>_<config>.json collect files under {args.results}")
+        ap.error(f"no <config>/<target>.json collect files under {args.results}")
 
     for config, collected in sorted(configs.items()):
         # columns: one per target (clean name), ordered alphabetically z->a

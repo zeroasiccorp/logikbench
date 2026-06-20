@@ -70,6 +70,7 @@ def run_sweep(args, targets, worklist):
              for target in targets
              for group, item in target_runlist(target, args, worklist)]
 
+    timeout = args.timeout or None   # --timeout 0 disables the cap
     quiet = not args.verbose
     failures = []
     total = len(tasks)
@@ -94,7 +95,7 @@ def run_sweep(args, targets, worklist):
                 builddir = target_builddir(args, target)
                 future = pool.submit(run_one, group, item, target,
                                      args.options, builddir, quiet,
-                                     args.start, args.stop, args.timeout)
+                                     args.start, args.stop, timeout)
                 futures[future] = (target, group, item)
             for future in as_completed(futures):
                 target, group, item = futures[future]
@@ -106,7 +107,7 @@ def run_sweep(args, targets, worklist):
             builddir = target_builddir(args, target)
             _, _, _, error = run_one(group, item, target, args.options,
                                      builddir, quiet, args.start, args.stop,
-                                     args.timeout)
+                                     timeout)
             record(target, group, item, error)
 
     return failures
@@ -123,10 +124,11 @@ def collect_target(target, args, worklist):
     mode = target_mode(target)
     builddir = target_builddir(args, target)
     metric_names = FLOW_METRICS[mode]
-    # --output names a directory; one aggregated <target><suffix>.json lands in
-    # it (the --suffix keeps configs of the same target from overwriting)
+    # --output names a directory; one aggregated <target>.json lands in it.
+    # Point -o at a per-config dir (e.g. results/fpga/small) to keep configs
+    # apart; build_db treats each such directory as one dashboard page.
     outdir = args.output or args.builddir
-    output = os.path.join(outdir, f"{target}{args.suffix}.json")
+    output = os.path.join(outdir, f"{target}.json")
 
     metrics_out = {metric: {} for metric in metric_names}
     options = None
@@ -168,12 +170,26 @@ def collect_target(target, args, worklist):
 
 def add_common_args(parser):
     """Arguments shared by the 'run' and 'collect' subcommands."""
+    parser.add_argument('-t', '--target',
+                        nargs='+',
+                        choices=TARGETS,
+                        required=True,
+                        metavar="TARGET",
+                        help=f"Synthesis target(s) (choices: {TARGETS}). An FPGA "
+                             f"target is named '<vendor>_<partname>' (e.g. "
+                             f"xilinx_virtex7, zeroasic_z1015) and picks the "
+                             f"yosys synth command; a plain PDK name runs the "
+                             f"lbflow ASIC path, and a '<pdk>_demo' name runs "
+                             f"the SC demo target via asicflow. Pass several to "
+                             f"sweep them in turn.")
+
     parser.add_argument("-g", "--group",
                         nargs='+',
                         choices=ALL_GROUPS,
+                        default=ALL_GROUPS,
                         metavar="GROUP",
-                        required=True,
-                        help=f"Benchmark group(s) (choices: {ALL_GROUPS})")
+                        help=f"Benchmark group(s) (choices: {ALL_GROUPS}; "
+                             f"default: all)")
 
     parser.add_argument("-n", "--name",
                         nargs='+',
@@ -188,19 +204,6 @@ def add_common_args(parser):
                         metavar="DIR",
                         help='Build directory root; per-benchmark work goes in '
                              '<builddir>/<target>/<name> (default root: build)')
-
-    parser.add_argument('-t', '--target',
-                        nargs='+',
-                        choices=TARGETS,
-                        required=True,
-                        metavar="TARGET",
-                        help=f"Synthesis target(s) (choices: {TARGETS}). An FPGA "
-                             f"target is named '<vendor>_<partname>' (e.g. "
-                             f"xilinx_virtex7, zeroasic_z1015) and picks the "
-                             f"yosys synth command; a plain PDK name runs the "
-                             f"lbflow ASIC path, and a '<pdk>_demo' name runs "
-                             f"the SC demo target via asicflow. Pass several to "
-                             f"sweep them in turn.")
 
 
 def main():
@@ -254,11 +257,12 @@ LogikBench commandline runner.
                             'successfully; only synthesize the rest')
     run_p.add_argument('--timeout',
                        type=float,
-                       default=None,
+                       default=3600,
                        metavar="SEC",
                        help='Per-step wall-clock cap in seconds; a step that '
                             'exceeds it is killed and marked failed, so one '
-                            'hung synth cannot stall the sweep (default: none)')
+                            'hung synth cannot stall the sweep (default: 3600; '
+                            '0 to disable)')
     run_p.add_argument('-v', '--verbose',
                        action='store_true',
                        help='Show full SiliconCompiler tool/scheduler logs '
@@ -272,15 +276,9 @@ LogikBench commandline runner.
                            default=None,
                            metavar="DIR",
                            help='Output directory; collect writes one '
-                                'aggregated <target>.json per target into it '
-                                '(default: the build dir root, -b)')
-    collect_p.add_argument('--suffix',
-                           default="",
-                           metavar="STR",
-                           help='Append STR to each output filename '
-                                '(<target><suffix>.json), so collecting the '
-                                'same target under different configs does not '
-                                'overwrite (e.g. --suffix _abc9)')
+                                'aggregated <target>.json per target into it. '
+                                'Use a per-config dir (e.g. results/fpga/small) '
+                                'to keep configs apart (default: build dir, -b)')
 
     args = parser.parse_args()
 
