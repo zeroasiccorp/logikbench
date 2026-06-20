@@ -57,9 +57,9 @@
         "tasktime": 3.31
       },
       "zeroasic_z1015": {
-        "logicdepth": 4,
-        "luts": 23,
-        "tasktime": 1.05
+        "logicdepth": 3,
+        "luts": 24,
+        "tasktime": 1.37
       },
       "zeroasic_z1060": {
         "logicdepth": 5,
@@ -124,9 +124,9 @@
         "tasktime": 4.46
       },
       "zeroasic_z1015": {
-        "logicdepth": 15,
-        "luts": 59,
-        "tasktime": 2.18
+        "logicdepth": 5,
+        "luts": 88,
+        "tasktime": 6.39
       },
       "zeroasic_z1060": {
         "logicdepth": 11,
@@ -191,9 +191,9 @@
         "tasktime": 4.36
       },
       "zeroasic_z1015": {
-        "logicdepth": 14,
-        "luts": 30,
-        "tasktime": 1.28
+        "logicdepth": 4,
+        "luts": 54,
+        "tasktime": 3.85
       },
       "zeroasic_z1060": {
         "logicdepth": 8,
@@ -258,9 +258,9 @@
         "tasktime": 4.34
       },
       "zeroasic_z1015": {
-        "logicdepth": 16,
-        "luts": 32,
-        "tasktime": 1.15
+        "logicdepth": 5,
+        "luts": 49,
+        "tasktime": 3.05
       },
       "zeroasic_z1060": {
         "logicdepth": 10,
@@ -325,9 +325,9 @@
         "tasktime": 5.74
       },
       "zeroasic_z1015": {
-        "logicdepth": 127,
-        "luts": 255,
-        "tasktime": 7.67
+        "logicdepth": 8,
+        "luts": 527,
+        "tasktime": 46.48
       },
       "zeroasic_z1060": {
         "logicdepth": 94,
@@ -392,9 +392,9 @@
         "tasktime": 4.02
       },
       "zeroasic_z1015": {
-        "logicdepth": 16,
-        "luts": 45,
-        "tasktime": 1.79
+        "logicdepth": 6,
+        "luts": 84,
+        "tasktime": 6.57
       },
       "zeroasic_z1060": {
         "logicdepth": 16,
@@ -459,9 +459,9 @@
         "tasktime": 19.35
       },
       "zeroasic_z1015": {
-        "logicdepth": 9,
-        "luts": 4933,
-        "tasktime": 416.74
+        "logicdepth": 8,
+        "luts": 4878,
+        "tasktime": 491.82
       },
       "zeroasic_z1060": {
         "logicdepth": 5,
@@ -526,9 +526,9 @@
         "tasktime": 5.4
       },
       "zeroasic_z1015": {
-        "logicdepth": 5,
-        "luts": 710,
-        "tasktime": 32.11
+        "logicdepth": 4,
+        "luts": 847,
+        "tasktime": 34.64
       },
       "zeroasic_z1060": {
         "logicdepth": 3,
@@ -593,9 +593,9 @@
         "tasktime": 4.54
       },
       "zeroasic_z1015": {
-        "logicdepth": 5,
-        "luts": 19,
-        "tasktime": 0.84
+        "logicdepth": 3,
+        "luts": 22,
+        "tasktime": 1.43
       },
       "zeroasic_z1060": {
         "logicdepth": 3,
@@ -660,9 +660,9 @@
         "tasktime": 26.35
       },
       "zeroasic_z1015": {
-        "logicdepth": 13,
-        "luts": 1802,
-        "tasktime": 259.07
+        "logicdepth": 6,
+        "luts": 2108,
+        "tasktime": 242.42
       },
       "zeroasic_z1060": {
         "logicdepth": 11,
@@ -727,9 +727,9 @@
         "tasktime": 0.59
       },
       "zeroasic_z1015": {
-        "logicdepth": 15,
-        "luts": 19196,
-        "tasktime": 902.03
+        "logicdepth": null,
+        "luts": null,
+        "tasktime": 1.31
       },
       "zeroasic_z1060": {
         "logicdepth": 12,
@@ -794,9 +794,9 @@
         "tasktime": 0.27
       },
       "zeroasic_z1015": {
-        "logicdepth": 11,
-        "luts": 463836,
-        "tasktime": 3930.21
+        "logicdepth": null,
+        "luts": null,
+        "tasktime": 0.83
       },
       "zeroasic_z1060": {
         "logicdepth": 7,
@@ -863,7 +863,7 @@
       "zeroasic_z1015": {
         "logicdepth": 3,
         "luts": 21,
-        "tasktime": 1.04
+        "tasktime": 1.16
       },
       "zeroasic_z1060": {
         "logicdepth": 5,
@@ -928,9 +928,9 @@
         "tasktime": 7.74
       },
       "zeroasic_z1015": {
-        "logicdepth": 7,
-        "luts": 896,
-        "tasktime": 32.95
+        "logicdepth": 6,
+        "luts": 1165,
+        "tasktime": 59.65
       },
       "zeroasic_z1060": {
         "logicdepth": 4,
@@ -997,7 +997,7 @@
       "zeroasic_z1015": {
         "logicdepth": 0,
         "luts": null,
-        "tasktime": 0.32
+        "tasktime": 0.36
       },
       "zeroasic_z1060": {
         "logicdepth": 0,
@@ -1064,7 +1064,7 @@
       "zeroasic_z1015": {
         "logicdepth": 1,
         "luts": 63,
-        "tasktime": 0.75
+        "tasktime": 0.83
       },
       "zeroasic_z1060": {
         "logicdepth": 1,
@@ -1129,9 +1129,9 @@
         "tasktime": 4.6
       },
       "zeroasic_z1015": {
-        "logicdepth": 21,
-        "luts": 84,
-        "tasktime": 1.65
+        "logicdepth": 4,
+        "luts": 109,
+        "tasktime": 3.63
       },
       "zeroasic_z1060": {
         "logicdepth": 13,
@@ -1198,7 +1198,7 @@
       "zeroasic_z1015": {
         "logicdepth": 1,
         "luts": 64,
-        "tasktime": 0.74
+        "tasktime": 0.67
       },
       "zeroasic_z1060": {
         "logicdepth": 1,
@@ -1265,7 +1265,7 @@
       "zeroasic_z1015": {
         "logicdepth": 3,
         "luts": 21,
-        "tasktime": 1.04
+        "tasktime": 1.41
       },
       "zeroasic_z1060": {
         "logicdepth": 5,
@@ -1332,7 +1332,7 @@
       "zeroasic_z1015": {
         "logicdepth": 3,
         "luts": 21,
-        "tasktime": 1.13
+        "tasktime": 1.45
       },
       "zeroasic_z1060": {
         "logicdepth": 5,
@@ -1399,7 +1399,7 @@
       "zeroasic_z1015": {
         "logicdepth": 3,
         "luts": 21,
-        "tasktime": 1.14
+        "tasktime": 1.22
       },
       "zeroasic_z1060": {
         "logicdepth": 5,
@@ -1466,7 +1466,7 @@
       "zeroasic_z1015": {
         "logicdepth": 3,
         "luts": 21,
-        "tasktime": 1.78
+        "tasktime": 2.52
       },
       "zeroasic_z1060": {
         "logicdepth": 5,
@@ -1533,7 +1533,7 @@
       "zeroasic_z1015": {
         "logicdepth": 3,
         "luts": 21,
-        "tasktime": 1.8
+        "tasktime": 2.51
       },
       "zeroasic_z1060": {
         "logicdepth": 5,
@@ -1600,7 +1600,7 @@
       "zeroasic_z1015": {
         "logicdepth": 4,
         "luts": 39,
-        "tasktime": 1.79
+        "tasktime": 2.3
       },
       "zeroasic_z1060": {
         "logicdepth": 5,
@@ -1665,9 +1665,9 @@
         "tasktime": 4.76
       },
       "zeroasic_z1015": {
-        "logicdepth": 7,
-        "luts": 217,
-        "tasktime": 13.71
+        "logicdepth": 5,
+        "luts": 231,
+        "tasktime": 19.99
       },
       "zeroasic_z1060": {
         "logicdepth": 6,
@@ -1732,9 +1732,9 @@
         "tasktime": 4.2
       },
       "zeroasic_z1015": {
-        "logicdepth": 6,
-        "luts": 26,
-        "tasktime": 1.26
+        "logicdepth": 4,
+        "luts": 27,
+        "tasktime": 2.42
       },
       "zeroasic_z1060": {
         "logicdepth": 7,
@@ -1799,9 +1799,9 @@
         "tasktime": 3.51
       },
       "zeroasic_z1015": {
-        "logicdepth": 5,
-        "luts": 21,
-        "tasktime": 1.04
+        "logicdepth": 3,
+        "luts": 23,
+        "tasktime": 1.49
       },
       "zeroasic_z1060": {
         "logicdepth": 3,
@@ -1866,9 +1866,9 @@
         "tasktime": 5.48
       },
       "zeroasic_z1015": {
-        "logicdepth": 5,
-        "luts": 1544,
-        "tasktime": 14.13
+        "logicdepth": 3,
+        "luts": 1800,
+        "tasktime": 44.38
       },
       "zeroasic_z1060": {
         "logicdepth": 4,
@@ -1935,7 +1935,7 @@
       "zeroasic_z1015": {
         "logicdepth": 1,
         "luts": 32,
-        "tasktime": 0.83
+        "tasktime": 1.23
       },
       "zeroasic_z1060": {
         "logicdepth": 1,
@@ -2002,7 +2002,7 @@
       "zeroasic_z1015": {
         "logicdepth": 2,
         "luts": 64,
-        "tasktime": 1.36
+        "tasktime": 2.18
       },
       "zeroasic_z1060": {
         "logicdepth": 2,
@@ -2069,7 +2069,7 @@
       "zeroasic_z1015": {
         "logicdepth": 2,
         "luts": 288,
-        "tasktime": 2.79
+        "tasktime": 5.03
       },
       "zeroasic_z1060": {
         "logicdepth": 2,
@@ -2136,7 +2136,7 @@
       "zeroasic_z1015": {
         "logicdepth": 0,
         "luts": null,
-        "tasktime": 0.32
+        "tasktime": 0.37
       },
       "zeroasic_z1060": {
         "logicdepth": 0,
@@ -2203,7 +2203,7 @@
       "zeroasic_z1015": {
         "logicdepth": 1,
         "luts": 1,
-        "tasktime": 0.74
+        "tasktime": 0.95
       },
       "zeroasic_z1060": {
         "logicdepth": 1,
@@ -2268,9 +2268,9 @@
         "tasktime": 91.81
       },
       "zeroasic_z1015": {
-        "logicdepth": 2110,
-        "luts": 4247,
-        "tasktime": 403.36
+        "logicdepth": 368,
+        "luts": 26942,
+        "tasktime": 316.15
       },
       "zeroasic_z1060": {
         "logicdepth": 1119,
@@ -2337,7 +2337,7 @@
       "zeroasic_z1015": {
         "logicdepth": 0,
         "luts": null,
-        "tasktime": 0.42
+        "tasktime": 0.53
       },
       "zeroasic_z1060": {
         "logicdepth": 15,
@@ -2402,9 +2402,9 @@
         "tasktime": 8.14
       },
       "zeroasic_z1015": {
-        "logicdepth": 10,
-        "luts": 281,
-        "tasktime": 13.19
+        "logicdepth": 5,
+        "luts": 334,
+        "tasktime": 21.4
       },
       "zeroasic_z1060": {
         "logicdepth": 10,
@@ -2471,7 +2471,7 @@
       "zeroasic_z1015": {
         "logicdepth": 0,
         "luts": null,
-        "tasktime": 153.53
+        "tasktime": 85.17
       },
       "zeroasic_z1060": {
         "logicdepth": 0,
@@ -2536,9 +2536,9 @@
         "tasktime": 3.4
       },
       "zeroasic_z1015": {
-        "logicdepth": 3,
-        "luts": 49,
-        "tasktime": 1.14
+        "logicdepth": 2,
+        "luts": 52,
+        "tasktime": 1.29
       },
       "zeroasic_z1060": {
         "logicdepth": 3,
@@ -2603,9 +2603,9 @@
         "tasktime": 3.51
       },
       "zeroasic_z1015": {
-        "logicdepth": 4,
-        "luts": 24,
-        "tasktime": 1.04
+        "logicdepth": 3,
+        "luts": 26,
+        "tasktime": 1.99
       },
       "zeroasic_z1060": {
         "logicdepth": 4,
@@ -2672,7 +2672,7 @@
       "zeroasic_z1015": {
         "logicdepth": 1,
         "luts": 114,
-        "tasktime": 2.53
+        "tasktime": 2.31
       },
       "zeroasic_z1060": {
         "logicdepth": 21,
@@ -2739,7 +2739,7 @@
       "zeroasic_z1015": {
         "logicdepth": 1,
         "luts": 114,
-        "tasktime": 2.03
+        "tasktime": 2.44
       },
       "zeroasic_z1060": {
         "logicdepth": 25,
@@ -2801,7 +2801,7 @@
       "zeroasic_z1015": {
         "logicdepth": null,
         "luts": null,
-        "tasktime": 30.23
+        "tasktime": 21.82
       },
       "zeroasic_z1060": {
         "logicdepth": null,
@@ -2866,9 +2866,9 @@
         "tasktime": 47.78
       },
       "zeroasic_z1015": {
-        "logicdepth": 78,
-        "luts": 8410,
-        "tasktime": 837.86
+        "logicdepth": 19,
+        "luts": 10078,
+        "tasktime": 683.0
       },
       "zeroasic_z1060": {
         "logicdepth": 58,
@@ -2933,9 +2933,9 @@
         "tasktime": 4.36
       },
       "zeroasic_z1015": {
-        "logicdepth": 21,
-        "luts": 63,
-        "tasktime": 1.6
+        "logicdepth": 3,
+        "luts": 171,
+        "tasktime": 11.21
       },
       "zeroasic_z1060": {
         "logicdepth": 14,
@@ -3000,9 +3000,9 @@
         "tasktime": 1328.02
       },
       "zeroasic_z1015": {
-        "logicdepth": 8473,
-        "luts": 61167,
-        "tasktime": 3890.7
+        "logicdepth": 2239,
+        "luts": 102421,
+        "tasktime": 1912.26
       },
       "zeroasic_z1060": {
         "logicdepth": 4482,
@@ -3067,9 +3067,9 @@
         "tasktime": 5.81
       },
       "zeroasic_z1015": {
-        "logicdepth": 9,
-        "luts": 392,
-        "tasktime": 21.06
+        "logicdepth": 5,
+        "luts": 400,
+        "tasktime": 15.15
       },
       "zeroasic_z1060": {
         "logicdepth": 8,
@@ -3134,9 +3134,9 @@
         "tasktime": 4.73
       },
       "zeroasic_z1015": {
-        "logicdepth": 37,
-        "luts": 175,
-        "tasktime": 7.9
+        "logicdepth": 7,
+        "luts": 230,
+        "tasktime": 19.16
       },
       "zeroasic_z1060": {
         "logicdepth": 28,
@@ -3201,9 +3201,9 @@
         "tasktime": 3.18
       },
       "zeroasic_z1015": {
-        "logicdepth": 5,
-        "luts": 20,
-        "tasktime": 0.92
+        "logicdepth": 3,
+        "luts": 22,
+        "tasktime": 1.3
       },
       "zeroasic_z1060": {
         "logicdepth": 4,
@@ -3268,9 +3268,9 @@
         "tasktime": 4.47
       },
       "zeroasic_z1015": {
-        "logicdepth": 6,
-        "luts": 60,
-        "tasktime": 3.3
+        "logicdepth": 4,
+        "luts": 67,
+        "tasktime": 6.58
       },
       "zeroasic_z1060": {
         "logicdepth": 6,
@@ -3337,7 +3337,7 @@
       "zeroasic_z1015": {
         "logicdepth": 1,
         "luts": 8,
-        "tasktime": 3.95
+        "tasktime": 2.16
       },
       "zeroasic_z1060": {
         "logicdepth": 1,
@@ -3402,9 +3402,9 @@
         "tasktime": 1177.87
       },
       "zeroasic_z1015": {
-        "logicdepth": 146,
-        "luts": 9601,
-        "tasktime": 397.56
+        "logicdepth": 84,
+        "luts": 11497,
+        "tasktime": 203.64
       },
       "zeroasic_z1060": {
         "logicdepth": 174,
@@ -3471,7 +3471,7 @@
       "zeroasic_z1015": {
         "logicdepth": 1,
         "luts": 1,
-        "tasktime": 0.73
+        "tasktime": 1.06
       },
       "zeroasic_z1060": {
         "logicdepth": 31,
@@ -3536,9 +3536,9 @@
         "tasktime": 8.66
       },
       "zeroasic_z1015": {
-        "logicdepth": 202,
-        "luts": 812,
-        "tasktime": 66.17
+        "logicdepth": 14,
+        "luts": 1028,
+        "tasktime": 83.13
       },
       "zeroasic_z1060": {
         "logicdepth": 184,
@@ -3603,9 +3603,9 @@
         "tasktime": 93.3
       },
       "zeroasic_z1015": {
-        "logicdepth": 41,
-        "luts": 9265,
-        "tasktime": 483.59
+        "logicdepth": 19,
+        "luts": 13649,
+        "tasktime": 237.28
       },
       "zeroasic_z1060": {
         "logicdepth": 38,
@@ -3670,9 +3670,9 @@
         "tasktime": 3.93
       },
       "zeroasic_z1015": {
-        "logicdepth": 9,
-        "luts": 35,
-        "tasktime": 1.69
+        "logicdepth": 4,
+        "luts": 37,
+        "tasktime": 2.56
       },
       "zeroasic_z1060": {
         "logicdepth": 9,
@@ -3739,7 +3739,7 @@
       "zeroasic_z1015": {
         "logicdepth": 0,
         "luts": null,
-        "tasktime": 0.31
+        "tasktime": 0.35
       },
       "zeroasic_z1060": {
         "logicdepth": 0,
@@ -3806,7 +3806,7 @@
       "zeroasic_z1015": {
         "logicdepth": 0,
         "luts": null,
-        "tasktime": 0.32
+        "tasktime": 0.36
       },
       "zeroasic_z1060": {
         "logicdepth": 23,
@@ -3871,9 +3871,9 @@
         "tasktime": 3.7
       },
       "zeroasic_z1015": {
-        "logicdepth": 35,
-        "luts": 208,
-        "tasktime": 4.48
+        "logicdepth": 10,
+        "luts": 323,
+        "tasktime": 26.42
       },
       "zeroasic_z1060": {
         "logicdepth": 35,
@@ -3938,9 +3938,9 @@
         "tasktime": 4.56
       },
       "zeroasic_z1015": {
-        "logicdepth": 30,
-        "luts": 62,
-        "tasktime": 1.54
+        "logicdepth": 5,
+        "luts": 119,
+        "tasktime": 6.78
       },
       "zeroasic_z1060": {
         "logicdepth": 28,
@@ -4007,7 +4007,7 @@
       "zeroasic_z1015": {
         "logicdepth": 0,
         "luts": null,
-        "tasktime": 0.32
+        "tasktime": 0.45
       },
       "zeroasic_z1060": {
         "logicdepth": 0,
@@ -4074,7 +4074,7 @@
       "zeroasic_z1015": {
         "logicdepth": 0,
         "luts": null,
-        "tasktime": 0.34
+        "tasktime": 0.37
       },
       "zeroasic_z1060": {
         "logicdepth": 0,
@@ -4139,9 +4139,9 @@
         "tasktime": 740.29
       },
       "zeroasic_z1015": {
-        "logicdepth": 129,
-        "luts": 7141,
-        "tasktime": 1002.17
+        "logicdepth": 47,
+        "luts": 8662,
+        "tasktime": 143.15
       },
       "zeroasic_z1060": {
         "logicdepth": 153,
@@ -4206,9 +4206,9 @@
         "tasktime": 5.81
       },
       "zeroasic_z1015": {
-        "logicdepth": 4,
-        "luts": 640,
-        "tasktime": 13.11
+        "logicdepth": 3,
+        "luts": 840,
+        "tasktime": 51.41
       },
       "zeroasic_z1060": {
         "logicdepth": 2,
@@ -4273,9 +4273,9 @@
         "tasktime": 3.92
       },
       "zeroasic_z1015": {
-        "logicdepth": 6,
-        "luts": 334,
-        "tasktime": 8.44
+        "logicdepth": 4,
+        "luts": 345,
+        "tasktime": 18.33
       },
       "zeroasic_z1060": {
         "logicdepth": 3,
@@ -4342,7 +4342,7 @@
       "zeroasic_z1015": {
         "logicdepth": 3,
         "luts": 704,
-        "tasktime": 7.8
+        "tasktime": 12.97
       },
       "zeroasic_z1060": {
         "logicdepth": 4,
@@ -4409,7 +4409,7 @@
       "zeroasic_z1015": {
         "logicdepth": 1,
         "luts": 65,
-        "tasktime": 1.15
+        "tasktime": 1.49
       },
       "zeroasic_z1060": {
         "logicdepth": 1,
@@ -4475,8 +4475,8 @@
       },
       "zeroasic_z1015": {
         "logicdepth": 2,
-        "luts": 72,
-        "tasktime": 1.18
+        "luts": 80,
+        "tasktime": 1.59
       },
       "zeroasic_z1060": {
         "logicdepth": 1,
@@ -4541,9 +4541,9 @@
         "tasktime": 14.55
       },
       "zeroasic_z1015": {
-        "logicdepth": 38,
-        "luts": 3594,
-        "tasktime": 175.1
+        "logicdepth": 8,
+        "luts": 4033,
+        "tasktime": 164.89
       },
       "zeroasic_z1060": {
         "logicdepth": 37,
@@ -4610,7 +4610,7 @@
       "zeroasic_z1015": {
         "logicdepth": 1,
         "luts": 16,
-        "tasktime": 1.8
+        "tasktime": 2.25
       },
       "zeroasic_z1060": {
         "logicdepth": 1,
@@ -4675,9 +4675,9 @@
         "tasktime": 6.81
       },
       "zeroasic_z1015": {
-        "logicdepth": 42,
-        "luts": 155,
-        "tasktime": 14.75
+        "logicdepth": 6,
+        "luts": 192,
+        "tasktime": 13.01
       },
       "zeroasic_z1060": {
         "logicdepth": 26,
@@ -4742,9 +4742,9 @@
         "tasktime": 4.24
       },
       "zeroasic_z1015": {
-        "logicdepth": 8,
-        "luts": 3008,
-        "tasktime": 120.23
+        "logicdepth": 6,
+        "luts": 3210,
+        "tasktime": 125.74
       },
       "zeroasic_z1060": {
         "logicdepth": 4,
@@ -4811,7 +4811,7 @@
       "zeroasic_z1015": {
         "logicdepth": 1,
         "luts": 16,
-        "tasktime": 0.74
+        "tasktime": 1.1
       },
       "zeroasic_z1060": {
         "logicdepth": 1,
@@ -4878,7 +4878,7 @@
       "zeroasic_z1015": {
         "logicdepth": 1,
         "luts": 2,
-        "tasktime": 0.63
+        "tasktime": 0.74
       },
       "zeroasic_z1060": {
         "logicdepth": 1,
@@ -4943,9 +4943,9 @@
         "tasktime": 4.35
       },
       "zeroasic_z1015": {
-        "logicdepth": 8,
-        "luts": 10114,
-        "tasktime": 352.39
+        "logicdepth": 6,
+        "luts": 10772,
+        "tasktime": 335.39
       },
       "zeroasic_z1060": {
         "logicdepth": 1,
@@ -5012,7 +5012,7 @@
       "zeroasic_z1015": {
         "logicdepth": 1,
         "luts": 1,
-        "tasktime": 0.74
+        "tasktime": 0.87
       },
       "zeroasic_z1060": {
         "logicdepth": 1,
@@ -5079,7 +5079,7 @@
       "zeroasic_z1015": {
         "logicdepth": 0,
         "luts": null,
-        "tasktime": 0.44
+        "tasktime": 0.47
       },
       "zeroasic_z1060": {
         "logicdepth": 0,
@@ -5146,7 +5146,7 @@
       "zeroasic_z1015": {
         "logicdepth": 1,
         "luts": 2,
-        "tasktime": 0.73
+        "tasktime": 0.81
       },
       "zeroasic_z1060": {
         "logicdepth": 1,
@@ -5211,9 +5211,9 @@
         "tasktime": 9.22
       },
       "zeroasic_z1015": {
-        "logicdepth": 6,
-        "luts": 4880,
-        "tasktime": 132.93
+        "logicdepth": 5,
+        "luts": 5540,
+        "tasktime": 149.39
       },
       "zeroasic_z1060": {
         "logicdepth": 4,
@@ -5280,7 +5280,7 @@
       "zeroasic_z1015": {
         "logicdepth": 1,
         "luts": 15,
-        "tasktime": 0.85
+        "tasktime": 0.67
       },
       "zeroasic_z1060": {
         "logicdepth": 1,
@@ -5347,7 +5347,7 @@
       "zeroasic_z1015": {
         "logicdepth": 0,
         "luts": null,
-        "tasktime": 0.53
+        "tasktime": 0.72
       },
       "zeroasic_z1060": {
         "logicdepth": 0,
@@ -5413,8 +5413,8 @@
       },
       "zeroasic_z1015": {
         "logicdepth": 2,
-        "luts": 13,
-        "tasktime": 0.94
+        "luts": 14,
+        "tasktime": 1.28
       },
       "zeroasic_z1060": {
         "logicdepth": 2,
@@ -5479,9 +5479,9 @@
         "tasktime": 4.65
       },
       "zeroasic_z1015": {
-        "logicdepth": 9,
-        "luts": 43,
-        "tasktime": 2.99
+        "logicdepth": 5,
+        "luts": 47,
+        "tasktime": 3.76
       },
       "zeroasic_z1060": {
         "logicdepth": 7,
@@ -5546,9 +5546,9 @@
         "tasktime": 5.12
       },
       "zeroasic_z1015": {
-        "logicdepth": 13,
-        "luts": 229,
-        "tasktime": 8.43
+        "logicdepth": 6,
+        "luts": 254,
+        "tasktime": 12.16
       },
       "zeroasic_z1060": {
         "logicdepth": 10,
@@ -5613,9 +5613,9 @@
         "tasktime": 3.6
       },
       "zeroasic_z1015": {
-        "logicdepth": 4,
-        "luts": 54,
-        "tasktime": 1.59
+        "logicdepth": 3,
+        "luts": 64,
+        "tasktime": 3.36
       },
       "zeroasic_z1060": {
         "logicdepth": 2,
@@ -5680,9 +5680,9 @@
         "tasktime": 4.56
       },
       "zeroasic_z1015": {
-        "logicdepth": 5,
-        "luts": 129,
-        "tasktime": 3.91
+        "logicdepth": 4,
+        "luts": 141,
+        "tasktime": 8.39
       },
       "zeroasic_z1060": {
         "logicdepth": 3,
@@ -5747,9 +5747,9 @@
         "tasktime": 4.34
       },
       "zeroasic_z1015": {
-        "logicdepth": 4,
-        "luts": 54,
-        "tasktime": 1.56
+        "logicdepth": 3,
+        "luts": 67,
+        "tasktime": 3.28
       },
       "zeroasic_z1060": {
         "logicdepth": 2,
@@ -5814,9 +5814,9 @@
         "tasktime": 3.19
       },
       "zeroasic_z1015": {
-        "logicdepth": 4,
-        "luts": 54,
-        "tasktime": 1.66
+        "logicdepth": 3,
+        "luts": 64,
+        "tasktime": 3.34
       },
       "zeroasic_z1060": {
         "logicdepth": 2,
@@ -5883,7 +5883,7 @@
       "zeroasic_z1015": {
         "logicdepth": 0,
         "luts": null,
-        "tasktime": 0.4
+        "tasktime": 0.43
       },
       "zeroasic_z1060": {
         "logicdepth": 0,
@@ -5948,9 +5948,9 @@
         "tasktime": 17.96
       },
       "zeroasic_z1015": {
-        "logicdepth": 78,
-        "luts": 1756,
-        "tasktime": 167.93
+        "logicdepth": 43,
+        "luts": 2206,
+        "tasktime": 238.03
       },
       "zeroasic_z1060": {
         "logicdepth": 68,
@@ -6015,9 +6015,9 @@
         "tasktime": 4.46
       },
       "zeroasic_z1015": {
-        "logicdepth": 5,
-        "luts": 23,
-        "tasktime": 1.58
+        "logicdepth": 4,
+        "luts": 25,
+        "tasktime": 3.89
       },
       "zeroasic_z1060": {
         "logicdepth": 2,
@@ -6082,9 +6082,9 @@
         "tasktime": 3.85
       },
       "zeroasic_z1015": {
-        "logicdepth": 15,
-        "luts": 31,
-        "tasktime": 1.36
+        "logicdepth": 4,
+        "luts": 56,
+        "tasktime": 3.2
       },
       "zeroasic_z1060": {
         "logicdepth": 10,
@@ -6149,9 +6149,9 @@
         "tasktime": 46.68
       },
       "zeroasic_z1015": {
-        "logicdepth": 2035,
-        "luts": 4224,
-        "tasktime": 427.96
+        "logicdepth": 525,
+        "luts": 21866,
+        "tasktime": 556.29
       },
       "zeroasic_z1060": {
         "logicdepth": 1215,
@@ -6216,9 +6216,9 @@
         "tasktime": 35.63
       },
       "zeroasic_z1015": {
-        "logicdepth": 122,
-        "luts": 5209,
-        "tasktime": 352.73
+        "logicdepth": 22,
+        "luts": 5912,
+        "tasktime": 443.76
       },
       "zeroasic_z1060": {
         "logicdepth": 87,
@@ -6283,9 +6283,9 @@
         "tasktime": 4.14
       },
       "zeroasic_z1015": {
-        "logicdepth": 14,
-        "luts": 30,
-        "tasktime": 1.62
+        "logicdepth": 4,
+        "luts": 54,
+        "tasktime": 3.17
       },
       "zeroasic_z1060": {
         "logicdepth": 8,
@@ -6350,9 +6350,9 @@
         "tasktime": 4.69
       },
       "zeroasic_z1015": {
-        "logicdepth": 20,
-        "luts": 216,
-        "tasktime": 8.0
+        "logicdepth": 8,
+        "luts": 246,
+        "tasktime": 25.84
       },
       "zeroasic_z1060": {
         "logicdepth": 15,
@@ -6417,9 +6417,9 @@
         "tasktime": 7.73
       },
       "zeroasic_z1015": {
-        "logicdepth": 19,
-        "luts": 789,
-        "tasktime": 38.01
+        "logicdepth": 6,
+        "luts": 843,
+        "tasktime": 36.47
       },
       "zeroasic_z1060": {
         "logicdepth": 12,
@@ -6484,9 +6484,9 @@
         "tasktime": 5.72
       },
       "zeroasic_z1015": {
-        "logicdepth": 5,
-        "luts": 720,
-        "tasktime": 39.15
+        "logicdepth": 4,
+        "luts": 853,
+        "tasktime": 33.24
       },
       "zeroasic_z1060": {
         "logicdepth": 3,
@@ -6551,9 +6551,9 @@
         "tasktime": 28.82
       },
       "zeroasic_z1015": {
-        "logicdepth": 18,
-        "luts": 2239,
-        "tasktime": 237.77
+        "logicdepth": 17,
+        "luts": 2250,
+        "tasktime": 262.22
       },
       "zeroasic_z1060": {
         "logicdepth": 23,
@@ -6739,7 +6739,7 @@
     "microchip_polarfire": "",
     "quicklogic_polarpro": "",
     "xilinx_virtex7": "",
-    "zeroasic_z1015": "",
+    "zeroasic_z1015": "-opt delay",
     "zeroasic_z1060": ""
   },
   "targets": [
