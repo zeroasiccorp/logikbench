@@ -31,11 +31,26 @@ ASIC_METRICS = ["cells", "cellarea", "fmax", "setupslack"]
 _INDEX = "0"
 _LBFLOW_ASIC_RECIPE = "asic/freepdk45"
 
+# Vendored zeroasic FPGA architecture files (one subdir per part), fetched from
+# siliconcompiler/logiklib releases by scripts/fetch_zeroasic_arch.py. Each part
+# dir holds a '<part>_yosys_config.json' passed to wildebeest 'synth_fpga
+# -config', which sets partname, lut size, and the flop/BRAM/DSP techmaps.
+_ZEROASIC_ARCH_DIR = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), "targets", "fpga", "zeroasic")
+
+
+def _zeroasic_command(part):
+    """Yosys command for a zeroasic part: load wildebeest, then run synth_fpga
+    against the vendored architecture config for that part."""
+    config = os.path.join(_ZEROASIC_ARCH_DIR, part, f"{part}_yosys_config.json")
+    return f"plugin -i wildebeest; synth_fpga -config {config}"
+
+
 # FPGA targets, named "<vendor>_<partname>", mapped to the yosys synth command
-# (with family/tech/partname args) that implements them. The command is passed
-# verbatim to scripts/fpga/synthesis_fpga.tcl, which runs it (a ';' separates a
-# plugin load from the synth command, as the zeroasic parts need wildebeest) and
-# appends -top plus the user's --options.
+# (with family/tech/partname/config args) that implements them. The command is
+# passed verbatim to scripts/fpga/synthesis_fpga.tcl, which runs it (a ';'
+# separates a plugin load from the synth command, as the zeroasic parts need
+# wildebeest) and appends -top plus the user's --options.
 # 'intel' is intentionally absent: yosys' synth_intel is experimental and reads
 # a per-family techmap (intel/<family>/dsp_map.v) the yosys build does not ship.
 FPGA_TARGETS = {
@@ -50,8 +65,8 @@ FPGA_TARGETS = {
     "efinix_trion":        "synth_efinix",
     "fabulous_generic":    "synth_fabulous",
     "gatemate_cologne":    "synth_gatemate",
-    "zeroasic_z1010":      "plugin -i wildebeest; synth_fpga -partname z1010",
-    "zeroasic_z1060":      "plugin -i wildebeest; synth_fpga -partname z1060",
+    "zeroasic_z1015":      _zeroasic_command("z1015"),
+    "zeroasic_z1060":      _zeroasic_command("z1060"),
 }
 
 

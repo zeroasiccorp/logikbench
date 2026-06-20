@@ -16,7 +16,7 @@
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     font-size: 14px; line-height: 1.45; -webkit-font-smoothing: antialiased;
   }
-  .wrap { max-width: 1180px; margin: 0 auto; padding: 28px 22px 60px; }
+  .wrap { width: 100%; max-width: 1600px; margin: 0 auto; padding: 28px 22px 60px; }
   header { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; flex-wrap: wrap; margin-bottom: 22px; }
   .brand h1 { font-size: 22px; margin: 0; letter-spacing: -0.01em; }
   .brand h1 .mark { color: var(--accent); }
@@ -43,20 +43,26 @@
   th, td { padding: 0; text-align: center; white-space: nowrap; }
   thead th {
     position: sticky; top: 0; z-index: 3; background: var(--panel-2); color: var(--txt);
-    font-weight: 600; font-size: 12.5px; padding: 12px 14px 4px;
+    font-weight: 600; font-size: 12.5px; padding: 10px 8px 4px;
   }
+  thead th.sortable { cursor: pointer; user-select: none; }
+  thead th.sortable:hover { color: var(--accent); }
+  thead th .arrow { margin-left: 5px; font-size: 10px; opacity: .9; }
+  /* two-line target header: vendor on top, part below */
+  thead th .t-vendor { display: block; }
+  thead th .t-part { display: block; font-weight: 500; font-size: 11.5px; color: var(--txt-dim); }
   /* settings sub-row sits directly under each target name (top set in JS) */
   thead tr.settings th {
     z-index: 3; background: var(--panel-2); border-bottom: 1px solid var(--line);
-    font-weight: 500; font-size: 11px; color: var(--txt-dim); padding: 1px 14px 10px;
+    font-weight: 500; font-size: 11px; color: var(--txt-dim); padding: 1px 8px 10px;
     font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   }
-  thead th.bench { text-align: left; z-index: 4; left: 0; padding: 12px 16px; border-bottom: 1px solid var(--line); }
+  thead th.bench { text-align: left; z-index: 4; left: 0; padding: 12px 14px; border-bottom: 1px solid var(--line); }
   tbody th.bench {
     position: sticky; left: 0; z-index: 2; background: var(--panel); text-align: left;
-    font-weight: 600; padding: 0 16px; border-right: 1px solid var(--line); color: var(--txt);
+    font-weight: 600; padding: 0 14px; border-right: 1px solid var(--line); color: var(--txt);
   }
-  tbody td { font-variant-numeric: tabular-nums; font-weight: 600; padding: 11px 14px; border-bottom: 1px solid rgba(255,255,255,.03); }
+  tbody td { font-variant-numeric: tabular-nums; font-weight: 600; padding: 10px 8px; border-bottom: 1px solid rgba(255,255,255,.03); }
   tbody tr:last-child td, tbody tr:last-child th { border-bottom: 0; }
   tbody td.empty { color: #5b6373; font-weight: 400; background: transparent !important; }
   .cell-val { color: #0c0f16; text-shadow: 0 1px 0 rgba(255,255,255,.18); }
@@ -105,6 +111,40 @@
 const SECTION = {{ section_json }};
 let metricKey = SECTION.metrics[0].key;
 function metric(){ return SECTION.metrics.find(m => m.key === metricKey); }
+
+// Column sort state. sortCol null = grouped default order; otherwise BENCH_COL
+// or a target name. Click cycles a column asc -> desc -> default.
+const BENCH_COL = "__bench__";
+let sortCol = null, sortDir = null;
+
+function cycleSort(col){
+  if (sortCol !== col){ sortCol = col; sortDir = "asc"; }
+  else if (sortDir === "asc"){ sortDir = "desc"; }
+  else { sortCol = null; sortDir = null; }   // 3rd click: back to default
+  render();
+}
+
+// Sort value for a benchmark in a column (the bench name, or the column's value
+// for the selected metric); null when missing so it can be ordered last.
+function sortValue(bench, col){
+  if (col === BENCH_COL) return bench;
+  const r = SECTION.data[bench];
+  const v = r && r[col] ? r[col][metricKey] : null;
+  return (v === null || v === undefined) ? null : v;
+}
+
+function sortedBenches(list){
+  if (!sortCol) return list;
+  const dir = sortDir === "desc" ? -1 : 1;
+  return list.slice().sort((a, b) => {
+    const va = sortValue(a, sortCol), vb = sortValue(b, sortCol);
+    if (va === null && vb === null) return 0;
+    if (va === null) return 1;                 // missing values always last
+    if (vb === null) return -1;
+    if (typeof va === "string") return dir * va.localeCompare(vb);
+    return dir * (va - vb);
+  });
+}
 
 function cellStyle(hue){ return `background: hsl(${hue.toFixed(0)} 85% 50%);`; }
 
@@ -156,14 +196,52 @@ function renderTabs(){
     `Showing <strong>${m.label}</strong> across ${SECTION.targets.length} target(s) &middot; ${m.dir === "lower" ? "lower is better" : "higher is better"}`;
 }
 
+// arrow indicator for the column currently sorted by 'col' ("" if not active)
+function sortArrow(col){
+  if (sortCol !== col) return "";
+  return `<span class="arrow">${sortDir === "desc" ? "&darr;" : "&uarr;"}</span>`;
+}
+
+// one benchmark row (<tr>); colors are per-row across targets, independent of
+// row order, so the same row renders identically grouped or sorted.
+function renderRow(bench){
+  const targets = SECTION.targets, m = metric();
+  const row = SECTION.data[bench] || {};
+  const vals = targets.map(t => (row[t] ? row[t][m.key] : null));
+  const present = vals.filter(v => v !== null && v !== undefined);
+  const best = m.dir === "lower" ? Math.min(...present) : Math.max(...present);
+  // runner-up: best value among the non-winners (anchors yellow)
+  const losers = present.filter(v => v !== best);
+  const second = losers.length
+    ? (m.dir === "lower" ? Math.min(...losers) : Math.max(...losers))
+    : best;
+  let cells = `<th class="bench">${bench}</th>`;
+  vals.forEach(v => {
+    if (v === null || v === undefined){ cells += `<td class="empty">&mdash;</td>`; return; }
+    cells += `<td style="${cellStyle(cellHue(v, best, second, m.dir))}"><span class="cell-val">${fmt(v, m)}</span></td>`;
+  });
+  const tr = document.createElement("tr"); tr.innerHTML = cells; return tr;
+}
+
 function render(){
   renderTabs();
-  const targets = SECTION.targets, m = metric();
+  const targets = SECTION.targets;
   const settings = SECTION.settings || {};
   const labels = SECTION.labels || {};
   const thead = document.getElementById("thead");
+  // target column header is "<vendor>_<part>"; show vendor and part on two lines
+  const splitTarget = label => {
+    const i = label.indexOf("_");
+    return i < 0 ? { vendor: label, part: "" }
+                 : { vendor: label.slice(0, i), part: label.slice(i + 1) };
+  };
   thead.innerHTML =
-    `<tr><th class="bench" rowspan="2">Benchmark</th>${targets.map(t => `<th>${labels[t] || t}</th>`).join("")}</tr>` +
+    `<tr><th class="bench sortable" rowspan="2" data-col="${BENCH_COL}">Benchmark${sortArrow(BENCH_COL)}</th>${targets.map(t => {
+      const s = splitTarget(labels[t] || t);
+      return `<th class="sortable" data-col="${t}" title="${labels[t] || t}">` +
+             `<span class="t-vendor">${s.vendor}${sortArrow(t)}</span>` +
+             `<span class="t-part">${s.part || "&nbsp;"}</span></th>`;
+    }).join("")}</tr>` +
     `<tr class="settings">${targets.map(t => {
       const s = settings[t] || "";
       return `<th title="${s ? s : "default settings"}">${s ? s : "default"}</th>`;
@@ -175,28 +253,24 @@ function render(){
     thead.querySelectorAll("tr.settings th").forEach(el => { el.style.position = "sticky"; el.style.top = h + "px"; });
   }
   const tb = document.getElementById("tbody"); tb.innerHTML = "";
-  SECTION.groups.forEach(group => {
-    const gr = document.createElement("tr"); gr.className = "grp";
-    gr.innerHTML = `<th colspan="${targets.length + 1}">${group.name}</th>`; tb.appendChild(gr);
-    group.benchmarks.forEach(bench => {
-      const row = SECTION.data[bench] || {};
-      const vals = targets.map(t => (row[t] ? row[t][m.key] : null));
-      const present = vals.filter(v => v !== null && v !== undefined);
-      const best = m.dir === "lower" ? Math.min(...present) : Math.max(...present);
-      // runner-up: best value among the non-winners (anchors yellow)
-      const losers = present.filter(v => v !== best);
-      const second = losers.length
-        ? (m.dir === "lower" ? Math.min(...losers) : Math.max(...losers))
-        : best;
-      let cells = `<th class="bench">${bench}</th>`;
-      vals.forEach(v => {
-        if (v === null || v === undefined){ cells += `<td class="empty">&mdash;</td>`; return; }
-        cells += `<td style="${cellStyle(cellHue(v, best, second, m.dir))}"><span class="cell-val">${fmt(v, m)}</span></td>`;
-      });
-      const tr = document.createElement("tr"); tr.innerHTML = cells; tb.appendChild(tr);
+  if (sortCol){
+    // flat global sort: one ranked list, no group headers
+    const all = SECTION.groups.flatMap(g => g.benchmarks);
+    sortedBenches(all).forEach(bench => tb.appendChild(renderRow(bench)));
+  } else {
+    // default: grouped sections in definition order
+    SECTION.groups.forEach(group => {
+      const gr = document.createElement("tr"); gr.className = "grp";
+      gr.innerHTML = `<th colspan="${targets.length + 1}">${group.name}</th>`; tb.appendChild(gr);
+      group.benchmarks.forEach(bench => tb.appendChild(renderRow(bench)));
     });
-  });
+  }
 }
+
+// delegated: one listener survives render()'s innerHTML rebuilds
+document.getElementById("thead").addEventListener("click", e => {
+  const th = e.target.closest("[data-col]"); if (th) cycleSort(th.dataset.col);
+});
 render();
 </script>
 </body>
