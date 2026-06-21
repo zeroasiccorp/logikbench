@@ -11,6 +11,7 @@ from concurrent.futures import ProcessPoolExecutor, as_completed
 from logikbench.benchmark import (
     FPGA_METRICS, ASIC_METRICS, TARGETS, FPGA_TARGETS, STEPS,
     run_one, read_metrics, read_asic_metrics, read_tool_var, is_complete,
+    benchmark_name,
 )
 
 # benchmark groups available to both subcommands
@@ -31,29 +32,34 @@ def target_builddir(args, target):
 
 
 def make_worklist(args):
-    """(group, class-name) pairs honoring the group/name filters; shared across
-    targets (the benchmark set is the same for every target)."""
-    benchmarks = {group: getattr(lb, group).__all__ for group in ALL_GROUPS}
+    """(group, class-name, design-name) triples honoring the group/name filters.
+
+    Shared across targets (the benchmark set is the same for every target). The
+    design name is the SC name (e.g. 'epfl_arbiter'), which may differ from the
+    class name -- it is what keys build dirs, metrics, and the -n filter.
+    """
     namefilter = set(n.lower() for n in args.name) if args.name else None
-    return [(group, item)
-            for group in args.group
-            for item in benchmarks[group]
-            if namefilter is None or item.lower() in namefilter]
+    worklist = []
+    for group in args.group:
+        for item in getattr(lb, group).__all__:
+            name = benchmark_name(group, item)
+            if namefilter is None or name in namefilter:
+                worklist.append((group, item, name))
+    return worklist
 
 
 def target_runlist(target, args, worklist):
-    """(group, item) pairs to synthesize for a target, applying --resume
+    """Worklist triples to synthesize for a target, applying --resume
     (skip benchmarks whose build already completed successfully)."""
     if not args.resume:
         return list(worklist)
     builddir = target_builddir(args, target)
     runlist = []
-    for group, item in worklist:
-        if is_complete(item.lower(), builddir):
-            print(f"Skipping {item.lower()} ({target}/{group}): "
-                  f"already complete.")
+    for group, item, name in worklist:
+        if is_complete(name, builddir):
+            print(f"Skipping {name} ({target}/{group}): already complete.")
         else:
-            runlist.append((group, item))
+            runlist.append((group, item, name))
     return runlist
 
 
@@ -66,9 +72,9 @@ def run_sweep(args, targets, worklist):
     not read or written here (use 'collect' afterwards).
     """
     # flat task list over all targets and their (post-resume-filter) benchmarks
-    tasks = [(target, group, item)
+    tasks = [(target, group, item, name)
              for target in targets
-             for group, item in target_runlist(target, args, worklist)]
+             for group, item, name in target_runlist(target, args, worklist)]
 
     timeout = args.timeout or None   # --timeout 0 disables the cap
     quiet = not args.verbose
@@ -76,9 +82,8 @@ def run_sweep(args, targets, worklist):
     total = len(tasks)
     done = 0  # completed-job counter; printed 0-based as [i/N] progress
 
-    def record(target, group, item, error):
+    def record(target, group, name, error):
         nonlocal done
-        name = item.lower()
         prefix = f"[{done}/{total}]"
         done += 1
         if error is not None:
@@ -91,24 +96,24 @@ def run_sweep(args, targets, worklist):
     if args.jobs > 1:
         with ProcessPoolExecutor(max_workers=args.jobs) as pool:
             futures = {}
-            for target, group, item in tasks:
+            for target, group, item, name in tasks:
                 builddir = target_builddir(args, target)
                 future = pool.submit(run_one, group, item, target,
                                      args.options, builddir, quiet,
                                      args.start, args.stop, timeout)
-                futures[future] = (target, group, item)
+                futures[future] = (target, group, name)
             for future in as_completed(futures):
-                target, group, item = futures[future]
+                target, group, name = futures[future]
                 _, _, _, error = future.result()
-                record(target, group, item, error)
+                record(target, group, name, error)
     else:
-        for target, group, item in tasks:
-            print(f"Running {item.lower()} benchmark ({target}/{group}).")
+        for target, group, item, name in tasks:
+            print(f"Running {name} benchmark ({target}/{group}).")
             builddir = target_builddir(args, target)
             _, _, _, error = run_one(group, item, target, args.options,
                                      builddir, quiet, args.start, args.stop,
                                      timeout)
-            record(target, group, item, error)
+            record(target, group, name, error)
 
     return failures
 
@@ -132,8 +137,7 @@ def collect_target(target, args, worklist):
 
     metrics_out = {metric: {} for metric in metric_names}
     options = None
-    for group, item in worklist:
-        name = item.lower()
+    for group, item, name in worklist:
         if mode == 'asic':
             metrics = read_asic_metrics(name, builddir=builddir)
         else:
