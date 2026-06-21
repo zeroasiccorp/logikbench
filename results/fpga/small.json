@@ -288,78 +288,6 @@
         "tasktime": 1.02
       }
     },
-    "adder": {
-      "achronix_speedster": {
-        "logicdepth": 87,
-        "luts": 339,
-        "tasktime": 1.52
-      },
-      "adi_flex16ffc": {
-        "logicdepth": 40,
-        "luts": 432,
-        "tasktime": 2.19
-      },
-      "efinix_trion": {
-        "logicdepth": 85,
-        "luts": 339,
-        "tasktime": 1.43
-      },
-      "fabulous_generic": {
-        "logicdepth": 85,
-        "luts": 339,
-        "tasktime": 1.81
-      },
-      "gatemate_cologne": {
-        "logicdepth": 87,
-        "luts": 339,
-        "tasktime": 2.07
-      },
-      "gowin_gw5a": {
-        "logicdepth": 43,
-        "luts": 1465,
-        "tasktime": 3.1
-      },
-      "lattice_ecp5": {
-        "logicdepth": 46,
-        "luts": 923,
-        "tasktime": 2.5
-      },
-      "lattice_ice40": {
-        "logicdepth": 85,
-        "luts": 339,
-        "tasktime": 2.39
-      },
-      "microchip_polarfire": {
-        "logicdepth": 87,
-        "luts": 339,
-        "tasktime": 5.12
-      },
-      "quicklogic_polarpro": {
-        "logicdepth": 87,
-        "luts": 339,
-        "tasktime": 1.98
-      },
-      "xilinx_virtex7": {
-        "logicdepth": 93,
-        "luts": 435,
-        "tasktime": 5.28
-      },
-      "zeroasic_z1015": {
-        "logicdepth": 127,
-        "luts": 255,
-        "tasktime": 4.72
-      },
-      "zeroasic_z1015opt": {
-        "logicdepth": 8,
-        "luts": 527,
-        "tasktime": 46.48
-      },
-      "zeroasic_z1060": {
-        "logicdepth": 71,
-        "luts": 195,
-        "tasktime": 6.27
-      }
-    },
     "addsub": {
       "achronix_speedster": {
         "logicdepth": 13,
@@ -648,78 +576,6 @@
         "tasktime": 0.6
       }
     },
-    "arbiter": {
-      "achronix_speedster": {
-        "logicdepth": 32,
-        "luts": 4039,
-        "tasktime": 21.44
-      },
-      "adi_flex16ffc": {
-        "logicdepth": 22,
-        "luts": 2968,
-        "tasktime": 25.85
-      },
-      "efinix_trion": {
-        "logicdepth": 30,
-        "luts": 4039,
-        "tasktime": 22.69
-      },
-      "fabulous_generic": {
-        "logicdepth": 30,
-        "luts": 4039,
-        "tasktime": 22.4
-      },
-      "gatemate_cologne": {
-        "logicdepth": 32,
-        "luts": 4039,
-        "tasktime": 24.47
-      },
-      "gowin_gw5a": {
-        "logicdepth": 28,
-        "luts": 9774,
-        "tasktime": 44.0
-      },
-      "lattice_ecp5": {
-        "logicdepth": 19,
-        "luts": 27298,
-        "tasktime": 36.61
-      },
-      "lattice_ice40": {
-        "logicdepth": 30,
-        "luts": 4140,
-        "tasktime": 28.42
-      },
-      "microchip_polarfire": {
-        "logicdepth": 32,
-        "luts": 4207,
-        "tasktime": 28.76
-      },
-      "quicklogic_polarpro": {
-        "logicdepth": 38,
-        "luts": 4949,
-        "tasktime": 28.41
-      },
-      "xilinx_virtex7": {
-        "logicdepth": 40,
-        "luts": 8247,
-        "tasktime": 26.93
-      },
-      "zeroasic_z1015": {
-        "logicdepth": 13,
-        "luts": 1825,
-        "tasktime": 125.11
-      },
-      "zeroasic_z1015opt": {
-        "logicdepth": 6,
-        "luts": 2108,
-        "tasktime": 242.42
-      },
-      "zeroasic_z1060": {
-        "logicdepth": 12,
-        "luts": 956,
-        "tasktime": 152.14
-      }
-    },
     "axicrossbar": {
       "achronix_speedster": {
         "logicdepth": null,
@@ -934,78 +790,6 @@
         "logicdepth": 5,
         "luts": 13,
         "tasktime": 0.82
-      }
-    },
-    "bar": {
-      "achronix_speedster": {
-        "logicdepth": 8,
-        "luts": 1156,
-        "tasktime": 5.03
-      },
-      "adi_flex16ffc": {
-        "logicdepth": 6,
-        "luts": 512,
-        "tasktime": 4.66
-      },
-      "efinix_trion": {
-        "logicdepth": 6,
-        "luts": 1156,
-        "tasktime": 4.71
-      },
-      "fabulous_generic": {
-        "logicdepth": 6,
-        "luts": 1156,
-        "tasktime": 4.83
-      },
-      "gatemate_cologne": {
-        "logicdepth": 8,
-        "luts": 1156,
-        "tasktime": 5.58
-      },
-      "gowin_gw5a": {
-        "logicdepth": 14,
-        "luts": 11445,
-        "tasktime": 53.97
-      },
-      "lattice_ecp5": {
-        "logicdepth": 10,
-        "luts": 5710,
-        "tasktime": 11.7
-      },
-      "lattice_ice40": {
-        "logicdepth": 6,
-        "luts": 1417,
-        "tasktime": 5.82
-      },
-      "microchip_polarfire": {
-        "logicdepth": 9,
-        "luts": 1419,
-        "tasktime": 8.07
-      },
-      "quicklogic_polarpro": {
-        "logicdepth": 9,
-        "luts": 1152,
-        "tasktime": 5.34
-      },
-      "xilinx_virtex7": {
-        "logicdepth": 6,
-        "luts": 512,
-        "tasktime": 8.39
-      },
-      "zeroasic_z1015": {
-        "logicdepth": 7,
-        "luts": 896,
-        "tasktime": 20.82
-      },
-      "zeroasic_z1015opt": {
-        "logicdepth": 6,
-        "luts": 1165,
-        "tasktime": 59.65
-      },
-      "zeroasic_z1060": {
-        "logicdepth": 4,
-        "luts": 512,
-        "tasktime": 30.95
       }
     },
     "bbuf": {
@@ -1728,78 +1512,6 @@
         "tasktime": 1.11
       }
     },
-    "cavlc": {
-      "achronix_speedster": {
-        "logicdepth": 7,
-        "luts": 287,
-        "tasktime": 1.87
-      },
-      "adi_flex16ffc": {
-        "logicdepth": 7,
-        "luts": 126,
-        "tasktime": 1.47
-      },
-      "efinix_trion": {
-        "logicdepth": 5,
-        "luts": 287,
-        "tasktime": 1.97
-      },
-      "fabulous_generic": {
-        "logicdepth": 5,
-        "luts": 287,
-        "tasktime": 1.88
-      },
-      "gatemate_cologne": {
-        "logicdepth": 7,
-        "luts": 287,
-        "tasktime": 2.07
-      },
-      "gowin_gw5a": {
-        "logicdepth": 11,
-        "luts": 474,
-        "tasktime": 2.0
-      },
-      "lattice_ecp5": {
-        "logicdepth": 8,
-        "luts": 467,
-        "tasktime": 1.99
-      },
-      "lattice_ice40": {
-        "logicdepth": 6,
-        "luts": 296,
-        "tasktime": 1.99
-      },
-      "microchip_polarfire": {
-        "logicdepth": 8,
-        "luts": 306,
-        "tasktime": 4.74
-      },
-      "quicklogic_polarpro": {
-        "logicdepth": 12,
-        "luts": 324,
-        "tasktime": 1.24
-      },
-      "xilinx_virtex7": {
-        "logicdepth": 7,
-        "luts": 124,
-        "tasktime": 5.23
-      },
-      "zeroasic_z1015": {
-        "logicdepth": 7,
-        "luts": 222,
-        "tasktime": 7.08
-      },
-      "zeroasic_z1015opt": {
-        "logicdepth": 5,
-        "luts": 231,
-        "tasktime": 19.99
-      },
-      "zeroasic_z1060": {
-        "logicdepth": 5,
-        "luts": 85,
-        "tasktime": 14.34
-      }
-    },
     "cmp": {
       "achronix_speedster": {
         "logicdepth": 6,
@@ -2376,78 +2088,6 @@
         "tasktime": 0.4
       }
     },
-    "div": {
-      "achronix_speedster": {
-        "logicdepth": 1414,
-        "luts": 6374,
-        "tasktime": 90.66
-      },
-      "adi_flex16ffc": {
-        "logicdepth": 835,
-        "luts": 10771,
-        "tasktime": 121.91
-      },
-      "efinix_trion": {
-        "logicdepth": 1412,
-        "luts": 6374,
-        "tasktime": 87.6
-      },
-      "fabulous_generic": {
-        "logicdepth": 1412,
-        "luts": 6374,
-        "tasktime": 96.06
-      },
-      "gatemate_cologne": {
-        "logicdepth": 1414,
-        "luts": 6374,
-        "tasktime": 102.07
-      },
-      "gowin_gw5a": {
-        "logicdepth": 873,
-        "luts": 35541,
-        "tasktime": 560.46
-      },
-      "lattice_ecp5": {
-        "logicdepth": 867,
-        "luts": 21851,
-        "tasktime": 344.15
-      },
-      "lattice_ice40": {
-        "logicdepth": 1410,
-        "luts": 9850,
-        "tasktime": 186.12
-      },
-      "microchip_polarfire": {
-        "logicdepth": 1414,
-        "luts": 11629,
-        "tasktime": 118.65
-      },
-      "quicklogic_polarpro": {
-        "logicdepth": 1420,
-        "luts": 9388,
-        "tasktime": 131.57
-      },
-      "xilinx_virtex7": {
-        "logicdepth": 1769,
-        "luts": 8640,
-        "tasktime": 93.37
-      },
-      "zeroasic_z1015": {
-        "logicdepth": 2110,
-        "luts": 4254,
-        "tasktime": 211.87
-      },
-      "zeroasic_z1015opt": {
-        "logicdepth": 368,
-        "luts": 26942,
-        "tasktime": 316.15
-      },
-      "zeroasic_z1060": {
-        "logicdepth": 1226,
-        "luts": 3266,
-        "tasktime": 511.66
-      }
-    },
     "dotprod": {
       "achronix_speedster": {
         "logicdepth": 21,
@@ -2518,6 +2158,1269 @@
         "logicdepth": 16,
         "luts": 169,
         "tasktime": 22.34
+      }
+    },
+    "epfl_adder": {
+      "achronix_speedster": {
+        "logicdepth": 87,
+        "luts": 339,
+        "tasktime": 1.55
+      },
+      "adi_flex16ffc": {
+        "logicdepth": 40,
+        "luts": 432,
+        "tasktime": 2.59
+      },
+      "efinix_trion": {
+        "logicdepth": 85,
+        "luts": 339,
+        "tasktime": 1.77
+      },
+      "fabulous_generic": {
+        "logicdepth": 85,
+        "luts": 339,
+        "tasktime": 1.92
+      },
+      "gatemate_cologne": {
+        "logicdepth": 87,
+        "luts": 339,
+        "tasktime": 2.33
+      },
+      "gowin_gw5a": {
+        "logicdepth": 43,
+        "luts": 1465,
+        "tasktime": 3.65
+      },
+      "lattice_ecp5": {
+        "logicdepth": 46,
+        "luts": 923,
+        "tasktime": 3.06
+      },
+      "lattice_ice40": {
+        "logicdepth": 85,
+        "luts": 339,
+        "tasktime": 3.01
+      },
+      "microchip_polarfire": {
+        "logicdepth": 87,
+        "luts": 339,
+        "tasktime": 6.65
+      },
+      "quicklogic_polarpro": {
+        "logicdepth": 87,
+        "luts": 339,
+        "tasktime": 2.04
+      },
+      "xilinx_virtex7": {
+        "logicdepth": 93,
+        "luts": 435,
+        "tasktime": 6.83
+      },
+      "zeroasic_z1015": {
+        "logicdepth": 127,
+        "luts": 255,
+        "tasktime": 4.71
+      },
+      "zeroasic_z1060": {
+        "logicdepth": 71,
+        "luts": 195,
+        "tasktime": 5.99
+      }
+    },
+    "epfl_arbiter": {
+      "achronix_speedster": {
+        "logicdepth": 32,
+        "luts": 4039,
+        "tasktime": 22.47
+      },
+      "adi_flex16ffc": {
+        "logicdepth": 22,
+        "luts": 2968,
+        "tasktime": 26.95
+      },
+      "efinix_trion": {
+        "logicdepth": 30,
+        "luts": 4039,
+        "tasktime": 22.86
+      },
+      "fabulous_generic": {
+        "logicdepth": 30,
+        "luts": 4039,
+        "tasktime": 23.92
+      },
+      "gatemate_cologne": {
+        "logicdepth": 32,
+        "luts": 4039,
+        "tasktime": 25.81
+      },
+      "gowin_gw5a": {
+        "logicdepth": 28,
+        "luts": 9774,
+        "tasktime": 45.08
+      },
+      "lattice_ecp5": {
+        "logicdepth": 19,
+        "luts": 27298,
+        "tasktime": 42.28
+      },
+      "lattice_ice40": {
+        "logicdepth": 30,
+        "luts": 4140,
+        "tasktime": 30.64
+      },
+      "microchip_polarfire": {
+        "logicdepth": 32,
+        "luts": 4207,
+        "tasktime": 30.94
+      },
+      "quicklogic_polarpro": {
+        "logicdepth": 38,
+        "luts": 4949,
+        "tasktime": 30.07
+      },
+      "xilinx_virtex7": {
+        "logicdepth": 40,
+        "luts": 8247,
+        "tasktime": 30.83
+      },
+      "zeroasic_z1015": {
+        "logicdepth": 13,
+        "luts": 1825,
+        "tasktime": 130.34
+      },
+      "zeroasic_z1060": {
+        "logicdepth": 12,
+        "luts": 956,
+        "tasktime": 159.81
+      }
+    },
+    "epfl_bar": {
+      "achronix_speedster": {
+        "logicdepth": 8,
+        "luts": 1156,
+        "tasktime": 4.98
+      },
+      "adi_flex16ffc": {
+        "logicdepth": 6,
+        "luts": 512,
+        "tasktime": 5.34
+      },
+      "efinix_trion": {
+        "logicdepth": 6,
+        "luts": 1156,
+        "tasktime": 5.56
+      },
+      "fabulous_generic": {
+        "logicdepth": 6,
+        "luts": 1156,
+        "tasktime": 5.66
+      },
+      "gatemate_cologne": {
+        "logicdepth": 8,
+        "luts": 1156,
+        "tasktime": 6.41
+      },
+      "gowin_gw5a": {
+        "logicdepth": 14,
+        "luts": 11445,
+        "tasktime": 56.58
+      },
+      "lattice_ecp5": {
+        "logicdepth": 10,
+        "luts": 5710,
+        "tasktime": 12.63
+      },
+      "lattice_ice40": {
+        "logicdepth": 6,
+        "luts": 1417,
+        "tasktime": 6.07
+      },
+      "microchip_polarfire": {
+        "logicdepth": 9,
+        "luts": 1419,
+        "tasktime": 9.51
+      },
+      "quicklogic_polarpro": {
+        "logicdepth": 9,
+        "luts": 1152,
+        "tasktime": 5.32
+      },
+      "xilinx_virtex7": {
+        "logicdepth": 6,
+        "luts": 512,
+        "tasktime": 9.39
+      },
+      "zeroasic_z1015": {
+        "logicdepth": 7,
+        "luts": 896,
+        "tasktime": 20.63
+      },
+      "zeroasic_z1060": {
+        "logicdepth": 4,
+        "luts": 512,
+        "tasktime": 32.23
+      }
+    },
+    "epfl_cavlc": {
+      "achronix_speedster": {
+        "logicdepth": 7,
+        "luts": 287,
+        "tasktime": 1.82
+      },
+      "adi_flex16ffc": {
+        "logicdepth": 7,
+        "luts": 126,
+        "tasktime": 1.5
+      },
+      "efinix_trion": {
+        "logicdepth": 5,
+        "luts": 287,
+        "tasktime": 2.0
+      },
+      "fabulous_generic": {
+        "logicdepth": 5,
+        "luts": 287,
+        "tasktime": 2.2
+      },
+      "gatemate_cologne": {
+        "logicdepth": 7,
+        "luts": 287,
+        "tasktime": 2.22
+      },
+      "gowin_gw5a": {
+        "logicdepth": 11,
+        "luts": 474,
+        "tasktime": 2.01
+      },
+      "lattice_ecp5": {
+        "logicdepth": 8,
+        "luts": 467,
+        "tasktime": 2.34
+      },
+      "lattice_ice40": {
+        "logicdepth": 6,
+        "luts": 296,
+        "tasktime": 2.7
+      },
+      "microchip_polarfire": {
+        "logicdepth": 8,
+        "luts": 306,
+        "tasktime": 5.18
+      },
+      "quicklogic_polarpro": {
+        "logicdepth": 12,
+        "luts": 324,
+        "tasktime": 1.14
+      },
+      "xilinx_virtex7": {
+        "logicdepth": 7,
+        "luts": 124,
+        "tasktime": 6.17
+      },
+      "zeroasic_z1015": {
+        "logicdepth": 7,
+        "luts": 222,
+        "tasktime": 6.75
+      },
+      "zeroasic_z1060": {
+        "logicdepth": 5,
+        "luts": 85,
+        "tasktime": 14.42
+      }
+    },
+    "epfl_dec": {
+      "achronix_speedster": {
+        "logicdepth": 4,
+        "luts": 288,
+        "tasktime": 0.38
+      },
+      "adi_flex16ffc": {
+        "logicdepth": 5,
+        "luts": 1024,
+        "tasktime": 1.5
+      },
+      "efinix_trion": {
+        "logicdepth": 2,
+        "luts": 288,
+        "tasktime": 0.52
+      },
+      "fabulous_generic": {
+        "logicdepth": 2,
+        "luts": 288,
+        "tasktime": 0.49
+      },
+      "gatemate_cologne": {
+        "logicdepth": 4,
+        "luts": 288,
+        "tasktime": 0.59
+      },
+      "gowin_gw5a": {
+        "logicdepth": 7,
+        "luts": 7936,
+        "tasktime": 3.83
+      },
+      "lattice_ecp5": {
+        "logicdepth": 4,
+        "luts": 3852,
+        "tasktime": 2.13
+      },
+      "lattice_ice40": {
+        "logicdepth": 2,
+        "luts": 295,
+        "tasktime": 1.27
+      },
+      "microchip_polarfire": {
+        "logicdepth": 4,
+        "luts": 295,
+        "tasktime": 4.24
+      },
+      "quicklogic_polarpro": {
+        "logicdepth": 5,
+        "luts": 296,
+        "tasktime": 0.6
+      },
+      "xilinx_virtex7": {
+        "logicdepth": 5,
+        "luts": 1024,
+        "tasktime": 5.62
+      },
+      "zeroasic_z1015": {
+        "logicdepth": 2,
+        "luts": 288,
+        "tasktime": 1.59
+      },
+      "zeroasic_z1060": {
+        "logicdepth": 2,
+        "luts": 285,
+        "tasktime": 1.57
+      }
+    },
+    "epfl_div": {
+      "achronix_speedster": {
+        "logicdepth": 1414,
+        "luts": 6374,
+        "tasktime": 89.53
+      },
+      "adi_flex16ffc": {
+        "logicdepth": 835,
+        "luts": 10771,
+        "tasktime": 125.55
+      },
+      "efinix_trion": {
+        "logicdepth": 1412,
+        "luts": 6374,
+        "tasktime": 87.66
+      },
+      "fabulous_generic": {
+        "logicdepth": 1412,
+        "luts": 6374,
+        "tasktime": 95.71
+      },
+      "gatemate_cologne": {
+        "logicdepth": 1414,
+        "luts": 6374,
+        "tasktime": 103.98
+      },
+      "gowin_gw5a": {
+        "logicdepth": 873,
+        "luts": 35541,
+        "tasktime": 600.62
+      },
+      "lattice_ecp5": {
+        "logicdepth": 867,
+        "luts": 21851,
+        "tasktime": 366.73
+      },
+      "lattice_ice40": {
+        "logicdepth": 1410,
+        "luts": 9850,
+        "tasktime": 189.49
+      },
+      "microchip_polarfire": {
+        "logicdepth": 1414,
+        "luts": 11629,
+        "tasktime": 128.83
+      },
+      "quicklogic_polarpro": {
+        "logicdepth": 1420,
+        "luts": 9388,
+        "tasktime": 146.93
+      },
+      "xilinx_virtex7": {
+        "logicdepth": 1769,
+        "luts": 8640,
+        "tasktime": 101.1
+      },
+      "zeroasic_z1015": {
+        "logicdepth": 2110,
+        "luts": 4254,
+        "tasktime": 222.22
+      },
+      "zeroasic_z1060": {
+        "logicdepth": 1226,
+        "luts": 3266,
+        "tasktime": 569.14
+      }
+    },
+    "epfl_hyp": {
+      "achronix_speedster": {
+        "logicdepth": 8223,
+        "luts": 63686,
+        "tasktime": 1446.23
+      },
+      "adi_flex16ffc": {
+        "logicdepth": 3667,
+        "luts": 72832,
+        "tasktime": 2497.45
+      },
+      "efinix_trion": {
+        "logicdepth": 8221,
+        "luts": 63686,
+        "tasktime": 1430.07
+      },
+      "fabulous_generic": {
+        "logicdepth": 8221,
+        "luts": 63686,
+        "tasktime": 1523.6
+      },
+      "gatemate_cologne": {
+        "logicdepth": 8223,
+        "luts": 63686,
+        "tasktime": 1444.43
+      },
+      "lattice_ice40": {
+        "logicdepth": 8220,
+        "luts": 62937,
+        "tasktime": 3583.04
+      },
+      "microchip_polarfire": {
+        "logicdepth": 8222,
+        "luts": 64922,
+        "tasktime": 2619.84
+      },
+      "quicklogic_polarpro": {
+        "logicdepth": 8238,
+        "luts": 65494,
+        "tasktime": 2754.15
+      },
+      "xilinx_virtex7": {
+        "logicdepth": 5850,
+        "luts": 61575,
+        "tasktime": 1478.85
+      },
+      "zeroasic_z1015": {
+        "logicdepth": 8466,
+        "luts": 61114,
+        "tasktime": 1358.98
+      },
+      "zeroasic_z1060": {
+        "logicdepth": 4488,
+        "luts": 40513,
+        "tasktime": 888.09
+      }
+    },
+    "epfl_i2c": {
+      "achronix_speedster": {
+        "logicdepth": 7,
+        "luts": 419,
+        "tasktime": 2.21
+      },
+      "adi_flex16ffc": {
+        "logicdepth": 7,
+        "luts": 372,
+        "tasktime": 2.86
+      },
+      "efinix_trion": {
+        "logicdepth": 5,
+        "luts": 419,
+        "tasktime": 2.37
+      },
+      "fabulous_generic": {
+        "logicdepth": 5,
+        "luts": 419,
+        "tasktime": 2.74
+      },
+      "gatemate_cologne": {
+        "logicdepth": 7,
+        "luts": 419,
+        "tasktime": 2.76
+      },
+      "gowin_gw5a": {
+        "logicdepth": 10,
+        "luts": 603,
+        "tasktime": 2.95
+      },
+      "lattice_ecp5": {
+        "logicdepth": 8,
+        "luts": 755,
+        "tasktime": 3.43
+      },
+      "lattice_ice40": {
+        "logicdepth": 5,
+        "luts": 450,
+        "tasktime": 3.46
+      },
+      "microchip_polarfire": {
+        "logicdepth": 7,
+        "luts": 462,
+        "tasktime": 6.1
+      },
+      "quicklogic_polarpro": {
+        "logicdepth": 11,
+        "luts": 484,
+        "tasktime": 2.37
+      },
+      "xilinx_virtex7": {
+        "logicdepth": 8,
+        "luts": 345,
+        "tasktime": 7.3
+      },
+      "zeroasic_z1015": {
+        "logicdepth": 9,
+        "luts": 330,
+        "tasktime": 6.89
+      },
+      "zeroasic_z1060": {
+        "logicdepth": 6,
+        "luts": 219,
+        "tasktime": 6.77
+      }
+    },
+    "epfl_int2float": {
+      "achronix_speedster": {
+        "logicdepth": 7,
+        "luts": 81,
+        "tasktime": 0.74
+      },
+      "adi_flex16ffc": {
+        "logicdepth": 5,
+        "luts": 47,
+        "tasktime": 0.86
+      },
+      "efinix_trion": {
+        "logicdepth": 5,
+        "luts": 81,
+        "tasktime": 0.73
+      },
+      "fabulous_generic": {
+        "logicdepth": 5,
+        "luts": 81,
+        "tasktime": 0.74
+      },
+      "gatemate_cologne": {
+        "logicdepth": 7,
+        "luts": 81,
+        "tasktime": 0.85
+      },
+      "gowin_gw5a": {
+        "logicdepth": 10,
+        "luts": 274,
+        "tasktime": 1.11
+      },
+      "lattice_ecp5": {
+        "logicdepth": 7,
+        "luts": 184,
+        "tasktime": 1.33
+      },
+      "lattice_ice40": {
+        "logicdepth": 5,
+        "luts": 95,
+        "tasktime": 1.37
+      },
+      "microchip_polarfire": {
+        "logicdepth": 7,
+        "luts": 92,
+        "tasktime": 4.15
+      },
+      "quicklogic_polarpro": {
+        "logicdepth": 9,
+        "luts": 101,
+        "tasktime": 0.59
+      },
+      "xilinx_virtex7": {
+        "logicdepth": 7,
+        "luts": 51,
+        "tasktime": 5.15
+      },
+      "zeroasic_z1015": {
+        "logicdepth": 6,
+        "luts": 57,
+        "tasktime": 2.34
+      },
+      "zeroasic_z1060": {
+        "logicdepth": 4,
+        "luts": 29,
+        "tasktime": 3.99
+      }
+    },
+    "epfl_log2": {
+      "achronix_speedster": {
+        "logicdepth": 102,
+        "luts": 10678,
+        "tasktime": 1386.08
+      },
+      "adi_flex16ffc": {
+        "logicdepth": 100,
+        "luts": 13316,
+        "tasktime": 843.54
+      },
+      "efinix_trion": {
+        "logicdepth": 100,
+        "luts": 10678,
+        "tasktime": 1403.42
+      },
+      "fabulous_generic": {
+        "logicdepth": 100,
+        "luts": 10678,
+        "tasktime": 1415.7
+      },
+      "gatemate_cologne": {
+        "logicdepth": 102,
+        "luts": 10678,
+        "tasktime": 1279.08
+      },
+      "gowin_gw5a": {
+        "logicdepth": 142,
+        "luts": 42034,
+        "tasktime": 2543.94
+      },
+      "lattice_ecp5": {
+        "logicdepth": 135,
+        "luts": 37867,
+        "tasktime": 893.15
+      },
+      "lattice_ice40": {
+        "logicdepth": 102,
+        "luts": 12246,
+        "tasktime": 405.98
+      },
+      "microchip_polarfire": {
+        "logicdepth": 106,
+        "luts": 12137,
+        "tasktime": 326.44
+      },
+      "quicklogic_polarpro": {
+        "logicdepth": 112,
+        "luts": 11419,
+        "tasktime": 113.53
+      },
+      "xilinx_virtex7": {
+        "logicdepth": 133,
+        "luts": 13171,
+        "tasktime": 1267.09
+      },
+      "zeroasic_z1015": {
+        "logicdepth": 150,
+        "luts": 9683,
+        "tasktime": 212.69
+      },
+      "zeroasic_z1060": {
+        "logicdepth": 151,
+        "luts": 6470,
+        "tasktime": 555.68
+      }
+    },
+    "epfl_max": {
+      "achronix_speedster": {
+        "logicdepth": 60,
+        "luts": 1044,
+        "tasktime": 5.04
+      },
+      "adi_flex16ffc": {
+        "logicdepth": 35,
+        "luts": 1293,
+        "tasktime": 6.09
+      },
+      "efinix_trion": {
+        "logicdepth": 58,
+        "luts": 1044,
+        "tasktime": 5.0
+      },
+      "fabulous_generic": {
+        "logicdepth": 58,
+        "luts": 1044,
+        "tasktime": 5.11
+      },
+      "gatemate_cologne": {
+        "logicdepth": 60,
+        "luts": 1044,
+        "tasktime": 6.12
+      },
+      "gowin_gw5a": {
+        "logicdepth": 45,
+        "luts": 5337,
+        "tasktime": 8.93
+      },
+      "lattice_ecp5": {
+        "logicdepth": 35,
+        "luts": 3263,
+        "tasktime": 7.45
+      },
+      "lattice_ice40": {
+        "logicdepth": 54,
+        "luts": 1033,
+        "tasktime": 6.62
+      },
+      "microchip_polarfire": {
+        "logicdepth": 58,
+        "luts": 1065,
+        "tasktime": 9.82
+      },
+      "quicklogic_polarpro": {
+        "logicdepth": 58,
+        "luts": 1108,
+        "tasktime": 5.37
+      },
+      "xilinx_virtex7": {
+        "logicdepth": 76,
+        "luts": 1003,
+        "tasktime": 9.43
+      },
+      "zeroasic_z1015": {
+        "logicdepth": 215,
+        "luts": 801,
+        "tasktime": 27.25
+      },
+      "zeroasic_z1060": {
+        "logicdepth": 187,
+        "luts": 528,
+        "tasktime": 27.17
+      }
+    },
+    "epfl_memctrl": {
+      "achronix_speedster": {
+        "logicdepth": 33,
+        "luts": 14440,
+        "tasktime": 104.36
+      },
+      "adi_flex16ffc": {
+        "logicdepth": 33,
+        "luts": 14453,
+        "tasktime": 106.76
+      },
+      "efinix_trion": {
+        "logicdepth": 31,
+        "luts": 14440,
+        "tasktime": 105.99
+      },
+      "fabulous_generic": {
+        "logicdepth": 31,
+        "luts": 14440,
+        "tasktime": 108.69
+      },
+      "gatemate_cologne": {
+        "logicdepth": 33,
+        "luts": 14440,
+        "tasktime": 114.79
+      },
+      "gowin_gw5a": {
+        "logicdepth": 42,
+        "luts": 33327,
+        "tasktime": 704.37
+      },
+      "lattice_ecp5": {
+        "logicdepth": 37,
+        "luts": 26612,
+        "tasktime": 489.3
+      },
+      "lattice_ice40": {
+        "logicdepth": 30,
+        "luts": 17182,
+        "tasktime": 300.44
+      },
+      "microchip_polarfire": {
+        "logicdepth": 35,
+        "luts": 16816,
+        "tasktime": 105.37
+      },
+      "quicklogic_polarpro": {
+        "logicdepth": 40,
+        "luts": 18805,
+        "tasktime": 151.86
+      },
+      "xilinx_virtex7": {
+        "logicdepth": 41,
+        "luts": 13785,
+        "tasktime": 108.07
+      },
+      "zeroasic_z1015": {
+        "logicdepth": 45,
+        "luts": 9100,
+        "tasktime": 255.73
+      },
+      "zeroasic_z1060": {
+        "logicdepth": 38,
+        "luts": 4697,
+        "tasktime": 504.96
+      }
+    },
+    "epfl_multiplier": {
+      "achronix_speedster": {
+        "logicdepth": 89,
+        "luts": 7516,
+        "tasktime": 680.53
+      },
+      "adi_flex16ffc": {
+        "logicdepth": 72,
+        "luts": 9346,
+        "tasktime": 57.7
+      },
+      "efinix_trion": {
+        "logicdepth": 87,
+        "luts": 7516,
+        "tasktime": 686.71
+      },
+      "fabulous_generic": {
+        "logicdepth": 87,
+        "luts": 7516,
+        "tasktime": 688.99
+      },
+      "gatemate_cologne": {
+        "logicdepth": 89,
+        "luts": 7516,
+        "tasktime": 675.84
+      },
+      "gowin_gw5a": {
+        "logicdepth": 92,
+        "luts": 27830,
+        "tasktime": 442.99
+      },
+      "lattice_ecp5": {
+        "logicdepth": 82,
+        "luts": 23619,
+        "tasktime": 364.79
+      },
+      "lattice_ice40": {
+        "logicdepth": 87,
+        "luts": 7690,
+        "tasktime": 103.02
+      },
+      "microchip_polarfire": {
+        "logicdepth": 89,
+        "luts": 7996,
+        "tasktime": 54.7
+      },
+      "quicklogic_polarpro": {
+        "logicdepth": 92,
+        "luts": 7957,
+        "tasktime": 59.55
+      },
+      "xilinx_virtex7": {
+        "logicdepth": 117,
+        "luts": 7970,
+        "tasktime": 789.01
+      },
+      "zeroasic_z1015": {
+        "logicdepth": 129,
+        "luts": 7145,
+        "tasktime": 517.96
+      },
+      "zeroasic_z1060": {
+        "logicdepth": 93,
+        "luts": 4858,
+        "tasktime": 757.4
+      }
+    },
+    "epfl_priority": {
+      "achronix_speedster": {
+        "logicdepth": 46,
+        "luts": 172,
+        "tasktime": 3.1
+      },
+      "adi_flex16ffc": {
+        "logicdepth": 36,
+        "luts": 348,
+        "tasktime": 2.36
+      },
+      "efinix_trion": {
+        "logicdepth": 44,
+        "luts": 172,
+        "tasktime": 2.87
+      },
+      "fabulous_generic": {
+        "logicdepth": 44,
+        "luts": 172,
+        "tasktime": 3.69
+      },
+      "gatemate_cologne": {
+        "logicdepth": 46,
+        "luts": 172,
+        "tasktime": 4.08
+      },
+      "gowin_gw5a": {
+        "logicdepth": 39,
+        "luts": 1261,
+        "tasktime": 3.17
+      },
+      "lattice_ecp5": {
+        "logicdepth": 42,
+        "luts": 773,
+        "tasktime": 3.03
+      },
+      "lattice_ice40": {
+        "logicdepth": 50,
+        "luts": 258,
+        "tasktime": 2.59
+      },
+      "microchip_polarfire": {
+        "logicdepth": 52,
+        "luts": 259,
+        "tasktime": 6.08
+      },
+      "quicklogic_polarpro": {
+        "logicdepth": 52,
+        "luts": 283,
+        "tasktime": 1.87
+      },
+      "xilinx_virtex7": {
+        "logicdepth": 43,
+        "luts": 298,
+        "tasktime": 8.2
+      },
+      "zeroasic_z1015": {
+        "logicdepth": 42,
+        "luts": 154,
+        "tasktime": 8.53
+      },
+      "zeroasic_z1060": {
+        "logicdepth": 26,
+        "luts": 110,
+        "tasktime": 6.58
+      }
+    },
+    "epfl_router": {
+      "achronix_speedster": {
+        "logicdepth": 9,
+        "luts": 60,
+        "tasktime": 0.6
+      },
+      "adi_flex16ffc": {
+        "logicdepth": 10,
+        "luts": 113,
+        "tasktime": 0.84
+      },
+      "efinix_trion": {
+        "logicdepth": 7,
+        "luts": 60,
+        "tasktime": 0.61
+      },
+      "fabulous_generic": {
+        "logicdepth": 7,
+        "luts": 60,
+        "tasktime": 0.84
+      },
+      "gatemate_cologne": {
+        "logicdepth": 9,
+        "luts": 60,
+        "tasktime": 0.96
+      },
+      "gowin_gw5a": {
+        "logicdepth": 13,
+        "luts": 324,
+        "tasktime": 1.33
+      },
+      "lattice_ecp5": {
+        "logicdepth": 11,
+        "luts": 265,
+        "tasktime": 1.6
+      },
+      "lattice_ice40": {
+        "logicdepth": 7,
+        "luts": 82,
+        "tasktime": 1.7
+      },
+      "microchip_polarfire": {
+        "logicdepth": 10,
+        "luts": 89,
+        "tasktime": 4.51
+      },
+      "quicklogic_polarpro": {
+        "logicdepth": 16,
+        "luts": 83,
+        "tasktime": 0.63
+      },
+      "xilinx_virtex7": {
+        "logicdepth": 13,
+        "luts": 63,
+        "tasktime": 5.02
+      },
+      "zeroasic_z1015": {
+        "logicdepth": 10,
+        "luts": 44,
+        "tasktime": 1.81
+      },
+      "zeroasic_z1060": {
+        "logicdepth": 7,
+        "luts": 29,
+        "tasktime": 1.59
+      }
+    },
+    "epfl_sin": {
+      "achronix_speedster": {
+        "logicdepth": 55,
+        "luts": 1979,
+        "tasktime": 11.21
+      },
+      "adi_flex16ffc": {
+        "logicdepth": 58,
+        "luts": 3111,
+        "tasktime": 19.04
+      },
+      "efinix_trion": {
+        "logicdepth": 53,
+        "luts": 1979,
+        "tasktime": 11.55
+      },
+      "fabulous_generic": {
+        "logicdepth": 53,
+        "luts": 1979,
+        "tasktime": 14.97
+      },
+      "gatemate_cologne": {
+        "logicdepth": 55,
+        "luts": 1979,
+        "tasktime": 16.1
+      },
+      "gowin_gw5a": {
+        "logicdepth": 77,
+        "luts": 16454,
+        "tasktime": 113.55
+      },
+      "lattice_ecp5": {
+        "logicdepth": 67,
+        "luts": 7908,
+        "tasktime": 53.23
+      },
+      "lattice_ice40": {
+        "logicdepth": 55,
+        "luts": 2250,
+        "tasktime": 19.84
+      },
+      "microchip_polarfire": {
+        "logicdepth": 59,
+        "luts": 2294,
+        "tasktime": 19.53
+      },
+      "quicklogic_polarpro": {
+        "logicdepth": 61,
+        "luts": 2247,
+        "tasktime": 12.12
+      },
+      "xilinx_virtex7": {
+        "logicdepth": 73,
+        "luts": 2863,
+        "tasktime": 20.01
+      },
+      "zeroasic_z1015": {
+        "logicdepth": 78,
+        "luts": 1756,
+        "tasktime": 89.21
+      },
+      "zeroasic_z1060": {
+        "logicdepth": 61,
+        "luts": 1296,
+        "tasktime": 206.98
+      }
+    },
+    "epfl_sqrt": {
+      "achronix_speedster": {
+        "logicdepth": 1981,
+        "luts": 4444,
+        "tasktime": 48.84
+      },
+      "adi_flex16ffc": {
+        "logicdepth": 876,
+        "luts": 6609,
+        "tasktime": 81.51
+      },
+      "efinix_trion": {
+        "logicdepth": 1979,
+        "luts": 4444,
+        "tasktime": 47.43
+      },
+      "fabulous_generic": {
+        "logicdepth": 1979,
+        "luts": 4444,
+        "tasktime": 55.35
+      },
+      "gatemate_cologne": {
+        "logicdepth": 1981,
+        "luts": 4444,
+        "tasktime": 57.18
+      },
+      "gowin_gw5a": {
+        "logicdepth": 1186,
+        "luts": 25040,
+        "tasktime": 396.23
+      },
+      "lattice_ecp5": {
+        "logicdepth": 843,
+        "luts": 14892,
+        "tasktime": 159.29
+      },
+      "lattice_ice40": {
+        "logicdepth": 1979,
+        "luts": 4554,
+        "tasktime": 85.48
+      },
+      "microchip_polarfire": {
+        "logicdepth": 1981,
+        "luts": 4574,
+        "tasktime": 75.92
+      },
+      "quicklogic_polarpro": {
+        "logicdepth": 1987,
+        "luts": 5247,
+        "tasktime": 61.9
+      },
+      "xilinx_virtex7": {
+        "logicdepth": 1440,
+        "luts": 5911,
+        "tasktime": 54.88
+      },
+      "zeroasic_z1015": {
+        "logicdepth": 2045,
+        "luts": 4246,
+        "tasktime": 301.13
+      },
+      "zeroasic_z1060": {
+        "logicdepth": 1203,
+        "luts": 3320,
+        "tasktime": 314.6
+      }
+    },
+    "epfl_square": {
+      "achronix_speedster": {
+        "logicdepth": 85,
+        "luts": 5953,
+        "tasktime": 33.09
+      },
+      "adi_flex16ffc": {
+        "logicdepth": 49,
+        "luts": 5694,
+        "tasktime": 37.48
+      },
+      "efinix_trion": {
+        "logicdepth": 83,
+        "luts": 5953,
+        "tasktime": 32.44
+      },
+      "fabulous_generic": {
+        "logicdepth": 83,
+        "luts": 5953,
+        "tasktime": 34.92
+      },
+      "gatemate_cologne": {
+        "logicdepth": 85,
+        "luts": 5953,
+        "tasktime": 37.76
+      },
+      "gowin_gw5a": {
+        "logicdepth": 62,
+        "luts": 7810,
+        "tasktime": 72.38
+      },
+      "lattice_ecp5": {
+        "logicdepth": 50,
+        "luts": 7094,
+        "tasktime": 66.83
+      },
+      "lattice_ice40": {
+        "logicdepth": 83,
+        "luts": 5465,
+        "tasktime": 59.97
+      },
+      "microchip_polarfire": {
+        "logicdepth": 85,
+        "luts": 5955,
+        "tasktime": 41.7
+      },
+      "quicklogic_polarpro": {
+        "logicdepth": 89,
+        "luts": 5687,
+        "tasktime": 36.13
+      },
+      "xilinx_virtex7": {
+        "logicdepth": 103,
+        "luts": 4829,
+        "tasktime": 40.7
+      },
+      "zeroasic_z1015": {
+        "logicdepth": 123,
+        "luts": 5227,
+        "tasktime": 197.44
+      },
+      "zeroasic_z1060": {
+        "logicdepth": 78,
+        "luts": 3274,
+        "tasktime": 308.37
+      }
+    },
+    "epfl_voter": {
+      "achronix_speedster": {
+        "logicdepth": 20,
+        "luts": 2369,
+        "tasktime": 25.14
+      },
+      "adi_flex16ffc": {
+        "logicdepth": 21,
+        "luts": 2204,
+        "tasktime": 33.72
+      },
+      "efinix_trion": {
+        "logicdepth": 18,
+        "luts": 2369,
+        "tasktime": 23.99
+      },
+      "fabulous_generic": {
+        "logicdepth": 18,
+        "luts": 2369,
+        "tasktime": 26.11
+      },
+      "gatemate_cologne": {
+        "logicdepth": 20,
+        "luts": 2369,
+        "tasktime": 27.98
+      },
+      "gowin_gw5a": {
+        "logicdepth": 37,
+        "luts": 13523,
+        "tasktime": 101.89
+      },
+      "lattice_ecp5": {
+        "logicdepth": 30,
+        "luts": 6613,
+        "tasktime": 47.53
+      },
+      "lattice_ice40": {
+        "logicdepth": 17,
+        "luts": 2734,
+        "tasktime": 35.36
+      },
+      "microchip_polarfire": {
+        "logicdepth": 21,
+        "luts": 2799,
+        "tasktime": 38.12
+      },
+      "quicklogic_polarpro": {
+        "logicdepth": 28,
+        "luts": 3371,
+        "tasktime": 29.71
+      },
+      "xilinx_virtex7": {
+        "logicdepth": 26,
+        "luts": 2647,
+        "tasktime": 33.32
+      },
+      "zeroasic_z1015": {
+        "logicdepth": 19,
+        "luts": 2203,
+        "tasktime": 124.12
+      },
+      "zeroasic_z1060": {
+        "logicdepth": 21,
+        "luts": 1287,
+        "tasktime": 243.73
       }
     },
     "ethmac": {
@@ -3158,68 +4061,6 @@
         "tasktime": 1.01
       }
     },
-    "hyp": {
-      "achronix_speedster": {
-        "logicdepth": 8223,
-        "luts": 63686,
-        "tasktime": 1355.55
-      },
-      "adi_flex16ffc": {
-        "logicdepth": 3667,
-        "luts": 72832,
-        "tasktime": 2408.95
-      },
-      "efinix_trion": {
-        "logicdepth": 8221,
-        "luts": 63686,
-        "tasktime": 1328.06
-      },
-      "fabulous_generic": {
-        "logicdepth": 8221,
-        "luts": 63686,
-        "tasktime": 1424.57
-      },
-      "gatemate_cologne": {
-        "logicdepth": 8223,
-        "luts": 63686,
-        "tasktime": 1397.49
-      },
-      "lattice_ice40": {
-        "logicdepth": 8220,
-        "luts": 62937,
-        "tasktime": 3590.68
-      },
-      "microchip_polarfire": {
-        "logicdepth": 8222,
-        "luts": 64922,
-        "tasktime": 2393.73
-      },
-      "quicklogic_polarpro": {
-        "logicdepth": 8238,
-        "luts": 65494,
-        "tasktime": 2531.5
-      },
-      "xilinx_virtex7": {
-        "logicdepth": 5850,
-        "luts": 61575,
-        "tasktime": 1365.82
-      },
-      "zeroasic_z1015": {
-        "logicdepth": 8466,
-        "luts": 61114,
-        "tasktime": 1356.41
-      },
-      "zeroasic_z1015opt": {
-        "logicdepth": 2239,
-        "luts": 102421,
-        "tasktime": 1912.26
-      },
-      "zeroasic_z1060": {
-        "logicdepth": 4488,
-        "luts": 40513,
-        "tasktime": 820.13
-      }
-    },
     "i2c": {
       "achronix_speedster": {
         "logicdepth": null,
@@ -3434,78 +4275,6 @@
         "logicdepth": 3,
         "luts": 19,
         "tasktime": 0.73
-      }
-    },
-    "int2float": {
-      "achronix_speedster": {
-        "logicdepth": 7,
-        "luts": 81,
-        "tasktime": 0.59
-      },
-      "adi_flex16ffc": {
-        "logicdepth": 5,
-        "luts": 47,
-        "tasktime": 0.72
-      },
-      "efinix_trion": {
-        "logicdepth": 5,
-        "luts": 81,
-        "tasktime": 0.75
-      },
-      "fabulous_generic": {
-        "logicdepth": 5,
-        "luts": 81,
-        "tasktime": 0.59
-      },
-      "gatemate_cologne": {
-        "logicdepth": 7,
-        "luts": 81,
-        "tasktime": 0.8
-      },
-      "gowin_gw5a": {
-        "logicdepth": 10,
-        "luts": 274,
-        "tasktime": 1.13
-      },
-      "lattice_ecp5": {
-        "logicdepth": 7,
-        "luts": 184,
-        "tasktime": 1.25
-      },
-      "lattice_ice40": {
-        "logicdepth": 5,
-        "luts": 95,
-        "tasktime": 1.0
-      },
-      "microchip_polarfire": {
-        "logicdepth": 7,
-        "luts": 92,
-        "tasktime": 3.78
-      },
-      "quicklogic_polarpro": {
-        "logicdepth": 9,
-        "luts": 101,
-        "tasktime": 0.73
-      },
-      "xilinx_virtex7": {
-        "logicdepth": 7,
-        "luts": 51,
-        "tasktime": 4.49
-      },
-      "zeroasic_z1015": {
-        "logicdepth": 6,
-        "luts": 57,
-        "tasktime": 1.97
-      },
-      "zeroasic_z1015opt": {
-        "logicdepth": 4,
-        "luts": 67,
-        "tasktime": 6.58
-      },
-      "zeroasic_z1060": {
-        "logicdepth": 4,
-        "luts": 29,
-        "tasktime": 3.78
       }
     },
     "lfsr": {
@@ -3794,78 +4563,6 @@
         "logicdepth": 187,
         "luts": 528,
         "tasktime": 25.46
-      }
-    },
-    "mem_ctrl": {
-      "achronix_speedster": {
-        "logicdepth": 33,
-        "luts": 14440,
-        "tasktime": 102.11
-      },
-      "adi_flex16ffc": {
-        "logicdepth": 33,
-        "luts": 14453,
-        "tasktime": 100.01
-      },
-      "efinix_trion": {
-        "logicdepth": 31,
-        "luts": 14440,
-        "tasktime": 99.99
-      },
-      "fabulous_generic": {
-        "logicdepth": 31,
-        "luts": 14440,
-        "tasktime": 104.13
-      },
-      "gatemate_cologne": {
-        "logicdepth": 33,
-        "luts": 14440,
-        "tasktime": 111.41
-      },
-      "gowin_gw5a": {
-        "logicdepth": 42,
-        "luts": 33327,
-        "tasktime": 659.15
-      },
-      "lattice_ecp5": {
-        "logicdepth": 37,
-        "luts": 26612,
-        "tasktime": 449.38
-      },
-      "lattice_ice40": {
-        "logicdepth": 30,
-        "luts": 17182,
-        "tasktime": 290.65
-      },
-      "microchip_polarfire": {
-        "logicdepth": 35,
-        "luts": 16816,
-        "tasktime": 96.36
-      },
-      "quicklogic_polarpro": {
-        "logicdepth": 40,
-        "luts": 18805,
-        "tasktime": 131.37
-      },
-      "xilinx_virtex7": {
-        "logicdepth": 41,
-        "luts": 13785,
-        "tasktime": 96.26
-      },
-      "zeroasic_z1015": {
-        "logicdepth": 45,
-        "luts": 9100,
-        "tasktime": 242.65
-      },
-      "zeroasic_z1015opt": {
-        "logicdepth": 19,
-        "luts": 13649,
-        "tasktime": 237.28
-      },
-      "zeroasic_z1060": {
-        "logicdepth": 38,
-        "luts": 4697,
-        "tasktime": 468.81
       }
     },
     "min": {
@@ -4372,78 +5069,6 @@
         "tasktime": 0.2
       }
     },
-    "multiplier": {
-      "achronix_speedster": {
-        "logicdepth": 89,
-        "luts": 7516,
-        "tasktime": 640.4
-      },
-      "adi_flex16ffc": {
-        "logicdepth": 72,
-        "luts": 9346,
-        "tasktime": 53.43
-      },
-      "efinix_trion": {
-        "logicdepth": 87,
-        "luts": 7516,
-        "tasktime": 632.84
-      },
-      "fabulous_generic": {
-        "logicdepth": 87,
-        "luts": 7516,
-        "tasktime": 630.84
-      },
-      "gatemate_cologne": {
-        "logicdepth": 89,
-        "luts": 7516,
-        "tasktime": 630.96
-      },
-      "gowin_gw5a": {
-        "logicdepth": 92,
-        "luts": 27830,
-        "tasktime": 405.49
-      },
-      "lattice_ecp5": {
-        "logicdepth": 82,
-        "luts": 23619,
-        "tasktime": 340.76
-      },
-      "lattice_ice40": {
-        "logicdepth": 87,
-        "luts": 7690,
-        "tasktime": 96.36
-      },
-      "microchip_polarfire": {
-        "logicdepth": 89,
-        "luts": 7996,
-        "tasktime": 50.35
-      },
-      "quicklogic_polarpro": {
-        "logicdepth": 92,
-        "luts": 7957,
-        "tasktime": 54.91
-      },
-      "xilinx_virtex7": {
-        "logicdepth": 117,
-        "luts": 7970,
-        "tasktime": 750.84
-      },
-      "zeroasic_z1015": {
-        "logicdepth": 129,
-        "luts": 7145,
-        "tasktime": 498.25
-      },
-      "zeroasic_z1015opt": {
-        "logicdepth": 47,
-        "luts": 8662,
-        "tasktime": 143.15
-      },
-      "zeroasic_z1060": {
-        "logicdepth": 93,
-        "luts": 4858,
-        "tasktime": 705.26
-      }
-    },
     "mux": {
       "achronix_speedster": {
         "logicdepth": 6,
@@ -4946,78 +5571,6 @@
         "logicdepth": 1,
         "luts": 16,
         "tasktime": 1.15
-      }
-    },
-    "priority": {
-      "achronix_speedster": {
-        "logicdepth": 46,
-        "luts": 172,
-        "tasktime": 2.68
-      },
-      "adi_flex16ffc": {
-        "logicdepth": 36,
-        "luts": 348,
-        "tasktime": 2.15
-      },
-      "efinix_trion": {
-        "logicdepth": 44,
-        "luts": 172,
-        "tasktime": 2.78
-      },
-      "fabulous_generic": {
-        "logicdepth": 44,
-        "luts": 172,
-        "tasktime": 3.29
-      },
-      "gatemate_cologne": {
-        "logicdepth": 46,
-        "luts": 172,
-        "tasktime": 3.7
-      },
-      "gowin_gw5a": {
-        "logicdepth": 39,
-        "luts": 1261,
-        "tasktime": 2.96
-      },
-      "lattice_ecp5": {
-        "logicdepth": 42,
-        "luts": 773,
-        "tasktime": 2.34
-      },
-      "lattice_ice40": {
-        "logicdepth": 50,
-        "luts": 258,
-        "tasktime": 2.76
-      },
-      "microchip_polarfire": {
-        "logicdepth": 52,
-        "luts": 259,
-        "tasktime": 5.28
-      },
-      "quicklogic_polarpro": {
-        "logicdepth": 52,
-        "luts": 283,
-        "tasktime": 1.64
-      },
-      "xilinx_virtex7": {
-        "logicdepth": 43,
-        "luts": 298,
-        "tasktime": 7.13
-      },
-      "zeroasic_z1015": {
-        "logicdepth": 42,
-        "luts": 154,
-        "tasktime": 7.72
-      },
-      "zeroasic_z1015opt": {
-        "logicdepth": 6,
-        "luts": 192,
-        "tasktime": 13.01
-      },
-      "zeroasic_z1060": {
-        "logicdepth": 26,
-        "luts": 110,
-        "tasktime": 6.03
       }
     },
     "ramasync": {
@@ -5812,78 +6365,6 @@
         "tasktime": 0.6
       }
     },
-    "router": {
-      "achronix_speedster": {
-        "logicdepth": 9,
-        "luts": 60,
-        "tasktime": 0.6
-      },
-      "adi_flex16ffc": {
-        "logicdepth": 10,
-        "luts": 113,
-        "tasktime": 0.83
-      },
-      "efinix_trion": {
-        "logicdepth": 7,
-        "luts": 60,
-        "tasktime": 0.51
-      },
-      "fabulous_generic": {
-        "logicdepth": 7,
-        "luts": 60,
-        "tasktime": 0.72
-      },
-      "gatemate_cologne": {
-        "logicdepth": 9,
-        "luts": 60,
-        "tasktime": 0.85
-      },
-      "gowin_gw5a": {
-        "logicdepth": 13,
-        "luts": 324,
-        "tasktime": 1.32
-      },
-      "lattice_ecp5": {
-        "logicdepth": 11,
-        "luts": 265,
-        "tasktime": 1.12
-      },
-      "lattice_ice40": {
-        "logicdepth": 7,
-        "luts": 82,
-        "tasktime": 1.13
-      },
-      "microchip_polarfire": {
-        "logicdepth": 10,
-        "luts": 89,
-        "tasktime": 5.13
-      },
-      "quicklogic_polarpro": {
-        "logicdepth": 16,
-        "luts": 83,
-        "tasktime": 0.69
-      },
-      "xilinx_virtex7": {
-        "logicdepth": 13,
-        "luts": 63,
-        "tasktime": 4.49
-      },
-      "zeroasic_z1015": {
-        "logicdepth": 10,
-        "luts": 44,
-        "tasktime": 1.79
-      },
-      "zeroasic_z1015opt": {
-        "logicdepth": 5,
-        "luts": 47,
-        "tasktime": 3.76
-      },
-      "zeroasic_z1060": {
-        "logicdepth": 7,
-        "luts": 29,
-        "tasktime": 1.45
-      }
-    },
     "serv": {
       "achronix_speedster": {
         "logicdepth": 223,
@@ -6316,78 +6797,6 @@
         "tasktime": 0.19
       }
     },
-    "sin": {
-      "achronix_speedster": {
-        "logicdepth": 55,
-        "luts": 1979,
-        "tasktime": 11.48
-      },
-      "adi_flex16ffc": {
-        "logicdepth": 58,
-        "luts": 3111,
-        "tasktime": 18.33
-      },
-      "efinix_trion": {
-        "logicdepth": 53,
-        "luts": 1979,
-        "tasktime": 10.68
-      },
-      "fabulous_generic": {
-        "logicdepth": 53,
-        "luts": 1979,
-        "tasktime": 14.7
-      },
-      "gatemate_cologne": {
-        "logicdepth": 55,
-        "luts": 1979,
-        "tasktime": 15.77
-      },
-      "gowin_gw5a": {
-        "logicdepth": 77,
-        "luts": 16454,
-        "tasktime": 113.0
-      },
-      "lattice_ecp5": {
-        "logicdepth": 67,
-        "luts": 7908,
-        "tasktime": 47.77
-      },
-      "lattice_ice40": {
-        "logicdepth": 55,
-        "luts": 2250,
-        "tasktime": 19.43
-      },
-      "microchip_polarfire": {
-        "logicdepth": 59,
-        "luts": 2294,
-        "tasktime": 18.55
-      },
-      "quicklogic_polarpro": {
-        "logicdepth": 61,
-        "luts": 2247,
-        "tasktime": 11.38
-      },
-      "xilinx_virtex7": {
-        "logicdepth": 73,
-        "luts": 2863,
-        "tasktime": 18.2
-      },
-      "zeroasic_z1015": {
-        "logicdepth": 78,
-        "luts": 1756,
-        "tasktime": 85.4
-      },
-      "zeroasic_z1015opt": {
-        "logicdepth": 43,
-        "luts": 2206,
-        "tasktime": 238.03
-      },
-      "zeroasic_z1060": {
-        "logicdepth": 61,
-        "luts": 1296,
-        "tasktime": 187.87
-      }
-    },
     "sine": {
       "achronix_speedster": {
         "logicdepth": null,
@@ -6602,78 +7011,6 @@
         "logicdepth": 1203,
         "luts": 3320,
         "tasktime": 294.6
-      }
-    },
-    "square": {
-      "achronix_speedster": {
-        "logicdepth": 85,
-        "luts": 5953,
-        "tasktime": 31.84
-      },
-      "adi_flex16ffc": {
-        "logicdepth": 49,
-        "luts": 5694,
-        "tasktime": 37.4
-      },
-      "efinix_trion": {
-        "logicdepth": 83,
-        "luts": 5953,
-        "tasktime": 31.68
-      },
-      "fabulous_generic": {
-        "logicdepth": 83,
-        "luts": 5953,
-        "tasktime": 33.51
-      },
-      "gatemate_cologne": {
-        "logicdepth": 85,
-        "luts": 5953,
-        "tasktime": 36.19
-      },
-      "gowin_gw5a": {
-        "logicdepth": 62,
-        "luts": 7810,
-        "tasktime": 72.33
-      },
-      "lattice_ecp5": {
-        "logicdepth": 50,
-        "luts": 7094,
-        "tasktime": 62.48
-      },
-      "lattice_ice40": {
-        "logicdepth": 83,
-        "luts": 5465,
-        "tasktime": 57.63
-      },
-      "microchip_polarfire": {
-        "logicdepth": 85,
-        "luts": 5955,
-        "tasktime": 40.91
-      },
-      "quicklogic_polarpro": {
-        "logicdepth": 89,
-        "luts": 5687,
-        "tasktime": 34.84
-      },
-      "xilinx_virtex7": {
-        "logicdepth": 103,
-        "luts": 4829,
-        "tasktime": 36.14
-      },
-      "zeroasic_z1015": {
-        "logicdepth": 123,
-        "luts": 5227,
-        "tasktime": 183.41
-      },
-      "zeroasic_z1015opt": {
-        "logicdepth": 22,
-        "luts": 5912,
-        "tasktime": 443.76
-      },
-      "zeroasic_z1060": {
-        "logicdepth": 78,
-        "luts": 3274,
-        "tasktime": 278.69
       }
     },
     "sub": {
@@ -6963,78 +7300,6 @@
         "luts": 390,
         "tasktime": 9.89
       }
-    },
-    "voter": {
-      "achronix_speedster": {
-        "logicdepth": 20,
-        "luts": 2369,
-        "tasktime": 23.97
-      },
-      "adi_flex16ffc": {
-        "logicdepth": 21,
-        "luts": 2204,
-        "tasktime": 32.25
-      },
-      "efinix_trion": {
-        "logicdepth": 18,
-        "luts": 2369,
-        "tasktime": 22.89
-      },
-      "fabulous_generic": {
-        "logicdepth": 18,
-        "luts": 2369,
-        "tasktime": 25.33
-      },
-      "gatemate_cologne": {
-        "logicdepth": 20,
-        "luts": 2369,
-        "tasktime": 28.59
-      },
-      "gowin_gw5a": {
-        "logicdepth": 37,
-        "luts": 13523,
-        "tasktime": 97.91
-      },
-      "lattice_ecp5": {
-        "logicdepth": 30,
-        "luts": 6613,
-        "tasktime": 44.32
-      },
-      "lattice_ice40": {
-        "logicdepth": 17,
-        "luts": 2734,
-        "tasktime": 31.93
-      },
-      "microchip_polarfire": {
-        "logicdepth": 21,
-        "luts": 2799,
-        "tasktime": 33.34
-      },
-      "quicklogic_polarpro": {
-        "logicdepth": 28,
-        "luts": 3371,
-        "tasktime": 27.71
-      },
-      "xilinx_virtex7": {
-        "logicdepth": 26,
-        "luts": 2647,
-        "tasktime": 30.11
-      },
-      "zeroasic_z1015": {
-        "logicdepth": 19,
-        "luts": 2203,
-        "tasktime": 117.86
-      },
-      "zeroasic_z1015opt": {
-        "logicdepth": 17,
-        "luts": 2250,
-        "tasktime": 262.22
-      },
-      "zeroasic_z1060": {
-        "logicdepth": 21,
-        "luts": 1287,
-        "tasktime": 264.84
-      }
     }
   },
   "groups": [
@@ -7123,25 +7388,25 @@
     },
     {
       "benchmarks": [
-        "adder",
-        "arbiter",
-        "bar",
-        "cavlc",
-        "dec",
-        "div",
-        "hyp",
-        "i2c",
-        "int2float",
-        "log2",
-        "max",
-        "mem_ctrl",
-        "multiplier",
-        "priority",
-        "router",
-        "sin",
-        "sqrt",
-        "square",
-        "voter"
+        "epfl_adder",
+        "epfl_arbiter",
+        "epfl_bar",
+        "epfl_cavlc",
+        "epfl_dec",
+        "epfl_div",
+        "epfl_hyp",
+        "epfl_i2c",
+        "epfl_int2float",
+        "epfl_log2",
+        "epfl_max",
+        "epfl_memctrl",
+        "epfl_multiplier",
+        "epfl_priority",
+        "epfl_router",
+        "epfl_sin",
+        "epfl_sqrt",
+        "epfl_square",
+        "epfl_voter"
       ],
       "name": "epfl"
     },
