@@ -387,25 +387,25 @@ lb run -g basic -t asap7_demo --to synthesis
 
 | Benchmark | Description | Verilog |
 |-----------|-------------|---------|
-| adder | EPFL adder benchmark | [adder.v](logikbench/epfl/adder/rtl/adder.v) |
-| arbiter | EPFL arbiter benchmark | [arbiter.v](logikbench/epfl/arbiter/rtl/arbiter.v) |
-| bar | Barrel shifter | [bar.v](logikbench/epfl/bar/rtl/bar.v) |
-| cavlc | CAVLC encoder | [cavlc.v](logikbench/epfl/cavlc/rtl/cavlc.v) |
-| dec | Decoder | [dec.v](logikbench/epfl/dec/rtl/dec.v) |
-| div | Divider | [div.v](logikbench/epfl/div/rtl/div.v) |
-| hyp | Hypotenuse calculator | [hyp.v](logikbench/epfl/hyp/rtl/hyp.v) |
-| i2c | I2C controller | [i2c.v](logikbench/epfl/i2c/rtl/i2c.v) |
-| int2float | Integer to float converter | [int2float.v](logikbench/epfl/int2float/rtl/int2float.v) |
-| log2 | Log base 2 | [log2.v](logikbench/epfl/log2/rtl/log2.v) |
-| max | Maximum | [max.v](logikbench/epfl/max/rtl/max.v) |
-| mem_ctrl | Memory controller | [mem_ctrl.v](logikbench/epfl/mem_ctrl/rtl/mem_ctrl.v) |
-| multiplier | Multiplier | [multiplier.v](logikbench/epfl/multiplier/rtl/multiplier.v) |
-| priority | Priority encoder | [priority.v](logikbench/epfl/priority/rtl/priority.v) |
-| router | Router | [router.v](logikbench/epfl/router/rtl/router.v) |
-| sin | Sine function | [sin.v](logikbench/epfl/sin/rtl/sin.v) |
-| sqrt | Square root | [sqrt.v](logikbench/epfl/sqrt/rtl/sqrt.v) |
-| square | Square function | [square.v](logikbench/epfl/square/rtl/square.v) |
-| voter | Voter circuit | [voter.v](logikbench/epfl/voter/rtl/voter.v) |
+| epfl_adder | EPFL adder benchmark | [epfl_adder.v](logikbench/epfl/epfl_adder/rtl/epfl_adder.v) |
+| epfl_arbiter | EPFL arbiter benchmark | [epfl_arbiter.v](logikbench/epfl/epfl_arbiter/rtl/epfl_arbiter.v) |
+| epfl_bar | Barrel shifter | [epfl_bar.v](logikbench/epfl/epfl_bar/rtl/epfl_bar.v) |
+| epfl_cavlc | CAVLC encoder | [epfl_cavlc.v](logikbench/epfl/epfl_cavlc/rtl/epfl_cavlc.v) |
+| epfl_dec | Decoder | [epfl_dec.v](logikbench/epfl/epfl_dec/rtl/epfl_dec.v) |
+| epfl_div | Divider | [epfl_div.v](logikbench/epfl/epfl_div/rtl/epfl_div.v) |
+| epfl_hyp | Hypotenuse calculator | [epfl_hyp.v](logikbench/epfl/epfl_hyp/rtl/epfl_hyp.v) |
+| epfl_i2c | I2C controller | [epfl_i2c.v](logikbench/epfl/epfl_i2c/rtl/epfl_i2c.v) |
+| epfl_int2float | Integer to float converter | [epfl_int2float.v](logikbench/epfl/epfl_int2float/rtl/epfl_int2float.v) |
+| epfl_log2 | Log base 2 | [epfl_log2.v](logikbench/epfl/epfl_log2/rtl/epfl_log2.v) |
+| epfl_max | Maximum | [epfl_max.v](logikbench/epfl/epfl_max/rtl/epfl_max.v) |
+| epfl_memctrl | Memory controller | [epfl_memctrl.v](logikbench/epfl/epfl_memctrl/rtl/epfl_memctrl.v) |
+| epfl_multiplier | Multiplier | [epfl_multiplier.v](logikbench/epfl/epfl_multiplier/rtl/epfl_multiplier.v) |
+| epfl_priority | Priority encoder | [epfl_priority.v](logikbench/epfl/epfl_priority/rtl/epfl_priority.v) |
+| epfl_router | Router | [epfl_router.v](logikbench/epfl/epfl_router/rtl/epfl_router.v) |
+| epfl_sin | Sine function | [epfl_sin.v](logikbench/epfl/epfl_sin/rtl/epfl_sin.v) |
+| epfl_sqrt | Square root | [epfl_sqrt.v](logikbench/epfl/epfl_sqrt/rtl/epfl_sqrt.v) |
+| epfl_square | Square function | [epfl_square.v](logikbench/epfl/epfl_square/rtl/epfl_square.v) |
+| epfl_voter | Voter circuit | [epfl_voter.v](logikbench/epfl/epfl_voter/rtl/epfl_voter.v) |
 
 ----
 
