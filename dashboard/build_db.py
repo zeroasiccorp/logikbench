@@ -40,15 +40,17 @@ METRIC_INFO = {
 
 
 def benchmark_order():
-    """(group, benchmark-name) pairs in canonical group/definition order.
+    """(group, design-name) pairs in canonical group/definition order.
 
-    Benchmark names are assumed unique across groups (results key by name and
-    share a build dir per target); a duplicate would show a row in each group.
+    Uses the SC design name (e.g. 'epfl_arbiter'), which keys the collected
+    metrics, rather than the class name. Names are assumed unique across groups;
+    a duplicate would show a row in each group.
     """
     order = []
     for group in GROUPS:
-        for item in getattr(lb, group).__all__:
-            order.append((group, item.lower()))
+        mod = getattr(lb, group)
+        for item in mod.__all__:
+            order.append((group, getattr(mod, item)().name))
     return order
 
 

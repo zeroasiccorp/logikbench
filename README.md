@@ -10,22 +10,22 @@
 
 The semiconductor industry lacks a comprehensive, standardized benchmark suite for evaluating EDA tools, design flows, foundry processes, and FPGA devices. Existing RTL benchmark suites suffer from critical gaps. These gaps make it difficult to objectively compare tools, validate improvements, and track progress across the industry.
 
-* **No standard metrics/datasets** --> no "ImageNet/SpecInt/Dhrystone for EDA"
-* **Lack of diversity in datasets** --> limited coverage
-* **Hard-coded circuit sizes** --> no parametric sweeps
+* **No standardization** --> no "ImageNet/SpecInt/Dhrystone for EDA"
+* **No diversity** --> limited coverage
+* **Hard-coded circuits** --> no parametric sweeps
 * **Limited provenance** --> benchmark origin and intent unknown
-* **No execution infrastructure** -->  not reproducible
+* **No infrastructure** -->  not reproducibility
 * **Ambiguous licenses** --> blocking commercial use
 
 ## Logikbench Solution
 
-* **119 unique benchmark circuits** spanning basic logic to complex subsystems
+"Sunlight is said to be the best of disinfectants." --Supreme Court Justice Louis Brandeis
+
+* **100+ unique benchmark circuits** spanning basic logic to complex subsystems
 * **10,000+ configurations** through parameter sweeping
-* **MIT License** enabling commercial and academic use
-* **Python API** built on SiliconCompiler for easy integration
 * **Standardized metrics** and execution infrastructure
-* **Full provenance** with clear documentation and design intent
-* **Active development** with continuous additions to the suite
+* **100% open source** no license or membership fees!
+* **Full provenance** documented source code provenance
 
 ## TLDR
 
@@ -40,26 +40,28 @@ lb --target lattice_ice40 -j 4
 
 ## FPGA Synthesis Ranking
 
+!!!Work-In-Progress!!!
+
 Targets ranked by total LUTs over all benchmarks (config: `small`), lowest first. A benchmark with no result for a target is charged the highest LUT count any target reached on it.
 Comparing different FPGA architectures is by definition an apples to oranges exercise. Ranking by no means implies quality or goodness, it's just a neat way to compress and order data.
 
 <!-- RANKING:START -->
-| Rank | Target | Total LUTs | Missing |
-|-----:|--------|-----------:|--------:|
-| 1 | zeroasic_z1060 | 150,871 | 5 |
-| 2 | gatemate_cologne | 173,661 | 5 |
-| 3 | adi_flex16ffc | 204,519 | 4 |
-| 4 | microchip_polarfire | 205,610 | 7 |
-| 5 | zeroasic_z1015 | 210,470 | 5 |
-| 6 | xilinx_virtex7 | 225,745 | 9 |
-| 7 | quicklogic_polarpro | 235,085 | 2 |
-| 8 | lattice_ice40 | 237,953 | 4 |
-| 9 | efinix_trion | 246,203 | 8 |
-| 10 | fabulous_generic | 261,742 | 8 |
-| 11 | zeroasic_z1015opt | 332,580 | 10 |
-| 12 | lattice_ecp5 | 411,500 | 8 |
-| 13 | achronix_speedster | 422,867 | 10 |
-| 14 | gowin_gw5a | 566,391 | 7 |
+| Rank | Target | Arch | Total LUTs | Missing |
+|-----:|--------|------|-----------:|--------:|
+| 1 | zeroasic_z1060 | LUT6 | 161,693 | 5 |
+| 2 | gatemate_cologne | LUT8 | 190,534 | 5 |
+| 3 | microchip_polarfire | LUT4 | 224,143 | 7 |
+| 4 | zeroasic_z1015 | LUT4 | 225,818 | 5 |
+| 5 | adi_flex16ffc | LUT6 | 227,133 | 4 |
+| 6 | xilinx_virtex7 | LUT6 | 247,199 | 9 |
+| 7 | quicklogic_polarpro | LUT4/MUX | 253,639 | 2 |
+| 8 | lattice_ice40 | LUT4 | 256,531 | 4 |
+| 9 | efinix_trion | LUT4 | 263,076 | 8 |
+| 10 | fabulous_generic | LUT4 | 278,615 | 8 |
+| 11 | achronix_speedster | LUT6 | 439,740 | 10 |
+| 12 | lattice_ecp5 | LUT4 | 442,540 | 8 |
+| 13 | zeroasic_z1015opt | LUT4 | 497,161 | 29 |
+| 14 | gowin_gw5a | LUT4 | 617,752 | 7 |
 <!-- RANKING:END -->
 
 ----
@@ -387,25 +389,25 @@ lb run -g basic -t asap7_demo --to synthesis
 
 | Benchmark | Description | Verilog |
 |-----------|-------------|---------|
-| adder | EPFL adder benchmark | [adder.v](logikbench/epfl/adder/rtl/adder.v) |
-| arbiter | EPFL arbiter benchmark | [arbiter.v](logikbench/epfl/arbiter/rtl/arbiter.v) |
-| bar | Barrel shifter | [bar.v](logikbench/epfl/bar/rtl/bar.v) |
-| cavlc | CAVLC encoder | [cavlc.v](logikbench/epfl/cavlc/rtl/cavlc.v) |
-| dec | Decoder | [dec.v](logikbench/epfl/dec/rtl/dec.v) |
-| div | Divider | [div.v](logikbench/epfl/div/rtl/div.v) |
-| hyp | Hypotenuse calculator | [hyp.v](logikbench/epfl/hyp/rtl/hyp.v) |
-| i2c | I2C controller | [i2c.v](logikbench/epfl/i2c/rtl/i2c.v) |
-| int2float | Integer to float converter | [int2float.v](logikbench/epfl/int2float/rtl/int2float.v) |
-| log2 | Log base 2 | [log2.v](logikbench/epfl/log2/rtl/log2.v) |
-| max | Maximum | [max.v](logikbench/epfl/max/rtl/max.v) |
-| mem_ctrl | Memory controller | [mem_ctrl.v](logikbench/epfl/mem_ctrl/rtl/mem_ctrl.v) |
-| multiplier | Multiplier | [multiplier.v](logikbench/epfl/multiplier/rtl/multiplier.v) |
-| priority | Priority encoder | [priority.v](logikbench/epfl/priority/rtl/priority.v) |
-| router | Router | [router.v](logikbench/epfl/router/rtl/router.v) |
-| sin | Sine function | [sin.v](logikbench/epfl/sin/rtl/sin.v) |
-| sqrt | Square root | [sqrt.v](logikbench/epfl/sqrt/rtl/sqrt.v) |
-| square | Square function | [square.v](logikbench/epfl/square/rtl/square.v) |
-| voter | Voter circuit | [voter.v](logikbench/epfl/voter/rtl/voter.v) |
+| epfl_adder | EPFL adder benchmark | [epfl_adder.v](logikbench/epfl/epfl_adder/rtl/epfl_adder.v) |
+| epfl_arbiter | EPFL arbiter benchmark | [epfl_arbiter.v](logikbench/epfl/epfl_arbiter/rtl/epfl_arbiter.v) |
+| epfl_bar | Barrel shifter | [epfl_bar.v](logikbench/epfl/epfl_bar/rtl/epfl_bar.v) |
+| epfl_cavlc | CAVLC encoder | [epfl_cavlc.v](logikbench/epfl/epfl_cavlc/rtl/epfl_cavlc.v) |
+| epfl_dec | Decoder | [epfl_dec.v](logikbench/epfl/epfl_dec/rtl/epfl_dec.v) |
+| epfl_div | Divider | [epfl_div.v](logikbench/epfl/epfl_div/rtl/epfl_div.v) |
+| epfl_hyp | Hypotenuse calculator | [epfl_hyp.v](logikbench/epfl/epfl_hyp/rtl/epfl_hyp.v) |
+| epfl_i2c | I2C controller | [epfl_i2c.v](logikbench/epfl/epfl_i2c/rtl/epfl_i2c.v) |
+| epfl_int2float | Integer to float converter | [epfl_int2float.v](logikbench/epfl/epfl_int2float/rtl/epfl_int2float.v) |
+| epfl_log2 | Log base 2 | [epfl_log2.v](logikbench/epfl/epfl_log2/rtl/epfl_log2.v) |
+| epfl_max | Maximum | [epfl_max.v](logikbench/epfl/epfl_max/rtl/epfl_max.v) |
+| epfl_memctrl | Memory controller | [epfl_memctrl.v](logikbench/epfl/epfl_memctrl/rtl/epfl_memctrl.v) |
+| epfl_multiplier | Multiplier | [epfl_multiplier.v](logikbench/epfl/epfl_multiplier/rtl/epfl_multiplier.v) |
+| epfl_priority | Priority encoder | [epfl_priority.v](logikbench/epfl/epfl_priority/rtl/epfl_priority.v) |
+| epfl_router | Router | [epfl_router.v](logikbench/epfl/epfl_router/rtl/epfl_router.v) |
+| epfl_sin | Sine function | [epfl_sin.v](logikbench/epfl/epfl_sin/rtl/epfl_sin.v) |
+| epfl_sqrt | Square root | [epfl_sqrt.v](logikbench/epfl/epfl_sqrt/rtl/epfl_sqrt.v) |
+| epfl_square | Square function | [epfl_square.v](logikbench/epfl/epfl_square/rtl/epfl_square.v) |
+| epfl_voter | Voter circuit | [epfl_voter.v](logikbench/epfl/epfl_voter/rtl/epfl_voter.v) |
 
 ----
 

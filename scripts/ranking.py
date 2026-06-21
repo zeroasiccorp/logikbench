@@ -28,6 +28,33 @@ REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 START = "<!-- RANKING:START -->"
 END = "<!-- RANKING:END -->"
 
+# Native logic-cell architecture per target (device datasheet), keyed by base
+# target name. Suffix variants (e.g. zeroasic_z1015opt) inherit their base.
+ARCH = {
+    "achronix_speedster": "LUT6",
+    "adi_flex16ffc": "LUT6",
+    "efinix_trion": "LUT4",
+    "fabulous_generic": "LUT4",
+    "gatemate_cologne": "LUT8",
+    "gowin_gw5a": "LUT4",
+    "lattice_ecp5": "LUT4",
+    "lattice_ice40": "LUT4",
+    "microchip_polarfire": "LUT4",
+    "quicklogic_polarpro": "LUT4/MUX",
+    "xilinx_virtex7": "LUT6",
+    "zeroasic_z1015": "LUT4",
+    "zeroasic_z1060": "LUT6",
+}
+
+
+def arch_for(target):
+    """Architecture for a ranking column. Exact match, else the longest base
+    target it is a variant of (e.g. zeroasic_z1015opt -> zeroasic_z1015)."""
+    if target in ARCH:
+        return ARCH[target]
+    bases = [k for k in ARCH if target.startswith(k)]
+    return ARCH[max(bases, key=len)] if bases else "?"
+
 
 def compute_totals(section):
     """Return [(target, total_luts, n_missing)] for every target column.
@@ -67,11 +94,12 @@ def render_table(section):
     ranked = sorted(compute_totals(section), key=lambda r: r[1])
     lines = [
         START,
-        "| Rank | Target | Total LUTs | Missing |",
-        "|-----:|--------|-----------:|--------:|",
+        "| Rank | Target | Arch | Total LUTs | Missing |",
+        "|-----:|--------|------|-----------:|--------:|",
     ]
     for rank, (target, total, miss) in enumerate(ranked, start=1):
-        lines.append(f"| {rank} | {target} | {total:,} | {miss} |")
+        lines.append(
+            f"| {rank} | {target} | {arch_for(target)} | {total:,} | {miss} |")
     lines.append(END)
     return "\n".join(lines)
 

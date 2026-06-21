@@ -262,6 +262,14 @@ def _run_demo(design, target, builddir, quiet, start, stop, timeout):
     proj.run()
 
 
+def benchmark_name(group, item):
+    """SC design name for a benchmark class. May differ from item.lower()
+    (e.g. class EPFLArbiter -> design name 'epfl_arbiter'), so callers that key
+    builds/metrics by name must use this, not the class name."""
+    import logikbench
+    return getattr(getattr(logikbench, group), item)().name
+
+
 def run_one(group, item, target=None, options="", builddir="build", quiet=True,
             start=None, stop=None, timeout=None):
     """Run a single benchmark; return (group, item, metrics, error).
@@ -273,7 +281,10 @@ def run_one(group, item, target=None, options="", builddir="build", quiet=True,
     """
     import logikbench
     design = getattr(getattr(logikbench, group), item)()
-    name = item.lower()
+    # key off the SC design name, not the class name: a class like EPFLArbiter
+    # has design name 'epfl_arbiter', so item.lower() would not match its build
+    # dir or recorded metrics.
+    name = design.name
     # fresh run by default (avoids SC build reuse); keep the prior build only
     # when resuming mid-flow with --start, which needs earlier steps' outputs.
     # --stop alone still runs from the beginning, so it wipes.
