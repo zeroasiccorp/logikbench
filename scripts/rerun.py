@@ -5,6 +5,7 @@
   2. collect metrics into results/fpga/<config>/<target>.json       (lb collect)
   3. rebuild the per-config database(s)                             (build_db.py)
   4. regenerate the static site under site/                        (generate.py)
+  5. refresh the README ranking table                              (ranking.py)
 
 Run from anywhere -- paths resolve relative to the repo root.
 
@@ -69,6 +70,9 @@ def main():
     # 4. regenerate the static site
     run([sys.executable, "dashboard/generate.py",
          "--db", "results/fpga", "--out", "site"])
+
+    # 5. update the README ranking table for this config
+    run([sys.executable, "scripts/ranking.py", "--config", args.config])
 
     print(f"\nDone. Open site/{args.config}.html")
 

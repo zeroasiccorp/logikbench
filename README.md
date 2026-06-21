@@ -38,6 +38,32 @@ lb --target lattice_ice40 -j 4
 ```
 ----
 
+## FPGA Synthesis Ranking
+
+Targets ranked by total LUTs over all benchmarks (config: `small`), lowest first. A benchmark with no result for a target is charged the highest LUT count any target reached on it.
+Comparing different FPGA architectures is by definition an apples to oranges exercise. Ranking by no means implies quality or goodness, it's just a neat way to compress and order data.
+
+<!-- RANKING:START -->
+| Rank | Target | Total LUTs | Missing |
+|-----:|--------|-----------:|--------:|
+| 1 | zeroasic_z1060 | 150,871 | 5 |
+| 2 | gatemate_cologne | 173,661 | 5 |
+| 3 | adi_flex16ffc | 204,519 | 4 |
+| 4 | microchip_polarfire | 205,610 | 7 |
+| 5 | zeroasic_z1015 | 210,470 | 5 |
+| 6 | xilinx_virtex7 | 225,745 | 9 |
+| 7 | quicklogic_polarpro | 235,085 | 2 |
+| 8 | lattice_ice40 | 237,953 | 4 |
+| 9 | efinix_trion | 246,203 | 8 |
+| 10 | fabulous_generic | 261,742 | 8 |
+| 11 | zeroasic_z1015opt | 332,580 | 10 |
+| 12 | lattice_ecp5 | 411,500 | 8 |
+| 13 | achronix_speedster | 422,867 | 10 |
+| 14 | gowin_gw5a | 566,391 | 7 |
+<!-- RANKING:END -->
+
+----
+
 ## Benchmark Architecture
 
 Each LogikBench benchmark circuit consists of:
