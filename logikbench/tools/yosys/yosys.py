@@ -29,16 +29,27 @@ _MUX_FABRIC = {"mux4x0", "mux8x0", "muxf7", "muxf8", "l6mux21", "pfumx",
                "cc_mx4", "cc_mx8", "mx4"}
 
 
+def _is_dsp(cell):
+    """True if a cell is a hard multiplier / MAC / DSP block: xilinx DSP48E1,
+    lattice MULT18X18D, gatemate CC_MULT, microchip MACC_PA, adi RBBDSP,
+    zeroasic efpga_mult*. Like the muxes, these implement logic a LUT-only
+    fabric would otherwise spend (many) LUTs on, so they count toward the total.
+    Carry/ALU cells (CARRY4, ALU, CCU2C, ARI1, ...) are NOT DSPs and excluded."""
+    name = cell.lower()
+    return "mult" in name or "dsp" in name or "macc" in name
+
+
 def _is_lut(cell):
     """True if a yosys cell type counts toward the LUT (logic-fabric) total.
 
     Includes lookup tables (LUTn, $lut, SB_LUT4, CC_LUTn, EFX_LUT4, LUTFF;
-    microchip CFG1..CFG4) and the dedicated mux-fabric primitives that share the
+    microchip CFG1..CFG4), the dedicated mux-fabric primitives that share the
     LUT logic block (see _MUX_FABRIC, plus the lut-named wide muxes MUX2_LUT* /
-    LUTMUX*). Counting the muxes keeps mux-offloading fabrics (quicklogic,
-    gatemate, ...) comparable with LUT-only fabrics like ice40."""
+    LUTMUX*), and hard DSP/multiply/MAC blocks (see _is_dsp). Counting the muxes
+    and DSPs keeps fabrics that offload logic to them (quicklogic, xilinx, ...)
+    comparable with LUT-only fabrics like ice40."""
     name = cell.lower()
-    if name in _MUX_FABRIC:
+    if name in _MUX_FABRIC or _is_dsp(name):
         return True
     return "lut" in name or re.fullmatch(r"cfg[1-4]", name) is not None
 
