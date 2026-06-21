@@ -38,6 +38,32 @@ lb --target lattice_ice40 -j 4
 ```
 ----
 
+## FPGA Synthesis Ranking
+
+Targets ranked by total LUTs over all benchmarks (config: `small`), lowest first. A benchmark with no result for a target is charged the highest LUT count any target reached on it.
+Comparing different FPGA architectures is by definition an apples to oranges exercise. Ranking by no means implies quality or goodness, it's just a neat way to compress and order data.
+
+<!-- RANKING:START -->
+| Rank | Target | Total LUTs | Missing |
+|-----:|--------|-----------:|--------:|
+| 1 | zeroasic_z1060 | 150,871 | 5 |
+| 2 | gatemate_cologne | 173,661 | 5 |
+| 3 | adi_flex16ffc | 204,519 | 4 |
+| 4 | microchip_polarfire | 205,610 | 7 |
+| 5 | zeroasic_z1015 | 210,470 | 5 |
+| 6 | xilinx_virtex7 | 225,745 | 9 |
+| 7 | quicklogic_polarpro | 235,085 | 2 |
+| 8 | lattice_ice40 | 237,953 | 4 |
+| 9 | efinix_trion | 246,203 | 8 |
+| 10 | fabulous_generic | 261,742 | 8 |
+| 11 | zeroasic_z1015opt | 332,580 | 10 |
+| 12 | lattice_ecp5 | 411,500 | 8 |
+| 13 | achronix_speedster | 422,867 | 10 |
+| 14 | gowin_gw5a | 566,391 | 7 |
+<!-- RANKING:END -->
+
+----
+
 ## Benchmark Architecture
 
 Each LogikBench benchmark circuit consists of:
@@ -78,7 +104,7 @@ place-and-route): **LUTs**, **logic depth**, and **runtime**.
 ### LUTs
 
 The LUT count is the synthesized logic-fabric usage, read from Yosys'
-`stat` per-cell-type report (`num_cells_by_type`). It sums two kinds of cell:
+`stat` per-cell-type report (`num_cells_by_type`). It sums three kinds of cell:
 
 1. **Lookup tables** — the basic LUT primitives, whose names vary by vendor:
    `LUT1..LUT6`, `$lut`, `SB_LUT4` (ice40), `EFX_LUT4` (efinix), `CC_LUT*`
@@ -88,6 +114,13 @@ The LUT count is the synthesized logic-fabric usage, read from Yosys'
    otherwise spend LUTs on: `MUXF7/MUXF8` (xilinx), `mux4x0/mux8x0` (quicklogic),
    `MUX2_LUT5..8` (gowin), `LUTMUX7/8` (adi), `L6MUX21/PFUMX` (lattice ECP5),
    `CC_MX4/CC_MX8` (gatemate), `MX4` (microchip).
+3. **Hard DSP / multiply / MAC blocks** — dedicated multiplier and
+   multiply-accumulate cells: `DSP48E1` (xilinx), `MULT18X18D` (lattice ECP5),
+   `CC_MULT` (gatemate), `MACC_PA` (microchip), `RBBDSP` (adi), `efpga_mult*`
+   (Zero ASIC). A fabric without them builds multipliers out of LUTs, so a
+   target that uses a hard block would otherwise read as artificially LUT-light.
+   (Carry/ALU cells such as `CARRY4`, `ALU`, `CCU2C`, `ARI1` are *not* DSPs and
+   are not counted.)
 
 Including the mux cells keeps the comparison fair: ice40 has no dedicated mux, so
 its read/select logic is built entirely from LUTs and is fully counted; fabrics
