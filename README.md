@@ -78,7 +78,7 @@ place-and-route): **LUTs**, **logic depth**, and **runtime**.
 ### LUTs
 
 The LUT count is the synthesized logic-fabric usage, read from Yosys'
-`stat` per-cell-type report (`num_cells_by_type`). It sums two kinds of cell:
+`stat` per-cell-type report (`num_cells_by_type`). It sums three kinds of cell:
 
 1. **Lookup tables** — the basic LUT primitives, whose names vary by vendor:
    `LUT1..LUT6`, `$lut`, `SB_LUT4` (ice40), `EFX_LUT4` (efinix), `CC_LUT*`
@@ -88,6 +88,13 @@ The LUT count is the synthesized logic-fabric usage, read from Yosys'
    otherwise spend LUTs on: `MUXF7/MUXF8` (xilinx), `mux4x0/mux8x0` (quicklogic),
    `MUX2_LUT5..8` (gowin), `LUTMUX7/8` (adi), `L6MUX21/PFUMX` (lattice ECP5),
    `CC_MX4/CC_MX8` (gatemate), `MX4` (microchip).
+3. **Hard DSP / multiply / MAC blocks** — dedicated multiplier and
+   multiply-accumulate cells: `DSP48E1` (xilinx), `MULT18X18D` (lattice ECP5),
+   `CC_MULT` (gatemate), `MACC_PA` (microchip), `RBBDSP` (adi), `efpga_mult*`
+   (Zero ASIC). A fabric without them builds multipliers out of LUTs, so a
+   target that uses a hard block would otherwise read as artificially LUT-light.
+   (Carry/ALU cells such as `CARRY4`, `ALU`, `CCU2C`, `ARI1` are *not* DSPs and
+   are not counted.)
 
 Including the mux cells keeps the comparison fair: ice40 has no dedicated mux, so
 its read/select logic is built entirely from LUTs and is fully counted; fabrics
