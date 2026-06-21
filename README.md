@@ -6,27 +6,18 @@
 [![CI](https://github.com/zeroasiccorp/logikbench/actions/workflows/ci.yml/badge.svg)](https://github.com/zeroasiccorp/logikbench/actions)
 [![Downloads](https://static.pepy.tech/badge/logikbench)](https://pepy.tech/project/logikbench)
 
-**103 parametrized RTL benchmarks for unbiased EDA evaluation**
+## Problems
 
-## Problem
+The semiconductor industry lacks a comprehensive, standardized benchmark suite for evaluating EDA tools, design flows, foundry processes, and FPGA devices. Existing RTL benchmark suites suffer from critical gaps. These gaps make it difficult to objectively compare tools, validate improvements, and track progress across the industry.
 
-The semiconductor industry lacks a comprehensive, standardized benchmark suite for evaluating EDA tools, design flows, foundry processes, and FPGA devices. Existing RTL benchmark suites suffer from critical gaps:
+* **No standard metrics/datasets** --> no "ImageNet/SpecInt/Dhrystone for EDA"
+* **Lack of diversity in datasets** --> limited coverage
+* **Hard-coded circuit sizes** --> no parametric sweeps
+* **Limited provenance** --> benchmark origin and intent unknown
+* **No execution infrastructure** -->  not reproducible
+* **Ambiguous licenses** --> blocking commercial use
 
-* **Small datasets** with limited coverage
-* **Hard-coded circuit sizes** preventing parametric studies
-* **Limited circuit diversity** that doesn't reflect real designs
-* **Ambiguous licenses** blocking commercial use
-* **No execution infrastructure** for reproducible results
-* **No standard metrics** for comparing tools and flows
-* **No standard datasets** (no "ImageNet for EDA")
-* **No standard scores** (no "SpecInt/Dhrystone for EDA")
-* **Limited provenance** on benchmark origins and design intent
-
-These gaps make it difficult to objectively compare tools, validate improvements, and track progress across the industry.
-
-## Solution
-
-LogikBench provides a comprehensive, parametrized RTL benchmark suite with:
+## Logikbench Solution
 
 * **119 unique benchmark circuits** spanning basic logic to complex subsystems
 * **10,000+ configurations** through parameter sweeping
@@ -36,15 +27,228 @@ LogikBench provides a comprehensive, parametrized RTL benchmark suite with:
 * **Full provenance** with clear documentation and design intent
 * **Active development** with continuous additions to the suite
 
-The suite covers five major categories targeting different evaluation needs:
+## TLDR
 
-| Group                                         | Benchmarks | Description                              |
-|-----------------------------------------------|------------|------------------------------------------|
-| [basic](logikbench/basic/README.md)           | 22         | Logic primitives and combinational blocks|
-| [arithmetic](logikbench/arithmetic/README.md) | 33         | Arithmetic operators and datapaths       |
-| [memory](logikbench/memory/README.md)         | 13         | Memory structures and storage elements   |
-| [blocks](logikbench/blocks/README.md)         | 16         | Complex subsystems and IP blocks         |
-| [epfl](logikbench/epfl/README.md)             | 19         | EPFL arithmetic and control benchmarks   |
+Install logikbench via PyPI, use the `sc-install` script to install all EDA tools, and then use `lb` to run the benchmarks.
+
+```bash
+pip install logikbench
+sc-install -group fpga
+lb --target lattice_ice40 -j 4
+```
+----
+
+## Benchmark Architecture
+
+Each LogikBench benchmark circuit consists of:
+* **Tech-agnostic RTL Verilog files** for broad tool compatibility
+* **SiliconCompiler Design object** with metadata and configuration
+
+The SiliconCompiler Design object captures benchmark data as files, parameters, topmodule name, and other settings grouped as a `fileset`. Every circuit in the LogikBench suite has a Python class that inherits from SiliconCompiler's Design class, as shown in this [`mux`](logikbench/basic/mux/rtl/mux.v) example:
+
+```python
+from os.path import dirname, abspath
+from siliconcompiler import Design
+
+class Mux(Design):
+    def __init__(self):
+        name = 'mux'
+        fileset = 'rtl'
+        rootname = f'{name}_root'
+        super().__init__(name)
+        self.set_dataroot(rootname, dirname(abspath(__file__)))
+        self.add_file(f'rtl/{name}.v', fileset, dataroot=rootname)
+        self.set_topmodule(name, fileset)
+```
+
+To use a benchmark circuit, simply instantiate its class. You then have access to all methods inherited from SiliconCompiler. The example below shows how to instantiate the `Mux` circuit and write out its RTL settings in a standard filelist format that can be read directly by tools like Icarus Verilog, Verilator, and slang.
+
+```python
+import logikbench as lb
+d = lb.basic.Mux()
+d.write_fileset('mux.f', fileset='rtl')
+```
+----
+
+## Benchmark Metrics
+
+FPGA runs report three metrics, all extracted from the Yosys synthesis run (no
+place-and-route): **LUTs**, **logic depth**, and **runtime**.
+
+### LUTs
+
+The LUT count is the synthesized logic-fabric usage, read from Yosys'
+`stat` per-cell-type report (`num_cells_by_type`). It sums two kinds of cell:
+
+1. **Lookup tables** — the basic LUT primitives, whose names vary by vendor:
+   `LUT1..LUT6`, `$lut`, `SB_LUT4` (ice40), `EFX_LUT4` (efinix), `CC_LUT*`
+   (gatemate), `LUTFF` (fabulous), and `CFG1..CFG4` (microchip PolarFire).
+2. **Dedicated mux-fabric cells** — the hardwired wide multiplexers that live in
+   the same logic block as the LUTs and implement muxing a LUT-only fabric would
+   otherwise spend LUTs on: `MUXF7/MUXF8` (xilinx), `mux4x0/mux8x0` (quicklogic),
+   `MUX2_LUT5..8` (gowin), `LUTMUX7/8` (adi), `L6MUX21/PFUMX` (lattice ECP5),
+   `CC_MX4/CC_MX8` (gatemate), `MX4` (microchip).
+
+Including the mux cells keeps the comparison fair: ice40 has no dedicated mux, so
+its read/select logic is built entirely from LUTs and is fully counted; fabrics
+like QuickLogic or GateMate offload that same logic to mux cells, which would
+otherwise make their LUT count read artificially low (e.g. `regfile` on
+QuickLogic is mostly `mux8x0` cells, not LUTs).
+
+Every fabric cell counts as one, regardless of its capacity: a 6-input LUT
+(Xilinx, ADI) packs more logic than a 4-input LUT, and a hard mux (e.g.
+QuickLogic `mux8x0`) does an 8:1 select that a LUT-only fabric would spend
+several LUTs on — but each is one cell. This makes the metric a clean
+*logic-cell utilization* count, most directly comparable *within* an
+architecture family (e.g. the Zero ASIC `z10xx` parts, or two synthesis options
+on one target). Across vendors the cells differ in size, so cross-vendor LUT
+counts are informative rather than a strict apples-to-apples ranking — each
+architecture wins where its cell type fits the design (mux fabrics on
+mux/select/decode logic, LUT/carry fabrics on arithmetic).
+
+### Logic depth
+
+Logic depth is the **longest combinational path** through the mapped netlist,
+measured by Yosys' `ltp -noff` (longest topological path, flip-flops excluded).
+It is the count of cells on that path, reported uniformly across all targets;
+the per-vendor ABC mapping reports are inconsistent (some flows print nothing),
+so `ltp` gives one comparable number. `ltp` only spans a single module, but the
+vendor `synth_*` flows flatten by default, so it covers the whole design.
+
+Because it counts *cells*, the path includes carry-chain and mux cells, not just
+LUT levels — so depth, like LUTs, reflects each architecture's primitives.
+
+### Runtime
+
+Runtime is the wall-clock time of the synthesis step, reported to 0.01 s.
+
+----
+
+## License
+
+The LogikBench project is licensed under the [MIT](LICENSE) license unless specified otherwise inside the individual benchmark folders.
+
+----
+
+## Running Benchmarks
+
+LogikBench includes the `lb` command-line tool for batch processing benchmarks.
+It drives synthesis through [SiliconCompiler](https://github.com/siliconcompiler/siliconcompiler):
+each benchmark is a SiliconCompiler `Design`, and `lb` has two subcommands:
+
+- `lb run` synthesizes the selected benchmarks for one or more targets.
+- `lb collect` harvests metrics from existing build results (no synthesis).
+
+Both take `-g/--group` and the required `-t/--target`. Run `lb run -h` or
+`lb collect -h` for the full option list.
+
+### Targets
+
+`-t/--target` selects what runs and is required; pass several to sweep them in
+turn. FPGA targets are named `<vendor>_<partname>` and map to a Yosys synth
+command:
+
+| Target | Synth command |
+|--------|---------------|
+| `xilinx_virtex7` | `synth_xilinx -family xc7` |
+| `quicklogic_polarpro` | `synth_quicklogic -family pp3` |
+| `microchip_polarfire` | `synth_microchip -family polarfire` |
+| `lattice_ice40` | `synth_ice40` |
+| `lattice_ecp5` | `synth_lattice -family ecp5` |
+| `gowin_gw5a` | `synth_gowin -family gw5a` |
+| `achronix_speedster` | `synth_achronix` |
+| `adi_flex16ffc` | `synth_analogdevices -tech t16ffc` |
+| `efinix_trion` | `synth_efinix` |
+| `fabulous_generic` | `synth_fabulous` |
+| `gatemate_cologne` | `synth_gatemate` |
+| `zeroasic_z1015` | `synth_fpga -config <arch>` (wildebeest) |
+| `zeroasic_z1060` | `synth_fpga -config <arch>` (wildebeest) |
+
+The `zeroasic_*` targets load the [Wildebeest](https://github.com/zeroasiccorp/wildebeest)
+plugin and run `synth_fpga -config <arch>`, where `<arch>` is the per-part
+architecture config vendored under `logikbench/targets/fpga/zeroasic/`.
+
+ASIC targets:
+
+- `freepdk45` -- ASIC synthesis + OpenSTA timing via LogikBench's `lbflow`
+  (pre-layout STA, so it reports `fmax` without place & route).
+- `<pdk>_demo` (`freepdk45_demo`, `asap7_demo`, `skywater130_demo`, `gf180_demo`,
+  `ihp130_demo`) -- the official SiliconCompiler demo target for that PDK, run
+  through SC's `asicflow` (full RTL-to-GDS). Use `--to` to limit how far it runs.
+
+Metrics are fixed by the run mode: `luts`, `logicdepth`, `tasktime` for FPGA;
+`cells`, `cellarea`, `fmax`, `setupslack` for ASIC.
+
+### Options
+
+Shared by both subcommands:
+
+| Flag | Description |
+|------|-------------|
+| `-g`, `--group` | Benchmark group(s): `basic`, `memory`, `arithmetic`, `epfl`, `blocks` (required) |
+| `-n`, `--name` | Only act on benchmark(s) with these name(s), matched against the selected group(s) (default: all of them) |
+| `-t`, `--target` | Synthesis target(s) to sweep (required); see the Targets table above |
+| `-b` | Build directory root; per-benchmark work goes in `<builddir>/<target>/<name>` (default: `build`) |
+
+`lb run` only:
+
+| Flag | Description |
+|------|-------------|
+| `-j` | Number of benchmarks to synthesize in parallel across the target x benchmark matrix (default: 1) |
+| `--options` | Extra args passed verbatim to the FPGA synth command. Use the `=` form so leading dashes are not parsed as flags: `--options=-abc9` (quote multiple: `--options='-abc9 -nocarry'`) |
+| `--from` | First flow step to run: `synthesis`, `floorplan`, `place`, `cts`, `route` (default: from the start) |
+| `--to` | Last flow step to run (same choices; default: to the end) |
+| `--resume` | Skip benchmarks whose build already completed successfully; only synthesize the rest |
+| `--timeout` | Per-step wall-clock cap in seconds; a step that exceeds it is killed and marked failed (default: none) |
+| `-v`, `--verbose` | Show full SiliconCompiler tool/scheduler logs (quieted by default) |
+
+`lb collect` only:
+
+| Flag | Description |
+|------|-------------|
+| `-o`, `--output` | Output directory; one aggregated `<target><suffix>.json` is written per target (default: the build dir root, `-b`) |
+| `--suffix` | Append to each output filename (`<target><suffix>.json`), so collecting the same target under different configs does not overwrite (e.g. `--suffix _abc9`) |
+
+`lb run` wipes each benchmark's build directory before synthesizing, so runs are
+always fresh (no SiliconCompiler build reuse); use `--resume` to skip completed
+benchmarks. `lb collect` then writes one JSON file per target.
+
+----
+
+## Examples
+
+Synthesize an FPGA target for a whole group, then collect its metrics:
+
+```bash
+lb run -g arithmetic -t xilinx_virtex7
+lb collect -g arithmetic -t xilinx_virtex7 -o results
+```
+
+Synthesize a single benchmark for a Zero ASIC part (needs the wildebeest plugin):
+
+```bash
+lb run -g basic -n mux -t zeroasic_z1015
+```
+
+Sweep several FPGA targets at once, 8 benchmarks in parallel:
+
+```bash
+lb run -g basic -t xilinx_virtex7 lattice_ice40 gowin_gw5a -j 8
+```
+
+Run ASIC synthesis + timing (`lbflow`) on the freepdk45 PDK, then collect:
+
+```bash
+lb run -g basic -t freepdk45
+lb collect -g basic -t freepdk45 -o results
+```
+
+Run the asap7 demo target (SC asicflow), synthesis only:
+
+```bash
+lb run -g basic -t asap7_demo --to synthesis
+```
+----
 
 ## Benchmark Inventory
 
@@ -175,204 +379,3 @@ The suite covers five major categories targeting different evaluation needs:
 | sqrt | Square root | [sqrt.v](logikbench/epfl/sqrt/rtl/sqrt.v) |
 | square | Square function | [square.v](logikbench/epfl/square/rtl/square.v) |
 | voter | Voter circuit | [voter.v](logikbench/epfl/voter/rtl/voter.v) |
-
-## Usage
-
-Each LogikBench benchmark circuit consists of:
-* **Tech-agnostic RTL Verilog files** for broad tool compatibility
-* **SiliconCompiler Design object** with metadata and configuration
-
-The SiliconCompiler Design object captures benchmark data as files, parameters, topmodule name, and other settings grouped as a `fileset`. Every circuit in the LogikBench suite has a Python class that inherits from SiliconCompiler's Design class, as shown in this [`mux`](logikbench/basic/mux/rtl/mux.v) example:
-
-```python
-from os.path import dirname, abspath
-from siliconcompiler import Design
-
-class Mux(Design):
-    def __init__(self):
-        name = 'mux'
-        fileset = 'rtl'
-        rootname = f'{name}_root'
-        super().__init__(name)
-        self.set_dataroot(rootname, dirname(abspath(__file__)))
-        self.add_file(f'rtl/{name}.v', fileset, dataroot=rootname)
-        self.set_topmodule(name, fileset)
-```
-
-To use a benchmark circuit, simply instantiate its class. You then have access to all methods inherited from SiliconCompiler. The example below shows how to instantiate the `Mux` circuit and write out its RTL settings in a standard filelist format that can be read directly by tools like Icarus Verilog, Verilator, and slang.
-
-```python
-import logikbench as lb
-d = lb.basic.Mux()
-d.write_fileset('mux.f', fileset='rtl')
-```
-### Prerequisites
-
-You will need properly installed synthesis tools installed to run benchmarks. Follow the install instructions for indidivual repos to properly install plugins.
-There is no dependency linkage between yosys and plugins. The recommendation is to isntall everything cleanly and to use versions from main.
-In Ubuntu, shared yosys libraries are placed at /usr/local/share/yosys/plugins/*.so
-
-* [Yosys](https://github.com/YosysHQ/yosys) - Open-source synthesis tool
-* [Yosys-slang](https://github.com/povik/yosys-slang) - SystemVerilog frontend plugin
-* [Wildebeest](https://github.com/zeroasiccorp/wildebeest)
-
-## Installation
-
-Install logikbench via PyPI:
-
-```bash
-pip install logikbench
-```
-
-Developers should clone the repo and install package locally as shown below.
-
-```bash
-git clone https://github.com/zeroasiccorp/logikbench
-cd logikbench
-pip install --upgrade pip
-pip install -e .
-```
-
-## Running Benchmarks
-
-LogikBench includes the `lb` command-line tool for batch processing benchmarks.
-It drives synthesis through [SiliconCompiler](https://github.com/siliconcompiler/siliconcompiler):
-each benchmark is a SiliconCompiler `Design`, and `lb` has two subcommands:
-
-- `lb run` synthesizes the selected benchmarks for one or more targets.
-- `lb collect` harvests metrics from existing build results (no synthesis).
-
-Both take `-g/--group` and the required `-t/--target`. Run `lb run -h` or
-`lb collect -h` for the full option list.
-
-### Targets
-
-`-t/--target` selects what runs and is required; pass several to sweep them in
-turn. FPGA targets are named `<vendor>_<partname>` and map to a Yosys synth
-command:
-
-| Target | Synth command |
-|--------|---------------|
-| `xilinx_virtex7` | `synth_xilinx -family xc7` |
-| `quicklogic_polarpro` | `synth_quicklogic -family pp3` |
-| `microchip_polarfire` | `synth_microchip -family polarfire` |
-| `lattice_ice40` | `synth_ice40` |
-| `lattice_ecp5` | `synth_lattice -family ecp5` |
-| `gowin_gw5a` | `synth_gowin -family gw5a` |
-| `achronix_speedster` | `synth_achronix` |
-| `adi_flex16ffc` | `synth_analogdevices -tech t16ffc` |
-| `efinix_trion` | `synth_efinix` |
-| `fabulous_generic` | `synth_fabulous` |
-| `gatemate_cologne` | `synth_gatemate` |
-| `zeroasic_z1015` | `synth_fpga -config <arch>` (wildebeest) |
-| `zeroasic_z1060` | `synth_fpga -config <arch>` (wildebeest) |
-
-The `zeroasic_*` targets load the [Wildebeest](https://github.com/zeroasiccorp/wildebeest)
-plugin and run `synth_fpga -config <arch>`, where `<arch>` is the per-part
-architecture config vendored under `logikbench/targets/fpga/zeroasic/`.
-
-ASIC targets:
-
-- `freepdk45` -- ASIC synthesis + OpenSTA timing via LogikBench's `lbflow`
-  (pre-layout STA, so it reports `fmax` without place & route).
-- `<pdk>_demo` (`freepdk45_demo`, `asap7_demo`, `skywater130_demo`, `gf180_demo`,
-  `ihp130_demo`) -- the official SiliconCompiler demo target for that PDK, run
-  through SC's `asicflow` (full RTL-to-GDS). Use `--to` to limit how far it runs.
-
-Metrics are fixed by the run mode: `luts`, `logicdepth`, `tasktime` for FPGA;
-`cells`, `cellarea`, `fmax`, `setupslack` for ASIC.
-
-### Options
-
-Shared by both subcommands:
-
-| Flag | Description |
-|------|-------------|
-| `-g`, `--group` | Benchmark group(s): `basic`, `memory`, `arithmetic`, `epfl`, `blocks` (required) |
-| `-n`, `--name` | Only act on benchmark(s) with these name(s), matched against the selected group(s) (default: all of them) |
-| `-t`, `--target` | Synthesis target(s) to sweep (required); see the Targets table above |
-| `-b` | Build directory root; per-benchmark work goes in `<builddir>/<target>/<name>` (default: `build`) |
-
-`lb run` only:
-
-| Flag | Description |
-|------|-------------|
-| `-j` | Number of benchmarks to synthesize in parallel across the target x benchmark matrix (default: 1) |
-| `--options` | Extra args passed verbatim to the FPGA synth command. Use the `=` form so leading dashes are not parsed as flags: `--options=-abc9` (quote multiple: `--options='-abc9 -nocarry'`) |
-| `--from` | First flow step to run: `synthesis`, `floorplan`, `place`, `cts`, `route` (default: from the start) |
-| `--to` | Last flow step to run (same choices; default: to the end) |
-| `--resume` | Skip benchmarks whose build already completed successfully; only synthesize the rest |
-| `--timeout` | Per-step wall-clock cap in seconds; a step that exceeds it is killed and marked failed (default: none) |
-| `-v`, `--verbose` | Show full SiliconCompiler tool/scheduler logs (quieted by default) |
-
-`lb collect` only:
-
-| Flag | Description |
-|------|-------------|
-| `-o`, `--output` | Output directory; one aggregated `<target><suffix>.json` is written per target (default: the build dir root, `-b`) |
-| `--suffix` | Append to each output filename (`<target><suffix>.json`), so collecting the same target under different configs does not overwrite (e.g. `--suffix _abc9`) |
-
-`lb run` wipes each benchmark's build directory before synthesizing, so runs are
-always fresh (no SiliconCompiler build reuse); use `--resume` to skip completed
-benchmarks. `lb collect` then writes one JSON file per target.
-
-### Examples
-
-Synthesize an FPGA target for a whole group, then collect its metrics:
-
-```bash
-lb run -g arithmetic -t xilinx_virtex7
-lb collect -g arithmetic -t xilinx_virtex7 -o results
-```
-
-Synthesize a single benchmark for a Zero ASIC part (needs the wildebeest plugin):
-
-```bash
-lb run -g basic -n mux -t zeroasic_z1015
-```
-
-Sweep several FPGA targets at once, 8 benchmarks in parallel:
-
-```bash
-lb run -g basic -t xilinx_virtex7 lattice_ice40 gowin_gw5a -j 8
-```
-
-Run ASIC synthesis + timing (`lbflow`) on the freepdk45 PDK, then collect:
-
-```bash
-lb run -g basic -t freepdk45
-lb collect -g basic -t freepdk45 -o results
-```
-
-Run the asap7 demo target (SC asicflow), synthesis only:
-
-```bash
-lb run -g basic -t asap7_demo --to synthesis
-```
-
-## Contributing
-
-Contributions are welcome! To contribute:
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/new-benchmark`)
-3. Add your benchmark following the existing structure
-4. Ensure your code passes linting (`flake8`)
-5. Add tests for your benchmark
-6. Submit a pull request
-
-When adding new benchmarks:
-* Use parameterizable Verilog for flexibility
-* Include a Python wrapper class inheriting from `Design`
-* Add documentation and test cases
-* Follow the naming conventions in existing benchmarks
-
-## Support
-
-* **Issues**: [GitHub Issues](https://github.com/zeroasiccorp/logikbench/issues)
-* **Discussions**: [GitHub Discussions](https://github.com/zeroasiccorp/logikbench/discussions)
-* **Documentation**: See individual benchmark READMEs in each category folder
-
-## License
-
-The LogikBench project is licensed under the [MIT](LICENSE) license unless specified otherwise inside the individual benchmark folders.
