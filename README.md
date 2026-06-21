@@ -10,22 +10,22 @@
 
 The semiconductor industry lacks a comprehensive, standardized benchmark suite for evaluating EDA tools, design flows, foundry processes, and FPGA devices. Existing RTL benchmark suites suffer from critical gaps. These gaps make it difficult to objectively compare tools, validate improvements, and track progress across the industry.
 
-* **No standard metrics/datasets** --> no "ImageNet/SpecInt/Dhrystone for EDA"
-* **Lack of diversity in datasets** --> limited coverage
-* **Hard-coded circuit sizes** --> no parametric sweeps
+* **No standardization** --> no "ImageNet/SpecInt/Dhrystone for EDA"
+* **No diversity** --> limited coverage
+* **Hard-coded circuits** --> no parametric sweeps
 * **Limited provenance** --> benchmark origin and intent unknown
-* **No execution infrastructure** -->  not reproducible
+* **No infrastructure** -->  not reproducibility
 * **Ambiguous licenses** --> blocking commercial use
 
 ## Logikbench Solution
 
-* **119 unique benchmark circuits** spanning basic logic to complex subsystems
+"Sunlight is said to be the best of disinfectants." --Supreme Court Justice Louis Brandeis
+
+* **100+ unique benchmark circuits** spanning basic logic to complex subsystems
 * **10,000+ configurations** through parameter sweeping
-* **MIT License** enabling commercial and academic use
-* **Python API** built on SiliconCompiler for easy integration
 * **Standardized metrics** and execution infrastructure
-* **Full provenance** with clear documentation and design intent
-* **Active development** with continuous additions to the suite
+* **100% open source** no license or membership fees!
+* **Full provenance** documented source code provenance
 
 ## TLDR
 
