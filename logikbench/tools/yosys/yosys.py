@@ -19,11 +19,27 @@ from siliconcompiler.tools.yosys import YosysTask
 _TOOLDIR = os.path.dirname(os.path.abspath(__file__))
 
 
+# Dedicated mux-fabric primitives that live in the LUT logic block but are NOT
+# named with 'lut': quicklogic mux4x0/mux8x0, xilinx MUXF7/MUXF8, lattice ECP5
+# L6MUX21/PFUMX, gatemate CC_MX4/CC_MX8, microchip MX4. These do mux logic that
+# a LUT-only fabric (ice40) would spend LUTs on, so they count toward "LUTs" for
+# a fair cross-vendor fabric comparison. (The lut-named wide muxes -- gowin
+# MUX2_LUT*, adi LUTMUX* -- are already caught by the 'lut' substring below.)
+_MUX_FABRIC = {"mux4x0", "mux8x0", "muxf7", "muxf8", "l6mux21", "pfumx",
+               "cc_mx4", "cc_mx8", "mx4"}
+
+
 def _is_lut(cell):
-    """True if a yosys cell type is a LUT primitive. Vendor names vary: generic
-    $lut, LUTn (xilinx/gowin/lattice/...), SB_LUT4 (ice40); microchip PolarFire
-    names its 1-4 input LUTs CFG1..CFG4."""
+    """True if a yosys cell type counts toward the LUT (logic-fabric) total.
+
+    Includes lookup tables (LUTn, $lut, SB_LUT4, CC_LUTn, EFX_LUT4, LUTFF;
+    microchip CFG1..CFG4) and the dedicated mux-fabric primitives that share the
+    LUT logic block (see _MUX_FABRIC, plus the lut-named wide muxes MUX2_LUT* /
+    LUTMUX*). Counting the muxes keeps mux-offloading fabrics (quicklogic,
+    gatemate, ...) comparable with LUT-only fabrics like ice40."""
     name = cell.lower()
+    if name in _MUX_FABRIC:
+        return True
     return "lut" in name or re.fullmatch(r"cfg[1-4]", name) is not None
 
 
