@@ -1,42 +1,42 @@
 
-from .adder.adder import Adder
-from .arbiter.arbiter import Arbiter
-from .bar.bar import Bar
-from .cavlc.cavlc import Cavlc
-from .dec.dec import Dec
-from .div.div import Div
-from .hyp.hyp import Hyp
-from .i2c.i2c import I2c
-from .int2float.int2float import Int2float
-from .log2.log2 import Log2
-from .max.max import Max
-from .mem_ctrl.mem_ctrl import Mem_ctrl
-from .multiplier.multiplier import Multiplier
-from .priority.priority import Priority
-from .router.router import Router
-from .sin.sin import Sin
-from .sqrt.sqrt import Sqrt
-from .square.square import Square
-from .voter.voter import Voter
+from .epfl_adder.epfl_adder import EPFLAdder
+from .epfl_arbiter.epfl_arbiter import EPFLArbiter
+from .epfl_bar.epfl_bar import EPFLBar
+from .epfl_cavlc.epfl_cavlc import EPFLCavlc
+from .epfl_dec.epfl_dec import EPFLDec
+from .epfl_div.epfl_div import EPFLDiv
+from .epfl_hyp.epfl_hyp import EPFLHyp
+from .epfl_i2c.epfl_i2c import EPFLI2c
+from .epfl_int2float.epfl_int2float import EPFLInt2float
+from .epfl_log2.epfl_log2 import EPFLLog2
+from .epfl_max.epfl_max import EPFLMax
+from .epfl_memctrl.epfl_memctrl import EPFLMemctrl
+from .epfl_multiplier.epfl_multiplier import EPFLMultiplier
+from .epfl_priority.epfl_priority import EPFLPriority
+from .epfl_router.epfl_router import EPFLRouter
+from .epfl_sin.epfl_sin import EPFLSin
+from .epfl_sqrt.epfl_sqrt import EPFLSqrt
+from .epfl_square.epfl_square import EPFLSquare
+from .epfl_voter.epfl_voter import EPFLVoter
 
 __all__ = [
-    "Adder",
-    "Arbiter",
-    "Bar",
-    "Cavlc",
-    "Dec",
-    "Div",
-    "Hyp",
-    "I2c",
-    "Int2float",
-    "Log2",
-    "Max",
-    "Mem_ctrl",
-    "Multiplier",
-    "Priority",
-    "Router",
-    "Sin",
-    "Sqrt",
-    "Square",
-    "Voter",
+    "EPFLAdder",
+    "EPFLArbiter",
+    "EPFLBar",
+    "EPFLCavlc",
+    "EPFLDec",
+    "EPFLDiv",
+    "EPFLHyp",
+    "EPFLI2c",
+    "EPFLInt2float",
+    "EPFLLog2",
+    "EPFLMax",
+    "EPFLMemctrl",
+    "EPFLMultiplier",
+    "EPFLPriority",
+    "EPFLRouter",
+    "EPFLSin",
+    "EPFLSqrt",
+    "EPFLSquare",
+    "EPFLVoter",
 ]
