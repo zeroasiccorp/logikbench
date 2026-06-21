@@ -157,12 +157,6 @@ Runtime is the wall-clock time of the synthesis step, reported to 0.01 s.
 
 ----
 
-## License
-
-The LogikBench project is licensed under the [MIT](LICENSE) license unless specified otherwise inside the individual benchmark folders.
-
-----
-
 ## Running Benchmarks
 
 LogikBench includes the `lb` command-line tool for batch processing benchmarks.
@@ -412,3 +406,9 @@ lb run -g basic -t asap7_demo --to synthesis
 | sqrt | Square root | [sqrt.v](logikbench/epfl/sqrt/rtl/sqrt.v) |
 | square | Square function | [square.v](logikbench/epfl/square/rtl/square.v) |
 | voter | Voter circuit | [voter.v](logikbench/epfl/voter/rtl/voter.v) |
+
+----
+
+## License
+
+The LogikBench project is licensed under the [MIT](LICENSE) license unless specified otherwise inside the individual benchmark folders.
