@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LogikBench Results</title>
+<style>
+  :root {
+    --bg: #0f1115; --panel: #161922; --panel-2: #1c2030; --line: #262b38;
+    --txt: #e7e9ee; --txt-dim: #9aa3b2;
+    --fpga: #6ea8fe; --asic: #5fd0a6;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; height: 100%; }
+  body {
+    background: var(--bg); color: var(--txt); min-height: 100%;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 40px 22px;
+  }
+  .brand { text-align: center; margin-bottom: 38px; }
+  .brand h1 { font-size: 40px; margin: 0; letter-spacing: -0.02em; font-weight: 700; }
+  .brand h1 .mark { color: var(--fpga); }
+  .cards {
+    display: flex; gap: 26px; flex-wrap: wrap;
+    width: 100%; max-width: 880px; justify-content: center;
+  }
+  .card {
+    flex: 1 1 360px; max-width: 420px; min-height: 300px;
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
+    text-decoration: none; color: var(--txt);
+    background: var(--panel); border: 1px solid var(--line); border-radius: 20px;
+    padding: 40px 28px; transition: transform .15s ease, border-color .15s ease, box-shadow .15s ease;
+  }
+  .card:hover { transform: translateY(-4px); }
+  .card .name { font-size: 56px; font-weight: 800; letter-spacing: -0.02em; line-height: 1; }
+  .card .sub { font-size: 30px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.1; margin-top: 6px; }
+  .card .go { margin-top: 26px; font-size: 18px; font-weight: 600; opacity: .85; }
+  .card.fpga:hover { border-color: var(--fpga); box-shadow: 0 12px 40px -16px var(--fpga); }
+  .card.fpga .name, .card.fpga .sub, .card.fpga .go { color: var(--fpga); }
+  .card.asic:hover { border-color: var(--asic); box-shadow: 0 12px 40px -16px var(--asic); }
+  .card.asic .name, .card.asic .sub, .card.asic .go { color: var(--asic); }
+</style>
+</head>
+<body>
+  <div class="brand">
+    <h1><span class="mark">Logik</span>Bench</h1>
+  </div>
+
+  <div class="cards">
+    <a class="card fpga" href="fpga/">
+      <div class="name">FPGA</div>
+      <div class="sub">Synthesis</div>
+      <div class="go">View results &rarr;</div>
+    </a>
+    <a class="card asic" href="asic/">
+      <div class="name">ASIC</div>
+      <div class="sub">Synthesis</div>
+      <div class="go">View results &rarr;</div>
+    </a>
+  </div>
+</body>
+</html>
