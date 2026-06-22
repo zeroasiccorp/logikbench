@@ -15,15 +15,15 @@ module fft
     parameter N = 64   // FFT size
     )
    (
-    input wire                  clk,
-    input wire                  rst,
-    input wire                  in_valid,
-    input wire signed [DW-1:0]  in_real,
-    input wire signed [DW-1:0]  in_imag,
+    input                  clk,
+    input                  rst,
+    input                  in_valid,
+    input signed [DW-1:0]  in_real,
+    input signed [DW-1:0]  in_imag,
 
-    output wire                 out_valid,
-    output wire signed [DW-1:0] out_real,
-    output wire signed [DW-1:0] out_imag
+    output                 out_valid,
+    output signed [DW-1:0] out_real,
+    output signed [DW-1:0] out_imag
     );
 
    localparam LOG2N = $clog2(N);

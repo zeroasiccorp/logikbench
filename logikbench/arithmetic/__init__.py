@@ -29,7 +29,6 @@ from .shiftl.shiftl import Shiftl
 from .shiftr.shiftr import Shiftr
 from .sine.sine import Sine
 from .sqdiff.sqdiff import Sqdiff
-from .sqrt.sqrt import Sqrt
 from .sub.sub import Sub
 from .sum.sum import Sum
 
@@ -64,7 +63,6 @@ __all__ = [
     "Shiftr",
     "Sine",
     "Sqdiff",
-    "Sqrt",
     "Sub",
     "Sum",
 ]
