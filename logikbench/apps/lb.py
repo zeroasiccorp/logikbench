@@ -98,6 +98,8 @@ def run_sweep(args, targets, worklist):
     total = len(tasks)
     done = 0  # completed-job counter; printed 0-based as [i/N] progress
 
+    # Same completion message for every job, regardless of target (FPGA or
+    # ASIC) or scheduling (-j sequential vs parallel).
     def record(target, group, name, error):
         nonlocal done
         prefix = f"[{done}/{total}]"
@@ -124,7 +126,6 @@ def run_sweep(args, targets, worklist):
                 record(target, group, name, error)
     else:
         for target, group, item, name in tasks:
-            print(f"Running {name} benchmark ({target}/{group}).")
             builddir = target_builddir(args, target)
             _, _, _, error = run_one(group, item, target, args.options,
                                      builddir, quiet, args.start, args.stop,
