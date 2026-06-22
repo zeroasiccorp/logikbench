@@ -50,6 +50,9 @@ def main():
                          "(default: results/fpga)")
     ap.add_argument("-o", "--out", default="site", metavar="DIR",
                     help="Output directory for the static site (default: site)")
+    ap.add_argument("--title", default="FPGA Synthesis", metavar="STR",
+                    help="page heading/title (default: 'FPGA Synthesis'; use "
+                         "e.g. 'ASIC Synthesis (ASAP7)' for the asic site)")
     args = ap.parse_args()
 
     configs = load_configs(args.db)
@@ -63,7 +66,8 @@ def main():
     os.makedirs(args.out, exist_ok=True)
     for name, section in configs:
         n = len(section["data"])
-        html = template.render(section_json=json.dumps(section))
+        html = template.render(section_json=json.dumps(section),
+                               title=args.title)
         path = os.path.join(args.out, f"{name}.html")
         with open(path, "w") as fh:
             fh.write(html)

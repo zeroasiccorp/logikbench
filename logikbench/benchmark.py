@@ -247,6 +247,32 @@ def _run_lbflow_asic(design, target, builddir, quiet, start, stop, timeout):
     proj.run()
 
 
+def _single_corner(proj):
+    """Trim a demo target to one library and one STA corner.
+
+    Demo targets (e.g. asap7_demo) load several Vt libraries (RVT/LVT/SLVT) and
+    several timing corners (slow/typical/fast); every STA-running node then reads
+    each Vt x corner liberty (~45 .lib.gz for asap7) for every benchmark, which
+    dominates runtime. LogikBench only needs cells/area/fmax from one consistent
+    corner, so keep the main library (drop the extra Vt 'asiclib' variants) and
+    the single setup-check scenario (fmax/setupslack come from setup), dropping
+    the power/hold corners. Reduces asap7 liberty reads ~9x (45 -> 5)."""
+    # one library: keep the main lib, drop the extra Vt standard-cell libraries
+    proj.set("asic", "asiclib", [])
+    # one corner: keep a single setup-check scenario, remove the rest
+    timing = proj.constraint.timing
+    scenarios = list(proj.getkeys("constraint", "timing", "scenario"))
+
+    def checks(s):
+        return proj.get("constraint", "timing", "scenario", s, "check") or []
+
+    setup = [s for s in scenarios if "setup" in checks(s)]
+    keep = (setup or scenarios)[:1]
+    for s in scenarios:
+        if s not in keep:
+            timing.remove_scenario(s)
+
+
 def _run_demo(design, target, builddir, quiet, start, stop, timeout):
     """Official SC demo target (PDK + libs + scenarios) run through asicflow."""
     proj = ASIC(design)
@@ -255,6 +281,9 @@ def _run_demo(design, target, builddir, quiet, start, stop, timeout):
         proj.set("option", "timeout", timeout)
     _quiet(proj, quiet)
     _DEMO_TARGETS[target](proj)
+    # one library / one corner: avoid reading every Vt x corner liberty on each
+    # STA node (see _single_corner); LogikBench needs only single-corner QoR.
+    _single_corner(proj)
     # benchmarks ship no SDC; attach a generic clock so STA can constrain
     design.add_file(default_sdc(), fileset="sdc")
     proj.add_fileset("rtl")
