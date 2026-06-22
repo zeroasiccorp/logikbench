@@ -21,10 +21,13 @@ import json
 import os
 
 import logikbench as lb
-from logikbench.benchmark import FPGA_METRICS
+from logikbench.benchmark import FPGA_METRICS, ASIC_METRICS
 
 # benchmark groups, in display order
 GROUPS = ['basic', 'memory', 'arithmetic', 'epfl', 'blocks']
+
+# metric set per run mode (fpga vs asic synthesis)
+METRICS_BY_MODE = {"fpga": FPGA_METRICS, "asic": ASIC_METRICS}
 
 # per-metric presentation: 'dir' is which way is better (the dashboard colors
 # the winner green and shades losers yellow->red); 'unit' is appended in the
@@ -48,6 +51,8 @@ METRIC_INFO = {
                    "desc": "Total standard-cell area of the synthesized "
                            "netlist."},
     "fmax":       {"label": "Fmax",        "dir": "higher", "unit": "MHz",
+                   # SC records fmax in Hz; scale to MHz for display
+                   "scale": 1e-6,
                    "desc": "Maximum clock frequency from post-synthesis static "
                            "timing; combinational designs are timed against a "
                            "virtual clock."},
@@ -140,8 +145,13 @@ def main():
                     help="Directory whose subdirectories are configs (each "
                          "holding per-target <target>.json collect files), "
                          "e.g. results/fpga/{small,fast} (default: results/fpga)")
+    ap.add_argument("--metrics", choices=list(METRICS_BY_MODE), default="fpga",
+                    help="metric set to tabulate: 'fpga' (luts/logicdepth/"
+                         "tasktime) or 'asic' (cells/cellarea/fmax/tasktime) "
+                         "(default: fpga)")
     args = ap.parse_args()
 
+    metric_names = METRICS_BY_MODE[args.metrics]
     configs = load_configs(args.results)
     if not configs:
         ap.error(f"no <config>/<target>.json collect files under {args.results}")
@@ -149,7 +159,7 @@ def main():
     for config, collected in sorted(configs.items()):
         # columns: one per target (clean name), ordered alphabetically z->a
         targets = sorted(collected, reverse=True)
-        section = build_section(targets, FPGA_METRICS, collected)
+        section = build_section(targets, metric_names, collected)
         output = os.path.join(args.results, f"{config}.json")
         with open(output, "w") as f:
             json.dump(section, f, indent=2, sort_keys=True)
