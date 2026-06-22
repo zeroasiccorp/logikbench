@@ -63,7 +63,6 @@ __all__ = [
     "Shiftr",
     "Sine",
     "Sqdiff",
-    "Sqrt",
     "Sub",
     "Sum",
 ]
