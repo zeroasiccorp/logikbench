@@ -26,7 +26,7 @@ from logikbench.flows.synth import FPGASynthesis, ASICSynthesis
 
 # SC-standard metric names tracked per run mode.
 FPGA_METRICS = ["luts", "logicdepth", "tasktime"]
-ASIC_METRICS = ["cells", "cellarea", "fmax", "setupslack"]
+ASIC_METRICS = ["cells", "cellarea", "fmax", "tasktime"]
 
 _INDEX = "0"
 _LBFLOW_ASIC_RECIPE = "asic/freepdk45"
@@ -115,7 +115,7 @@ _STEP_TO = {
 
 def default_sdc(recipe=_LBFLOW_ASIC_RECIPE):
     """Path to a generic clock-constraint SDC (create_clock on a 'clk' port)."""
-    here = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    here = os.path.dirname(os.path.abspath(__file__))
     return os.path.join(here, "targets", *recipe.split("/"), "default.sdc")
 
 
@@ -150,7 +150,10 @@ def read_metrics(name, metrics=ASIC_METRICS, builddir="build", jobname="job0"):
     """Read recorded metric values from a job manifest, without synthesizing.
 
     Scans the manifest for each metric at whichever node recorded it, so it
-    works across flows (lbflow, asicflow). Returns {metric: value} or None.
+    works across flows (lbflow, asicflow). 'tasktime' is read only from the
+    'synthesis' node (the synthesis runtime SC records there), not the later
+    place-and-route nodes; every other metric takes the last reported value.
+    Returns {metric: value} or None.
     """
     manifest = os.path.join(builddir, name, jobname, f"{name}.pkg.json")
     if not os.path.isfile(manifest):
@@ -161,6 +164,12 @@ def read_metrics(name, metrics=ASIC_METRICS, builddir="build", jobname="job0"):
     for metric in metrics:
         out[metric] = None
         nodes = data.get("metric", {}).get(metric, {}).get("node", {})
+        # synthesis-runtime metric: take it from the synthesis node only
+        if metric == "tasktime":
+            for rec in nodes.get("synthesis", {}).values():
+                if rec.get("value") is not None:
+                    out[metric] = rec.get("value")
+            continue
         for idxs in nodes.values():
             for rec in idxs.values():
                 val = rec.get("value")
