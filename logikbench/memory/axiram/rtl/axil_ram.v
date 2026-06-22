@@ -27,7 +27,7 @@ module axil_ram #
     // Width of data bus in bits
     parameter DW = 32,
     // Width of address bus in bits
-    parameter AW = 16,
+    parameter AW = 8,
     // Width of wstrb (width of data bus in words)
     parameter STRB_WIDTH = (DW/8),
     // Extra pipeline register on output
