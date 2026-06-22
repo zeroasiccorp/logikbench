@@ -27,15 +27,30 @@ from logikbench.benchmark import FPGA_METRICS
 GROUPS = ['basic', 'memory', 'arithmetic', 'epfl', 'blocks']
 
 # per-metric presentation: 'dir' is which way is better (the dashboard colors
-# the winner green and shades losers yellow->red); 'unit' is appended in the cell.
+# the winner green and shades losers yellow->red); 'unit' is appended in the
+# cell; 'desc' is the explanation the dashboard shows under the metric tabs.
+_FPGA_CELL_DESC = (
+    "Cells include LUTs, dedicated mux primitives, and hardened DSP blocks."
+)
 METRIC_INFO = {
-    "cells":      {"label": "Cells",       "dir": "lower",  "unit": ""},
-    "luts":       {"label": "LUTs",        "dir": "lower",  "unit": ""},
-    "logicdepth": {"label": "Logic depth", "dir": "lower",  "unit": ""},
-    "tasktime":   {"label": "Runtime",     "dir": "lower",  "unit": "s"},
-    "cellarea":   {"label": "Cell area",   "dir": "lower",  "unit": "um^2"},
-    "fmax":       {"label": "Fmax",        "dir": "higher", "unit": "MHz"},
-    "setupslack": {"label": "Setup slack", "dir": "higher", "unit": "ns"},
+    "cells":      {"label": "Cells",       "dir": "lower",  "unit": "",
+                   "desc": "Total mapped standard-cell instances in the "
+                           "synthesized netlist."},
+    "luts":       {"label": "Cells",       "dir": "lower",  "unit": "",
+                   "desc": _FPGA_CELL_DESC},
+    "logicdepth": {"label": "Logic depth", "dir": "lower",  "unit": "",
+                   "desc": "Longest combinational path on the mapped netlist, "
+                           "in cells (flip-flops excluded)."},
+    "tasktime":   {"label": "Runtime",     "dir": "lower",  "unit": "s",
+                   "desc": "Wall-clock runtime of the synthesis step, as "
+                           "recorded by SiliconCompiler."},
+    "cellarea":   {"label": "Cell area",   "dir": "lower",  "unit": "um^2",
+                   "desc": "Total standard-cell area of the synthesized "
+                           "netlist."},
+    "fmax":       {"label": "Fmax",        "dir": "higher", "unit": "MHz",
+                   "desc": "Maximum clock frequency from post-synthesis static "
+                           "timing; combinational designs are timed against a "
+                           "virtual clock."},
 }
 
 

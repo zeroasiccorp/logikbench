@@ -32,6 +32,7 @@
   .tabs button:hover { color: var(--txt); border-color: #343b4d; }
   .tabs button.on { background: var(--accent); border-color: var(--accent); color: #08101f; }
   .tabs button .dir { font-weight: 500; opacity: .7; font-size: 12px; }
+  .note { margin: 0 0 14px; color: var(--txt-dim); font-size: 12.5px; line-height: 1.5; max-width: 980px; }
   .card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
   .scroll { overflow: auto; max-height: 72vh; }
   table { border-collapse: separate; border-spacing: 0; width: 100%; }
@@ -76,6 +77,7 @@
   </header>
 
   <div class="tabs" id="tabs"></div>
+  <p class="note" id="note"></p>
 
   <div class="card">
     <div class="scroll">
@@ -167,10 +169,15 @@ function renderTabs(){
   SECTION.metrics.forEach(m => {
     const b = document.createElement("button");
     b.className = m.key === metricKey ? "on" : "";
-    b.innerHTML = `${m.label} <span class="dir">${m.dir === "lower" ? "&darr; lower better" : "&uarr; higher better"}</span>`;
+    b.textContent = m.label;
     b.onclick = () => { metricKey = m.key; render(); };
     t.appendChild(b);
   });
+  // explanation of the active metric (e.g. exactly what a "Cell" counts)
+  const note = document.getElementById("note");
+  const desc = metric().desc || "";
+  note.textContent = desc;
+  note.style.display = desc ? "" : "none";
 }
 
 // arrow indicator for the column currently sorted by 'col' ("" if not active)
