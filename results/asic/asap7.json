@@ -1,0 +1,977 @@
+{
+  "data": {
+    "abs": {
+      "asap7_demo": {
+        "cellarea": 4.4469,
+        "cells": 37,
+        "fmax": null,
+        "tasktime": 22.6
+      }
+    },
+    "absdiff": {
+      "asap7_demo": {
+        "cellarea": 18.0355,
+        "cells": 175,
+        "fmax": null,
+        "tasktime": 22.88
+      }
+    },
+    "absdiffs": {
+      "asap7_demo": {
+        "cellarea": 9.95814,
+        "cells": 83,
+        "fmax": null,
+        "tasktime": 14.66
+      }
+    },
+    "add": {
+      "asap7_demo": {
+        "cellarea": 9.46242,
+        "cells": 70,
+        "fmax": null,
+        "tasktime": 13.43
+      }
+    },
+    "addsub": {
+      "asap7_demo": {
+        "cellarea": 15.2944,
+        "cells": 134,
+        "fmax": null,
+        "tasktime": 14.23
+      }
+    },
+    "aes": {
+      "asap7_demo": {
+        "cellarea": 1221.61,
+        "cells": 10302,
+        "fmax": null,
+        "tasktime": 34.32
+      }
+    },
+    "apbregs": {
+      "asap7_demo": {
+        "cellarea": 649.291,
+        "cells": 5122,
+        "fmax": null,
+        "tasktime": 17.24
+      }
+    },
+    "arbfix": {
+      "asap7_demo": {
+        "cellarea": 3.01806,
+        "cells": 39,
+        "fmax": null,
+        "tasktime": 13.06
+      }
+    },
+    "axicrossbar": {
+      "asap7_demo": {
+        "cellarea": 4654.36,
+        "cells": 39777,
+        "fmax": null,
+        "tasktime": 160.7
+      }
+    },
+    "band": {
+      "asap7_demo": {
+        "cellarea": 2.02662,
+        "cells": 19,
+        "fmax": null,
+        "tasktime": 12.8
+      }
+    },
+    "bbuf": {
+      "asap7_demo": {
+        "cellarea": 0.0,
+        "cells": 0,
+        "fmax": null,
+        "tasktime": 11.22
+      }
+    },
+    "bin2gray": {
+      "asap7_demo": {
+        "cellarea": 10.1039,
+        "cells": 63,
+        "fmax": null,
+        "tasktime": 12.6
+      }
+    },
+    "bin2prio": {
+      "asap7_demo": {
+        "cellarea": 12.2909,
+        "cells": 163,
+        "fmax": null,
+        "tasktime": 13.01
+      }
+    },
+    "binv": {
+      "asap7_demo": {
+        "cellarea": 2.79936,
+        "cells": 64,
+        "fmax": 284768000000.0,
+        "tasktime": 6.44
+      }
+    },
+    "bnand": {
+      "asap7_demo": {
+        "cellarea": 2.0412,
+        "cells": 19,
+        "fmax": null,
+        "tasktime": 12.14
+      }
+    },
+    "bnor": {
+      "asap7_demo": {
+        "cellarea": 2.0412,
+        "cells": 19,
+        "fmax": null,
+        "tasktime": 12.88
+      }
+    },
+    "bor": {
+      "asap7_demo": {
+        "cellarea": 2.0412,
+        "cells": 19,
+        "fmax": null,
+        "tasktime": 11.86
+      }
+    },
+    "bxnor": {
+      "asap7_demo": {
+        "cellarea": 10.76,
+        "cells": 63,
+        "fmax": null,
+        "tasktime": 12.75
+      }
+    },
+    "bxor": {
+      "asap7_demo": {
+        "cellarea": 10.7892,
+        "cells": 63,
+        "fmax": null,
+        "tasktime": 12.34
+      }
+    },
+    "cache": {
+      "asap7_demo": {
+        "cellarea": 18851.5,
+        "cells": 139114,
+        "fmax": null,
+        "tasktime": 180.27
+      }
+    },
+    "cmp": {
+      "asap7_demo": {
+        "cellarea": 6.16734,
+        "cells": 60,
+        "fmax": null,
+        "tasktime": 13.04
+      }
+    },
+    "counter": {
+      "asap7_demo": {
+        "cellarea": 9.72486,
+        "cells": 77,
+        "fmax": null,
+        "tasktime": 12.79
+      }
+    },
+    "crossbar": {
+      "asap7_demo": {
+        "cellarea": 286.978,
+        "cells": 2557,
+        "fmax": null,
+        "tasktime": 15.76
+      }
+    },
+    "csa32": {
+      "asap7_demo": {
+        "cellarea": 9.09792,
+        "cells": 64,
+        "fmax": null,
+        "tasktime": 13.18
+      }
+    },
+    "csa42": {
+      "asap7_demo": {
+        "cellarea": 16.7816,
+        "cells": 115,
+        "fmax": null,
+        "tasktime": 13.44
+      }
+    },
+    "dec": {
+      "asap7_demo": {
+        "cellarea": 3.68874,
+        "cells": 30,
+        "fmax": null,
+        "tasktime": 12.69
+      }
+    },
+    "dffasync": {
+      "asap7_demo": {
+        "cellarea": 27.1042,
+        "cells": 129,
+        "fmax": null,
+        "tasktime": 12.33
+      }
+    },
+    "dffsync": {
+      "asap7_demo": {
+        "cellarea": 27.148,
+        "cells": 193,
+        "fmax": null,
+        "tasktime": 12.83
+      }
+    },
+    "dotprod": {
+      "asap7_demo": {
+        "cellarea": 803.329,
+        "cells": 6519,
+        "fmax": null,
+        "tasktime": 21.37
+      }
+    },
+    "epfl_adder": {
+      "asap7_demo": {
+        "cellarea": 82.7561,
+        "cells": 707,
+        "fmax": null,
+        "tasktime": 17.76
+      }
+    },
+    "epfl_arbiter": {
+      "asap7_demo": {
+        "cellarea": 602.752,
+        "cells": 6561,
+        "fmax": null,
+        "tasktime": 51.01
+      }
+    },
+    "epfl_bar": {
+      "asap7_demo": {
+        "cellarea": 198.827,
+        "cells": 1485,
+        "fmax": null,
+        "tasktime": 20.88
+      }
+    },
+    "epfl_cavlc": {
+      "asap7_demo": {
+        "cellarea": 36.9457,
+        "cells": 368,
+        "fmax": null,
+        "tasktime": 14.3
+      }
+    },
+    "epfl_dec": {
+      "asap7_demo": {
+        "cellarea": 27.4979,
+        "cells": 300,
+        "fmax": null,
+        "tasktime": 12.5
+      }
+    },
+    "epfl_div": {
+      "asap7_demo": {
+        "cellarea": 1382.13,
+        "cells": 11448,
+        "fmax": null,
+        "tasktime": 204.19
+      }
+    },
+    "epfl_hyp": {
+      "asap7_demo": {
+        "cellarea": 14722.6,
+        "cells": 119704,
+        "fmax": null,
+        "tasktime": 1366.26
+      }
+    },
+    "epfl_i2c": {
+      "asap7_demo": {
+        "cellarea": 59.1656,
+        "cells": 637,
+        "fmax": null,
+        "tasktime": 15.18
+      }
+    },
+    "epfl_int2float": {
+      "asap7_demo": {
+        "cellarea": 11.3578,
+        "cells": 117,
+        "fmax": null,
+        "tasktime": 12.64
+      }
+    },
+    "epfl_log2": {
+      "asap7_demo": {
+        "cellarea": 1623.02,
+        "cells": 13621,
+        "fmax": null,
+        "tasktime": 1537.22
+      }
+    },
+    "epfl_max": {
+      "asap7_demo": {
+        "cellarea": 161.678,
+        "cells": 1724,
+        "fmax": null,
+        "tasktime": 21.41
+      }
+    },
+    "epfl_memctrl": {
+      "asap7_demo": {
+        "cellarea": 2275.44,
+        "cells": 23055,
+        "fmax": null,
+        "tasktime": 191.76
+      }
+    },
+    "epfl_multiplier": {
+      "asap7_demo": {
+        "cellarea": 1357.86,
+        "cells": 10286,
+        "fmax": null,
+        "tasktime": 99.22
+      }
+    },
+    "epfl_priority": {
+      "asap7_demo": {
+        "cellarea": 54.6604,
+        "cells": 552,
+        "fmax": null,
+        "tasktime": 17.97
+      }
+    },
+    "epfl_router": {
+      "asap7_demo": {
+        "cellarea": 9.73944,
+        "cells": 103,
+        "fmax": null,
+        "tasktime": 14.69
+      }
+    },
+    "epfl_sin": {
+      "asap7_demo": {
+        "cellarea": 313.441,
+        "cells": 2741,
+        "fmax": null,
+        "tasktime": 34.86
+      }
+    },
+    "epfl_sqrt": {
+      "asap7_demo": {
+        "cellarea": 1243.63,
+        "cells": 9619,
+        "fmax": null,
+        "tasktime": 103.24
+      }
+    },
+    "epfl_square": {
+      "asap7_demo": {
+        "cellarea": 1155.58,
+        "cells": 9966,
+        "fmax": null,
+        "tasktime": 78.39
+      }
+    },
+    "epfl_voter": {
+      "asap7_demo": {
+        "cellarea": 581.625,
+        "cells": 4380,
+        "fmax": null,
+        "tasktime": 64.15
+      }
+    },
+    "ethmac": {
+      "asap7_demo": {
+        "cellarea": 156.764,
+        "cells": 1083,
+        "fmax": null,
+        "tasktime": 65.15
+      }
+    },
+    "fft": {
+      "asap7_demo": {
+        "cellarea": null,
+        "cells": null,
+        "fmax": null,
+        "tasktime": 9.08
+      }
+    },
+    "fifoasync": {
+      "asap7_demo": {
+        "cellarea": 197.326,
+        "cells": 1399,
+        "fmax": null,
+        "tasktime": 15.33
+      }
+    },
+    "fifosync": {
+      "asap7_demo": {
+        "cellarea": 186.012,
+        "cells": 1325,
+        "fmax": null,
+        "tasktime": 14.88
+      }
+    },
+    "firfix": {
+      "asap7_demo": {
+        "cellarea": 396.489,
+        "cells": 2837,
+        "fmax": null,
+        "tasktime": 15.74
+      }
+    },
+    "firprog": {
+      "asap7_demo": {
+        "cellarea": 2741.97,
+        "cells": 22565,
+        "fmax": null,
+        "tasktime": 47.85
+      }
+    },
+    "fpu64": {
+      "asap7_demo": {
+        "cellarea": 1777.42,
+        "cells": 14164,
+        "fmax": null,
+        "tasktime": 106.02
+      }
+    },
+    "gray2bin": {
+      "asap7_demo": {
+        "cellarea": 11.8098,
+        "cells": 81,
+        "fmax": null,
+        "tasktime": 12.44
+      }
+    },
+    "i2c": {
+      "asap7_demo": {
+        "cellarea": 155.948,
+        "cells": 1043,
+        "fmax": null,
+        "tasktime": 15.73
+      }
+    },
+    "ialu": {
+      "asap7_demo": {
+        "cellarea": 39.3077,
+        "cells": 352,
+        "fmax": null,
+        "tasktime": 13.93
+      }
+    },
+    "inc": {
+      "asap7_demo": {
+        "cellarea": 4.09698,
+        "cells": 30,
+        "fmax": null,
+        "tasktime": 13.78
+      }
+    },
+    "lfsr": {
+      "asap7_demo": {
+        "cellarea": 2.79936,
+        "cells": 16,
+        "fmax": null,
+        "tasktime": 24.82
+      }
+    },
+    "log2": {
+      "asap7_demo": {
+        "cellarea": 3.01806,
+        "cells": 34,
+        "fmax": null,
+        "tasktime": 21.49
+      }
+    },
+    "mac": {
+      "asap7_demo": {
+        "cellarea": 185.793,
+        "cells": 1508,
+        "fmax": null,
+        "tasktime": 14.97
+      }
+    },
+    "max": {
+      "asap7_demo": {
+        "cellarea": 8.9667,
+        "cells": 88,
+        "fmax": null,
+        "tasktime": 12.17
+      }
+    },
+    "min": {
+      "asap7_demo": {
+        "cellarea": 7.45038,
+        "cells": 77,
+        "fmax": null,
+        "tasktime": 12.78
+      }
+    },
+    "mul": {
+      "asap7_demo": {
+        "cellarea": 149.197,
+        "cells": 1273,
+        "fmax": null,
+        "tasktime": 13.79
+      }
+    },
+    "muladd": {
+      "asap7_demo": {
+        "cellarea": 162.436,
+        "cells": 1343,
+        "fmax": null,
+        "tasktime": 13.31
+      }
+    },
+    "muladdc": {
+      "asap7_demo": {
+        "cellarea": 757.737,
+        "cells": 6242,
+        "fmax": null,
+        "tasktime": 20.2
+      }
+    },
+    "mulc": {
+      "asap7_demo": {
+        "cellarea": 714.158,
+        "cells": 5836,
+        "fmax": null,
+        "tasktime": 19.95
+      }
+    },
+    "mulreg": {
+      "asap7_demo": {
+        "cellarea": 168.093,
+        "cells": 1341,
+        "fmax": null,
+        "tasktime": 13.39
+      }
+    },
+    "muls": {
+      "asap7_demo": {
+        "cellarea": 149.197,
+        "cells": 1273,
+        "fmax": null,
+        "tasktime": 13.84
+      }
+    },
+    "mux": {
+      "asap7_demo": {
+        "cellarea": 141.207,
+        "cells": 1423,
+        "fmax": null,
+        "tasktime": 15.19
+      }
+    },
+    "muxcase": {
+      "asap7_demo": {
+        "cellarea": 44.8189,
+        "cells": 347,
+        "fmax": null,
+        "tasktime": 13.85
+      }
+    },
+    "muxhot": {
+      "asap7_demo": {
+        "cellarea": 79.0819,
+        "cells": 595,
+        "fmax": null,
+        "tasktime": 13.94
+      }
+    },
+    "muxpri": {
+      "asap7_demo": {
+        "cellarea": 21.3889,
+        "cells": 130,
+        "fmax": null,
+        "tasktime": 12.77
+      }
+    },
+    "onehot": {
+      "asap7_demo": {
+        "cellarea": 8.15022,
+        "cells": 88,
+        "fmax": null,
+        "tasktime": 12.76
+      }
+    },
+    "picorv32": {
+      "asap7_demo": {
+        "cellarea": 2199.03,
+        "cells": 17311,
+        "fmax": null,
+        "tasktime": 56.13
+      }
+    },
+    "pipeline": {
+      "asap7_demo": {
+        "cellarea": 519.106,
+        "cells": 3202,
+        "fmax": null,
+        "tasktime": 14.39
+      }
+    },
+    "ramasync": {
+      "asap7_demo": {
+        "cellarea": 2517.12,
+        "cells": 17777,
+        "fmax": null,
+        "tasktime": 30.66
+      }
+    },
+    "rambit": {
+      "asap7_demo": {
+        "cellarea": 2875.61,
+        "cells": 20587,
+        "fmax": null,
+        "tasktime": 38.51
+      }
+    },
+    "rambyte": {
+      "asap7_demo": {
+        "cellarea": 2450.55,
+        "cells": 16768,
+        "fmax": null,
+        "tasktime": 29.37
+      }
+    },
+    "ramdp": {
+      "asap7_demo": {
+        "cellarea": 3393.45,
+        "cells": 22534,
+        "fmax": null,
+        "tasktime": 47.28
+      }
+    },
+    "ramsdp": {
+      "asap7_demo": {
+        "cellarea": 10355.7,
+        "cells": 76326,
+        "fmax": null,
+        "tasktime": 102.06
+      }
+    },
+    "ramsp": {
+      "asap7_demo": {
+        "cellarea": 9527.14,
+        "cells": 64764,
+        "fmax": null,
+        "tasktime": 89.31
+      }
+    },
+    "ramspnc": {
+      "asap7_demo": {
+        "cellarea": 9775.25,
+        "cells": 66024,
+        "fmax": null,
+        "tasktime": 94.02
+      }
+    },
+    "regfile": {
+      "asap7_demo": {
+        "cellarea": 1386.62,
+        "cells": 10054,
+        "fmax": null,
+        "tasktime": 28.04
+      }
+    },
+    "relu": {
+      "asap7_demo": {
+        "cellarea": 1.92456,
+        "cells": 22,
+        "fmax": null,
+        "tasktime": 12.57
+      }
+    },
+    "rom": {
+      "asap7_demo": {
+        "cellarea": 4.12614,
+        "cells": 33,
+        "fmax": null,
+        "tasktime": 14.05
+      }
+    },
+    "round": {
+      "asap7_demo": {
+        "cellarea": 2.4786,
+        "cells": 20,
+        "fmax": null,
+        "tasktime": 12.82
+      }
+    },
+    "serv": {
+      "asap7_demo": {
+        "cellarea": 113.141,
+        "cells": 879,
+        "fmax": null,
+        "tasktime": 25.16
+      }
+    },
+    "shiftar": {
+      "asap7_demo": {
+        "cellarea": 10.7309,
+        "cells": 113,
+        "fmax": null,
+        "tasktime": 12.26
+      }
+    },
+    "shiftb": {
+      "asap7_demo": {
+        "cellarea": 23.1676,
+        "cells": 242,
+        "fmax": null,
+        "tasktime": 12.6
+      }
+    },
+    "shiftl": {
+      "asap7_demo": {
+        "cellarea": 10.2935,
+        "cells": 110,
+        "fmax": null,
+        "tasktime": 12.0
+      }
+    },
+    "shiftr": {
+      "asap7_demo": {
+        "cellarea": 10.7309,
+        "cells": 113,
+        "fmax": null,
+        "tasktime": 11.87
+      }
+    },
+    "shiftreg": {
+      "asap7_demo": {
+        "cellarea": 32.6592,
+        "cells": 256,
+        "fmax": null,
+        "tasktime": 12.91
+      }
+    },
+    "sine": {
+      "asap7_demo": {
+        "cellarea": 8.04816,
+        "cells": 83,
+        "fmax": null,
+        "tasktime": 17.79
+      }
+    },
+    "sqdiff": {
+      "asap7_demo": {
+        "cellarea": 163.996,
+        "cells": 1343,
+        "fmax": null,
+        "tasktime": 23.76
+      }
+    },
+    "sqrt": {
+      "asap7_demo": {
+        "cellarea": null,
+        "cells": 0,
+        "fmax": null,
+        "tasktime": 17.44
+      }
+    },
+    "sub": {
+      "asap7_demo": {
+        "cellarea": 9.95814,
+        "cells": 83,
+        "fmax": null,
+        "tasktime": 17.73
+      }
+    },
+    "sum": {
+      "asap7_demo": {
+        "cellarea": 54.2668,
+        "cells": 400,
+        "fmax": null,
+        "tasktime": 17.11
+      }
+    },
+    "uart": {
+      "asap7_demo": {
+        "cellarea": 396.022,
+        "cells": 2718,
+        "fmax": null,
+        "tasktime": 19.36
+      }
+    },
+    "umiregs": {
+      "asap7_demo": {
+        "cellarea": 729.394,
+        "cells": 5724,
+        "fmax": null,
+        "tasktime": 16.64
+      }
+    }
+  },
+  "groups": [
+    {
+      "benchmarks": [
+        "arbfix",
+        "band",
+        "bbuf",
+        "bin2gray",
+        "bin2prio",
+        "binv",
+        "bnand",
+        "bnor",
+        "bor",
+        "bxnor",
+        "bxor",
+        "crossbar",
+        "dffasync",
+        "dffsync",
+        "gray2bin",
+        "mux",
+        "muxcase",
+        "muxhot",
+        "muxpri",
+        "onehot",
+        "pipeline",
+        "shiftreg"
+      ],
+      "name": "basic"
+    },
+    {
+      "benchmarks": [
+        "cache",
+        "fifoasync",
+        "fifosync",
+        "ramasync",
+        "rambit",
+        "rambyte",
+        "ramdp",
+        "ramsdp",
+        "ramsp",
+        "ramspnc",
+        "regfile",
+        "rom"
+      ],
+      "name": "memory"
+    },
+    {
+      "benchmarks": [
+        "abs",
+        "absdiff",
+        "absdiffs",
+        "add",
+        "addsub",
+        "cmp",
+        "counter",
+        "csa32",
+        "csa42",
+        "dec",
+        "dotprod",
+        "inc",
+        "log2",
+        "mac",
+        "max",
+        "min",
+        "mul",
+        "muladd",
+        "muladdc",
+        "mulc",
+        "mulreg",
+        "muls",
+        "relu",
+        "round",
+        "shiftar",
+        "shiftb",
+        "shiftl",
+        "shiftr",
+        "sine",
+        "sqdiff",
+        "sqrt",
+        "sub",
+        "sum"
+      ],
+      "name": "arithmetic"
+    },
+    {
+      "benchmarks": [
+        "epfl_adder",
+        "epfl_arbiter",
+        "epfl_bar",
+        "epfl_cavlc",
+        "epfl_dec",
+        "epfl_div",
+        "epfl_hyp",
+        "epfl_i2c",
+        "epfl_int2float",
+        "epfl_log2",
+        "epfl_max",
+        "epfl_memctrl",
+        "epfl_multiplier",
+        "epfl_priority",
+        "epfl_router",
+        "epfl_sin",
+        "epfl_sqrt",
+        "epfl_square",
+        "epfl_voter"
+      ],
+      "name": "epfl"
+    },
+    {
+      "benchmarks": [
+        "aes",
+        "apbregs",
+        "axicrossbar",
+        "ethmac",
+        "fft",
+        "firfix",
+        "firprog",
+        "fpu64",
+        "ialu",
+        "i2c",
+        "lfsr",
+        "picorv32",
+        "serv",
+        "uart",
+        "umiregs"
+      ],
+      "name": "blocks"
+    }
+  ],
+  "metrics": [
+    {
+      "desc": "Total mapped standard-cell instances in the synthesized netlist.",
+      "dir": "lower",
+      "key": "cells",
+      "label": "Cells",
+      "unit": ""
+    },
+    {
+      "desc": "Total standard-cell area of the synthesized netlist.",
+      "dir": "lower",
+      "key": "cellarea",
+      "label": "Cell area",
+      "unit": "um^2"
+    },
+    {
+      "desc": "Maximum clock frequency from post-synthesis static timing; combinational designs are timed against a virtual clock.",
+      "dir": "higher",
+      "key": "fmax",
+      "label": "Fmax",
+      "scale": 1e-06,
+      "unit": "MHz"
+    },
+    {
+      "desc": "Wall-clock runtime of the synthesis step, as recorded by SiliconCompiler.",
+      "dir": "lower",
+      "key": "tasktime",
+      "label": "Runtime",
+      "unit": "s"
+    }
+  ],
+  "settings": {
+    "asap7_demo": ""
+  },
+  "targets": [
+    "asap7_demo"
+  ]
+}
