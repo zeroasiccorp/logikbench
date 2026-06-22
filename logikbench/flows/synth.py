@@ -8,7 +8,7 @@ differ only in which target's synth.tcl they select.
 from siliconcompiler import Flowgraph
 
 from logikbench.tools.yosys.yosys import Synthesis
-from logikbench.tools.opensta import OpenStaTask
+from logikbench.tools.opensta.opensta import OpenStaTask
 
 
 class FPGASynthesis(Flowgraph):

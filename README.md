@@ -206,7 +206,7 @@ ASIC targets:
   through SC's `asicflow` (full RTL-to-GDS). Use `--to` to limit how far it runs.
 
 Metrics are fixed by the run mode: `luts`, `logicdepth`, `tasktime` for FPGA;
-`cells`, `cellarea`, `fmax`, `setupslack` for ASIC.
+`cells`, `cellarea`, `fmax` for ASIC.
 
 ### Options
 

@@ -21,6 +21,22 @@ ALL_GROUPS = ['basic', 'memory', 'arithmetic', 'epfl', 'blocks']
 FLOW_METRICS = {'fpga': FPGA_METRICS, 'asic': ASIC_METRICS}
 
 
+def flow_step(value):
+    """argparse type for --from/--to: a friendly stage name (STEPS, mapped to
+    the stage's first/last node) or a raw SC node 'step' / 'step.task' passed
+    through verbatim (e.g. 'floorplan.init' to stop at the first floorplan node).
+    """
+    if value in STEPS:
+        return value
+    # raw SC node: 'step' or 'step.task', each part a simple identifier
+    parts = value.split(".")
+    if 1 <= len(parts) <= 2 and all(p.isidentifier() for p in parts):
+        return value
+    raise argparse.ArgumentTypeError(
+        f"{value!r} is not a flow step: use a stage name {STEPS} or a raw SC "
+        f"node 'step'/'step.task' (e.g. 'floorplan.init')")
+
+
 def target_mode(target):
     """'fpga' for an FPGA target, 'asic' for a PDK/demo target."""
     return 'fpga' if target in FPGA_TARGETS else 'asic'
@@ -82,6 +98,8 @@ def run_sweep(args, targets, worklist):
     total = len(tasks)
     done = 0  # completed-job counter; printed 0-based as [i/N] progress
 
+    # Same completion message for every job, regardless of target (FPGA or
+    # ASIC) or scheduling (-j sequential vs parallel).
     def record(target, group, name, error):
         nonlocal done
         prefix = f"[{done}/{total}]"
@@ -108,7 +126,6 @@ def run_sweep(args, targets, worklist):
                 record(target, group, name, error)
     else:
         for target, group, item, name in tasks:
-            print(f"Running {name} benchmark ({target}/{group}).")
             builddir = target_builddir(args, target)
             _, _, _, error = run_one(group, item, target, args.options,
                                      builddir, quiet, args.start, args.stop,
@@ -243,18 +260,21 @@ LogikBench commandline runner.
     # 'from' is a Python keyword, so keep the dest names start/stop
     run_p.add_argument('--from',
                        dest='start',
-                       choices=STEPS,
+                       type=flow_step,
                        default=None,
                        metavar="STEP",
-                       help=f"First flow step to run (choices: {STEPS}; "
-                            f"default: from the start)")
+                       help=f"First flow step to run: a stage name {STEPS} "
+                            f"(shortcut for that stage's first node) or a raw "
+                            f"SC node 'step.task' (default: from the start)")
     run_p.add_argument('--to',
                        dest='stop',
-                       choices=STEPS,
+                       type=flow_step,
                        default=None,
                        metavar="STEP",
-                       help=f"Last flow step to run (choices: {STEPS}; "
-                            f"default: to the end)")
+                       help=f"Last flow step to run: a stage name {STEPS} "
+                            f"(shortcut for that stage's last node) or a raw SC "
+                            f"node 'step.task' such as 'floorplan.init' "
+                            f"(default: to the end)")
     run_p.add_argument('--resume',
                        action='store_true',
                        help='Skip benchmarks whose build already completed '

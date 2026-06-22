@@ -7434,18 +7434,21 @@
   ],
   "metrics": [
     {
+      "desc": "Cells include LUTs, dedicated mux primitives, and hardened DSP blocks.",
       "dir": "lower",
       "key": "luts",
-      "label": "LUTs",
+      "label": "Cells",
       "unit": ""
     },
     {
+      "desc": "Longest combinational path on the mapped netlist, in cells (flip-flops excluded).",
       "dir": "lower",
       "key": "logicdepth",
       "label": "Logic depth",
       "unit": ""
     },
     {
+      "desc": "Wall-clock runtime of the synthesis step, as recorded by SiliconCompiler.",
       "dir": "lower",
       "key": "tasktime",
       "label": "Runtime",

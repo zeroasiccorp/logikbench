@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>LogikBench FPGA Synthesis</title>
+<title>LogikBench {{ title }}</title>
 <style>
   :root {
     --bg: #0f1115; --panel: #161922; --panel-2: #1c2030; --line: #262b38;
@@ -32,6 +32,7 @@
   .tabs button:hover { color: var(--txt); border-color: #343b4d; }
   .tabs button.on { background: var(--accent); border-color: var(--accent); color: #08101f; }
   .tabs button .dir { font-weight: 500; opacity: .7; font-size: 12px; }
+  .note { margin: 0 0 14px; color: var(--txt-dim); font-size: 12.5px; line-height: 1.5; max-width: 980px; }
   .card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
   .scroll { overflow: auto; max-height: 72vh; }
   table { border-collapse: separate; border-spacing: 0; width: 100%; }
@@ -48,8 +49,14 @@
   thead th .t-part { display: block; font-weight: 500; font-size: 11.5px; color: var(--txt-dim); }
   /* settings sub-row sits directly under each target name (top set in JS) */
   thead tr.settings th {
+    z-index: 3; background: var(--panel-2);
+    font-weight: 500; font-size: 11px; color: var(--txt-dim); padding: 1px 8px 2px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  /* units sub-row: unit of the active metric, directly below settings */
+  thead tr.units th {
     z-index: 3; background: var(--panel-2); border-bottom: 1px solid var(--line);
-    font-weight: 500; font-size: 11px; color: var(--txt-dim); padding: 1px 8px 10px;
+    font-weight: 500; font-size: 11px; color: var(--txt-dim); padding: 0 8px 9px;
     font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   }
   thead th.bench { text-align: left; z-index: 4; left: 0; padding: 12px 14px; border-bottom: 1px solid var(--line); }
@@ -71,11 +78,12 @@
 <div class="wrap">
   <header>
     <div class="brand">
-      <h1><span class="mark">Logik</span>Bench &mdash; FPGA Synthesis</h1>
+      <h1><span class="mark">Logik</span>Bench &mdash; {{ title }}</h1>
     </div>
   </header>
 
   <div class="tabs" id="tabs"></div>
+  <p class="note" id="note"></p>
 
   <div class="card">
     <div class="scroll">
@@ -152,14 +160,11 @@ function cellHue(v, best, second, dir){
 }
 
 function fmt(v, m){
+  // the unit lives in the header units row, so cells carry the number only
   if (v === null || v === undefined) return "&mdash;";
-  switch (m.unit){
-    case "s":    return v.toFixed(2) + "s";
-    case "MHz":  return Math.round(v) + " MHz";
-    case "ns":   return v.toFixed(2) + " ns";
-    case "um^2": return Math.round(v).toLocaleString() + " um^2";
-    default:     return Math.round(v).toLocaleString();
-  }
+  v = v * (m.scale || 1);   // stored base unit -> display unit (e.g. fmax Hz -> MHz)
+  if (m.unit === "s" || m.unit === "ns") return v.toFixed(2);
+  return Math.round(v).toLocaleString();
 }
 
 function renderTabs(){
@@ -167,10 +172,15 @@ function renderTabs(){
   SECTION.metrics.forEach(m => {
     const b = document.createElement("button");
     b.className = m.key === metricKey ? "on" : "";
-    b.innerHTML = `${m.label} <span class="dir">${m.dir === "lower" ? "&darr; lower better" : "&uarr; higher better"}</span>`;
+    b.textContent = m.label;
     b.onclick = () => { metricKey = m.key; render(); };
     t.appendChild(b);
   });
+  // explanation of the active metric (e.g. exactly what a "Cell" counts)
+  const note = document.getElementById("note");
+  const desc = metric().desc || "";
+  note.textContent = desc;
+  note.style.display = desc ? "" : "none";
 }
 
 // arrow indicator for the column currently sorted by 'col' ("" if not active)
@@ -212,8 +222,9 @@ function render(){
     return i < 0 ? { vendor: label, part: "" }
                  : { vendor: label.slice(0, i), part: label.slice(i + 1) };
   };
+  const unit = metric().unit || "";
   thead.innerHTML =
-    `<tr><th class="bench sortable" rowspan="2" data-col="${BENCH_COL}">Benchmark${sortArrow(BENCH_COL)}</th>${targets.map(t => {
+    `<tr><th class="bench sortable" rowspan="3" data-col="${BENCH_COL}">Benchmark${sortArrow(BENCH_COL)}</th>${targets.map(t => {
       const s = splitTarget(labels[t] || t);
       return `<th class="sortable" data-col="${t}" title="${labels[t] || t}">` +
              `<span class="t-vendor">${s.vendor}${sortArrow(t)}</span>` +
@@ -222,12 +233,18 @@ function render(){
     `<tr class="settings">${targets.map(t => {
       const s = settings[t] || "";
       return `<th title="${s ? s : "default settings"}">${s ? s : "default"}</th>`;
-    }).join("")}</tr>`;
-  // stack the settings sub-row flush under the target-name row when sticky
+    }).join("")}</tr>` +
+    // units of the active metric (same across columns; blank for unitless)
+    `<tr class="units">${targets.map(() =>
+      `<th>${unit || "&nbsp;"}</th>`).join("")}</tr>`;
+  // stack the settings + units sub-rows flush under the target-name row (sticky)
   const nameTh = thead.querySelector("tr:first-child th:not(.bench)");
   if (nameTh){
     const h = nameTh.getBoundingClientRect().height;
     thead.querySelectorAll("tr.settings th").forEach(el => { el.style.position = "sticky"; el.style.top = h + "px"; });
+    const setTh = thead.querySelector("tr.settings th");
+    const sh = setTh ? setTh.getBoundingClientRect().height : 0;
+    thead.querySelectorAll("tr.units th").forEach(el => { el.style.position = "sticky"; el.style.top = (h + sh) + "px"; });
   }
   const tb = document.getElementById("tbody"); tb.innerHTML = "";
   if (sortCol){
