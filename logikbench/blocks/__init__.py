@@ -4,6 +4,7 @@ from .ara.ara import Ara
 from .axicrossbar.axicrossbar import Axicrossbar
 from .blackparrot.blackparrot import BlackParrot
 from .coralnpu.coralnpu import CoralNPU
+from .cva6.cva6 import Cva6
 from .ethmac.ethmac import Ethmac
 from .firfix.firfix import Firfix
 from .firprog.firprog import Firprog
@@ -31,6 +32,7 @@ __all__ = [
     "Axicrossbar",
     "BlackParrot",
     "CoralNPU",
+    "Cva6",
     "Ethmac",
     "Firfix",
     "Firprog",
