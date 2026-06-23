@@ -9,6 +9,7 @@ from .ethmac.ethmac import Ethmac
 # from .fft.fft import Fft
 from .firfix.firfix import Firfix
 from .firprog.firprog import Firprog
+from .hammdec.hammdec import Hammdec
 from .fpu64.fpu64 import Fpu64
 from .ialu.ialu import Ialu
 from .i2c.i2c import I2c
@@ -27,6 +28,7 @@ __all__ = [
     "Ethmac",
     "Firfix",
     "Firprog",
+    "Hammdec",
     "Fpu64",
     "Ialu",
     "I2c",
