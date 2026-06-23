@@ -6,6 +6,8 @@
 [![Lint](https://github.com/zeroasiccorp/logikbench/actions/workflows/lint.yml/badge.svg)](https://github.com/zeroasiccorp/logikbench/actions/workflows/lint.yml)
 [![Downloads](https://static.pepy.tech/badge/logikbench)](https://pepy.tech/project/logikbench)
 
+LogikBench is a curated suite of tech agnostic RTL benchmarks.
+
 ## Problems
 
 The semiconductor industry lacks a comprehensive, standardized benchmark suite for evaluating EDA tools, design flows, foundry processes, and FPGA devices. Existing RTL benchmark suites suffer from critical gaps. These gaps make it difficult to objectively compare tools, validate improvements, and track progress across the industry.
@@ -22,6 +24,7 @@ The semiconductor industry lacks a comprehensive, standardized benchmark suite f
 "Sunlight is said to be the best of disinfectants." --Supreme Court Justice Louis Brandeis
 
 * **100+ unique benchmark circuits** spanning basic logic to complex subsystems
+* **Synthesis ready** ...not just raw text string blobs
 * **10,000+ configurations** through parameter sweeping
 * **Standardized metrics** and execution infrastructure
 * **100% open source** no license or membership fees!
