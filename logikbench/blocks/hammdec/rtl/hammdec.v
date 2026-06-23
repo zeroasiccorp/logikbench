@@ -4,65 +4,50 @@
 // License:  MIT (see LICENSE file in LogikBench repository)
 //#############################################################################
 //
-// hammdec: parameterized extended-Hamming (SEC-DED) decoder.
+// hammdec: parameterized Hsiao SEC-DED decoder.
 //
-// Corrects any single-bit error and detects (without correcting) any double-bit
-// error, using an extended Hamming code: PW-1 Hamming parity bits plus one
-// overall parity bit over a DW-bit data word.
+// Decodes the DW+PW-bit codeword produced by hammenc: corrects any single-bit
+// error and detects (without correcting) any double-bit error.
 //
-// Codeword on 'in' (systematic form):
-//   in[DW-1:0]     : data bits
-//   in[DW+PW-2:DW] : PW-1 Hamming parity bits
-//   in[DW+PW-1]    : overall (double-error-detect) parity bit
+// Codeword on 'in' (systematic, identical to hammenc's 'out'):
+//   in[DW-1:0]      : data bits
+//   in[DW+PW-1:DW]  : PW check bits
 //
-// How it works, columns and the syndrome:
-//   Every codeword bit owns a unique M-bit "column" (M = PW-1), which is its
-//   address in the Hamming parity-check matrix. The syndrome is the XOR of the
-//   columns of all flipped bits, so for a single-bit error the syndrome equals
-//   that bit's column and therefore points straight at the bit in error.
+// Codeword algorithm (Hsiao SEC-DED parity-check matrix H = [ M | I_PW ]):
+//   - Check-bit columns are the PW unit vectors (the identity block).
+//   - Data bit k owns column M_k = hcol(k): the k-th distinct ODD-weight PW-bit
+//     vector of weight >= 3, taken lightest first (weight-3 columns, then
+//     weight-5, ...). hcol MUST match hammenc; the roundtrip test guards this.
 //
-//   Parity bits take the power-of-2 columns (1, 2, 4, 8, ...), each a single-bit
-//   pattern. Data bits take all remaining nonzero columns (3, 5, 6, 7, ...); see
-//   the hcol function. Because the two sets are disjoint every bit has a unique
-//   signature, so the decoder can distinguish a data-bit error (which it fixes)
-//   from a parity-bit error (data already clean) from no error.
-//
-//   The decoder recomputes the syndrome from the received word and reports it on
-//   'syndrome' = {overall parity check, M-bit Hamming syndrome}:
-//     syndrome == 0                       : no error
-//     syndrome != 0, overall parity set   : single-bit error, corrected on 'out'
-//     syndrome != 0, overall parity clear : double-bit error, detected not fixed
+//   The syndrome is the XOR of the columns of all flipped bits, recomputed as
+//   syndrome = received_check XOR (XOR of hcol(k) over set data bits). Because
+//   every column is odd weight:
+//     syndrome == 0                        : no error
+//     syndrome == hcol(k) (odd wt >= 3)    : single data error, corrected on 'out'
+//     syndrome is a unit vector (weight 1) : single check-bit error, data clean
+//     syndrome != 0 and even weight        : double error, detected not fixed
+//   A single data error is therefore corrected exactly when the syndrome equals
+//   that bit's column; nothing else can match an odd-weight-(>=3) column.
 //
 // PIPELINE = 1 registers the input (one cycle of latency); PIPELINE = 0 is a
 // pure combinational decoder (clk/nreset unused).
 //
 module hammdec
   #(parameter DW       = 64,   // information (data) bits
-    parameter PW       = 8,    // parity bits (PW-1 Hamming + 1 overall)
+    parameter PW       = 8,    // Hsiao check bits
     parameter PIPELINE = 1)    // 1 = register input, 0 = combinational
    (input              clk,      // clock (used when PIPELINE=1)
     input              nreset,   // async active-low reset (PIPELINE=1)
-    input  [DW+PW-1:0] in,       // received codeword {overall, hamming, data}
+    input  [DW+PW-1:0] in,       // received codeword {check, data}
     output [DW-1:0]    out,      // corrected data
-    output [PW-1:0]    syndrome  // error syndrome {overall, hamming}
+    output [PW-1:0]    syndrome  // error syndrome (0 = clean)
     );
-
-   localparam M = PW - 1;        // number of Hamming parity bits
-
-   integer    k;
-   reg  [M-1:0]  hsyn;
-   reg           allp;
-   reg  [DW-1:0] corr;
-   reg [DW+PW-1:0] in_r;
-   wire [DW+PW-1:0] cw;
-
-   wire [DW-1:0]    data = cw[DW-1:0];
-   wire [M-1:0]     hpar = cw[DW+M-1:DW];   // received Hamming parity
-   wire             opar = cw[DW+PW-1];     // received overall parity
 
    //#########################################################################
    // Input register (always present); PIPELINE selects whether it is used
    //#########################################################################
+   reg  [DW+PW-1:0] in_r;
+   wire [DW+PW-1:0] cw;
 
    always @(posedge clk or negedge nreset)
      if (!nreset)
@@ -72,22 +57,29 @@ module hammdec
 
    assign cw = PIPELINE ? in_r : in;
 
+   wire [DW-1:0] data = cw[DW-1:0];
+   wire [PW-1:0] rchk = cw[DW+PW-1:DW];   // received check bits
+
    //#########################################################################
-   // Hamming column for data bit 'idx': the (idx+1)-th nonzero, non-power-of-2
-   // M-bit value. Power-of-2 columns are reserved for the parity bits, so data
-   // and parity never share a syndrome signature.
+   // Hsiao data column for data bit 'idx' (must match hammenc): the (idx+1)-th
+   // odd-weight, weight>=3 PW-bit vector, enumerated lightest weight first.
    //#########################################################################
-   function [M-1:0] hcol;
+   function [PW-1:0] hcol;
       input integer idx;
-      integer i, cnt;
+      integer w, i, b, pc, cnt;
       begin
          cnt  = -1;
-         hcol = {M{1'b0}};
-         for (i = 1; i < (1 << M); i = i + 1)
-           if (i & (i-1)) begin            // not a power of two
-              cnt = cnt + 1;
-              if (cnt == idx)
-                hcol = i[M-1:0];
+         hcol = {PW{1'b0}};
+         for (w = 3; w <= PW; w = w + 2)            // odd weights >= 3
+           for (i = 0; i < (1 << PW); i = i + 1) begin
+              pc = 0;
+              for (b = 0; b < PW; b = b + 1)
+                pc = pc + i[b];
+              if (pc == w) begin
+                 cnt = cnt + 1;
+                 if (cnt == idx)
+                   hcol = i[PW-1:0];
+              end
            end
       end
    endfunction
@@ -95,21 +87,22 @@ module hammdec
    //#########################################################################
    // Syndrome + single-error correction
    //#########################################################################
-
+   integer       k;
+   reg  [PW-1:0] syn;
+   reg  [DW-1:0] corr;
    always @* begin
-      // Hamming syndrome: received parity XOR parity recomputed from data
-      hsyn = hpar;
+      // syndrome: received check XOR check recomputed from data
+      syn = rchk;
       for (k = 0; k < DW; k = k + 1)
         if (data[k])
-          hsyn = hsyn ^ hcol(k);
-      // overall parity check across the whole codeword
-      allp = opar ^ (^data) ^ (^hpar);
-      // flip the data bit whose column matches the syndrome (single error only)
+          syn = syn ^ hcol(k);
+      // a single data error makes syndrome == that bit's (odd-weight) column;
+      // double errors give even-weight syndromes that match no data column
       for (k = 0; k < DW; k = k + 1)
-        corr[k] = data[k] ^ (allp & (hsyn == hcol(k)));
+        corr[k] = data[k] ^ (syn == hcol(k));
    end
 
    assign out      = corr;
-   assign syndrome = {allp, hsyn};
+   assign syndrome = syn;
 
 endmodule
