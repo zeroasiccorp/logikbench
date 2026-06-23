@@ -21,6 +21,8 @@ from .rocket.rocket import Rocket
 from .spi.spi import Spi
 from .serv.serv import Serv
 from .uart.uart import Uart
+from .umicross.umicross import Umicross
+from .umidev.umidev import Umidev
 from .umiregs.umiregs import Umiregs
 from .vortex.vortex import Vortex
 from .wally.wally import Wally
@@ -49,6 +51,8 @@ __all__ = [
     "Spi",
     "Serv",
     "Uart",
+    "Umicross",
+    "Umidev",
     "Umiregs",
     "Vortex",
     "Wally",
