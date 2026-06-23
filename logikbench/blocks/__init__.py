@@ -2,6 +2,7 @@ from .aes.aes import Aes
 from .apbregs.apbregs import Apbregs
 from .axicrossbar.axicrossbar import Axicrossbar
 from .blackparrot.blackparrot import BlackParrot
+from .coralnpu.coralnpu import CoralNPU
 from .ethmac.ethmac import Ethmac
 # fft disabled: WIP RTL is not synthesizable (non-constant for-loop bound, and a
 # single-cycle all-stages architecture ~768 multipliers). Needs a pipelined
@@ -16,6 +17,7 @@ from .ialu.ialu import Ialu
 from .i2c.i2c import I2c
 from .lfsr.lfsr import Lfsr
 from .picorv32.picorv32 import Picorv32
+from .rocket.rocket import Rocket
 from .serv.serv import Serv
 from .uart.uart import Uart
 from .umiregs.umiregs import Umiregs
@@ -26,6 +28,7 @@ __all__ = [
     "Apbregs",
     "Axicrossbar",
     "BlackParrot",
+    "CoralNPU",
     "Ethmac",
     "Firfix",
     "Firprog",
@@ -36,6 +39,7 @@ __all__ = [
     "I2c",
     "Lfsr",
     "Picorv32",
+    "Rocket",
     "Serv",
     "Uart",
     "Umiregs",
