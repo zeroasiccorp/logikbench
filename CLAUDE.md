@@ -1,0 +1,28 @@
+# CLAUDE.md — EBRICK Project Guide
+
+# Code Generation Rules
+- IMPORTANT: Do not use emoji, special symbols (like ->), or Unicode characters in comments or code.
+- All code must be plain ASCII/UTF-8.
+
+# Testing
+- Claude is always launched from inside an activated venv. Just call `pytest`/`pip`/`python` on PATH; do not hard-code or search for a venv path. Do not check `which python` or hunt for per-repo venvs — trust PATH.
+- Before declaring any Python change "done", run `flake8 <changed_file>` and confirm zero issues.
+
+## External Dependencies
+
+- [SiliconCompiler](https://github.com/siliconcompiler/siliconcompiler) — Build system
+
+## Verilog Directives
+
+- Only ever edit `*.v` and `*.vh` files, ignore files listed in `.gitignore`.
+- Don't remove/change comments unless that is the specific ask
+- Keep every comment line within 80 characters total (including the leading ` * ` or `// ` prefix). When laying out tables or aligned columns inside a comment, choose the tightest column widths that still keep cells readable — never let alignment whitespace push a line past 80. If you cannot fit a line, break it onto two lines or shorten labels rather than expanding past the limit.
+- Edit surgically, never rewrite files wholesale unless asked.
+- NEVER do sweeping refactors (rename a variable across many files, change a naming convention, mass-replace a token) without explicit user approval first. Fix only the specific lines the user asked about. If you notice a broader pattern that looks "wrong" or inconsistent (e.g. an alias used everywhere when a parameter would be clearer), STOP and ask — describe the pattern, propose the change, wait for approval. Do not act on stylistic hunches.
+- When introducing new code that follows an existing pattern, match the existing convention in that file (variable names, port-width expressions, parameter usage). If you intentionally diverge, flag it explicitly so the user can correct you immediately rather than discovering it later.
+- The order of the file matters: port declaration, includes, loclparams, wires, rest of file.
+- Indentation should match default emacs verilog mode on disk when available.
+- For all changes, confirm that they do not break verilog mode AUTO_TEMPLATE instantiations
+- All testbenches must drive simulus from clock edges and use non-blocking assignment.
+- All generated code must be verilog2005 comptaible
+- Never make changes in instance connections below the /*AUTOINST*/ line. These must be updated by verilog template mode. To update, run emacs --batch your_file.v   -l verilog-mode   -f verilog-auto -f save-buffer
