@@ -35,7 +35,7 @@ if { [sc_cfg_exists library $sc_designlib fileset $fileset define] } {
 ################################
 
 yosys plugin -i slang
-yosys read_slang --top $sc_topmodule {*}$sc_slang_args {*}$sc_rtl
+yosys read_slang --top $sc_topmodule --ignore-assertions {*}$sc_slang_args {*}$sc_rtl
 yosys hierarchy -check -top $sc_topmodule
 
 ###############################
