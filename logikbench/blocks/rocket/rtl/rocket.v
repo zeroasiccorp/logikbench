@@ -41534,10 +41534,10 @@ module rocket_s_TLXbar(
   wire [3:0]  out_2_d_bits_size = {1'h0, auto_anon_out_2_d_bits_size};
   wire [3:0]  out_2_d_bits_sink = {3'h0, auto_anon_out_2_d_bits_sink};
   wire        requestAIO_0_0 = {auto_anon_in_0_a_bits_address[55:26], auto_anon_in_0_a_bits_address[24:21], auto_anon_in_0_a_bits_address[19:17]} == 37'h0 | {auto_anon_in_0_a_bits_address[55:26], auto_anon_in_0_a_bits_address[24:21], auto_anon_in_0_a_bits_address[19:17], ~(auto_anon_in_0_a_bits_address[16]), auto_anon_in_0_a_bits_address[12]} == 39'h0 | {auto_anon_in_0_a_bits_address[55:28], ~(auto_anon_in_0_a_bits_address[27:26])} == 30'h0;
-  wire        requestAIO_0_1 = ((auto_anon_in_0_a_bits_address >= 56'h0000_0000_8000_0000) && (auto_anon_in_0_a_bits_size > 4'd3)) || (auto_anon_in_0_a_bits_address >= 56'h0000_0000_2000_0000) && (auto_anon_in_0_a_bits_address < 56'h0000_0000_2100_0000);
+  wire        requestAIO_0_1 = ((auto_anon_in_0_a_bits_address >= 56'h00_0000_8000_0000) && (auto_anon_in_0_a_bits_size > 4'd3)) || (auto_anon_in_0_a_bits_address >= 56'h00_0000_2000_0000) && (auto_anon_in_0_a_bits_address < 56'h00_0000_2100_0000);
   wire        requestAIO_0_2 = !(requestAIO_0_0 || requestAIO_0_1);
   wire        requestAIO_1_0 = {auto_anon_in_1_a_bits_address[55:26], auto_anon_in_1_a_bits_address[24:21], auto_anon_in_1_a_bits_address[19:17]} == 37'h0 | {auto_anon_in_1_a_bits_address[55:26], auto_anon_in_1_a_bits_address[24:21], auto_anon_in_1_a_bits_address[19:17], ~(auto_anon_in_1_a_bits_address[16]), auto_anon_in_1_a_bits_address[12]} == 39'h0 | {auto_anon_in_1_a_bits_address[55:28], ~(auto_anon_in_1_a_bits_address[27:26])} == 30'h0;
-  wire        requestAIO_1_1 = ((auto_anon_in_1_a_bits_address >= 56'h0000_0000_8000_0000) && (auto_anon_in_1_a_bits_size > 4'd3)) || (auto_anon_in_1_a_bits_address >= 56'h0000_0000_2000_0000) && (auto_anon_in_1_a_bits_address < 56'h0000_0000_2100_0000);
+  wire        requestAIO_1_1 = ((auto_anon_in_1_a_bits_address >= 56'h00_0000_8000_0000) && (auto_anon_in_1_a_bits_size > 4'd3)) || (auto_anon_in_1_a_bits_address >= 56'h00_0000_2000_0000) && (auto_anon_in_1_a_bits_address < 56'h00_0000_2100_0000);
   wire        requestAIO_1_2 = !(requestAIO_1_0 || requestAIO_1_1);
   wire        requestDOI_0_0 = auto_anon_out_0_d_bits_source == 3'h4;
   wire        requestDOI_1_0 = auto_anon_out_1_d_bits_source == 3'h4;
@@ -42010,8 +42010,7 @@ module rocket_s_cc_banks_0_ext(
     la_spram #(.DW(64),
                .AW(13),
                .PROP("DEFAULT"),
-               .CTRLW(8),
-               .TESTW(128)
+               .CTRLW(8)
      ) mem_0 (
         .clk(RW0_clk),
         .ce(cs[0]),
@@ -42021,10 +42020,8 @@ module rocket_s_cc_banks_0_ext(
         .din(RW0_wdata[63:0]),
         .dout(row_rdata[0][63:0]),
         .ctrl(cc_banks_0_ext_ctrl),
-        .test(128'd0),
-        .vss(1'b0),
-        .vdd(1'b1),
-        .vddio(1'b1)
+        .selctrl(1'b0),
+        .status()
     );
     assign RW0_rdata =
         row_rdata[0];
@@ -42047,8 +42044,7 @@ module rocket_s_cc_dir_ext(
     la_spram #(.DW(86),
                .AW(11),
                .PROP("DEFAULT"),
-               .CTRLW(8),
-               .TESTW(128)
+               .CTRLW(8)
      ) mem_0 (
         .clk(RW0_clk),
         .ce(cs[0]),
@@ -42058,10 +42054,8 @@ module rocket_s_cc_dir_ext(
         .din(RW0_wdata[85:0]),
         .dout(row_rdata[0][85:0]),
         .ctrl(cc_dir_ext_ctrl),
-        .test(128'd0),
-        .vss(1'b0),
-        .vdd(1'b1),
-        .vddio(1'b1)
+        .selctrl(1'b0),
+        .status()
     );
     assign RW0_rdata =
         row_rdata[0];
@@ -42086,8 +42080,7 @@ module rocket_s_data_arrays_0_0_ext(
     la_spram #(.DW(128),
                .AW(9),
                .PROP("DEFAULT"),
-               .CTRLW(8),
-               .TESTW(128)
+               .CTRLW(8)
      ) mem_0 (
         .clk(RW0_clk),
         .ce(cs[0]),
@@ -42097,10 +42090,8 @@ module rocket_s_data_arrays_0_0_ext(
         .din(RW0_wdata[127:0]),
         .dout(row_rdata[0][127:0]),
         .ctrl(data_arrays_0_0_ext_ctrl),
-        .test(128'd0),
-        .vss(1'b0),
-        .vdd(1'b1),
-        .vddio(1'b1)
+        .selctrl(1'b0),
+        .status()
     );
     assign RW0_rdata =
         row_rdata[0];
@@ -42153,8 +42144,7 @@ module rocket_s_data_arrays_0_ext(
     la_spram #(.DW(256),
                .AW(9),
                .PROP("DEFAULT"),
-               .CTRLW(8),
-               .TESTW(128)
+               .CTRLW(8)
      ) mem_0 (
         .clk(RW0_clk),
         .ce(cs[0]),
@@ -42164,10 +42154,8 @@ module rocket_s_data_arrays_0_ext(
         .din(RW0_wdata[255:0]),
         .dout(row_rdata[0][255:0]),
         .ctrl(data_arrays_0_ext_ctrl),
-        .test(128'd0),
-        .vss(1'b0),
-        .vdd(1'b1),
-        .vddio(1'b1)
+        .selctrl(1'b0),
+        .status()
     );
     assign RW0_rdata =
         row_rdata[0];
@@ -42192,8 +42180,7 @@ module rocket_s_tag_array_0_ext(
     la_spram #(.DW(180),
                .AW(6),
                .PROP("DEFAULT"),
-               .CTRLW(8),
-               .TESTW(128)
+               .CTRLW(8)
      ) mem_0 (
         .clk(RW0_clk),
         .ce(cs[0]),
@@ -42203,10 +42190,8 @@ module rocket_s_tag_array_0_ext(
         .din(RW0_wdata[179:0]),
         .dout(row_rdata[0][179:0]),
         .ctrl(tag_array_0_ext_ctrl),
-        .test(128'd0),
-        .vss(1'b0),
-        .vdd(1'b1),
-        .vddio(1'b1)
+        .selctrl(1'b0),
+        .status()
     );
     assign RW0_rdata =
         row_rdata[0];
@@ -42231,8 +42216,7 @@ module rocket_s_tag_array_ext(
     la_spram #(.DW(184),
                .AW(6),
                .PROP("DEFAULT"),
-               .CTRLW(8),
-               .TESTW(128)
+               .CTRLW(8)
      ) mem_0 (
         .clk(RW0_clk),
         .ce(cs[0]),
@@ -42242,10 +42226,8 @@ module rocket_s_tag_array_ext(
         .din(RW0_wdata[183:0]),
         .dout(row_rdata[0][183:0]),
         .ctrl(tag_array_ext_ctrl),
-        .test(128'd0),
-        .vss(1'b0),
-        .vdd(1'b1),
-        .vddio(1'b1)
+        .selctrl(1'b0),
+        .status()
     );
     assign RW0_rdata =
         row_rdata[0];
@@ -42471,7 +42453,6 @@ module rocket(
     .jtag_ver(jtag_ver),
     .jtag_part(jtag_part),
     .jtag_mfr(jtag_mfr),
-    .l2_tlb_ram_0_ext_ctrl(l2_tlb_ram_0_ext_ctrl),
     .data_arrays_0_0_ext_ctrl(data_arrays_0_0_ext_ctrl),
     .tag_array_0_ext_ctrl(tag_array_0_ext_ctrl),
     .tag_array_ext_ctrl(tag_array_ext_ctrl),
