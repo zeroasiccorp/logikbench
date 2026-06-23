@@ -1,3 +1,9 @@
+//#############################################################################
+// Copyright: Zero ASIC. All rights Reserved.
+// Author: Andreas Olofsson
+// License:  MIT (see LICENSE file in LogikBench repository)
+//#############################################################################
+
 localparam [8*256-1:0] SINETABLE_256 = {
     8'd125,
     8'd122,

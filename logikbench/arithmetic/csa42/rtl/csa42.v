@@ -1,3 +1,9 @@
+//#############################################################################
+// Copyright: Zero ASIC. All rights Reserved.
+// Author: Andreas Olofsson
+// License:  MIT (see LICENSE file in LogikBench repository)
+//#############################################################################
+
 module csa42 #(parameter DW = 16
 	       )
    (input [DW-1:0]  in0,  // input
