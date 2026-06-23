@@ -2,10 +2,10 @@ from os.path import dirname, abspath
 from siliconcompiler import Design
 
 
-class Aes(Design):
+class I2c(Design):
     def __init__(self):
 
-        name = 'aes'
+        name = 'i2c'
 
         # create design object
         super().__init__(name)
@@ -15,12 +15,12 @@ class Aes(Design):
 
         with self.active_dataroot("local"):
             with self.active_fileset("rtl"):
-                # OpenTitan AES (DOM-masked default config), pickled with morty
-                # (generic prims, default top_pkg). See README for generation.
-                self.set_topmodule("aes")
-                self.add_file("rtl/aes.sv")
+                # OpenTitan I2C, pickled with morty (generic prims, default
+                # top_pkg). See README for generation details.
+                self.set_topmodule("i2c")
+                self.add_file("rtl/i2c.sv")
 
 
 if __name__ == "__main__":
-    d = Aes()
+    d = I2c()
     d.write_fileset(f"{d.name}.f", fileset="rtl")

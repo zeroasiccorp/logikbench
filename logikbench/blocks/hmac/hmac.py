@@ -2,10 +2,10 @@ from os.path import dirname, abspath
 from siliconcompiler import Design
 
 
-class Aes(Design):
+class Hmac(Design):
     def __init__(self):
 
-        name = 'aes'
+        name = 'hmac'
 
         # create design object
         super().__init__(name)
@@ -15,12 +15,12 @@ class Aes(Design):
 
         with self.active_dataroot("local"):
             with self.active_fileset("rtl"):
-                # OpenTitan AES (DOM-masked default config), pickled with morty
-                # (generic prims, default top_pkg). See README for generation.
-                self.set_topmodule("aes")
-                self.add_file("rtl/aes.sv")
+                # OpenTitan HMAC, pickled with morty (generic prims, default
+                # top_pkg). See README for generation details.
+                self.set_topmodule("hmac")
+                self.add_file("rtl/hmac.sv")
 
 
 if __name__ == "__main__":
-    d = Aes()
+    d = Hmac()
     d.write_fileset(f"{d.name}.f", fileset="rtl")

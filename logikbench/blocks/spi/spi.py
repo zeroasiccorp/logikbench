@@ -2,10 +2,10 @@ from os.path import dirname, abspath
 from siliconcompiler import Design
 
 
-class Aes(Design):
+class Spi(Design):
     def __init__(self):
 
-        name = 'aes'
+        name = 'spi'
 
         # create design object
         super().__init__(name)
@@ -15,12 +15,12 @@ class Aes(Design):
 
         with self.active_dataroot("local"):
             with self.active_fileset("rtl"):
-                # OpenTitan AES (DOM-masked default config), pickled with morty
-                # (generic prims, default top_pkg). See README for generation.
-                self.set_topmodule("aes")
-                self.add_file("rtl/aes.sv")
+                # OpenTitan SPI host, pickled with morty (generic prims,
+                # default top_pkg). See README for generation details.
+                self.set_topmodule("spi_host")
+                self.add_file("rtl/spi.sv")
 
 
 if __name__ == "__main__":
-    d = Aes()
+    d = Spi()
     d.write_fileset(f"{d.name}.f", fileset="rtl")

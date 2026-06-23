@@ -11,11 +11,13 @@ from .hammdec.hammdec import Hammdec
 from .hammenc.hammenc import Hammenc
 from .fpu64.fpu64 import Fpu64
 from .ialu.ialu import Ialu
+from .hmac.hmac import Hmac
 from .i2c.i2c import I2c
 from .lfsr.lfsr import Lfsr
 from .nvdla.nvdla import Nvdla
 from .picorv32.picorv32 import Picorv32
 from .rocket.rocket import Rocket
+from .spi.spi import Spi
 from .serv.serv import Serv
 from .uart.uart import Uart
 from .umiregs.umiregs import Umiregs
@@ -36,11 +38,13 @@ __all__ = [
     "Hammenc",
     "Fpu64",
     "Ialu",
+    "Hmac",
     "I2c",
     "Lfsr",
     "Nvdla",
     "Picorv32",
     "Rocket",
+    "Spi",
     "Serv",
     "Uart",
     "Umiregs",
