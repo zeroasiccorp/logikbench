@@ -1,6 +1,7 @@
 from .aes.aes import Aes
 from .apbregs.apbregs import Apbregs
 from .axicrossbar.axicrossbar import Axicrossbar
+from .blackparrot.blackparrot import BlackParrot
 from .ethmac.ethmac import Ethmac
 # fft disabled: WIP RTL is not synthesizable (non-constant for-loop bound, and a
 # single-cycle all-stages architecture ~768 multipliers). Needs a pipelined
@@ -16,11 +17,13 @@ from .picorv32.picorv32 import Picorv32
 from .serv.serv import Serv
 from .uart.uart import Uart
 from .umiregs.umiregs import Umiregs
+from .wally.wally import Wally
 
 __all__ = [
     "Aes",
     "Apbregs",
     "Axicrossbar",
+    "BlackParrot",
     "Ethmac",
     "Firfix",
     "Firprog",
@@ -32,4 +35,5 @@ __all__ = [
     "Serv",
     "Uart",
     "Umiregs",
+    "Wally",
 ]
