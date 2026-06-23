@@ -23,7 +23,7 @@
 //   syndrome = received_check XOR (XOR of hcol(k) over set data bits). Because
 //   every column is odd weight:
 //     syndrome == 0                        : no error
-//     syndrome == hcol(k) (odd wt >= 3)    : single data error, corrected on 'out'
+//     syndrome == hcol(k) (odd wt >= 3)    : single data error, corrected
 //     syndrome is a unit vector (weight 1) : single check-bit error, data clean
 //     syndrome != 0 and even weight        : double error, detected not fixed
 //   A single data error is therefore corrected exactly when the syndrome equals
@@ -32,41 +32,46 @@
 // PIPELINE = 1 registers the input (one cycle of latency); PIPELINE = 0 is a
 // pure combinational decoder (clk/nreset unused).
 //
-module hammdec
-  #(parameter DW       = 64,   // information (data) bits
-    parameter PW       = 8,    // Hsiao check bits
-    parameter PIPELINE = 1)    // 1 = register input, 0 = combinational
-   (input              clk,      // clock (used when PIPELINE=1)
-    input              nreset,   // async active-low reset (PIPELINE=1)
-    input  [DW+PW-1:0] in,       // received codeword {check, data}
-    output [DW-1:0]    out,      // corrected data
-    output [PW-1:0]    syndrome  // error syndrome (0 = clean)
+module hammdec #(parameter DW = 64,      // information (data) bits
+                 parameter PW = 8,       // Hsiao check bits
+                 parameter PIPELINE = 1) // 1 = registered, 0 = combinational
+   (
+    input	      clk,     // clock (used when PIPELINE=1)
+    input	      nreset,  // async active-low reset (PIPELINE=1)
+    input [DW+PW-1:0] in,      // received codeword {check, data}
+    output [DW-1:0]   out,     // corrected data
+    output [PW-1:0]   syndrome // error syndrome (0 = clean)
     );
+
+   // local wires
+   integer          k;
+   reg [DW+PW-1:0]  in_r;
+   wire [DW+PW-1:0] cw;
+   wire [DW-1:0]    data = cw[DW-1:0];
+   wire [PW-1:0]    rchk = cw[DW+PW-1:DW];   // received check bits
+   reg [PW-1:0]	    syn;
+   reg [DW-1:0]	    corr;
 
    //#########################################################################
    // Input register (always present); PIPELINE selects whether it is used
    //#########################################################################
-   reg  [DW+PW-1:0] in_r;
-   wire [DW+PW-1:0] cw;
 
    always @(posedge clk or negedge nreset)
      if (!nreset)
-       in_r <= {(DW+PW){1'b0}};
+       in_r <= 'b0;
      else
        in_r <= in;
 
    assign cw = PIPELINE ? in_r : in;
 
-   wire [DW-1:0] data = cw[DW-1:0];
-   wire [PW-1:0] rchk = cw[DW+PW-1:DW];   // received check bits
-
    //#########################################################################
    // Hsiao data column for data bit 'idx' (must match hammenc): the (idx+1)-th
    // odd-weight, weight>=3 PW-bit vector, enumerated lightest weight first.
    //#########################################################################
+
    function [PW-1:0] hcol;
       input integer idx;
-      integer w, i, b, pc, cnt;
+      integer	    w, i, b, pc, cnt;
       begin
          cnt  = -1;
          hcol = {PW{1'b0}};
@@ -87,9 +92,7 @@ module hammdec
    //#########################################################################
    // Syndrome + single-error correction
    //#########################################################################
-   integer       k;
-   reg  [PW-1:0] syn;
-   reg  [DW-1:0] corr;
+
    always @* begin
       // syndrome: received check XOR check recomputed from data
       syn = rchk;

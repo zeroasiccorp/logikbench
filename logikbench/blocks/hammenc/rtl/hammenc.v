@@ -31,25 +31,29 @@
 // PIPELINE = 1 registers the input (one cycle of latency); PIPELINE = 0 is a
 // pure combinational encoder (clk/nreset unused).
 //
-module hammenc
-  #(parameter DW       = 64,   // information (data) bits
-    parameter PW       = 8,    // Hsiao check bits
-    parameter PIPELINE = 1)    // 1 = register input, 0 = combinational
-   (input              clk,      // clock (used when PIPELINE=1)
-    input              nreset,   // async active-low reset (PIPELINE=1)
-    input  [DW-1:0]    in,       // data
-    output [DW+PW-1:0] out       // codeword {check, data}
+module hammenc #(parameter DW = 64,      // information (data) bits
+                 parameter PW = 8,       // Hsiao check bits
+                 parameter PIPELINE = 1) // 1 = registered, 0 = combinational
+   (
+    input              clk,    // clock (used when PIPELINE=1)
+    input              nreset, // async active-low reset (PIPELINE=1)
+    input [DW-1:0]     in,     // data
+    output [DW+PW-1:0] out     // codeword {check, data}
     );
+
+   // local wires
+   integer       k;
+   reg [DW-1:0]	 in_r;
+   wire [DW-1:0] data;
+   reg [PW-1:0]	 chk;
 
    //#########################################################################
    // Input register (always present); PIPELINE selects whether it is used
    //#########################################################################
-   reg  [DW-1:0] in_r;
-   wire [DW-1:0] data;
 
    always @(posedge clk or negedge nreset)
      if (!nreset)
-       in_r <= {DW{1'b0}};
+       in_r <= 'b0;
      else
        in_r <= in;
 
@@ -59,9 +63,10 @@ module hammenc
    // Hsiao data column for data bit 'idx' (must match hammdec): the (idx+1)-th
    // odd-weight, weight>=3 PW-bit vector, enumerated lightest weight first.
    //#########################################################################
+
    function [PW-1:0] hcol;
       input integer idx;
-      integer w, i, b, pc, cnt;
+      integer	    w, i, b, pc, cnt;
       begin
          cnt  = -1;
          hcol = {PW{1'b0}};
@@ -82,8 +87,7 @@ module hammenc
    //#########################################################################
    // Check-bit generation: check[i] = XOR of columns of all set data bits
    //#########################################################################
-   integer       k;
-   reg  [PW-1:0] chk;
+
    always @* begin
       chk = {PW{1'b0}};
       for (k = 0; k < DW; k = k + 1)
