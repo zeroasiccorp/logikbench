@@ -1,3 +1,10 @@
+// SRAM black boxes referenced by coralnpu.sv (Chisel emits the module names
+// Sram_512x128 / Sram_2048x128 but leaves the implementation to the target
+// technology library). These map coralnpu's 16-bit byte mask onto lambdalib
+// la_spram running in byte mode (BYTEMODE=1), which writes per 8-bit lane and
+// maps to byte-wide FPGA BRAM. lambda_expand places each byte-mask bit at the
+// lane-aligned position wmask[i*8] that la_spram (byte mode) consumes.
+
 module lambda_expand #(
     parameter IDW = 16,  // Input data width
     parameter GDW = 8    // Group width
@@ -33,7 +40,7 @@ module Sram_512x128(
     .dout(wmask_bits)
   );
 
-  la_spram #(.DW(128), .AW(9)) memory (
+  la_spram #(.DW(128), .AW(9), .BYTEMODE(1)) memory (
     .clk(clock),
     .ce(enable),
     .we(write),
@@ -64,7 +71,7 @@ module Sram_2048x128(
     .dout(wmask_bits)
   );
 
-  la_spram #(.DW(128), .AW(11)) memory (
+  la_spram #(.DW(128), .AW(11), .BYTEMODE(1)) memory (
     .clk(clock),
     .ce(enable),
     .we(write),
