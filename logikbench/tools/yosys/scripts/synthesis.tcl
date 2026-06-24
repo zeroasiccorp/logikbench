@@ -8,34 +8,31 @@ yosys echo on
 set sc_refdir [sc_cfg_tool_task_get refdir]
 set fileset [lindex [sc_cfg_get option fileset] 0]
 
-set sc_rtl [concat \
-    [sc_cfg_get_fileset $sc_designlib $fileset systemverilog] \
-    [sc_cfg_get_fileset $sc_designlib $fileset verilog]]
-
-
 set sc_mode [sc_cfg_tool_task_get var mode]
 set sc_command [sc_cfg_tool_task_get var command]
 set sc_options [sc_cfg_tool_task_get var options]
 set sc_liberty [sc_cfg_tool_task_get var liberty]
 
-set sc_slang_args {}
-if { [sc_cfg_exists library $sc_designlib fileset $fileset idir] } {
-    foreach dir [sc_cfg_get library $sc_designlib fileset $fileset idir] {
-        lappend sc_slang_args -I $dir
-    }
-}
-if { [sc_cfg_exists library $sc_designlib fileset $fileset define] } {
-    foreach def [sc_cfg_get library $sc_designlib fileset $fileset define] {
-        lappend sc_slang_args -D $def
-    }
-}
+# The task's pre_process() dumps a resolved slang command file (sc_rtl.f) that
+# flattens the full dependency-fileset graph (+incdir+/+define+/sources). The
+# slang options below mirror the lenient handling used elsewhere and keep
+# simulation-only constructs out of synthesis:
+#   --ignore-assertions  assert/assume/cover property
+#   --ignore-initial     initial blocks (e.g. non-blocking sim init)
+#   --relax-enum-conversions  implicit int<->enum (e.g. Ara struct literals)
+#   --unroll-limit       large compile-time function loops (e.g. hammenc hcol)
+set sc_slang_args [list \
+    --ignore-assertions \
+    --ignore-initial \
+    --relax-enum-conversions \
+    --unroll-limit 2000000]
 
 ###############################
 # Read in Design using Slang
 ################################
 
 yosys plugin -i slang
-yosys read_slang --top $sc_topmodule --ignore-assertions {*}$sc_slang_args {*}$sc_rtl
+yosys read_slang --top $sc_topmodule {*}$sc_slang_args -F sc_rtl.f
 yosys hierarchy -check -top $sc_topmodule
 
 ###############################
