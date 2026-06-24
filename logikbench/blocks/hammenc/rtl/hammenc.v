@@ -42,10 +42,12 @@ module hammenc #(parameter DW = 64,      // information (data) bits
     );
 
    // local wires
-   integer       k;
+   integer       k, i, b, w, cnt;
    reg [DW-1:0]	 in_r;
    wire [DW-1:0] data;
    reg [PW-1:0]	 chk;
+   reg [PW-1:0]  col [0:DW-1];        // Hsiao column per data bit
+   integer       pcnt [0:(1<<PW)-1];  // popcount of each PW-bit pattern
 
    //#########################################################################
    // Input register (always present); PIPELINE selects whether it is used
@@ -60,39 +62,33 @@ module hammenc #(parameter DW = 64,      // information (data) bits
    assign data = PIPELINE ? in_r : in;
 
    //#########################################################################
-   // Hsiao data column for data bit 'idx' (must match hammdec): the (idx+1)-th
+   // Hsiao data columns (must match hammdec): col[idx] is the (idx+1)-th
    // odd-weight, weight>=3 PW-bit vector, enumerated lightest weight first.
-   //#########################################################################
-
-   function [PW-1:0] hcol;
-      input integer idx;
-      integer	    w, i, b, pc, cnt;
-      begin
-         cnt  = -1;
-         hcol = {PW{1'b0}};
-         for (w = 3; w <= PW; w = w + 2)            // odd weights >= 3
-           for (i = 0; i < (1 << PW); i = i + 1) begin
-              pc = 0;
-              for (b = 0; b < PW; b = b + 1)
-                pc = pc + i[b];
-              if (pc == w) begin
-                 cnt = cnt + 1;
-                 if (cnt == idx)
-                   hcol = i[PW-1:0];
-              end
-           end
-      end
-   endfunction
-
-   //#########################################################################
-   // Check-bit generation: check[i] = XOR of columns of all set data bits
+   // The table is built once (not searched per data bit) so elaboration stays
+   // cheap; it is constant and folds away at synthesis. Then check[i] = XOR of
+   // the columns of all set data bits.
    //#########################################################################
 
    always @* begin
+      // popcount of every PW-bit pattern
+      for (i = 0; i < (1 << PW); i = i + 1) begin
+         pcnt[i] = 0;
+         for (b = 0; b < PW; b = b + 1)
+           pcnt[i] = pcnt[i] + i[b];
+      end
+      // odd-weight (>=3) columns, lightest weight first
+      cnt = 0;
+      for (w = 3; w <= PW; w = w + 2)
+        for (i = 0; i < (1 << PW); i = i + 1)
+          if (pcnt[i] == w && cnt < DW) begin
+             col[cnt] = i[PW-1:0];
+             cnt = cnt + 1;
+          end
+      // check bits
       chk = {PW{1'b0}};
       for (k = 0; k < DW; k = k + 1)
         if (data[k])
-          chk = chk ^ hcol(k);
+          chk = chk ^ col[k];
    end
 
    assign out = {chk, data};

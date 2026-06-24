@@ -44,13 +44,15 @@ module hammdec #(parameter DW = 64,      // information (data) bits
     );
 
    // local wires
-   integer          k;
+   integer          k, i, b, w, cnt;
    reg [DW+PW-1:0]  in_r;
    wire [DW+PW-1:0] cw;
    wire [DW-1:0]    data = cw[DW-1:0];
    wire [PW-1:0]    rchk = cw[DW+PW-1:DW];   // received check bits
    reg [PW-1:0]	    syn;
    reg [DW-1:0]	    corr;
+   reg [PW-1:0]     col [0:DW-1];        // Hsiao column per data bit
+   integer          pcnt [0:(1<<PW)-1];  // popcount of each PW-bit pattern
 
    //#########################################################################
    // Input register (always present); PIPELINE selects whether it is used
@@ -65,44 +67,36 @@ module hammdec #(parameter DW = 64,      // information (data) bits
    assign cw = PIPELINE ? in_r : in;
 
    //#########################################################################
-   // Hsiao data column for data bit 'idx' (must match hammenc): the (idx+1)-th
+   // Hsiao data columns (must match hammenc): col[idx] is the (idx+1)-th
    // odd-weight, weight>=3 PW-bit vector, enumerated lightest weight first.
-   //#########################################################################
-
-   function [PW-1:0] hcol;
-      input integer idx;
-      integer	    w, i, b, pc, cnt;
-      begin
-         cnt  = -1;
-         hcol = {PW{1'b0}};
-         for (w = 3; w <= PW; w = w + 2)            // odd weights >= 3
-           for (i = 0; i < (1 << PW); i = i + 1) begin
-              pc = 0;
-              for (b = 0; b < PW; b = b + 1)
-                pc = pc + i[b];
-              if (pc == w) begin
-                 cnt = cnt + 1;
-                 if (cnt == idx)
-                   hcol = i[PW-1:0];
-              end
-           end
-      end
-   endfunction
-
-   //#########################################################################
-   // Syndrome + single-error correction
+   // Built once (not searched per data bit) so elaboration stays cheap; the
+   // table is constant and folds away at synthesis.
    //#########################################################################
 
    always @* begin
+      // popcount of every PW-bit pattern
+      for (i = 0; i < (1 << PW); i = i + 1) begin
+         pcnt[i] = 0;
+         for (b = 0; b < PW; b = b + 1)
+           pcnt[i] = pcnt[i] + i[b];
+      end
+      // odd-weight (>=3) columns, lightest weight first
+      cnt = 0;
+      for (w = 3; w <= PW; w = w + 2)
+        for (i = 0; i < (1 << PW); i = i + 1)
+          if (pcnt[i] == w && cnt < DW) begin
+             col[cnt] = i[PW-1:0];
+             cnt = cnt + 1;
+          end
       // syndrome: received check XOR check recomputed from data
       syn = rchk;
       for (k = 0; k < DW; k = k + 1)
         if (data[k])
-          syn = syn ^ hcol(k);
+          syn = syn ^ col[k];
       // a single data error makes syndrome == that bit's (odd-weight) column;
       // double errors give even-weight syndromes that match no data column
       for (k = 0; k < DW; k = k + 1)
-        corr[k] = data[k] ^ (syn == hcol(k));
+        corr[k] = data[k] ^ (syn == col[k]);
    end
 
    assign out      = corr;

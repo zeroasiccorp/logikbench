@@ -20,12 +20,10 @@ set sc_liberty [sc_cfg_tool_task_get var liberty]
 #   --ignore-assertions  assert/assume/cover property
 #   --ignore-initial     initial blocks (e.g. non-blocking sim init)
 #   --relax-enum-conversions  implicit int<->enum (e.g. Ara struct literals)
-#   --unroll-limit       large compile-time function loops (e.g. hammenc hcol)
 set sc_slang_args [list \
     --ignore-assertions \
     --ignore-initial \
-    --relax-enum-conversions \
-    --unroll-limit 2000000]
+    --relax-enum-conversions]
 
 ###############################
 # Read in Design using Slang
