@@ -1,4 +1,4 @@
-// Compiled by morty-0.9.0 / 2026-06-23 17:56:02.999991823 -04:00
+// Compiled by morty-0.9.0 / 2026-06-23 22:55:19.929833398 -04:00
 
 // Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
@@ -1040,15 +1040,8 @@ endpackage
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// Macro bodies included by prim_assert.sv for tools that support full SystemVerilog and SVA syntax.
-// See prim_assert.sv for documentation for each of the macros.
-
-
-
-// Formal tools will ignore the initial construct, so use static assertion as a workaround.
-// This workaround terminates design elaboration if the __prop predict is false.
-// It calls $fatal() with the first argument equal to 2, it outputs the statistics about the memory
-// and CPU time.
+// Macro bodies included by prim_assert.sv for tools that don't support assertions. See
+// prim_assert.sv for documentation for each of the macros.
 
 
 
@@ -1063,14 +1056,6 @@ endpackage
 
 
 
-
-
-
-
-
-
-
- 
 
 
 //////////////////////////////
@@ -1941,15 +1926,8 @@ endpackage : spi_device_pkg
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// Macro bodies included by prim_assert.sv for tools that support full SystemVerilog and SVA syntax.
-// See prim_assert.sv for documentation for each of the macros.
-
-
-
-// Formal tools will ignore the initial construct, so use static assertion as a workaround.
-// This workaround terminates design elaboration if the __prop predict is false.
-// It calls $fatal() with the first argument equal to 2, it outputs the statistics about the memory
-// and CPU time.
+// Macro bodies included by prim_assert.sv for tools that don't support assertions. See
+// prim_assert.sv for documentation for each of the macros.
 
 
 
@@ -1964,14 +1942,6 @@ endpackage : spi_device_pkg
 
 
 
-
-
-
-
-
-
-
- 
 
 
 //////////////////////////////
@@ -2261,15 +2231,8 @@ endmodule
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// Macro bodies included by prim_assert.sv for tools that support full SystemVerilog and SVA syntax.
-// See prim_assert.sv for documentation for each of the macros.
-
-
-
-// Formal tools will ignore the initial construct, so use static assertion as a workaround.
-// This workaround terminates design elaboration if the __prop predict is false.
-// It calls $fatal() with the first argument equal to 2, it outputs the statistics about the memory
-// and CPU time.
+// Macro bodies included by prim_assert.sv for tools that don't support assertions. See
+// prim_assert.sv for documentation for each of the macros.
 
 
 
@@ -2284,14 +2247,6 @@ endmodule
 
 
 
-
-
-
-
-
-
-
- 
 
 
 //////////////////////////////
@@ -2588,15 +2543,8 @@ endmodule
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// Macro bodies included by prim_assert.sv for tools that support full SystemVerilog and SVA syntax.
-// See prim_assert.sv for documentation for each of the macros.
-
-
-
-// Formal tools will ignore the initial construct, so use static assertion as a workaround.
-// This workaround terminates design elaboration if the __prop predict is false.
-// It calls $fatal() with the first argument equal to 2, it outputs the statistics about the memory
-// and CPU time.
+// Macro bodies included by prim_assert.sv for tools that don't support assertions. See
+// prim_assert.sv for documentation for each of the macros.
 
 
 
@@ -2611,14 +2559,6 @@ endmodule
 
 
 
-
-
-
-
-
-
-
- 
 
 
 //////////////////////////////
@@ -5021,15 +4961,8 @@ endpackage : prim_count_pkg
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// Macro bodies included by prim_assert.sv for tools that support full SystemVerilog and SVA syntax.
-// See prim_assert.sv for documentation for each of the macros.
-
-
-
-// Formal tools will ignore the initial construct, so use static assertion as a workaround.
-// This workaround terminates design elaboration if the __prop predict is false.
-// It calls $fatal() with the first argument equal to 2, it outputs the statistics about the memory
-// and CPU time.
+// Macro bodies included by prim_assert.sv for tools that don't support assertions. See
+// prim_assert.sv for documentation for each of the macros.
 
 
 
@@ -5044,14 +4977,6 @@ endpackage : prim_count_pkg
 
 
 
-
-
-
-
-
-
-
- 
 
 
 //////////////////////////////
@@ -5372,227 +5297,6 @@ assign fpv_force = '0;
   ////////////////
   // Assertions //
   ////////////////
-//VCS coverage off
-  // pragma coverage off
-
-  // We need to disable most assertions in that case using a helper signal.
-  // We can't rely on err_o since some error patterns cannot be detected (e.g. all error
-  // patterns that still fulfil the sum constraint).
-  logic fpv_err_present;
-  assign fpv_err_present = |fpv_force;
-
-  // Helper functions for assertions.
-  function automatic logic signed [Width+1:0] max(logic signed [Width+1:0] a,
-                                                  logic signed [Width+1:0] b);
-    return (a > b) ? a : b;
-  endfunction
-
-  function automatic logic signed [Width+1:0] min(logic signed [Width+1:0] a,
-                                                  logic signed [Width+1:0] b);
-    return (a < b) ? a : b;
-  endfunction
-  //VCS coverage on
-  // pragma coverage on
-
-  if (!(PossibleActions & Clr)) begin : g_check_no_clr
-      ClrNeverTrue_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) (clr_i !== 1'b1))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_count_0/rtl/prim_count.sv", 5,         
-         "ClrNeverTrue_A");                                                       
-                                                              
-    end
-  end
-  if (!(PossibleActions & Set)) begin : g_check_no_set
-      SetNeverTrue_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) (set_i !== 1'b1))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_count_0/rtl/prim_count.sv", 5,         
-         "SetNeverTrue_A");                                                       
-                                                              
-    end
-  end
-  if (!(PossibleActions & Incr)) begin : g_check_no_incr
-      IncrNeverTrue_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) (incr_en_i !== 1'b1))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_count_0/rtl/prim_count.sv", 5,         
-         "IncrNeverTrue_A");                                                       
-                                                              
-    end
-  end
-  if (!(PossibleActions & Decr)) begin : g_check_no_decr
-      DecrNeverTrue_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) (decr_en_i !== 1'b1))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_count_0/rtl/prim_count.sv", 5,         
-         "DecrNeverTrue_A");                                                       
-                                                              
-    end
-  end
-
-  // Cnt next
-    CntNext_A: assert property (@(posedge clk_i) disable iff ((err_d || fpv_err_present || !rst_ni) !== '0) (rst_ni
-      |=>
-      $past(!commit_i) || (cnt_o == $past(cnt_after_commit_o))))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_count_0/rtl/prim_count.sv", 5,         
-         "CntNext_A");                                                       
-                                                              
-    end
-
-  // Clear
-  if (PossibleActions & Clr) begin : g_check_clr_fwd_a
-      ClrFwd_A: assert property (@(posedge clk_i) disable iff ((err_d || fpv_err_present || !rst_ni) !== '0) (rst_ni && commit_i && clr_i
-            |=>
-            (cnt_o == ResetValue) &&
-            (cnt_q[1] == ({Width{1'b1}} - ResetValue))))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_count_0/rtl/prim_count.sv", 5,         
-         "ClrFwd_A");                                                       
-                                                              
-    end
-  end
-
-  // Set
-  if (PossibleActions & Set) begin : g_check_set_fwd_a
-      SetFwd_A: assert property (@(posedge clk_i) disable iff ((err_d || fpv_err_present || !rst_ni) !== '0) (rst_ni && commit_i && set_i && !clr_i
-        |=>
-        (cnt_o == $past(set_cnt_i)) &&
-        (cnt_q[1] == ({Width{1'b1}} - $past(set_cnt_i)))))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_count_0/rtl/prim_count.sv", 5,         
-         "SetFwd_A");                                                       
-                                                              
-    end
-  end
-
-  // Do not count if both increment and decrement are asserted.
-  if ((PossibleActions & Incr) && (PossibleActions & Decr)) begin : g_check_inc_and_dec
-      IncrDecrUpDnCnt_A: assert property (@(posedge clk_i) disable iff ((err_d || fpv_err_present || !rst_ni) !== '0) (rst_ni && incr_en_i && decr_en_i && !(clr_i || set_i)
-        |=>
-        $stable(cnt_o) && $stable(cnt_q[1])))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_count_0/rtl/prim_count.sv", 5,         
-         "IncrDecrUpDnCnt_A");                                                       
-                                                              
-    end
-  end
-
-  // Increment
-  if ((PossibleActions & Incr)) begin : g_check_incr
-      IncrUpCnt_A: assert property (@(posedge clk_i) disable iff ((err_d || fpv_err_present || !rst_ni) !== '0) (rst_ni && incr_en_i && !(clr_i || set_i || decr_en_i) && commit_i
-        |=>
-        cnt_o == min($past(cnt_o) + $past({2'b0, step_i}), {2'b0, {Width{1'b1}}})))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_count_0/rtl/prim_count.sv", 5,         
-         "IncrUpCnt_A");                                                       
-                                                              
-    end
-      IncrDnCnt_A: assert property (@(posedge clk_i) disable iff ((err_d || fpv_err_present || !rst_ni) !== '0) (rst_ni && incr_en_i && !(clr_i || set_i || decr_en_i) && commit_i
-        |=>
-        cnt_q[1] == max($past(signed'({2'b0, cnt_q[1]})) - $past({2'b0, step_i}), '0)))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_count_0/rtl/prim_count.sv", 5,         
-         "IncrDnCnt_A");                                                       
-                                                              
-    end
-      UpCntIncrStable_A: assert property (@(posedge clk_i) disable iff ((err_d || fpv_err_present || !rst_ni) !== '0) (incr_en_i && !(clr_i || set_i || decr_en_i) &&
-        cnt_o == {Width{1'b1}}
-        |=>
-        $stable(cnt_o)))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_count_0/rtl/prim_count.sv", 5,         
-         "UpCntIncrStable_A");                                                       
-                                                              
-    end
-      DnCntIncrStable_A: assert property (@(posedge clk_i) disable iff ((err_d || fpv_err_present || !rst_ni) !== '0) (rst_ni && incr_en_i && !(clr_i || set_i || decr_en_i) &&
-        cnt_q[1] == '0
-        |=>
-        $stable(cnt_q[1])))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_count_0/rtl/prim_count.sv", 5,         
-         "DnCntIncrStable_A");                                                       
-                                                              
-    end
-  end
-
-  // Decrement
-  if ((PossibleActions & Decr)) begin : g_check_decr
-      DecrUpCnt_A: assert property (@(posedge clk_i) disable iff ((err_d || fpv_err_present || !rst_ni) !== '0) (rst_ni && decr_en_i && !(clr_i || set_i || incr_en_i) && commit_i
-        |=>
-        cnt_o == max($past(signed'({2'b0, cnt_o})) - $past({2'b0, step_i}), '0)))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_count_0/rtl/prim_count.sv", 5,         
-         "DecrUpCnt_A");                                                       
-                                                              
-    end
-      DecrDnCnt_A: assert property (@(posedge clk_i) disable iff ((err_d || fpv_err_present || !rst_ni) !== '0) (rst_ni && decr_en_i && !(clr_i || set_i || incr_en_i) && commit_i
-        |=>
-        cnt_q[1] == min($past(cnt_q[1]) + $past({2'b0, step_i}), {2'b0, {Width{1'b1}}})))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_count_0/rtl/prim_count.sv", 5,         
-         "DecrDnCnt_A");                                                       
-                                                              
-    end
-      UpCntDecrStable_A: assert property (@(posedge clk_i) disable iff ((err_d || fpv_err_present || !rst_ni) !== '0) (decr_en_i && !(clr_i || set_i || incr_en_i) &&
-        cnt_o == '0
-        |=>
-        $stable(cnt_o)))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_count_0/rtl/prim_count.sv", 5,         
-         "UpCntDecrStable_A");                                                       
-                                                              
-    end
-      DnCntDecrStable_A: assert property (@(posedge clk_i) disable iff ((err_d || fpv_err_present || !rst_ni) !== '0) (rst_ni && decr_en_i && !(clr_i || set_i || incr_en_i) &&
-        cnt_q[1] == {Width{1'b1}}
-        |=>
-        $stable(cnt_q[1])))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_count_0/rtl/prim_count.sv", 5,         
-         "DnCntDecrStable_A");                                                       
-                                                              
-    end
-  end
-
-  // A backwards check for count changes. This asserts that the count only changes if one of the
-  // inputs that should tell it to change (clear, set, increment, decrement) does so.
-    ChangeBackward_A: assert property (@(posedge clk_i) disable iff ((err_d || fpv_err_present || !rst_ni) !== '0) (rst_ni ##1 $changed(cnt_o) && $changed(cnt_q[1])
-          |->
-          $past(clr_i || set_i || (commit_i && (incr_en_i || decr_en_i)))))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_count_0/rtl/prim_count.sv", 5,         
-         "ChangeBackward_A");                                                       
-                                                              
-    end
-
-  // Check that count errors are reported properly in err_o
-  //
-  // This is essentially a "|=> implication", but is structured in a way to avoid generating a cover
-  // property for the left hand side if PrimCountFpv is not defined (because we won't have a way to
-  // inject an error if not)
-    CntErrReported_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) (##1 $past((cnt_q[1] + cnt_q[0]) != {Width{1'b1}}) == err_o))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_count_0/rtl/prim_count.sv", 5,         
-         "CntErrReported_A");                                                       
-                                                              
-    end
- 
-
-  // This logic that will be assign to one, when user adds macro
-  // ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT to check the error with alert, in case that prim_count
-  // is used in design without adding this assertion check.
-  logic unused_assert_connected;
-
-    initial begin                                                                      
-    
-    
-    
-    #1ps;                                                                            
-    AssertConnected_A: assert (unused_assert_connected === 1'b1 || !EnableAlertTriggerSVA)                                                          
-      else begin                                                                     
-        $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_count_0/rtl/prim_count.sv", 5,         
-         "AssertConnected_A");                                                       
-                                                        
-      end                                                                            
-  end                                                                                
-
 
 
 endmodule // prim_count
@@ -5695,15 +5399,8 @@ endmodule // prim_count
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// Macro bodies included by prim_assert.sv for tools that support full SystemVerilog and SVA syntax.
-// See prim_assert.sv for documentation for each of the macros.
-
-
-
-// Formal tools will ignore the initial construct, so use static assertion as a workaround.
-// This workaround terminates design elaboration if the __prop predict is false.
-// It calls $fatal() with the first argument equal to 2, it outputs the statistics about the memory
-// and CPU time.
+// Macro bodies included by prim_assert.sv for tools that don't support assertions. See
+// prim_assert.sv for documentation for each of the macros.
 
 
 
@@ -5718,14 +5415,6 @@ endmodule // prim_count
 
 
 
-
-
-
-
-
-
-
- 
 
 
 //////////////////////////////
@@ -7150,15 +6839,8 @@ endpackage : prim_mubi_pkg
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// Macro bodies included by prim_assert.sv for tools that support full SystemVerilog and SVA syntax.
-// See prim_assert.sv for documentation for each of the macros.
-
-
-
-// Formal tools will ignore the initial construct, so use static assertion as a workaround.
-// This workaround terminates design elaboration if the __prop predict is false.
-// It calls $fatal() with the first argument equal to 2, it outputs the statistics about the memory
-// and CPU time.
+// Macro bodies included by prim_assert.sv for tools that don't support assertions. See
+// prim_assert.sv for documentation for each of the macros.
 
 
 
@@ -7173,14 +6855,6 @@ endpackage : prim_mubi_pkg
 
 
 
-
-
-
-
-
-
-
- 
 
 
 //////////////////////////////
@@ -7473,15 +7147,8 @@ endmodule
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// Macro bodies included by prim_assert.sv for tools that support full SystemVerilog and SVA syntax.
-// See prim_assert.sv for documentation for each of the macros.
-
-
-
-// Formal tools will ignore the initial construct, so use static assertion as a workaround.
-// This workaround terminates design elaboration if the __prop predict is false.
-// It calls $fatal() with the first argument equal to 2, it outputs the statistics about the memory
-// and CPU time.
+// Macro bodies included by prim_assert.sv for tools that don't support assertions. See
+// prim_assert.sv for documentation for each of the macros.
 
 
 
@@ -7496,14 +7163,6 @@ endmodule
 
 
 
-
-
-
-
-
-
-
- 
 
 
 //////////////////////////////
@@ -7917,15 +7576,8 @@ endmodule : prim_flop_2sync
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// Macro bodies included by prim_assert.sv for tools that support full SystemVerilog and SVA syntax.
-// See prim_assert.sv for documentation for each of the macros.
-
-
-
-// Formal tools will ignore the initial construct, so use static assertion as a workaround.
-// This workaround terminates design elaboration if the __prop predict is false.
-// It calls $fatal() with the first argument equal to 2, it outputs the statistics about the memory
-// and CPU time.
+// Macro bodies included by prim_assert.sv for tools that don't support assertions. See
+// prim_assert.sv for documentation for each of the macros.
 
 
 
@@ -7940,14 +7592,6 @@ endmodule : prim_flop_2sync
 
 
 
-
-
-
-
-
-
-
- 
 
 
 //////////////////////////////
@@ -8272,15 +7916,8 @@ endmodule
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// Macro bodies included by prim_assert.sv for tools that support full SystemVerilog and SVA syntax.
-// See prim_assert.sv for documentation for each of the macros.
-
-
-
-// Formal tools will ignore the initial construct, so use static assertion as a workaround.
-// This workaround terminates design elaboration if the __prop predict is false.
-// It calls $fatal() with the first argument equal to 2, it outputs the statistics about the memory
-// and CPU time.
+// Macro bodies included by prim_assert.sv for tools that don't support assertions. See
+// prim_assert.sv for documentation for each of the macros.
 
 
 
@@ -8295,14 +7932,6 @@ endmodule
 
 
 
-
-
-
-
-
-
-
- 
 
 
 //////////////////////////////
@@ -8519,42 +8148,10 @@ module prim_onehot_check #(
   // Binary tree logic //
   ///////////////////////
 
-  initial begin                                                                      
-    NumSources_A: assert (OneHotWidth >= 1)                                                          
-      else begin                                                                     
-        $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_onehot_check_0/rtl/prim_onehot_check.sv", 5,         
-         "NumSources_A");                                                       
-                                                        
-      end                                                                            
-  end                                                                                
-
-  initial begin                                                                      
-    AddrWidth_A: assert (AddrWidth >= 1)                                                          
-      else begin                                                                     
-        $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_onehot_check_0/rtl/prim_onehot_check.sv", 5,         
-         "AddrWidth_A");                                                       
-                                                        
-      end                                                                            
-  end                                                                                
-
-  initial begin                                                                      
-    AddrRange_A: assert (OneHotWidth <= 2**AddrWidth)                                                          
-      else begin                                                                     
-        $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_onehot_check_0/rtl/prim_onehot_check.sv", 5,         
-         "AddrRange_A");                                                       
-                                                        
-      end                                                                            
-  end                                                                                
-
-  initial begin                                                                      
-    AddrImpliesEnable_A: assert (AddrCheck && EnableCheck || !AddrCheck)                                                          
-      else begin                                                                     
-        $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_onehot_check_0/rtl/prim_onehot_check.sv", 5,         
-         "AddrImpliesEnable_A");                                                       
-                                                        
-      end                                                                            
-  end                                                                                
-
+  
+  
+  
+  
 
   // Align to powers of 2 for simplicity.
   // A full binary tree with N levels has 2**N + 2**N-1 nodes.
@@ -8612,32 +8209,17 @@ module prim_onehot_check #(
 
   // Check that no more than 1 bit is set in the vector.
   assign oh0_err = err_tree[0];
-    Onehot0Check_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) (!$onehot0(oh_i) |-> err_o))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_onehot_check_0/rtl/prim_onehot_check.sv", 5,         
-         "Onehot0Check_A");                                                       
-                                                              
-    end
+  
 
   // Check that en_i agrees with (|oh_i).
   // Note: if StrictCheck 0, the oh_i vector may be all-zero if en_i == 1 (but not vice versa).
   if (EnableCheck) begin : gen_enable_check
     if (StrictCheck) begin : gen_strict
       assign enable_err = or_tree[0] ^ en_i;
-        EnableCheck_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) ((|oh_i) != en_i |-> err_o))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_onehot_check_0/rtl/prim_onehot_check.sv", 5,         
-         "EnableCheck_A");                                                       
-                                                              
-    end
+      
     end else begin : gen_not_strict
       assign enable_err = !en_i && or_tree[0];
-        EnableCheck_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) (!en_i && (|oh_i) |-> err_o))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_onehot_check_0/rtl/prim_onehot_check.sv", 5,         
-         "EnableCheck_A");                                                       
-                                                              
-    end
+      
     end
   end else begin : gen_no_enable_check
     logic unused_or_tree;
@@ -8648,12 +8230,7 @@ module prim_onehot_check #(
   // Check that the set bit is actually in the correct position.
   if (AddrCheck) begin : gen_addr_check_strict
     assign addr_err = or_tree[0] ^ and_tree[0];
-      AddrCheck_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) (oh_i[addr_i] != (|oh_i) |-> err_o))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_onehot_check_0/rtl/prim_onehot_check.sv", 5,         
-         "AddrCheck_A");                                                       
-                                                              
-    end
+    
   end else begin : gen_no_addr_check_strict
     logic unused_and_tree;
     assign unused_and_tree = ^and_tree;
@@ -8671,20 +8248,6 @@ module prim_onehot_check #(
   // That macro is also designed to drive our local unused_assert_connected variable to true. We add
   // an assertion locally that checks (just after the start of time) that it is indeed true. This
   // gives us confidence that the user has bound up the alert correctly.
-logic unused_assert_connected;
-    initial begin                                                                      
-    
-    
-    
-    #1ps;                                                                            
-    AssertConnected_A: assert (unused_assert_connected === 1'b1 || !EnableAlertTriggerSVA)                                                          
-      else begin                                                                     
-        $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_onehot_check_0/rtl/prim_onehot_check.sv", 5,         
-         "AssertConnected_A");                                                       
-                                                        
-      end                                                                            
-  end                                                                                
-
 
 
 endmodule : prim_onehot_check
@@ -9095,15 +8658,8 @@ endpackage
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// Macro bodies included by prim_assert.sv for tools that support full SystemVerilog and SVA syntax.
-// See prim_assert.sv for documentation for each of the macros.
-
-
-
-// Formal tools will ignore the initial construct, so use static assertion as a workaround.
-// This workaround terminates design elaboration if the __prop predict is false.
-// It calls $fatal() with the first argument equal to 2, it outputs the statistics about the memory
-// and CPU time.
+// Macro bodies included by prim_assert.sv for tools that don't support assertions. See
+// prim_assert.sv for documentation for each of the macros.
 
 
 
@@ -9118,14 +8674,6 @@ endpackage
 
 
 
-
-
-
-
-
-
-
- 
 
 
 //////////////////////////////
@@ -9337,15 +8885,7 @@ module prim_arbiter_fixed #(
   input                    ready_i
 );
 
-  initial begin                                                                      
-    CheckNGreaterZero_A: assert (N > 0)                                                          
-      else begin                                                                     
-        $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_arbiter_0/rtl/prim_arbiter_fixed.sv", 5,         
-         "CheckNGreaterZero_A");                                                       
-                                                        
-      end                                                                            
-  end                                                                                
-
+  
 
   // this case is basically just a bypass
   if (N == 1) begin : gen_degenerate_case
@@ -9445,101 +8985,33 @@ module prim_arbiter_fixed #(
 
   // KNOWN assertions on outputs, except for data as that may be partially X in simulation
   // e.g. when used on a BUS
-    ValidKnown_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) (!$isunknown(valid_o)))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_arbiter_0/rtl/prim_arbiter_fixed.sv", 5,         
-         "ValidKnown_A");                                                       
-                                                              
-    end                                           
-
-    GrantKnown_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) (!$isunknown(gnt_o)))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_arbiter_0/rtl/prim_arbiter_fixed.sv", 5,         
-         "GrantKnown_A");                                                       
-                                                              
-    end                                           
-
-    IdxKnown_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) (!$isunknown(idx_o)))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_arbiter_0/rtl/prim_arbiter_fixed.sv", 5,         
-         "IdxKnown_A");                                                       
-                                                              
-    end                                           
-
+  
+  
+  
 
   // Make sure no higher prio req is asserted
-    Priority_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) (|req_i |-> req_i[idx_o] && (((N'(1'b1) << idx_o) - 1'b1) & req_i) == '0))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_arbiter_0/rtl/prim_arbiter_fixed.sv", 5,         
-         "Priority_A");                                                       
-                                                              
-    end
+  
 
   // we can only grant one requester at a time
-    CheckHotOne_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) ($onehot0(gnt_o)))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_arbiter_0/rtl/prim_arbiter_fixed.sv", 5,         
-         "CheckHotOne_A");                                                       
-                                                              
-    end
+  
   // A grant implies that the sink is ready
-    GntImpliesReady_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) (|gnt_o |-> ready_i))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_arbiter_0/rtl/prim_arbiter_fixed.sv", 5,         
-         "GntImpliesReady_A");                                                       
-                                                              
-    end
+  
   // A grant implies that the arbiter asserts valid as well
-    GntImpliesValid_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) (|gnt_o |-> valid_o))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_arbiter_0/rtl/prim_arbiter_fixed.sv", 5,         
-         "GntImpliesValid_A");                                                       
-                                                              
-    end
+  
   // A request and a sink that is ready imply a grant
-    ReqAndReadyImplyGrant_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) (|req_i && ready_i |-> |gnt_o))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_arbiter_0/rtl/prim_arbiter_fixed.sv", 5,         
-         "ReqAndReadyImplyGrant_A");                                                       
-                                                              
-    end
+  
   // A request and a sink that is ready imply a grant
-    ReqImpliesValid_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) (|req_i |-> valid_o))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_arbiter_0/rtl/prim_arbiter_fixed.sv", 5,         
-         "ReqImpliesValid_A");                                                       
-                                                              
-    end
+  
   // Both conditions above combined and reversed
-    ReadyAndValidImplyGrant_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) (ready_i && valid_o |-> |gnt_o))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_arbiter_0/rtl/prim_arbiter_fixed.sv", 5,         
-         "ReadyAndValidImplyGrant_A");                                                       
-                                                              
-    end
+  
   // Both conditions above combined and reversed
-    NoReadyValidNoGrant_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) (!(ready_i || valid_o) |-> gnt_o == 0))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_arbiter_0/rtl/prim_arbiter_fixed.sv", 5,         
-         "NoReadyValidNoGrant_A");                                                       
-                                                              
-    end
+  
   // check index / grant correspond
-    IndexIsCorrect_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) (ready_i && valid_o |-> gnt_o[idx_o] && req_i[idx_o]))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_arbiter_0/rtl/prim_arbiter_fixed.sv", 5,         
-         "IndexIsCorrect_A");                                                       
-                                                              
-    end
+  
 
 if (EnDataPort) begin: gen_data_port_assertion
   // data flow
-    DataFlow_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) (ready_i && valid_o |-> data_o == data_i[idx_o]))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_arbiter_0/rtl/prim_arbiter_fixed.sv", 5,         
-         "DataFlow_A");                                                       
-                                                              
-    end
+  
 end
 
 endmodule : prim_arbiter_fixed
@@ -9647,15 +9119,8 @@ endmodule : prim_arbiter_fixed
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// Macro bodies included by prim_assert.sv for tools that support full SystemVerilog and SVA syntax.
-// See prim_assert.sv for documentation for each of the macros.
-
-
-
-// Formal tools will ignore the initial construct, so use static assertion as a workaround.
-// This workaround terminates design elaboration if the __prop predict is false.
-// It calls $fatal() with the first argument equal to 2, it outputs the statistics about the memory
-// and CPU time.
+// Macro bodies included by prim_assert.sv for tools that don't support assertions. See
+// prim_assert.sv for documentation for each of the macros.
 
 
 
@@ -9670,14 +9135,6 @@ endmodule : prim_arbiter_fixed
 
 
 
-
-
-
-
-
-
-
- 
 
 
 //////////////////////////////
@@ -10095,163 +9552,28 @@ module prim_diff_decode #(
   // shared assertions
   // sigint -> level stays the same during sigint
   // $isunknown is needed to avoid false assertion in first clock cycle
-    SigintLevelCheck_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) (##1 sigint_o |-> $stable(level_o)))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_diff_decode_0/rtl/prim_diff_decode.sv", 5,         
-         "SigintLevelCheck_A");                                                       
-                                                              
-    end
+  
   // sigint -> no additional events asserted at output
-    SigintEventCheck_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) (sigint_o |-> !event_o))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_diff_decode_0/rtl/prim_diff_decode.sv", 5,         
-         "SigintEventCheck_A");                                                       
-                                                              
-    end
-    SigintRiseCheck_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) (sigint_o |-> !rise_o))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_diff_decode_0/rtl/prim_diff_decode.sv", 5,         
-         "SigintRiseCheck_A");                                                       
-                                                              
-    end
-    SigintFallCheck_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) (sigint_o |-> !fall_o))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_diff_decode_0/rtl/prim_diff_decode.sv", 5,         
-         "SigintFallCheck_A");                                                       
-                                                              
-    end
+  
+  
+  
 
   if (AsyncOn) begin : gen_async_assert
     // assertions for asynchronous case
-// Correctly detect signal integrity issue:
-    // If diff_pd and diff_nd are equal for (SkewCycles + 1) consecutive cycles, sigint_o must be
-    // asserted.
-      SigintCheck0_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) (gen_async.diff_pd == gen_async.diff_nd [* (SkewCycles + 1)] |-> sigint_o))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_diff_decode_0/rtl/prim_diff_decode.sv", 5,         
-         "SigintCheck0_A");                                                       
-                                                              
-    end
-
-    // The following assertions (SigintCheck1_A to SigintCheck4_A) describe specific
-    // 1-cycle skew patterns that should lead to an edge. These are highly
-    // specific to SkewCycles = 1. Therefore, they are only included when SkewCycles is 1.
-    // the synchronizer adds 2 cycles of latency with respect to input signals.
-    if (SkewCycles == 1) begin : gen_specific_skew_asserts
-        SigintCheck1_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) (##1 (gen_async.diff_pd ^ gen_async.diff_nd) &&
-          $stable(gen_async.diff_pd) && $stable(gen_async.diff_nd) ##1
-          $rose(gen_async.diff_pd) && $stable(gen_async.diff_nd) ##1
-          $stable(gen_async.diff_pd) && $fell(gen_async.diff_nd)
-          |-> rise_o))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_diff_decode_0/rtl/prim_diff_decode.sv", 5,         
-         "SigintCheck1_A");                                                       
-                                                              
-    end
-        SigintCheck2_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) (##1 (gen_async.diff_pd ^ gen_async.diff_nd) &&
-          $stable(gen_async.diff_pd) && $stable(gen_async.diff_nd) ##1
-          $fell(gen_async.diff_pd) && $stable(gen_async.diff_nd) ##1
-          $stable(gen_async.diff_pd) && $rose(gen_async.diff_nd)
-          |-> fall_o))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_diff_decode_0/rtl/prim_diff_decode.sv", 5,         
-         "SigintCheck2_A");                                                       
-                                                              
-    end
-        SigintCheck3_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) (##1 (gen_async.diff_pd ^ gen_async.diff_nd) &&
-          $stable(gen_async.diff_pd) && $stable(gen_async.diff_nd) ##1
-          $rose(gen_async.diff_nd) && $stable(gen_async.diff_pd) ##1
-          $stable(gen_async.diff_nd) && $fell(gen_async.diff_pd)
-          |-> fall_o))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_diff_decode_0/rtl/prim_diff_decode.sv", 5,         
-         "SigintCheck3_A");                                                       
-                                                              
-    end
-        SigintCheck4_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) (##1 (gen_async.diff_pd ^ gen_async.diff_nd) &&
-          $stable(gen_async.diff_pd) && $stable(gen_async.diff_nd) ##1
-          $fell(gen_async.diff_nd) && $stable(gen_async.diff_pd) ##1
-          $stable(gen_async.diff_nd) && $rose(gen_async.diff_pd)
-          |-> rise_o))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_diff_decode_0/rtl/prim_diff_decode.sv", 5,         
-         "SigintCheck4_A");                                                       
-                                                              
-    end
-    end
-    
-    // Correctly detect edges: an event should be asserted within SkewCycles cycles after a valid
-    // transition
-      RiseCheck_A: assert property (@(posedge clk_i) disable iff ((!rst_ni || sigint_o) !== '0) (!sigint_o ##1 $rose(gen_async.diff_pd) && (gen_async.diff_pd ^ gen_async.diff_nd) |->
-        ##[0:SkewCycles] rise_o))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_diff_decode_0/rtl/prim_diff_decode.sv", 5,         
-         "RiseCheck_A");                                                       
-                                                              
-    end
-      FallCheck_A: assert property (@(posedge clk_i) disable iff ((!rst_ni || sigint_o) !== '0) (!sigint_o ##1 $fell(gen_async.diff_pd) && (gen_async.diff_pd ^ gen_async.diff_nd) |->
-        ##[0:SkewCycles] fall_o))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_diff_decode_0/rtl/prim_diff_decode.sv", 5,         
-         "FallCheck_A");                                                       
-                                                              
-    end
-      EventCheck_A: assert property (@(posedge clk_i) disable iff ((!rst_ni || sigint_o) !== '0) (!sigint_o ##1 $changed(gen_async.diff_pd) && (gen_async.diff_pd ^ gen_async.diff_nd) |->
-        ##[0:SkewCycles] event_o))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_diff_decode_0/rtl/prim_diff_decode.sv", 5,         
-         "EventCheck_A");                                                       
-                                                              
-    end
-    // Correctly detect level: the output level should match diff_pd once the differential pair is
-    // stable
-      LevelCheck0_A: assert property (@(posedge clk_i) disable iff ((!rst_ni || sigint_o) !== '0) (// Stable for SkewCycles + 1 cycles
-        !sigint_o && (gen_async.diff_pd ^ gen_async.diff_nd) [* (SkewCycles + 1)] |->
-        gen_async.diff_pd == level_o))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_diff_decode_0/rtl/prim_diff_decode.sv", 5,         
-         "LevelCheck0_A");                                                       
-                                                              
-    end
 
   end else begin : gen_sync_assert
     // assertions for synchronous case
 
   // correctly detect sigint issue
-      SigintCheck_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) (diff_pi == diff_ni |-> sigint_o))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_diff_decode_0/rtl/prim_diff_decode.sv", 5,         
-         "SigintCheck_A");                                                       
-                                                              
-    end
+    
   
 
     // correctly detect edges
-      RiseCheck_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) (##1 $rose(diff_pi)    && (diff_pi ^ diff_ni) |->  rise_o))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_diff_decode_0/rtl/prim_diff_decode.sv", 5,         
-         "RiseCheck_A");                                                       
-                                                              
-    end
-      FallCheck_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) (##1 $fell(diff_pi)    && (diff_pi ^ diff_ni) |->  fall_o))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_diff_decode_0/rtl/prim_diff_decode.sv", 5,         
-         "FallCheck_A");                                                       
-                                                              
-    end
-      EventCheck_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) (##1 $changed(diff_pi) && (diff_pi ^ diff_ni) |-> event_o))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_diff_decode_0/rtl/prim_diff_decode.sv", 5,         
-         "EventCheck_A");                                                       
-                                                              
-    end
+    
+    
+    
     // correctly detect level
-      LevelCheck_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) ((diff_pi ^ diff_ni) |-> diff_pi == level_o))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_diff_decode_0/rtl/prim_diff_decode.sv", 5,         
-         "LevelCheck_A");                                                       
-                                                              
-    end
+    
   end
 
 endmodule : prim_diff_decode
@@ -10348,15 +9670,8 @@ endmodule : prim_diff_decode
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// Macro bodies included by prim_assert.sv for tools that support full SystemVerilog and SVA syntax.
-// See prim_assert.sv for documentation for each of the macros.
-
-
-
-// Formal tools will ignore the initial construct, so use static assertion as a workaround.
-// This workaround terminates design elaboration if the __prop predict is false.
-// It calls $fatal() with the first argument equal to 2, it outputs the statistics about the memory
-// and CPU time.
+// Macro bodies included by prim_assert.sv for tools that don't support assertions. See
+// prim_assert.sv for documentation for each of the macros.
 
 
 
@@ -10371,14 +9686,6 @@ endmodule : prim_diff_decode
 
 
 
-
-
-
-
-
-
-
- 
 
 
 //////////////////////////////
@@ -10636,15 +9943,7 @@ module prim_fifo_sync #(
 
   // FIFO is in complete passthrough mode
   if (Depth == 0) begin : gen_passthru_fifo
-    initial begin                                                                      
-    paramCheckPass: assert (Pass == 1)                                                          
-      else begin                                                                     
-        $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_fifo_0/rtl/prim_fifo_sync.sv", 5,         
-         "paramCheckPass");                                                       
-                                                        
-      end                                                                            
-  end                                                                                
-
+    
 
     assign depth_o = 1'b0; //output is meaningless
 
@@ -10810,93 +10109,26 @@ module prim_fifo_sync #(
       assign rdata_o = rdata_int;
     end
 
-      depthShallNotExceedParamDepth: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) (!empty |-> depth_o <= DepthW'(Depth)))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_fifo_0/rtl/prim_fifo_sync.sv", 5,         
-         "depthShallNotExceedParamDepth");                                                       
-                                                              
-    end
-      OnlyRvalidWhenNotUnderRst_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) (rvalid_o -> ~under_rst))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_fifo_0/rtl/prim_fifo_sync.sv", 5,         
-         "OnlyRvalidWhenNotUnderRst_A");                                                       
-                                                              
-    end
+    
+    
   end // block: gen_normal_fifo
 
 
   if (NeverClears) begin : gen_never_clears
-      NeverClears_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) (!clr_i))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_fifo_0/rtl/prim_fifo_sync.sv", 5,         
-         "NeverClears_A");                                                       
-                                                              
-    end
+    
   end
 
   //////////////////////
   // Known Assertions //
   //////////////////////
 
-    DataKnown_AKnownEnable: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) (!$isunknown(rvalid_o)))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_fifo_0/rtl/prim_fifo_sync.sv", 5,         
-         "DataKnown_AKnownEnable");                                                       
-                                                              
-    end                                           
+                                                 
                                                
-      DataKnown_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) ((rvalid_o) |-> (!$isunknown(rdata_o))))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_fifo_0/rtl/prim_fifo_sync.sv", 5,         
-         "DataKnown_A");                                                       
-                                                              
-    end                                           
 
-    DepthKnown_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) (!$isunknown(depth_o)))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_fifo_0/rtl/prim_fifo_sync.sv", 5,         
-         "DepthKnown_A");                                                       
-                                                              
-    end                                           
+  
+  
+  
 
-    RvalidKnown_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) (!$isunknown(rvalid_o)))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_fifo_0/rtl/prim_fifo_sync.sv", 5,         
-         "RvalidKnown_A");                                                       
-                                                              
-    end                                           
-
-    WreadyKnown_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) (!$isunknown(wready_o)))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_fifo_0/rtl/prim_fifo_sync.sv", 5,         
-         "WreadyKnown_A");                                                       
-                                                              
-    end                                           
-
-
-// When Depth=1 and Secure=1, there is a specialized countermeasure that works by replicating
-  // the full_q flag. To set the logic value below to one, the user must use the
-  // ASSERT_PRIM_FIFO_SYNC_SINGLETON_ERROR_TRIGGER_ALERT macro (which checks that the error signal
-  // causes an alert).
-  //
-  // If the user hasn't done so, unused_assert_connected will be zero and ASSERT_INIT_NET will
-  // fail.
-  logic unused_assert_connected;
-  if (Depth == 1 && Secure) begin : gen_secure_singleton
-      initial begin                                                                      
-    
-    
-    
-    #1ps;                                                                            
-    AssertConnected_A: assert (unused_assert_connected === 1'b1)                                                          
-      else begin                                                                     
-        $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_fifo_0/rtl/prim_fifo_sync.sv", 5,         
-         "AssertConnected_A");                                                       
-                                                        
-      end                                                                            
-  end                                                                                
-
-  end
 
 endmodule
 // Copyright lowRISC contributors (OpenTitan project).
@@ -10992,15 +10224,8 @@ endmodule
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// Macro bodies included by prim_assert.sv for tools that support full SystemVerilog and SVA syntax.
-// See prim_assert.sv for documentation for each of the macros.
-
-
-
-// Formal tools will ignore the initial construct, so use static assertion as a workaround.
-// This workaround terminates design elaboration if the __prop predict is false.
-// It calls $fatal() with the first argument equal to 2, it outputs the statistics about the memory
-// and CPU time.
+// Macro bodies included by prim_assert.sv for tools that don't support assertions. See
+// prim_assert.sv for documentation for each of the macros.
 
 
 
@@ -11015,14 +10240,6 @@ endmodule
 
 
 
-
-
-
-
-
-
-
- 
 
 
 //////////////////////////////
@@ -11346,12 +10563,7 @@ module prim_fifo_sync_cnt #(
   end
 
   if (NeverClears) begin : gen_never_clears
-      NeverClears_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) (!clr_i))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_fifo_0/rtl/prim_fifo_sync_cnt.sv", 5,         
-         "NeverClears_A");                                                       
-                                                              
-    end
+    
   end
 
 endmodule // prim_fifo_sync_cnt
@@ -11449,15 +10661,8 @@ endmodule // prim_fifo_sync_cnt
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// Macro bodies included by prim_assert.sv for tools that support full SystemVerilog and SVA syntax.
-// See prim_assert.sv for documentation for each of the macros.
-
-
-
-// Formal tools will ignore the initial construct, so use static assertion as a workaround.
-// This workaround terminates design elaboration if the __prop predict is false.
-// It calls $fatal() with the first argument equal to 2, it outputs the statistics about the memory
-// and CPU time.
+// Macro bodies included by prim_assert.sv for tools that don't support assertions. See
+// prim_assert.sv for documentation for each of the macros.
 
 
 
@@ -11472,14 +10677,6 @@ endmodule // prim_fifo_sync_cnt
 
 
 
-
-
-
-
-
-
-
- 
 
 
 //////////////////////////////
@@ -12113,15 +11310,8 @@ endmodule
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// Macro bodies included by prim_assert.sv for tools that support full SystemVerilog and SVA syntax.
-// See prim_assert.sv for documentation for each of the macros.
-
-
-
-// Formal tools will ignore the initial construct, so use static assertion as a workaround.
-// This workaround terminates design elaboration if the __prop predict is false.
-// It calls $fatal() with the first argument equal to 2, it outputs the statistics about the memory
-// and CPU time.
+// Macro bodies included by prim_assert.sv for tools that don't support assertions. See
+// prim_assert.sv for documentation for each of the macros.
 
 
 
@@ -12136,14 +11326,6 @@ endmodule
 
 
 
-
-
-
-
-
-
-
- 
 
 
 //////////////////////////////
@@ -12437,15 +11619,8 @@ endmodule : tlul_data_integ_enc
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// Macro bodies included by prim_assert.sv for tools that support full SystemVerilog and SVA syntax.
-// See prim_assert.sv for documentation for each of the macros.
-
-
-
-// Formal tools will ignore the initial construct, so use static assertion as a workaround.
-// This workaround terminates design elaboration if the __prop predict is false.
-// It calls $fatal() with the first argument equal to 2, it outputs the statistics about the memory
-// and CPU time.
+// Macro bodies included by prim_assert.sv for tools that don't support assertions. See
+// prim_assert.sv for documentation for each of the macros.
 
 
 
@@ -12460,14 +11635,6 @@ endmodule : tlul_data_integ_enc
 
 
 
-
-
-
-
-
-
-
- 
 
 
 //////////////////////////////
@@ -12766,15 +11933,8 @@ endmodule : tlul_data_integ_dec
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// Macro bodies included by prim_assert.sv for tools that support full SystemVerilog and SVA syntax.
-// See prim_assert.sv for documentation for each of the macros.
-
-
-
-// Formal tools will ignore the initial construct, so use static assertion as a workaround.
-// This workaround terminates design elaboration if the __prop predict is false.
-// It calls $fatal() with the first argument equal to 2, it outputs the statistics about the memory
-// and CPU time.
+// Macro bodies included by prim_assert.sv for tools that don't support assertions. See
+// prim_assert.sv for documentation for each of the macros.
 
 
 
@@ -12789,14 +11949,6 @@ endmodule : tlul_data_integ_dec
 
 
 
-
-
-
-
-
-
-
- 
 
 
 //////////////////////////////
@@ -13027,15 +12179,7 @@ module tlul_cmd_intg_chk import tlul_pkg::*; (
   logic unused_tl;
   assign unused_tl = |tl_i;
 
-  initial begin                                                                      
-    PayLoadWidthCheck: assert ($bits(tl_h2d_cmd_intg_t) <= H2DCmdMaxWidth)                                                          
-      else begin                                                                     
-        $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_tlul_trans_intg_0.1/rtl/tlul_cmd_intg_chk.sv", 5,         
-         "PayLoadWidthCheck");                                                       
-                                                        
-      end                                                                            
-  end                                                                                
-
+  
 
 endmodule // tlul_payload_chk
 // Copyright lowRISC contributors (OpenTitan project).
@@ -13129,15 +12273,8 @@ endmodule // tlul_payload_chk
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// Macro bodies included by prim_assert.sv for tools that support full SystemVerilog and SVA syntax.
-// See prim_assert.sv for documentation for each of the macros.
-
-
-
-// Formal tools will ignore the initial construct, so use static assertion as a workaround.
-// This workaround terminates design elaboration if the __prop predict is false.
-// It calls $fatal() with the first argument equal to 2, it outputs the statistics about the memory
-// and CPU time.
+// Macro bodies included by prim_assert.sv for tools that don't support assertions. See
+// prim_assert.sv for documentation for each of the macros.
 
 
 
@@ -13152,14 +12289,6 @@ endmodule // tlul_payload_chk
 
 
 
-
-
-
-
-
-
-
- 
 
 
 //////////////////////////////
@@ -13414,41 +12543,11 @@ module tlul_rsp_intg_gen import tlul_pkg::*; #(
   assign unused_tl = ^tl_i;
 
 
-  initial begin                                                                      
-    PayLoadWidthCheck: assert ($bits(tl_d2h_rsp_intg_t) <= D2HRspMaxWidth)                                                          
-      else begin                                                                     
-        $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_tlul_trans_intg_0.1/rtl/tlul_rsp_intg_gen.sv", 5,         
-         "PayLoadWidthCheck");                                                       
-                                                        
-      end                                                                            
-  end                                                                                
-
-  initial begin                                                                      
-    DataWidthCheck_A: assert ($bits(tl_i.d_data) <= DataMaxWidth)                                                          
-      else begin                                                                     
-        $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_tlul_trans_intg_0.1/rtl/tlul_rsp_intg_gen.sv", 5,         
-         "DataWidthCheck_A");                                                       
-                                                        
-      end                                                                            
-  end                                                                                
-
+  
+  
 
 // the code below is not meant to be synthesized,
 // but it is intended to be used in simulation and FPV
-always @(tl_i) begin
-      RspZero_A: assert (tl_i.d_valid & RspIntgInIsZero -> ~|tl_i.d_user.rsp_intg)        
-    else begin                   
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_tlul_trans_intg_0.1/rtl/tlul_rsp_intg_gen.sv", 5,         
-         "RspZero_A");                                                       
-      
-    end
-      UserZero_A: assert (tl_i.d_valid & UserInIsZero -> ~|tl_i.d_user)        
-    else begin                   
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_tlul_trans_intg_0.1/rtl/tlul_rsp_intg_gen.sv", 5,         
-         "UserZero_A");                                                       
-      
-    end
-  end
 
 
 endmodule // tlul_rsp_intg_gen
@@ -13607,15 +12706,8 @@ endpackage : prim_alert_pkg
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// Macro bodies included by prim_assert.sv for tools that support full SystemVerilog and SVA syntax.
-// See prim_assert.sv for documentation for each of the macros.
-
-
-
-// Formal tools will ignore the initial construct, so use static assertion as a workaround.
-// This workaround terminates design elaboration if the __prop predict is false.
-// It calls $fatal() with the first argument equal to 2, it outputs the statistics about the memory
-// and CPU time.
+// Macro bodies included by prim_assert.sv for tools that don't support assertions. See
+// prim_assert.sv for documentation for each of the macros.
 
 
 
@@ -13630,14 +12722,6 @@ endpackage : prim_alert_pkg
 
 
 
-
-
-
-
-
-
-
- 
 
 
 //////////////////////////////
@@ -14080,200 +13164,6 @@ module prim_alert_sender
 
 // however, since we use sequence constructs below, we need to wrap the entire block again.
 // typically, the ASSERT macros already contain this INC_ASSERT macro.
-// check whether all outputs have a good known state after reset
-    AlertPKnownO_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) (!$isunknown(alert_tx_o)))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_alert_0/rtl/prim_alert_sender.sv", 5,         
-         "AlertPKnownO_A");                                                       
-                                                              
-    end                                           
-
-
-  if (AsyncOn) begin : gen_async_assert
-    sequence PingSigInt_S;
-      alert_rx_i.ping_p == alert_rx_i.ping_n [*2];
-    endsequence
-    sequence AckSigInt_S;
-      alert_rx_i.ping_p == alert_rx_i.ping_n [*2];
-    endsequence
-
-  // check propagation of sigint issues to output within three cycles, or four due to CDC
-    // shift sequence to the right to avoid reset effects.
-      SigIntPing_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) (##1 PingSigInt_S |->
-        ##[SkewCycles+2:SkewCycles+3] alert_tx_o.alert_p == alert_tx_o.alert_n))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_alert_0/rtl/prim_alert_sender.sv", 5,         
-         "SigIntPing_A");                                                       
-                                                              
-    end
-      SigIntAck_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) (##1 AckSigInt_S |->
-        ##[SkewCycles+2:SkewCycles+3] alert_tx_o.alert_p == alert_tx_o.alert_n))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_alert_0/rtl/prim_alert_sender.sv", 5,         
-         "SigIntAck_A");                                                       
-                                                              
-    end
-  
-
-    // Test in-band FSM reset request (via signal integrity error)
-      InBandInitFsm_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) (PingSigInt_S or AckSigInt_S |->
-        ##[SkewCycles+2:SkewCycles+3] state_q == Idle))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_alert_0/rtl/prim_alert_sender.sv", 5,         
-         "InBandInitFsm_A");                                                       
-                                                              
-    end
-      InBandInitPing_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) (PingSigInt_S or AckSigInt_S |->
-        ##[SkewCycles+2:SkewCycles+3] !ping_set_q))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_alert_0/rtl/prim_alert_sender.sv", 5,         
-         "InBandInitPing_A");                                                       
-                                                              
-    end
-    // output must be driven diff unless sigint issue detected
-      DiffEncoding_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) ((alert_rx_i.ack_p ^ alert_rx_i.ack_n) &&
-        (alert_rx_i.ping_p ^ alert_rx_i.ping_n) |->
-        ##[SkewCycles+2:SkewCycles+4] alert_tx_o.alert_p ^ alert_tx_o.alert_n))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_alert_0/rtl/prim_alert_sender.sv", 5,         
-         "DiffEncoding_A");                                                       
-                                                              
-    end
-
-    // handshakes can take indefinite time if blocked due to sigint on outgoing
-    // lines (which is not visible here). thus, we only check whether the
-    // handshake is correctly initiated and defer the full handshake checking to the testbench.
-      PingHs_A: assert property (@(posedge clk_i) disable iff ((!rst_ni || (alert_tx_o.alert_p == alert_tx_o.alert_n)) !== '0) (##1 $changed(alert_rx_i.ping_p) &&
-        (alert_rx_i.ping_p ^ alert_rx_i.ping_n) ##2 state_q == Idle |=>
-        ##[0:1] $rose(alert_tx_o.alert_p)))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_alert_0/rtl/prim_alert_sender.sv", 5,         
-         "PingHs_A");                                                       
-                                                              
-    end
-  end else begin : gen_sync_assert
-    sequence PingSigInt_S;
-      alert_rx_i.ping_p == alert_rx_i.ping_n;
-    endsequence
-    sequence AckSigInt_S;
-      alert_rx_i.ping_p == alert_rx_i.ping_n;
-    endsequence
-
-  // check propagation of sigint issues to output within one cycle
-      SigIntPing_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) (PingSigInt_S |=>
-        alert_tx_o.alert_p == alert_tx_o.alert_n))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_alert_0/rtl/prim_alert_sender.sv", 5,         
-         "SigIntPing_A");                                                       
-                                                              
-    end
-      SigIntAck_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) (AckSigInt_S |=>
-        alert_tx_o.alert_p == alert_tx_o.alert_n))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_alert_0/rtl/prim_alert_sender.sv", 5,         
-         "SigIntAck_A");                                                       
-                                                              
-    end
-  
-
-    // Test in-band FSM reset request (via signal integrity error)
-      InBandInitFsm_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) (PingSigInt_S or AckSigInt_S |=> state_q == Idle))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_alert_0/rtl/prim_alert_sender.sv", 5,         
-         "InBandInitFsm_A");                                                       
-                                                              
-    end
-      InBandInitPing_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) (PingSigInt_S or AckSigInt_S |=> !ping_set_q))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_alert_0/rtl/prim_alert_sender.sv", 5,         
-         "InBandInitPing_A");                                                       
-                                                              
-    end
-    // output must be driven diff unless sigint issue detected
-      DiffEncoding_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) ((alert_rx_i.ack_p ^ alert_rx_i.ack_n) &&
-        (alert_rx_i.ping_p ^ alert_rx_i.ping_n) |=> alert_tx_o.alert_p ^ alert_tx_o.alert_n))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_alert_0/rtl/prim_alert_sender.sv", 5,         
-         "DiffEncoding_A");                                                       
-                                                              
-    end
-    // handshakes can take indefinite time if blocked due to sigint on outgoing
-    // lines (which is not visible here). thus, we only check whether the handshake
-    // is correctly initiated and defer the full handshake checking to the testbench.
-      PingHs_A: assert property (@(posedge clk_i) disable iff ((!rst_ni || (alert_tx_o.alert_p == alert_tx_o.alert_n)) !== '0) (##1 $changed(alert_rx_i.ping_p) && state_q == Idle |=>
-        $rose(alert_tx_o.alert_p)))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_alert_0/rtl/prim_alert_sender.sv", 5,         
-         "PingHs_A");                                                       
-                                                              
-    end
-  end
-
-  // Test the alert state output.
-    AlertState0_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) (alert_set_q === alert_state_o))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_alert_0/rtl/prim_alert_sender.sv", 5,         
-         "AlertState0_A");                                                       
-                                                              
-    end
-
-  if (IsFatal) begin : gen_fatal_assert
-      AlertState1_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) (alert_req_i |=> alert_state_o))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_alert_0/rtl/prim_alert_sender.sv", 5,         
-         "AlertState1_A");                                                       
-                                                              
-    end
-      AlertState2_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) (alert_state_o |=> $stable(alert_state_o)))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_alert_0/rtl/prim_alert_sender.sv", 5,         
-         "AlertState2_A");                                                       
-                                                              
-    end
-      AlertState3_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) (alert_ack_o |=> alert_state_o))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_alert_0/rtl/prim_alert_sender.sv", 5,         
-         "AlertState3_A");                                                       
-                                                              
-    end
-  end else begin : gen_recov_assert
-      AlertState1_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) (alert_req_i && !alert_clr |=> alert_state_o))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_alert_0/rtl/prim_alert_sender.sv", 5,         
-         "AlertState1_A");                                                       
-                                                              
-    end
-      AlertState2_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) (alert_req_i && alert_ack_o |=> !alert_state_o))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_alert_0/rtl/prim_alert_sender.sv", 5,         
-         "AlertState2_A");                                                       
-                                                              
-    end
-  end
-
-  // The alert test input should not set the alert state register.
-    AlertTest1_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) (alert_test_i && !alert_req_i && !alert_state_o |=> $stable(alert_state_o)))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_alert_0/rtl/prim_alert_sender.sv", 5,         
-         "AlertTest1_A");                                                       
-                                                              
-    end
-
-  // if alert_req_i is true, handshakes should be continuously repeated
-    AlertHs_A: assert property (@(posedge clk_i) disable iff ((!rst_ni || (alert_tx_o.alert_p == alert_tx_o.alert_n)) !== '0) (alert_req_i && state_q == Idle |=> $rose(alert_tx_o.alert_p)))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_alert_0/rtl/prim_alert_sender.sv", 5,         
-         "AlertHs_A");                                                       
-                                                              
-    end
-
-  // if alert_test_i is true, handshakes should be continuously repeated
-    AlertTestHs_A: assert property (@(posedge clk_i) disable iff ((!rst_ni || (alert_tx_o.alert_p == alert_tx_o.alert_n)) !== '0) (alert_test_i && state_q == Idle |=> $rose(alert_tx_o.alert_p)))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_alert_0/rtl/prim_alert_sender.sv", 5,         
-         "AlertTestHs_A");                                                       
-                                                              
-    end
 
 
 
@@ -14623,15 +13513,8 @@ endmodule
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// Macro bodies included by prim_assert.sv for tools that support full SystemVerilog and SVA syntax.
-// See prim_assert.sv for documentation for each of the macros.
-
-
-
-// Formal tools will ignore the initial construct, so use static assertion as a workaround.
-// This workaround terminates design elaboration if the __prop predict is false.
-// It calls $fatal() with the first argument equal to 2, it outputs the statistics about the memory
-// and CPU time.
+// Macro bodies included by prim_assert.sv for tools that don't support assertions. See
+// prim_assert.sv for documentation for each of the macros.
 
 
 
@@ -14646,14 +13529,6 @@ endmodule
 
 
 
-
-
-
-
-
-
-
- 
 
 
 //////////////////////////////
@@ -14929,15 +13804,7 @@ module tlul_err import tlul_pkg::*; (
                           & (op_get | op_partial | fulldata_chk) ;
 
   // Only 32 bit data width for current tlul_err
-  initial begin                                                                      
-    dataWidthOnly32_A: assert (DW == 32)                                                          
-      else begin                                                                     
-        $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_tlul_common_0.1/rtl/tlul_err.sv", 5,         
-         "dataWidthOnly32_A");                                                       
-                                                        
-      end                                                                            
-  end                                                                                
-
+  
 
 endmodule
 // Copyright lowRISC contributors (OpenTitan project).
@@ -15068,15 +13935,8 @@ endmodule
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// Macro bodies included by prim_assert.sv for tools that support full SystemVerilog and SVA syntax.
-// See prim_assert.sv for documentation for each of the macros.
-
-
-
-// Formal tools will ignore the initial construct, so use static assertion as a workaround.
-// This workaround terminates design elaboration if the __prop predict is false.
-// It calls $fatal() with the first argument equal to 2, it outputs the statistics about the memory
-// and CPU time.
+// Macro bodies included by prim_assert.sv for tools that don't support assertions. See
+// prim_assert.sv for documentation for each of the macros.
 
 
 
@@ -15091,14 +13951,6 @@ endmodule
 
 
 
-
-
-
-
-
-
-
- 
 
 
 //////////////////////////////
@@ -15414,21 +14266,10 @@ module prim_packer_fifo #(
   //////////////////////////////////////////////
 
   // If not acked, valid_o should keep asserting
-    ValidOPairedWithReadyI_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) (rvalid_o && !rready_i && !clr_i |=> rvalid_o))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_all_0.1/rtl/prim_packer_fifo.sv", 5,         
-         "ValidOPairedWithReadyI_A");                                                       
-                                                              
-    end
+  
 
   // If output port doesn't accept the data, the data should be stable
-    DataOStableWhenPending_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) (##1 rvalid_o && $past(rvalid_o)
-          && !$past(rready_i) && !$past(clr_i) |-> $stable(rdata_o)))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_all_0.1/rtl/prim_packer_fifo.sv", 5,         
-         "DataOStableWhenPending_A");                                                       
-                                                              
-    end
+  
 
 endmodule
 // Copyright lowRISC contributors (OpenTitan project).
@@ -15534,15 +14375,8 @@ endmodule
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// Macro bodies included by prim_assert.sv for tools that support full SystemVerilog and SVA syntax.
-// See prim_assert.sv for documentation for each of the macros.
-
-
-
-// Formal tools will ignore the initial construct, so use static assertion as a workaround.
-// This workaround terminates design elaboration if the __prop predict is false.
-// It calls $fatal() with the first argument equal to 2, it outputs the statistics about the memory
-// and CPU time.
+// Macro bodies included by prim_assert.sv for tools that don't support assertions. See
+// prim_assert.sv for documentation for each of the macros.
 
 
 
@@ -15557,14 +14391,6 @@ endmodule
 
 
 
-
-
-
-
-
-
-
- 
 
 
 //////////////////////////////
@@ -15845,15 +14671,7 @@ module prim_intr_hw # (
     assign intr_o = reg2hw_intr_state_q_i & reg2hw_intr_enable_q_i;
   end
 
-  initial begin                                                                      
-    IntrTKind_A: assert (IntrT inside {"Event", "Status"})                                                          
-      else begin                                                                     
-        $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_prim_all_0.1/rtl/prim_intr_hw.sv", 5,         
-         "IntrTKind_A");                                                       
-                                                        
-      end                                                                            
-  end                                                                                
-
+  
 
 endmodule
 // Copyright lowRISC contributors (OpenTitan project).
@@ -15947,15 +14765,8 @@ endmodule
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// Macro bodies included by prim_assert.sv for tools that support full SystemVerilog and SVA syntax.
-// See prim_assert.sv for documentation for each of the macros.
-
-
-
-// Formal tools will ignore the initial construct, so use static assertion as a workaround.
-// This workaround terminates design elaboration if the __prop predict is false.
-// It calls $fatal() with the first argument equal to 2, it outputs the statistics about the memory
-// and CPU time.
+// Macro bodies included by prim_assert.sv for tools that don't support assertions. See
+// prim_assert.sv for documentation for each of the macros.
 
 
 
@@ -15970,14 +14781,6 @@ endmodule
 
 
 
-
-
-
-
-
-
-
- 
 
 
 //////////////////////////////
@@ -16289,15 +15092,7 @@ module tlul_adapter_reg
   input                    error_i
 );
 
-  initial begin                                                                      
-    AllowedLatency_A: assert (AccessLatency inside {0, 1})                                                          
-      else begin                                                                     
-        $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_tlul_adapter_reg_0.1/rtl/tlul_adapter_reg.sv", 5,         
-         "AllowedLatency_A");                                                       
-                                                        
-      end                                                                            
-  end                                                                                
-
+  
 
   localparam int IW  = $bits(tl_i.a_source);
   localparam int SZW = $bits(tl_i.a_size);
@@ -16470,15 +15265,7 @@ module tlul_adapter_reg
     .err_o (tl_err)
   );
 
-  initial begin                                                                      
-    MatchedWidth_A: assert (RegDw == top_pkg::TL_DW)                                                          
-      else begin                                                                     
-        $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_tlul_adapter_reg_0.1/rtl/tlul_adapter_reg.sv", 5,         
-         "MatchedWidth_A");                                                       
-                                                        
-      end                                                                            
-  end                                                                                
-
+  
 
 endmodule
 // Copyright lowRISC contributors (OpenTitan project).
@@ -16572,15 +15359,8 @@ endmodule
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// Macro bodies included by prim_assert.sv for tools that support full SystemVerilog and SVA syntax.
-// See prim_assert.sv for documentation for each of the macros.
-
-
-
-// Formal tools will ignore the initial construct, so use static assertion as a workaround.
-// This workaround terminates design elaboration if the __prop predict is false.
-// It calls $fatal() with the first argument equal to 2, it outputs the statistics about the memory
-// and CPU time.
+// Macro bodies included by prim_assert.sv for tools that don't support assertions. See
+// prim_assert.sv for documentation for each of the macros.
 
 
 
@@ -16595,14 +15375,6 @@ endmodule
 
 
 
-
-
-
-
-
-
-
- 
 
 
 //////////////////////////////
@@ -17020,26 +15792,14 @@ module tlul_sram_byte import tlul_pkg::*; #(
     // no address collision should happen inside prim_ram_1p_scr. If this would be the
     // case, we would read from the holding register inside prim_ram_1p_scr instead of
     // actually performing the readback from the memory.
-      WRCollisionDuringReadBack_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) ((rdback_phase | rdback_phase_wrreadback) &
-        mubi4_test_true_loose(rdback_en_q) |-> !wr_collision_i))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_tlul_adapter_sram_0.1/rtl/tlul_sram_byte.sv", 5,         
-         "WRCollisionDuringReadBack_A");                                                       
-                                                              
-    end
+    
 
 
     // If the readback feature is enabled, we assume that the write phase takes one extra cycle
     // due to the underlying scrambling mechanism. If this additional cycle is not needed anymore
     // in the future (e.g. due to the removal of the scrambling mechanism), the readback does not
     // need to be delayed by one cycle in the FSM below.
-      NoPendingWriteAfterWrite_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) (wr_phase & mubi4_test_true_loose(rdback_en_q)
-        |=> write_pending_i))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_tlul_adapter_sram_0.1/rtl/tlul_sram_byte.sv", 5,         
-         "NoPendingWriteAfterWrite_A");                                                       
-                                                              
-    end
+    
 
 
     end else begin: gen_no_readback_logic
@@ -17551,12 +16311,7 @@ module tlul_sram_byte import tlul_pkg::*; #(
     end
 
     // This assert is necessary for the casting of AccessSize.
-      TlulSramByteTlSize_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) (top_pkg::TL_SZW >= $clog2(AccessSize + 1)))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_tlul_adapter_sram_0.1/rtl/tlul_sram_byte.sv", 5,         
-         "TlulSramByteTlSize_A");                                                       
-                                                              
-    end
+    
 
     assign error_o = error_i & ~stall_host;
 
@@ -17661,56 +16416,25 @@ module tlul_sram_byte import tlul_pkg::*; #(
     assign unused_tl = |tl_sram_i.d_size;
 
     // when byte access detected, go to wait read
-      ByteAccessStateChange_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) (a_ack & wr_txn & ~&tl_i.a_mask & ~error_i |=>
-      state_q inside {StWaitRd}))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_tlul_adapter_sram_0.1/rtl/tlul_sram_byte.sv", 5,         
-         "ByteAccessStateChange_A");                                                       
-                                                              
-    end
+    
     // when in wait for read, a successful response should move to write phase
-      ReadCompleteStateChange_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) ((state_q == StWaitRd) && (sync_fifo_a_size_outputs.pending_txn_cnt == 1) &&
-        sram_d_ack |=> state_q == StWriteCmd))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_tlul_adapter_sram_0.1/rtl/tlul_sram_byte.sv", 5,         
-         "ReadCompleteStateChange_A");                                                       
-                                                              
-    end
+    
     // The readback logic assumes that any request on the readback channel will be instantly granted
     // (i.e. after the initial SRAM read or write request from the external requester has been
     // granted). This helps simplify the logic. It is guaranteed when connected to an SRAM as it
     // produces no back pressure. When connected to a scrambled SRAM the key going invalid will
     // cause a_ready to drop. The `compound_txn_in_progress_o` output is provided for this scenario.
     // When asserted SRAM should not drop `a_ready` even if there is an invalid scrambling key.
-      ReadbackAccessAlwaysGranted_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) ((rdback_phase | rdback_phase_wrreadback) && !error_i
-      |-> tl_sram_i.a_ready))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_tlul_adapter_sram_0.1/rtl/tlul_sram_byte.sv", 5,         
-         "ReadbackAccessAlwaysGranted_A");                                                       
-                                                              
-    end
+    
 
     // The readback logic assumes the result of a read transaction issues for the readback will get
     // an immediate response. This can be guaranteed when connected to a SRAM, see above comment.
-      ReadbackDataImmediatelyAvailable_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) ((state_q == StPassThru) &&
-      mubi4_test_true_loose(rdback_en_q) && mubi4_test_true_loose(rdback_check_q) &&
-      !error_i|-> tl_sram_i.d_valid))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_tlul_adapter_sram_0.1/rtl/tlul_sram_byte.sv", 5,         
-         "ReadbackDataImmediatelyAvailable_A");                                                       
-                                                              
-    end
+    
 
     // When in the StByteWrReadbackInit state, pending_txn_cnt (the depth of a FIFO)
     // will always be 1. We will have seen StWaitRd -> StWriteCmd -> StByteWrReadBackInit
     // to get to this FSM state and the FIFO cannot be pushed or popped along that path.
-      WrReadBackInitPendingTxn_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) ((state_q == StByteWrReadBackInit) |-> sync_fifo_a_size_outputs.pending_txn_cnt ==
-      PendingTxnCntW'(1)))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_tlul_adapter_sram_0.1/rtl/tlul_sram_byte.sv", 5,         
-         "WrReadBackInitPendingTxn_A");                                                       
-                                                              
-    end
+    
 
     assign compound_txn_in_progress_o = wr_phase | rdback_phase | rdback_phase_wrreadback;
   end else begin : gen_no_integ_handling
@@ -17734,15 +16458,7 @@ module tlul_sram_byte import tlul_pkg::*; #(
 
   // EnableReadback requires that EnableIntg is on.
   // EnableIntg can be used without EnableReadback.
-  initial begin                                                                      
-    SramReadbackAndIntg: assert ((EnableReadback && EnableIntg) || (!EnableReadback && (EnableIntg || !EnableIntg)))                                                          
-      else begin                                                                     
-        $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_tlul_adapter_sram_0.1/rtl/tlul_sram_byte.sv", 5,         
-         "SramReadbackAndIntg");                                                       
-                                                        
-      end                                                                            
-  end                                                                                
-
+  
 endmodule // tlul_adapter_sram
 // Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
@@ -17835,15 +16551,8 @@ endmodule // tlul_adapter_sram
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// Macro bodies included by prim_assert.sv for tools that support full SystemVerilog and SVA syntax.
-// See prim_assert.sv for documentation for each of the macros.
-
-
-
-// Formal tools will ignore the initial construct, so use static assertion as a workaround.
-// This workaround terminates design elaboration if the __prop predict is false.
-// It calls $fatal() with the first argument equal to 2, it outputs the statistics about the memory
-// and CPU time.
+// Macro bodies included by prim_assert.sv for tools that don't support assertions. See
+// prim_assert.sv for documentation for each of the macros.
 
 
 
@@ -17858,14 +16567,6 @@ endmodule // tlul_adapter_sram
 
 
 
-
-
-
-
-
-
-
- 
 
 
 //////////////////////////////
@@ -18693,111 +17394,30 @@ module tlul_adapter_sram
   );
 
   // below assertion fails when SRAM rvalid is asserted even though ReqFifo is empty
-    rvalidHighReqFifoEmpty: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) (rvalid_i |-> reqfifo_rvalid))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_tlul_adapter_sram_0.1/rtl/tlul_adapter_sram.sv", 5,         
-         "rvalidHighReqFifoEmpty");                                                       
-                                                              
-    end
+  
 
   // below assertion fails when outstanding value is too small (SRAM rvalid is asserted
   // even though the RspFifo is full)
-    rvalidHighWhenRspFifoFull: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) (rvalid_i |-> rspfifo_wready))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_tlul_adapter_sram_0.1/rtl/tlul_adapter_sram.sv", 5,         
-         "rvalidHighWhenRspFifoFull");                                                       
-                                                              
-    end
+  
 
   // If both ErrOnWrite and ErrOnRead are set, this block is useless
-  initial begin                                                                      
-    adapterNoReadOrWrite: assert ((ErrOnWrite & ErrOnRead) == 0)                                                          
-      else begin                                                                     
-        $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_tlul_adapter_sram_0.1/rtl/tlul_adapter_sram.sv", 5,         
-         "adapterNoReadOrWrite");                                                       
-                                                        
-      end                                                                            
-  end                                                                                
+  
 
-
-  initial begin                                                                      
-    SramDwHasByteGranularity_A: assert (SramDw % 8 == 0)                                                          
-      else begin                                                                     
-        $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_tlul_adapter_sram_0.1/rtl/tlul_adapter_sram.sv", 5,         
-         "SramDwHasByteGranularity_A");                                                       
-                                                        
-      end                                                                            
-  end                                                                                
-
-  initial begin                                                                      
-    SramDwIsMultipleOfTlulWidth_A: assert (SramDw % top_pkg::TL_DW == 0)                                                          
-      else begin                                                                     
-        $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_tlul_adapter_sram_0.1/rtl/tlul_adapter_sram.sv", 5,         
-         "SramDwIsMultipleOfTlulWidth_A");                                                       
-                                                        
-      end                                                                            
-  end                                                                                
-
+  
+  
   // Either the memory has a power-of-two depth and the address width perfectly matches, or the
   // depth is not a power of two but the address width is still minimal.
-  initial begin                                                                      
-    SramAwCorrectlySizedForDepth_A: assert (((SramDepth & (SramDepth - 1)) == 0) ? (2**SramAw == SramDepth) :
-                                             ($clog2(SramDepth) == SramAw))                                                          
-      else begin                                                                     
-        $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_tlul_adapter_sram_0.1/rtl/tlul_adapter_sram.sv", 5,         
-         "SramAwCorrectlySizedForDepth_A");                                                       
-                                                        
-      end                                                                            
-  end                                                                                
-
+  
 
   // These parameter options cannot both be true at the same time
-  initial begin                                                                      
-    DataIntgOptions_A: assert (~(EnableDataIntgGen & EnableDataIntgPt))                                                          
-      else begin                                                                     
-        $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_tlul_adapter_sram_0.1/rtl/tlul_adapter_sram.sv", 5,         
-         "DataIntgOptions_A");                                                       
-                                                        
-      end                                                                            
-  end                                                                                
-
+  
 
   // Make sure that outputs are defined (a special case for tl_o is explained separately below)
-    ReqOutKnown_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) (!$isunknown(req_o)))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_tlul_adapter_sram_0.1/rtl/tlul_adapter_sram.sv", 5,         
-         "ReqOutKnown_A");                                                       
-                                                              
-    end                                           
-
-    WeOutKnown_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) (!$isunknown(we_o)))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_tlul_adapter_sram_0.1/rtl/tlul_adapter_sram.sv", 5,         
-         "WeOutKnown_A");                                                       
-                                                              
-    end                                           
-
-    AddrOutKnown_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) (!$isunknown(addr_o)))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_tlul_adapter_sram_0.1/rtl/tlul_adapter_sram.sv", 5,         
-         "AddrOutKnown_A");                                                       
-                                                              
-    end                                           
-
-    WdataOutKnown_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) (!$isunknown(wdata_o)))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_tlul_adapter_sram_0.1/rtl/tlul_adapter_sram.sv", 5,         
-         "WdataOutKnown_A");                                                       
-                                                              
-    end                                           
-
-    WmaskOutKnown_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) (!$isunknown(wmask_o)))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_tlul_adapter_sram_0.1/rtl/tlul_adapter_sram.sv", 5,         
-         "WmaskOutKnown_A");                                                       
-                                                              
-    end                                           
-
+  
+  
+  
+  
+  
 
   // We'd like to claim that the payload of the TL output is known, but this isn't necessarily true!
   // This block is just an adapter that converts from an SRAM interface to a TL interface. To make
@@ -18807,27 +17427,11 @@ module tlul_adapter_sram
   // This is a bit tricky to track because SRAM responses get stored in u_rspfifo. Assuming that the
   // FIFO doesn't manufacture X's (an assertion in prim_fifo_sync), the only stage of the path
   // needed in this file is the following:
-    TlOutValidKnown_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) (!$isunknown(tl_o.d_valid)))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_tlul_adapter_sram_0.1/rtl/tlul_adapter_sram.sv", 5,         
-         "TlOutValidKnown_A");                                                       
-                                                              
-    end                                           
-
-    TlOutKnownIfFifoKnown_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) (!$isunknown(rspfifo_rdata) -> !$isunknown(tl_o)))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_tlul_adapter_sram_0.1/rtl/tlul_adapter_sram.sv", 5,         
-         "TlOutKnownIfFifoKnown_A");                                                       
-                                                              
-    end
+  
+  
 
   // The definition of d_valid leads to the assertion below.
-    DValidNeedsReqFifoRValid_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) (d_valid -> reqfifo_rvalid))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_tlul_adapter_sram_0.1/rtl/tlul_adapter_sram.sv", 5,         
-         "DValidNeedsReqFifoRValid_A");                                                       
-                                                              
-    end
+  
 endmodule
 // Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
@@ -19154,15 +17758,8 @@ endmodule
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// Macro bodies included by prim_assert.sv for tools that support full SystemVerilog and SVA syntax.
-// See prim_assert.sv for documentation for each of the macros.
-
-
-
-// Formal tools will ignore the initial construct, so use static assertion as a workaround.
-// This workaround terminates design elaboration if the __prop predict is false.
-// It calls $fatal() with the first argument equal to 2, it outputs the statistics about the memory
-// and CPU time.
+// Macro bodies included by prim_assert.sv for tools that don't support assertions. See
+// prim_assert.sv for documentation for each of the macros.
 
 
 
@@ -19177,14 +17774,6 @@ endmodule
 
 
 
-
-
-
-
-
-
-
- 
 
 
 //////////////////////////////
@@ -19397,15 +17986,7 @@ module tlul_socket_1n #(
   input  [NWD-1:0]          dev_select_i
 );
 
-  initial begin                                                                      
-    maxN: assert (N < 64)                                                          
-      else begin                                                                     
-        $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_tlul_socket_1n_0.1/rtl/tlul_socket_1n.sv", 5,         
-         "maxN");                                                       
-                                                        
-      end                                                                            
-  end                                                                                
-
+  
 
   // Since our steering is done after potential FIFOing, we need to
   // shove our device select bits into spare bits of reqfifo
@@ -19464,12 +18045,7 @@ module tlul_socket_1n #(
     end
   end
 
-    NotOverflowed_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) (accept_t_req && !accept_t_rsp -> num_req_outstanding <= MaxOutstanding))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_tlul_socket_1n_0.1/rtl/tlul_socket_1n.sv", 5,         
-         "NotOverflowed_A");                                                       
-                                                              
-    end
+  
 
   assign hold_all_requests =
       (num_req_outstanding != '0) &
@@ -19686,15 +18262,8 @@ endmodule
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// Macro bodies included by prim_assert.sv for tools that support full SystemVerilog and SVA syntax.
-// See prim_assert.sv for documentation for each of the macros.
-
-
-
-// Formal tools will ignore the initial construct, so use static assertion as a workaround.
-// This workaround terminates design elaboration if the __prop predict is false.
-// It calls $fatal() with the first argument equal to 2, it outputs the statistics about the memory
-// and CPU time.
+// Macro bodies included by prim_assert.sv for tools that don't support assertions. See
+// prim_assert.sv for documentation for each of the macros.
 
 
 
@@ -19709,14 +18278,6 @@ endmodule
 
 
 
-
-
-
-
-
-
-
- 
 
 
 //////////////////////////////
@@ -20005,21 +18566,10 @@ module tlul_adapter_racl
   logic unused_policy_sel;
   assign unused_policy_sel = ^racl_policies_i;
 
-    RaclAdapterNumRanges: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) (EnableRacl |-> RaclPolicySelNumRanges > 0))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_tlul_adapter_racl_0.1/rtl/tlul_adapter_racl.sv", 5,         
-         "RaclAdapterNumRanges");                                                       
-                                                              
-    end
+  
 
   // Ensure that RACL signals are not undefined
-    RaclAdapterErrorKnown_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) (!$isunknown(racl_error_o.valid)))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_tlul_adapter_racl_0.1/rtl/tlul_adapter_racl.sv", 5,         
-         "RaclAdapterErrorKnown_A");                                                       
-                                                              
-    end                                           
-
+  
 
 endmodule
 // Copyright lowRISC contributors (OpenTitan project).
@@ -20113,15 +18663,8 @@ endmodule
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// Macro bodies included by prim_assert.sv for tools that support full SystemVerilog and SVA syntax.
-// See prim_assert.sv for documentation for each of the macros.
-
-
-
-// Formal tools will ignore the initial construct, so use static assertion as a workaround.
-// This workaround terminates design elaboration if the __prop predict is false.
-// It calls $fatal() with the first argument equal to 2, it outputs the statistics about the memory
-// and CPU time.
+// Macro bodies included by prim_assert.sv for tools that don't support assertions. See
+// prim_assert.sv for documentation for each of the macros.
 
 
 
@@ -20136,14 +18679,6 @@ endmodule
 
 
 
-
-
-
-
-
-
-
- 
 
 
 //////////////////////////////
@@ -20458,13 +18993,7 @@ module tlul_adapter_reg_racl
   assign unused_policy = ^racl_policies_i;
 
   // Ensure that RACL signals are not undefined
-    RaclAdapterRegErrorKnown_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) (!$isunknown(racl_error_o.valid)))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_tlul_adapter_reg_racl_0.1/rtl/tlul_adapter_reg_racl.sv", 5,         
-         "RaclAdapterRegErrorKnown_A");                                                       
-                                                              
-    end                                           
-
+  
 
 endmodule
 // Copyright lowRISC contributors (OpenTitan project).
@@ -20558,15 +19087,8 @@ endmodule
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// Macro bodies included by prim_assert.sv for tools that support full SystemVerilog and SVA syntax.
-// See prim_assert.sv for documentation for each of the macros.
-
-
-
-// Formal tools will ignore the initial construct, so use static assertion as a workaround.
-// This workaround terminates design elaboration if the __prop predict is false.
-// It calls $fatal() with the first argument equal to 2, it outputs the statistics about the memory
-// and CPU time.
+// Macro bodies included by prim_assert.sv for tools that don't support assertions. See
+// prim_assert.sv for documentation for each of the macros.
 
 
 
@@ -20581,14 +19103,6 @@ endmodule
 
 
 
-
-
-
-
-
-
-
- 
 
 
 //////////////////////////////
@@ -20910,13 +19424,7 @@ module tlul_adapter_sram_racl
   );
 
   // Ensure that RACL signals are not undefined
-    RaclAdapterSramErrorKnown_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) (!$isunknown(racl_error_o.valid)))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_tlul_adapter_sram_racl_0.1/rtl/tlul_adapter_sram_racl.sv", 5,         
-         "RaclAdapterSramErrorKnown_A");                                                       
-                                                              
-    end                                           
-
+  
 
 endmodule
 // Copyright lowRISC contributors (OpenTitan project).
@@ -21439,15 +19947,8 @@ endpackage
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// Macro bodies included by prim_assert.sv for tools that support full SystemVerilog and SVA syntax.
-// See prim_assert.sv for documentation for each of the macros.
-
-
-
-// Formal tools will ignore the initial construct, so use static assertion as a workaround.
-// This workaround terminates design elaboration if the __prop predict is false.
-// It calls $fatal() with the first argument equal to 2, it outputs the statistics about the memory
-// and CPU time.
+// Macro bodies included by prim_assert.sv for tools that don't support assertions. See
+// prim_assert.sv for documentation for each of the macros.
 
 
 
@@ -21462,14 +19963,6 @@ endpackage
 
 
 
-
-
-
-
-
-
-
- 
 
 
 //////////////////////////////
@@ -21702,12 +20195,7 @@ module spi_host_shift_register (
   logic              rx_buf_valid_q;
   logic              rx_buf_valid_d;
 
-    SpeedValid: assert property (@(posedge clk_i) disable iff ((rst_ni) !== '0) (speed_i != RsvdSpd))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_ip_spi_host_1.0/rtl/spi_host_shift_register.sv", 5,         
-         "SpeedValid");                                                       
-                                                              
-    end
+  
 
   assign next_bits  = full_cyc_i ? sd_i : sd_i_q;
   assign sr_shifted = (speed_i == Standard) ? {sr_q[6:0], next_bits[1]} :
@@ -21980,15 +20468,8 @@ endmodule : spi_host_byte_merge
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// Macro bodies included by prim_assert.sv for tools that support full SystemVerilog and SVA syntax.
-// See prim_assert.sv for documentation for each of the macros.
-
-
-
-// Formal tools will ignore the initial construct, so use static assertion as a workaround.
-// This workaround terminates design elaboration if the __prop predict is false.
-// It calls $fatal() with the first argument equal to 2, it outputs the statistics about the memory
-// and CPU time.
+// Macro bodies included by prim_assert.sv for tools that don't support assertions. See
+// prim_assert.sv for documentation for each of the macros.
 
 
 
@@ -22003,14 +20484,6 @@ endmodule : spi_host_byte_merge
 
 
 
-
-
-
-
-
-
-
- 
 
 
 //////////////////////////////
@@ -22809,24 +21282,9 @@ module spi_host_fsm
   // Assertions confirming valid user input.
   //
 
-    BidirOnlyInStdMode_A: assert property (@(posedge clk_i) disable iff ((rst_ni) !== '0) (cmd_speed_d == Standard || !(cmd_rd_en_d && cmd_wr_en_d)))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_ip_spi_host_1.0/rtl/spi_host_fsm.sv", 5,         
-         "BidirOnlyInStdMode_A");                                                       
-                                                              
-    end
-    ValidSpeed_A: assert property (@(posedge clk_i) disable iff ((rst_ni) !== '0) (cmd_speed_d != RsvdSpd))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_ip_spi_host_1.0/rtl/spi_host_fsm.sv", 5,         
-         "ValidSpeed_A");                                                       
-                                                              
-    end
-    ValidCSID_A: assert property (@(posedge clk_i) disable iff ((rst_ni) !== '0) (csid < NumCS))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_ip_spi_host_1.0/rtl/spi_host_fsm.sv", 5,         
-         "ValidCSID_A");                                                       
-                                                              
-    end
+  
+  
+  
 
 endmodule
 // Copyright lowRISC contributors (OpenTitan project).
@@ -23141,15 +21599,8 @@ endmodule : spi_host_command_queue
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// Macro bodies included by prim_assert.sv for tools that support full SystemVerilog and SVA syntax.
-// See prim_assert.sv for documentation for each of the macros.
-
-
-
-// Formal tools will ignore the initial construct, so use static assertion as a workaround.
-// This workaround terminates design elaboration if the __prop predict is false.
-// It calls $fatal() with the first argument equal to 2, it outputs the statistics about the memory
-// and CPU time.
+// Macro bodies included by prim_assert.sv for tools that don't support assertions. See
+// prim_assert.sv for documentation for each of the macros.
 
 
 
@@ -23164,14 +21615,6 @@ endmodule : spi_host_command_queue
 
 
 
-
-
-
-
-
-
-
- 
 
 
 //////////////////////////////
@@ -23481,15 +21924,7 @@ module spi_host_data_fifos #(
 
   // Due to the addition of the byte_sel as a N+1'th fifo stage, ensure
   // we have adequate resolution in our counter (tx_qd_o) to represent this.
-  initial begin                                                                      
-    TxDepth_A: assert (TxDepth < (2**$size(tx_qd_o)) - 1)                                                          
-      else begin                                                                     
-        $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_ip_spi_host_1.0/rtl/spi_host_data_fifos.sv", 5,         
-         "TxDepth_A");                                                       
-                                                        
-      end                                                                            
-  end                                                                                
-
+  
 
 endmodule : spi_host_data_fifos
 // Copyright lowRISC contributors (OpenTitan project).
@@ -23585,15 +22020,8 @@ endmodule : spi_host_data_fifos
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// Macro bodies included by prim_assert.sv for tools that support full SystemVerilog and SVA syntax.
-// See prim_assert.sv for documentation for each of the macros.
-
-
-
-// Formal tools will ignore the initial construct, so use static assertion as a workaround.
-// This workaround terminates design elaboration if the __prop predict is false.
-// It calls $fatal() with the first argument equal to 2, it outputs the statistics about the memory
-// and CPU time.
+// Macro bodies included by prim_assert.sv for tools that don't support assertions. See
+// prim_assert.sv for documentation for each of the macros.
 
 
 
@@ -23608,14 +22036,6 @@ endmodule : spi_host_data_fifos
 
 
 
-
-
-
-
-
-
-
- 
 
 
 //////////////////////////////
@@ -25837,32 +24257,12 @@ module spi_host_reg_top
   assign unused_policy_sel = ^racl_policies_i;
 
   // Assertions for Register Interface
-      wePulse: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) ($rose(reg_we) |=> !(reg_we)))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_ip_spi_host_1.0/rtl/spi_host_reg_top.sv", 5,         
-         "wePulse");                                                       
-                                                              
-    end
-      rePulse: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) ($rose(reg_re) |=> !(reg_re)))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_ip_spi_host_1.0/rtl/spi_host_reg_top.sv", 5,         
-         "rePulse");                                                       
-                                                              
-    end
+    
+    
 
-    reAfterRv: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) ($rose(reg_re || reg_we) |=> tl_o_pre.d_valid))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_ip_spi_host_1.0/rtl/spi_host_reg_top.sv", 5,         
-         "reAfterRv");                                                       
-                                                              
-    end
+  
 
-    en2addrHit: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) ((reg_we || reg_re) |-> $onehot0(addr_hit)))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_ip_spi_host_1.0/rtl/spi_host_reg_top.sv", 5,         
-         "en2addrHit");                                                       
-                                                              
-    end
+  
 
   // this is formulated as an assumption such that the FPV testbenches do disprove this
   // property by mistake
@@ -25963,15 +24363,8 @@ endmodule
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// Macro bodies included by prim_assert.sv for tools that support full SystemVerilog and SVA syntax.
-// See prim_assert.sv for documentation for each of the macros.
-
-
-
-// Formal tools will ignore the initial construct, so use static assertion as a workaround.
-// This workaround terminates design elaboration if the __prop predict is false.
-// It calls $fatal() with the first argument equal to 2, it outputs the statistics about the memory
-// and CPU time.
+// Macro bodies included by prim_assert.sv for tools that don't support assertions. See
+// prim_assert.sv for documentation for each of the macros.
 
 
 
@@ -25986,14 +24379,6 @@ endmodule
 
 
 
-
-
-
-
-
-
-
- 
 
 
 //////////////////////////////
@@ -26254,13 +24639,7 @@ module spi_host_window
      assign tx_be_o[i] = |bit_mask[i*8 +: 8];
 
     // all the bits of particular byte must be the same
-      BitMaskCheck_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) ((|bit_mask[i*8 +: 8] == 1'b0) ||
-                            (&bit_mask[i*8 +: 8] == 1'b1)))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_ip_spi_host_1.0/rtl/spi_host_window.sv", 5,         
-         "BitMaskCheck_A");                                                       
-                                                              
-    end
+    
   end
 
   // Only support writes to the data TX fifo window
@@ -26398,15 +24777,8 @@ endmodule : spi_host_window
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// Macro bodies included by prim_assert.sv for tools that support full SystemVerilog and SVA syntax.
-// See prim_assert.sv for documentation for each of the macros.
-
-
-
-// Formal tools will ignore the initial construct, so use static assertion as a workaround.
-// This workaround terminates design elaboration if the __prop predict is false.
-// It calls $fatal() with the first argument equal to 2, it outputs the statistics about the memory
-// and CPU time.
+// Macro bodies included by prim_assert.sv for tools that don't support assertions. See
+// prim_assert.sv for documentation for each of the macros.
 
 
 
@@ -26421,14 +24793,6 @@ endmodule : spi_host_window
 
 
 
-
-
-
-
-
-
-
- 
 
 
 //////////////////////////////
@@ -26774,12 +25138,7 @@ module spi_host
   end                   : gen_passthrough_implementation
   else begin            : gen_passthrough_ignore
      // Passthrough only supported for instances with one CSb line
-      PassthroughNumCSCompat_A: assert property (@(posedge clk_i) disable iff ((rst_ni) !== '0) (!passthrough_i.passthrough_en))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_ip_spi_host_1.0/rtl/spi_host.sv", 5,         
-         "PassthroughNumCSCompat_A");                                                       
-                                                              
-    end
+    
 
     assign cio_sck_o    = sck;
     assign cio_sck_en_o = output_en;
@@ -27246,126 +25605,30 @@ module spi_host
   );
 
 
-    TlDValidKnownO_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) (!$isunknown(tl_o.d_valid)))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_ip_spi_host_1.0/rtl/spi_host.sv", 5,         
-         "TlDValidKnownO_A");                                                       
-                                                              
-    end                                           
-
-    TlAReadyKnownO_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) (!$isunknown(tl_o.a_ready)))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_ip_spi_host_1.0/rtl/spi_host.sv", 5,         
-         "TlAReadyKnownO_A");                                                       
-                                                              
-    end                                           
-
-    AlertKnownO_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) (!$isunknown(alert_tx_o)))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_ip_spi_host_1.0/rtl/spi_host.sv", 5,         
-         "AlertKnownO_A");                                                       
-                                                              
-    end                                           
-
-    CioSckKnownO_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) (!$isunknown(cio_sck_o)))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_ip_spi_host_1.0/rtl/spi_host.sv", 5,         
-         "CioSckKnownO_A");                                                       
-                                                              
-    end                                           
-
-    CioSckEnKnownO_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) (!$isunknown(cio_sck_en_o)))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_ip_spi_host_1.0/rtl/spi_host.sv", 5,         
-         "CioSckEnKnownO_A");                                                       
-                                                              
-    end                                           
-
-    CioCsbKnownO_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) (!$isunknown(cio_csb_o)))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_ip_spi_host_1.0/rtl/spi_host.sv", 5,         
-         "CioCsbKnownO_A");                                                       
-                                                              
-    end                                           
-
-    CioCsbEnKnownO_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) (!$isunknown(cio_csb_en_o)))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_ip_spi_host_1.0/rtl/spi_host.sv", 5,         
-         "CioCsbEnKnownO_A");                                                       
-                                                              
-    end                                           
-
-    CioSdKnownO_AKnownEnable: assert property (@(posedge passthrough_i.sck_en & passthrough_i.sck) disable iff ((!rst_ni) !== '0) (!$isunknown(!passthrough_i.passthrough_en |
-    (passthrough_i.passthrough_en && passthrough_i.csb_en && !passthrough_i.csb))))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_ip_spi_host_1.0/rtl/spi_host.sv", 5,         
-         "CioSdKnownO_AKnownEnable");                                                       
-                                                              
-    end                                           
+  
+  
+  
+  
+  
+  
+  
+                                                 
                                                
-      CioSdKnownO_A: assert property (@(posedge passthrough_i.sck_en & passthrough_i.sck) disable iff ((!rst_ni) !== '0) ((!passthrough_i.passthrough_en |
-    (passthrough_i.passthrough_en && passthrough_i.csb_en && !passthrough_i.csb)) |-> (!$isunknown(cio_sd_o))))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_ip_spi_host_1.0/rtl/spi_host.sv", 5,         
-         "CioSdKnownO_A");                                                       
-                                                              
-    end                                           
 
-    CioSdEnKnownO_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) (!$isunknown(cio_sd_en_o)))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_ip_spi_host_1.0/rtl/spi_host.sv", 5,         
-         "CioSdEnKnownO_A");                                                       
-                                                              
-    end                                           
-
-    IntrSpiEventKnownO_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) (!$isunknown(intr_spi_event_o)))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_ip_spi_host_1.0/rtl/spi_host.sv", 5,         
-         "IntrSpiEventKnownO_A");                                                       
-                                                              
-    end                                           
-
-    IntrErrorKnownO_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) (!$isunknown(intr_error_o)))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_ip_spi_host_1.0/rtl/spi_host.sv", 5,         
-         "IntrErrorKnownO_A");                                                       
-                                                              
-    end                                           
-
-    LsioTriggerKnown_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) (!$isunknown(lsio_trigger_o)))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_ip_spi_host_1.0/rtl/spi_host.sv", 5,         
-         "LsioTriggerKnown_A");                                                       
-                                                              
-    end                                           
-
-    RaclErrorValidKnown_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) (!$isunknown(racl_error_o.valid)))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_ip_spi_host_1.0/rtl/spi_host.sv", 5,         
-         "RaclErrorValidKnown_A");                                                       
-                                                              
-    end                                           
-
+  
+  
+  
+  
+  
 
 
   // passthrough_o.s is passed through to spi_device, it may contain unknown data,
   // but the unknown data won't be used based on the SPI protocol.
   // Hence, instead of checking known data, here does a connectivity check.
-    PassthroughConn_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) (passthrough_o.s === cio_sd_i))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_ip_spi_host_1.0/rtl/spi_host.sv", 5,         
-         "PassthroughConn_A");                                                       
-                                                              
-    end
+  
 
   // Alert assertions for reg_we onehot check
-            FpvSecCmRegWeOnehotCheck_A: assert property (@(posedge clk_i) disable iff ((!rst_ni) !== '0) ($rose(u_reg.u_prim_reg_we_check.u_prim_onehot_check.err_o) && !(0) |-> ##[0:30] ((alert_tx_o[0].alert_p))))       
-    else begin                                                                           
-      $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, "src/lowrisc_ip_spi_host_1.0/rtl/spi_host.sv", 5,         
-         "FpvSecCmRegWeOnehotCheck_A");                                                       
-                                                              
-    end                                                                           
-  assign u_reg.u_prim_reg_we_check.u_prim_onehot_check.unused_assert_connected = 1'b1;                                                
+                                                                                     
                         
   
 endmodule : spi_host

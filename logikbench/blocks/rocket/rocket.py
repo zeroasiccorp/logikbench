@@ -23,6 +23,12 @@ class Rocket(Design):
         for item in source:
             self.add_file(item, fileset, dataroot=root)
 
+        # la_clkicgand's default path is an ASIC transparent latch (not
+        # supported by FPGA synth); VERILATOR selects its negedge-flop clock
+        # gate instead. rocket.v has no VERILATOR guards, so this only affects
+        # the clock-gate cell.
+        self.add_define("VERILATOR", fileset=fileset)
+
         # lambdalib cells instantiated by the pickled core
         for dep in deps:
             self.add_depfileset(dep, fileset=fileset)

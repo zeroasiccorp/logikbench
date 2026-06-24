@@ -1,6 +1,5 @@
 from .aes.aes import Aes
 from .apbregs.apbregs import Apbregs
-from .ara.ara import Ara
 from .axicrossbar.axicrossbar import Axicrossbar
 from .blackparrot.blackparrot import BlackParrot
 from .coralnpu.coralnpu import CoralNPU
@@ -30,7 +29,6 @@ from .wally.wally import Wally
 __all__ = [
     "Aes",
     "Apbregs",
-    "Ara",
     "Axicrossbar",
     "BlackParrot",
     "CoralNPU",
