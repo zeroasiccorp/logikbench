@@ -1,6 +1,6 @@
 from os.path import dirname, abspath
 from siliconcompiler import Design
-from lambdalib.auxlib import Drsync, Dsync, Clkicgand
+from lambdalib.auxlib import Drsync, Dsync
 from lambdalib.ramlib import Spram
 
 
@@ -10,7 +10,7 @@ class Rocket(Design):
         name = 'rocket'
         root = f'{name}_root'
         source = [f'rtl/{name}.v', 'rtl/riscv_bootrom.v']
-        deps = [Drsync(), Dsync(), Clkicgand(), Spram()]
+        deps = [Drsync(), Dsync(), Spram()]
 
         # create a Design object
         super().__init__(name)
@@ -22,12 +22,6 @@ class Rocket(Design):
         fileset = 'rtl'
         for item in source:
             self.add_file(item, fileset, dataroot=root)
-
-        # la_clkicgand's default path is an ASIC transparent latch (not
-        # supported by FPGA synth); VERILATOR selects its negedge-flop clock
-        # gate instead. rocket.v has no VERILATOR guards, so this only affects
-        # the clock-gate cell.
-        self.add_define("VERILATOR", fileset=fileset)
 
         # lambdalib cells instantiated by the pickled core
         for dep in deps:

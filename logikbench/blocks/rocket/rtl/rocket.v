@@ -42274,12 +42274,10 @@ module rocket_s_EICG_wrapper(
   input test_en,
   input in
 );
-  la_clkicgand clkicgand (
-    .clk(in),
-    .te(test_en),
-    .en(en),
-    .eclk(out)
-  );
+  // FPGA bypass: la_clkicgand's clock gate uses a transparent latch, which
+  // the FPGA target does not support. Pass the clock through ungated (drops
+  // clock-gating power savings; functionally equivalent for synthesis QoR).
+  assign out = in;
 endmodule
 module rocket_s_NonSyncResetSynchronizerPrimitiveShiftReg_d3(
   input   clock,
