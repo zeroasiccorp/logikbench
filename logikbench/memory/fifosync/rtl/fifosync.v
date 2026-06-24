@@ -5,7 +5,7 @@
 //#############################################################################
 
 module fifosync #(parameter DW = 16,
-                  parameter AW = 4
+                  parameter AW = 6
                   )
    (
     input               clk,
