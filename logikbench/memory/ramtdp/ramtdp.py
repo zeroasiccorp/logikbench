@@ -1,11 +1,12 @@
 from os.path import dirname, abspath
 from siliconcompiler import Design
+from lambdalib.ramlib import Tdpram
 
 
-class Ramdp(Design):
+class Ramtdp(Design):
     def __init__(self):
 
-        name = 'ramdp'
+        name = 'ramtdp'
         root = f'{name}_root'
         source = [f'rtl/{name}.v']
 
@@ -20,10 +21,13 @@ class Ramdp(Design):
         for item in source:
             self.add_file(item, fileset, dataroot=root)
 
+        # lambdalib memory primitive
+        self.add_depfileset(Tdpram(), fileset=fileset)
+
         # top module
         self.set_topmodule(name, fileset)
 
 
 if __name__ == "__main__":
-    d = Ramdp()
-    d.write_fileset("ramdp.f", fileset="rtl")
+    d = Ramtdp()
+    d.write_fileset("ramtdp.f", fileset="rtl")
