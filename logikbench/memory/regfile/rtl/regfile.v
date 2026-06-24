@@ -1,8 +1,8 @@
 module regfile
   # (parameter AW = 6,  // address with (regs = 2**AW)
      parameter DW = 32, // register width
-     parameter RP = 2,  // # read ports
-     parameter WP = 1   // # write prots
+     parameter RP = 4,  // # read ports
+     parameter WP = 2   // # write prots
      )
    (// Single clock
     input              clk,
