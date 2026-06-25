@@ -33,8 +33,8 @@
 // PIPELINE = 1 registers the input (one cycle of latency); PIPELINE = 0 is a
 // pure combinational decoder (clk/nreset unused).
 //
-module hamming_dec #(parameter DW = 64,      // information (data) bits
-                     parameter PW = 8,       // Hsiao check bits
+module hamming_dec #(parameter DW = 64,	     // information (data) bits
+                     parameter PW = 8,	     // Hsiao check bits
                      parameter PIPELINE = 1) // 1 = registered, 0 = comb.
    (
     input	      clk,     // clock (used when PIPELINE=1)
@@ -52,8 +52,8 @@ module hamming_dec #(parameter DW = 64,      // information (data) bits
    wire [PW-1:0]    rchk = cw[DW+PW-1:DW];   // received check bits
    reg [PW-1:0]	    syn;
    reg [DW-1:0]	    corr;
-   reg [PW-1:0]     col [0:DW-1];        // Hsiao column per data bit
-   integer          pcnt [0:(1<<PW)-1];  // popcount of each PW-bit pattern
+   reg [PW-1:0]	    col [0:DW-1];        // Hsiao column per data bit
+   integer	    pcnt [0:(1<<PW)-1];  // popcount of each PW-bit pattern
 
    //#########################################################################
    // Input register (always present); PIPELINE selects whether it is used

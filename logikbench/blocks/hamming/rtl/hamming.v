@@ -16,16 +16,16 @@
 //#############################################################################
 
 module hamming
-  #(parameter DW = 64,        // information (data) bits
-    parameter PW = 8,         // Hsiao check bits
-    parameter PIPELINE = 1)   // 1 = registered, 0 = combinational
+  #(parameter DW = 64,	    // information (data) bits
+    parameter PW = 8,	    // Hsiao check bits
+    parameter PIPELINE = 1) // 1 = registered, 0 = combinational
    (
-    input              clk,      // clock
-    input              nreset,   // async active-low reset
-    input [DW-1:0]     in,       // data in
-    input [DW+PW-1:0]  err_mask, // bit-flips applied to the codeword
-    output [DW-1:0]    out,      // corrected data
-    output [PW-1:0]    syndrome  // error syndrome (0 = clean)
+    input	      clk,	// clock
+    input	      nreset,	// async active-low reset
+    input [DW-1:0]    in,	// data in
+    input [DW+PW-1:0] err_mask,	// bit-flips applied to the codeword
+    output [DW-1:0]   out,	// corrected data
+    output [PW-1:0]   syndrome	// error syndrome (0 = clean)
     );
 
    wire [DW+PW-1:0] codeword;

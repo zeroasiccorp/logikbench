@@ -25,9 +25,9 @@ def sin_case():
     for i in range(NSIN):
         v = sinval(i)
         if v < 0:
-            lines.append("        8'd%d: sinrom = -16'sd%d;" % (i, -v))
+            lines.append("        8'd%d: val = -16'sd%d;" % (i, -v))
         else:
-            lines.append("        8'd%d: sinrom = 16'sd%d;" % (i, v))
+            lines.append("        8'd%d: val = 16'sd%d;" % (i, v))
     return "\n".join(lines)
 
 
@@ -157,8 +157,11 @@ module fft_bf2sdf
 
    // twiddle for the difference path: W_N^(p<<STAGE)
    wire [7:0] addr = (p << (STAGE + SHIFT256));
-   wire signed [DW-1:0] wr =  sinrom((addr + 8'd64));  // cos
-   wire signed [DW-1:0] wi = -sinrom(addr);            // -sin
+   wire signed [15:0] cosv, sinv;
+   fft_sinrom u_cos (.idx(addr + 8'd64), .val(cosv));   // cos = sin(x+90deg)
+   fft_sinrom u_sin (.idx(addr),         .val(sinv));
+   wire signed [DW-1:0] wr =  cosv;
+   wire signed [DW-1:0] wi = -sinv;
    // complex multiply (dif2 * W), Q1.15
    wire signed [2*DW-1:0] m_rr = dif_r2 * wr;
    wire signed [2*DW-1:0] m_ii = dif_i2 * wi;
@@ -206,19 +209,25 @@ module fft_bf2sdf
       end
    end
 
-   // synthesizable 256-entry sine ROM: sinrom(i) = round(sin(2*pi*i/256)*32767)
-   function signed [15:0] sinrom;
-      input [7:0] idx;
-      begin
-         case (idx)
+endmodule
+
+//#############################################################################
+// Sine ROM module: val = round(sin(2*pi*idx/256)*32767). Combinational case
+// (no function, no initial block); instantiated for the sin and cos lookups.
+//#############################################################################
+module fft_sinrom
+  (
+   input [7:0]            idx,
+   output reg signed [15:0] val
+   );
+   always @* begin
+      case (idx)
 '''
 
 FOOTER = r'''
-         default: sinrom = 16'sd0;
-         endcase
-      end
-   endfunction
-
+         default: val = 16'sd0;
+      endcase
+   end
 endmodule
 '''
 

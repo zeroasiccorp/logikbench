@@ -28,13 +28,14 @@ table is documented inline in the RTL and summarized here:
   for the frequency model `freq[s] = round(1e6 * 0.98^s)`, `s = 0..255` -- a
   geometric distribution: smaller symbol values are more frequent and so get
   shorter codes. **Max code length = 13 bits** (cap 15).
-- Encoder ROMs: `enc_len(s)` = code length in bits; `enc_code(s)` = the
-  canonical code (right-justified; the low `enc_len(s)` bits are emitted
-  MSB-first).
-- Decoder ROMs: `cnt_rom(L)` = number of codewords of length `L`; `dsym_rom(i)`
-  = the `i`-th symbol in canonical order (sorted by code length, then symbol
-  value). These plus the canonical first-code recurrence are all the decoder
-  needs.
+- Encoder ROM: a combinational `case` on `in_sym` drives `enc_len_r` (code
+  length in bits) and `enc_code_r` (the canonical code, right-justified; the
+  low `enc_len_r` bits are emitted MSB-first).
+- Decoder ROMs: a `case` on `len` drives `cnt_r` (number of codewords of that
+  length) and a `case` on the canonical symbol index drives `dsym_r` (the
+  symbol in canonical order, sorted by code length then symbol value). These
+  plus the canonical first-code recurrence are all the decoder needs. The
+  tables are plain combinational `case` ROMs (no Verilog functions).
 - Regenerate / change the distribution (or cap) with `python genhuff.py` (then
   reindent with emacs verilog-mode). The generator checks the Kraft equality and
   that the max length stays within the cap.

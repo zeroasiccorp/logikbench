@@ -9,8 +9,7 @@ from .ethmac.ethmac import Ethmac
 from .fft.fft import Fft
 from .firfix.firfix import Firfix
 from .firprog.firprog import Firprog
-from .hammdec.hammdec import Hammdec
-from .hammenc.hammenc import Hammenc
+from .hamming.hamming import Hamming
 from .huffman.huffman import Huffman
 from .fpu64.fpu64 import Fpu64
 from .ialu.ialu import Ialu
@@ -44,8 +43,7 @@ __all__ = [
     "Fft",
     "Firfix",
     "Firprog",
-    "Hammdec",
-    "Hammenc",
+    "Hamming",
     "Huffman",
     "Fpu64",
     "Ialu",
