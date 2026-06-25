@@ -3,8 +3,10 @@ from .apbregs.apbregs import Apbregs
 from .axicrossbar.axicrossbar import Axicrossbar
 from .blackparrot.blackparrot import BlackParrot
 from .coralnpu.coralnpu import CoralNPU
+from .crc32.crc32 import Crc32
 from .cva6.cva6 import Cva6
 from .ethmac.ethmac import Ethmac
+from .fft.fft import Fft
 from .firfix.firfix import Firfix
 from .firprog.firprog import Firprog
 from .hammdec.hammdec import Hammdec
@@ -33,8 +35,10 @@ __all__ = [
     "Axicrossbar",
     "BlackParrot",
     "CoralNPU",
+    "Crc32",
     "Cva6",
     "Ethmac",
+    "Fft",
     "Firfix",
     "Firprog",
     "Hammdec",
