@@ -45,8 +45,9 @@ only `NWAY` candidates are checked.
 | `WIN`      | 32768   | history window size in bytes (15-bit distances) |
 | `WW`       | 64      | parallel compare / max match length in bytes    |
 | `NWAY`     | 4       | candidate positions per hash bucket             |
-| `HASHBITS` | 14      | hash-table entries = 2^HASHBITS (16384)         |
+| `HASHBITS` | 12      | hash-table entries = 2^HASHBITS (4096)          |
 | `MINMATCH` | 4       | shortest emitted match (= hash byte count)      |
+| `PW`       | 16      | stored position width (hash entry = NWAY*PW)    |
 
 ## Interface
 

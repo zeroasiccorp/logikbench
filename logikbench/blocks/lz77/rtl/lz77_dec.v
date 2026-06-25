@@ -18,7 +18,7 @@ module lz77_dec
   #(parameter WIN = 32768,
     parameter LENW = 7,
     parameter AW = 15,
-    parameter PW = 24)
+    parameter PW = 16)
    (
     input            clk,
     input            rst,

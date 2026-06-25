@@ -52,6 +52,7 @@ __all__ = [
     "I2c",
     "Lfsr",
     "Lz77",
+    "Memtest",
     "Nvdla",
     "Ofdm",
     "Openpiton",

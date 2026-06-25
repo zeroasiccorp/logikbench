@@ -14,11 +14,11 @@ module lz77
   #(parameter WIN = 32768,
     parameter WW = 64,
     parameter NWAY = 4,
-    parameter HASHBITS = 14,
+    parameter HASHBITS = 12,
     parameter MINMATCH = 4,
     parameter LENW = 7,
     parameter AW = 15,
-    parameter PW = 24,
+    parameter PW = 16,
     parameter WAW = 8)
    (
     input	 clk,
