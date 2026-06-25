@@ -1,5 +1,5 @@
 import siliconcompiler as sc
-from logikbench.flows.lint import LintFlow
+from siliconcompiler.flows.lintflow import LintFlow
 
 #######################################################
 # Run a single benchmark, e.g.:
