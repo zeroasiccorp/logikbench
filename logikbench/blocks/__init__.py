@@ -26,6 +26,7 @@ from .uart.uart import Uart
 from .umicross.umicross import Umicross
 from .umidev.umidev import Umidev
 from .umiregs.umiregs import Umiregs
+from .viterbi.viterbi import Viterbi
 from .vortex.vortex import Vortex
 from .wally.wally import Wally
 
@@ -58,6 +59,7 @@ __all__ = [
     "Umicross",
     "Umidev",
     "Umiregs",
+    "Viterbi",
     "Vortex",
     "Wally",
 ]
