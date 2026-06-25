@@ -1,11 +1,20 @@
 /******************************************************************************
  * Testbench: Hsiao SEC-DED encode/decode round-trip smoke test.
  *
- * hammenc -> error injection -> hammdec. Checks:
- *   - no error      : decoded == data, syndrome == 0
- *   - single error  : decoded == data (corrected), syndrome != 0  (all 72
- *                     bit positions, data + check)
- *   - double error  : syndrome != 0 (detected; not necessarily corrected)
+ * hammenc -> error injection -> hammdec.
+ *
+ * TESTED (DW=64, PW=8):
+ *   - no error     : decoded == data, syndrome == 0.
+ *   - single error : decoded == data (corrected) and syndrome != 0, for ALL
+ *                    72 codeword bit positions (data and check bits).
+ *   - double error : syndrome != 0 (detected) across sampled bit pairs.
+ *
+ * NOT TESTED:
+ *   - Only DW=64/PW=8 with PIPELINE=1; other widths/modes not exercised.
+ *   - Triple+ bit errors (outside the SEC-DED guarantee).
+ *   - That double-error data is uncorrupted -- it is not, by design; only
+ *     detection (syndrome != 0) is checked for double errors.
+ *   - Exhaustive data patterns (a few representative words only).
  ******************************************************************************/
 `timescale 1ns / 1ps
 

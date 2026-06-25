@@ -1,11 +1,19 @@
 /******************************************************************************
  * Testbench: crc32 (10GbE FCS) smoke test, self-checking.
  *
- * - Validates a byte-serial reference CRC-32 against the canonical check
- *   value: CRC32("123456789") == 0xCBF43926.
- * - Streams arbitrary-length frames through the DUT (W bits/clock, with a
- *   valid-byte count on the final partial word) and compares the frame FCS
- *   against the reference computed over the same bytes.
+ * TESTED:
+ *   - Reference CRC-32 model against the canonical check value
+ *     CRC32("123456789") == 0xCBF43926.
+ *   - DUT vs reference over arbitrary-length frames including a partial final
+ *     word: 1/7/8/13/16/60/63/64-byte frames, all-zeros, all-ones, and a
+ *     pseudo-random frame (exercises the in_bytes byte-count tail path).
+ *
+ * NOT TESTED:
+ *   - Only the default datapath width W=64; other widths not exercised.
+ *   - Non-contiguous / odd keep patterns (assumes the valid bytes are the
+ *     low contiguous byte lanes).
+ *   - Back-to-back frames with no idle gap; mid-frame reset.
+ *   - CRC of a stream that already includes its FCS (residue check).
  ******************************************************************************/
 `timescale 1ns / 1ps
 
@@ -63,7 +71,7 @@ module test_crc32_smoke;
          @(posedge clk); rst <= 1'b1; in_valid <= 1'b0; in_last <= 1'b0;
          @(posedge clk); rst <= 1'b0;
          for (w = 0; w < nwords; w = w + 1) begin
-            nbw = (w == nwords-1) ? (nb - (nwords-1)*BW) : BW;  // bytes this word
+            nbw = (w == nwords-1) ? (nb - (nwords-1)*BW) : BW;  // bytes
             word = {W{1'b0}};
             for (k = 0; k < nbw; k = k + 1)
               word[k*8 +: 8] = tb[w*BW + k];

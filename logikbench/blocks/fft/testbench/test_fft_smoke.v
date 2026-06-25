@@ -7,7 +7,19 @@
  *          order, scaled by 1/N; the checker accounts for both, and searches
  *          for the pipeline latency offset so no latency constant is hardwired.
  *
- * Vectors: impulse, DC, single tone, and a deterministic pseudo-random frame.
+ * TESTED:
+ *   - Functional correctness vs an independent DFT reference for: impulse,
+ *     DC, single tones (k=5,13), and a deterministic pseudo-random complex
+ *     frame.
+ *   - Correct 1/N scaling and bit-reversed bin ordering.
+ *   - Fixed-point accuracy within a tolerance (TOL, ~0.03 normalized).
+ *
+ * NOT TESTED:
+ *   - Only the default size/width (N=64, DW=16); other N/DW not exercised.
+ *   - Back-to-back / continuous-streaming throughput (each frame is run in
+ *     isolation; the latency offset is searched, not the out_valid flag).
+ *   - Overflow / saturation behaviour at full-scale inputs.
+ *   - Exhaustive input coverage or noise/SNR (BER-style) characterization.
  ******************************************************************************/
 `timescale 1ns / 1ps
 

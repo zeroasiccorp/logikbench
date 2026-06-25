@@ -5,6 +5,19 @@
  * convolutional code, maps coded bits to soft symbols, optionally injects a
  * few channel errors, feeds the decoder, and checks the decoded bits equal the
  * original input bits.
+ *
+ * TESTED:
+ *   - Error-free round-trip: exact recovery for frames of 32/64/100 bits.
+ *   - Error correction: recovery with 3/5/8 injected channel (coded-bit)
+ *     errors within the code's correcting capability.
+ *   - Tail-terminated frames (6 zero bits) so the trellis ends in state 0.
+ *
+ * NOT TESTED:
+ *   - Only the default soft width (SW=3) and an ideal clean->soft mapping
+ *     (0/7); no soft quantization noise / AWGN BER characterization.
+ *   - Behaviour beyond the correcting capability (too many errors).
+ *   - Non-terminated frames (no tail), puncturing, or other code rates.
+ *   - Continuous / back-to-back frames and the MAXLEN boundary.
  ******************************************************************************/
 `timescale 1ns / 1ps
 
