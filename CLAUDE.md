@@ -49,3 +49,7 @@
 - All testbenches must drive simulus from clock edges and use non-blocking assignment.
 - All generated code must be verilog2005 comptaible
 - Never make changes in instance connections below the /*AUTOINST*/ line. These must be updated by verilog template mode. To update, run emacs --batch your_file.v   -l verilog-mode   -f verilog-auto -f save-buffer
+
+## Debugging
+- When a test fails and the design and the test disagree on what should happen,   ALWAYS ASK WHO IS RIGHT before changing either one. Do not silently "fix"   the test to match the design's current behavior, and do not silently "fix"   the design to match what the test assumes. If you cannot prove correctness   by reading the design (RTL/spec/comments) and tying it back to a stated requirement, surface the discrepancy to the user and let them adjudicate.  Patching one side to make the other pass hides the real bug.
+- Concrete example: if the testbench drives a single chip-level pin (e.g.   NRST) and the design appears to require that pin at multiple internal  endpoints (e.g. each corner reading its own NRST pad), the design is  almost certainly wrong -- there is only one chip-level pin. Do not paper  over this by adding extra drives in the testbench. Flag the design bug.
