@@ -11,6 +11,7 @@ from .firfix.firfix import Firfix
 from .firprog.firprog import Firprog
 from .hammdec.hammdec import Hammdec
 from .hammenc.hammenc import Hammenc
+from .huffman.huffman import Huffman
 from .fpu64.fpu64 import Fpu64
 from .ialu.ialu import Ialu
 from .hmac.hmac import Hmac
@@ -45,6 +46,7 @@ __all__ = [
     "Firprog",
     "Hammdec",
     "Hammenc",
+    "Huffman",
     "Fpu64",
     "Ialu",
     "Hmac",
