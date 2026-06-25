@@ -16,6 +16,7 @@ from .ialu.ialu import Ialu
 from .hmac.hmac import Hmac
 from .i2c.i2c import I2c
 from .lfsr.lfsr import Lfsr
+from .lz77.lz77 import Lz77
 from .nvdla.nvdla import Nvdla
 from .ofdm.ofdm import Ofdm
 from .openpiton.openpiton import Openpiton
@@ -50,6 +51,7 @@ __all__ = [
     "Hmac",
     "I2c",
     "Lfsr",
+    "Lz77",
     "Nvdla",
     "Ofdm",
     "Openpiton",
