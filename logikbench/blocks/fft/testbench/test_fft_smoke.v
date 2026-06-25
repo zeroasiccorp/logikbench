@@ -17,17 +17,17 @@ module test_fft_smoke;
    localparam N     = 64;
    localparam LOG2N = 6;
    localparam CAP   = 4*N;          // capture window
-   real       TOL;                  // max abs error (normalized units)
+   real	      TOL;                  // max abs error (normalized units)
 
    //##########################################################
    // Clock / DUT
    //##########################################################
-   reg                 clk;
-   reg                 rst;
-   reg                 in_valid;
+   reg	      clk;
+   reg	      rst;
+   reg	      in_valid;
    reg signed [DW-1:0] in_real, in_imag;
-   wire                out_valid;
-   wire signed [DW-1:0] out_real, out_imag;
+   wire		       out_valid;
+   wire signed [DW-1:0]	out_real, out_imag;
 
    fft #(.DW(DW), .N(N)) dut
      (.clk(clk), .rst(rst), .in_valid(in_valid),
@@ -43,11 +43,11 @@ module test_fft_smoke;
    reg signed [DW-1:0] xin_i [0:N-1];
    reg signed [DW-1:0] cap_r [0:CAP-1];
    reg signed [DW-1:0] cap_i [0:CAP-1];
-   real                gold_r [0:N-1];
-   real                gold_i [0:N-1];
+   real		       gold_r [0:N-1];
+   real		       gold_i [0:N-1];
 
-   integer             errors, test_num;
-   integer             n, k;
+   integer	       errors, test_num;
+   integer	       n, k;
 
    //##########################################################
    // Helpers
@@ -61,7 +61,7 @@ module test_fft_smoke;
 
    function [LOG2N-1:0] bitrev;
       input [LOG2N-1:0] in;
-      integer b;
+      integer		b;
       begin
          for (b = 0; b < LOG2N; b = b + 1)
            bitrev[b] = in[LOG2N-1-b];
@@ -111,8 +111,8 @@ module test_fft_smoke;
    // find the latency offset that best matches gold (bit-reversed), then check
    task check_frame;
       input [8*16-1:0] tag;
-      integer L, bestL, m, brm;
-      real    err, besterr, e, mx;
+      integer	       L, bestL, m, brm;
+      real	       err, besterr, e, mx;
       begin
          besterr = 1.0e9; bestL = 0;
          for (L = 0; L + N <= CAP; L = L + 1) begin
@@ -175,8 +175,8 @@ module test_fft_smoke;
 
    task gen_tone;
       input integer kbin;
-      integer i;
-      real    a;
+      integer	    i;
+      real	    a;
       begin
          for (i = 0; i < N; i = i + 1) begin
             a = 0.4 * $cos(2.0*3.14159265358979*kbin*i/N);

@@ -16,11 +16,11 @@ module test_crc32_smoke;
    localparam KW   = $clog2(W/8) + 1;     // width of in_bytes
    localparam MAXB = 256;
 
-   reg              clk, rst, in_valid, in_last;
-   reg  [W-1:0]     in_data;
-   reg  [KW-1:0]    in_bytes;
-   wire             out_valid;
-   wire [31:0]      out_crc;
+   reg	      clk, rst, in_valid, in_last;
+   reg [W-1:0] in_data;
+   reg [KW-1:0]	in_bytes;
+   wire		out_valid;
+   wire [31:0]	out_crc;
 
    crc32 #(.W(W)) dut
      (.clk(clk), .rst(rst), .in_valid(in_valid), .in_data(in_data),
@@ -35,9 +35,9 @@ module test_crc32_smoke;
    // byte-serial reference CRC-32 over tb[0..nb-1]
    function [31:0] crc_ref;
       input integer nb;
-      reg [31:0] c;
-      reg [7:0]  b;
-      integer    i, k;
+      reg [31:0]    c;
+      reg [7:0]	    b;
+      integer	    i, k;
       begin
          c = 32'hFFFFFFFF;
          for (k = 0; k < nb; k = k + 1) begin
@@ -53,9 +53,9 @@ module test_crc32_smoke;
    task run_frame;
       input integer nb;
       input [8*24-1:0] tag;
-      integer nwords, w, k, nbw;
-      reg [W-1:0] word;
-      reg [31:0]  exp;
+      integer	       nwords, w, k, nbw;
+      reg [W-1:0]      word;
+      reg [31:0]       exp;
       begin
          test_num = test_num + 1;
          exp = crc_ref(nb);

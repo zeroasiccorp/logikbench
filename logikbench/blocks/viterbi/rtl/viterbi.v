@@ -18,18 +18,18 @@
 //#############################################################################
 
 module viterbi
-  #(parameter SW     = 3,     // soft symbol width (bits)
-    parameter MAXLEN = 256    // max frame length (decoded bits)
+  #(parameter SW = 3,	   // soft symbol width (bits)
+    parameter MAXLEN = 256 // max frame length (decoded bits)
     )
    (
-    input              clk,
-    input              rst,        // synchronous, active high
-    input              in_valid,
-    input [SW-1:0]     in_sym0,    // soft estimate of coded bit 0 (G0)
-    input [SW-1:0]     in_sym1,    // soft estimate of coded bit 1 (G1)
-    input              in_last,    // last symbol pair of the frame
-    output reg         out_valid,
-    output reg         out_bit     // decoded bit (oldest first)
+    input	   clk,
+    input	   rst,	    // synchronous, active high
+    input	   in_valid,
+    input [SW-1:0] in_sym0, // soft estimate of coded bit 0 (G0)
+    input [SW-1:0] in_sym1, // soft estimate of coded bit 1 (G1)
+    input	   in_last, // last symbol pair of the frame
+    output reg	   out_valid,
+    output reg	   out_bit  // decoded bit (oldest first)
     );
 
    localparam NSTATE = 64;
@@ -37,33 +37,33 @@ module viterbi
    localparam [6:0] G0 = 7'o133;
    localparam [6:0] G1 = 7'o171;
    localparam [SW-1:0] SMAX = {SW{1'b1}};
-   localparam [PMW-1:0] PM_BIG = 12'd2000;
-   localparam AW = $clog2(MAXLEN);
+   localparam [PMW-1:0]	PM_BIG = 12'd2000;
+   localparam		AW = $clog2(MAXLEN);
 
    // FSM
-   localparam ST_ACCEPT = 2'd0, ST_TB = 2'd1, ST_OUT = 2'd2;
-   reg [1:0]      state;
+   localparam		ST_ACCEPT = 2'd0, ST_TB = 2'd1, ST_OUT = 2'd2;
+   reg [1:0]		state;
 
-   reg [PMW-1:0]  pm [0:NSTATE-1];     // path metrics
-   reg [63:0]     dec_ram [0:MAXLEN-1]; // survivor decisions (1 bit/state)
-   reg            out_buf [0:MAXLEN-1]; // decoded bits, indexed by step
-   reg [AW:0]     wp;                  // write pointer / step count
-   reg [AW:0]     len;                 // frame length
-   reg [AW:0]     tb_i;                // traceback index
-   reg [5:0]      tb_state;            // traceback state
-   reg [AW:0]     op;                  // output pointer
+   reg [PMW-1:0]	pm [0:NSTATE-1];     // path metrics
+   reg [63:0]		dec_ram [0:MAXLEN-1]; // survivor decisions (1 bit/state)
+   reg			out_buf [0:MAXLEN-1]; // decoded bits, indexed by step
+   reg [AW:0]		wp;                  // write pointer / step count
+   reg [AW:0]		len;                 // frame length
+   reg [AW:0]		tb_i;                // traceback index
+   reg [5:0]		tb_state;            // traceback state
+   reg [AW:0]		op;                  // output pointer
 
-   integer        j;
+   integer		j;
 
    //----------------------------------------------------------------
    // Branch metric unit: soft distance d(sym,bit)= bit?(SMAX-sym):sym
    // bm4[{g1,g0}] = d(sym0,g0) + d(sym1,g1)
    //----------------------------------------------------------------
-   wire [SW:0] d0_0 = in_sym0;             // g0=0
-   wire [SW:0] d0_1 = SMAX - in_sym0;      // g0=1
-   wire [SW:0] d1_0 = in_sym1;             // g1=0
-   wire [SW:0] d1_1 = SMAX - in_sym1;      // g1=1
-   wire [SW+1:0] bm4 [0:3];
+   wire [SW:0]		d0_0 = in_sym0;             // g0=0
+   wire [SW:0]		d0_1 = SMAX - in_sym0;      // g0=1
+   wire [SW:0]		d1_0 = in_sym1;             // g1=0
+   wire [SW:0]		d1_1 = SMAX - in_sym1;      // g1=1
+   wire [SW+1:0]	bm4 [0:3];
    assign bm4[0] = d0_0 + d1_0;   // g1g0 = 00
    assign bm4[1] = d0_1 + d1_0;   // g1g0 = 01
    assign bm4[2] = d0_0 + d1_1;   // g1g0 = 10
@@ -76,7 +76,7 @@ module viterbi
    wire [PMW-1:0] pmn  [0:NSTATE-1];
    wire [NSTATE-1:0] decw;
 
-   genvar i;
+   genvar	     i;
    generate
       for (i = 0; i < NSTATE; i = i + 1) begin : acs
          localparam [6:0] V0 = (i << 1) & 7'h7f;          // {i[5:0],0}
@@ -85,8 +85,8 @@ module viterbi
          localparam [5:0] P1 = ((i << 1) | 1) & 6'h3f;    // {i[4:0],1}
          localparam [1:0] C0 = {^(V0 & G1), ^(V0 & G0)};
          localparam [1:0] C1 = {^(V1 & G1), ^(V1 & G0)};
-         wire [PMW-1:0] m0 = pm[P0] + bm4[C0];
-         wire [PMW-1:0] m1 = pm[P1] + bm4[C1];
+         wire [PMW-1:0]	  m0 = pm[P0] + bm4[C0];
+         wire [PMW-1:0]	  m1 = pm[P1] + bm4[C1];
          assign pmn[i]  = (m1 < m0) ? m1 : m0;
          assign decw[i] = (m1 < m0) ? 1'b1 : 1'b0;
       end
@@ -94,7 +94,7 @@ module viterbi
 
    // min path metric + best state (for normalization and traceback start)
    reg [PMW-1:0] minpm;
-   reg [5:0]     bestidx;
+   reg [5:0]	 bestidx;
    always @* begin
       minpm   = pmn[0];
       bestidx = 6'd0;
@@ -106,7 +106,7 @@ module viterbi
    end
 
    wire [63:0] dec_rd = dec_ram[tb_i[AW-1:0]];
-   wire        tb_p   = dec_rd[tb_state];
+   wire	       tb_p   = dec_rd[tb_state];
 
    //----------------------------------------------------------------
    // Control / datapath

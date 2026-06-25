@@ -47,7 +47,7 @@
 - Indentation should match default emacs verilog mode on disk when available.
 - For all changes, confirm that they do not break verilog mode AUTO_TEMPLATE instantiations
 - All testbenches must drive simulus from clock edges and use non-blocking assignment.
-- All generated code must be verilog2005 comptaible
+- All generated code must be verilog 2005 comptaible
 - Never make changes in instance connections below the /*AUTOINST*/ line. These must be updated by verilog template mode. To update, run emacs --batch your_file.v   -l verilog-mode   -f verilog-auto -f save-buffer
 - don't use functions in rtl code
 

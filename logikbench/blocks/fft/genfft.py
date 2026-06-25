@@ -134,7 +134,7 @@ module fft_bf2sdf
 
    // sample counter (position within the N-point frame at this stage)
    reg [LOG2N-1:0] cnt;
-   wire            cb = cnt[FBLOG];               // 0 = load half, 1 = bfly half
+   wire            cb = cnt[FBLOG];               // 0=load,1=bfly
    wire [LOG2N-1:0] p = cnt & ((1 << FBLOG) - 1); // index within half
 
    // feedback shift register (complex), depth FBDEPTH

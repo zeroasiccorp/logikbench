@@ -17,6 +17,7 @@ from .hmac.hmac import Hmac
 from .i2c.i2c import I2c
 from .lfsr.lfsr import Lfsr
 from .nvdla.nvdla import Nvdla
+from .ofdm.ofdm import Ofdm
 from .openpiton.openpiton import Openpiton
 from .picorv32.picorv32 import Picorv32
 from .rocket.rocket import Rocket
@@ -50,6 +51,7 @@ __all__ = [
     "I2c",
     "Lfsr",
     "Nvdla",
+    "Ofdm",
     "Openpiton",
     "Picorv32",
     "Rocket",

@@ -15,13 +15,13 @@ module test_hammdec_smoke;
    localparam PW = 8;
    localparam CW = DW + PW;
 
-   reg              clk, nreset;
-   reg  [DW-1:0]    data;
-   reg  [CW-1:0]    errmask;
-   wire [CW-1:0]    codeword;
-   wire [CW-1:0]    rxword = codeword ^ errmask;
-   wire [DW-1:0]    decoded;
-   wire [PW-1:0]    syndrome;
+   reg	      clk, nreset;
+   reg [DW-1:0]	data;
+   reg [CW-1:0]	errmask;
+   wire [CW-1:0] codeword;
+   wire [CW-1:0] rxword = codeword ^ errmask;
+   wire [DW-1:0] decoded;
+   wire [PW-1:0] syndrome;
 
    hammenc #(.DW(DW), .PW(PW), .PIPELINE(1)) enc
      (.clk(clk), .nreset(nreset), .in(data), .out(codeword));
@@ -63,7 +63,7 @@ module test_hammdec_smoke;
    task test_single;     // flip each of the CW positions, must correct
       input [DW-1:0] d;
       input [8*12-1:0] tag;
-      integer p, bad;
+      integer	       p, bad;
       begin
          test_num = test_num + 1;
          bad = 0;
@@ -84,14 +84,14 @@ module test_hammdec_smoke;
    task test_double;     // flip pairs, must be DETECTED (syndrome != 0)
       input [DW-1:0] d;
       input [8*12-1:0] tag;
-      integer p, q, bad, n;
+      integer	       p, q, bad, n;
       begin
          test_num = test_num + 1;
          bad = 0; n = 0;
          for (p = 0; p < CW; p = p + 7) begin
             for (q = p + 1; q < CW; q = q + 11) begin
                drive(d, (({{(CW-1){1'b0}},1'b1}) << p) |
-                        (({{(CW-1){1'b0}},1'b1}) << q));
+                     (({{(CW-1){1'b0}},1'b1}) << q));
                n = n + 1;
                if (syndrome === {PW{1'b0}}) bad = bad + 1;  // undetected!
             end

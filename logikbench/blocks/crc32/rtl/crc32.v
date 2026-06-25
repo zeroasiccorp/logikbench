@@ -25,7 +25,7 @@
 //#############################################################################
 
 module crc32
-  #(parameter W = 64)                  // datapath bits per clock (multiple of 8)
+  #(parameter W = 64)                  // datapath bits/clock (mult of 8)
    (
     input                 clk,
     input                 rst,      // synchronous, active high
@@ -42,16 +42,16 @@ module crc32
    localparam [31:0] POLY = 32'hEDB88320;   // reflect(0x04C11DB7)
    localparam [31:0] INIT = 32'hFFFFFFFF;
 
-   reg [31:0] crc;        // running CRC (reflected domain)
-   reg        active;     // a frame is in progress
+   reg [31:0]	     crc;        // running CRC (reflected domain)
+   reg               active;     // a frame is in progress
 
-   wire [31:0] cur = active ? crc : INIT;   // load INIT at frame start
+   wire [31:0]	     cur = active ? crc : INIT;   // load INIT at frame start
 
    // Running CRC tapped at each byte boundary: c_tap[n] = CRC after folding the
    // low n bytes of in_data. These are intermediate nets of one XOR tree.
-   reg [31:0] c_tap [0:BW];
-   reg [31:0] cnext;
-   integer    b, i;
+   reg [31:0]	     c_tap [0:BW];
+   reg [31:0]	     cnext;
+   integer	     b, i;
 
    always @* begin
       c_tap[0] = cur;
@@ -59,7 +59,7 @@ module crc32
          c_tap[b+1] = c_tap[b];
          for (i = 0; i < 8; i = i + 1)
            c_tap[b+1] = (c_tap[b+1] >> 1) ^
-                        (POLY & {32{c_tap[b+1][0] ^ in_data[b*8 + i]}});
+                  (POLY & {32{c_tap[b+1][0] ^ in_data[b*8 + i]}});
       end
       // last word folds only its valid bytes; full words fold all BW
       cnext = in_last ? c_tap[in_bytes] : c_tap[BW];

@@ -24,12 +24,12 @@
 //#############################################################################
 
 module fft
-  #(parameter DW = 16,  // data width (Q1.15)
-    parameter N  = 64   // FFT size (power of two, <= 256)
+  #(parameter DW = 16, // data width (Q1.15)
+    parameter N = 64   // FFT size (power of two, <= 256)
     )
    (
     input                  clk,
-    input                  rst,        // synchronous, active high
+    input                  rst, // synchronous, active high
     input                  in_valid,
     input signed [DW-1:0]  in_real,
     input signed [DW-1:0]  in_imag,
@@ -41,9 +41,9 @@ module fft
    localparam LOG2N = $clog2(N);
 
    // Per-stage streaming buses (LOG2N+1 boundaries: [0]=input .. [LOG2N]=out)
-   wire signed [DW-1:0] sr [0:LOG2N];
-   wire signed [DW-1:0] si [0:LOG2N];
-   wire                 sv [0:LOG2N];
+   wire signed [DW-1:0]	sr [0:LOG2N];
+   wire signed [DW-1:0]	si [0:LOG2N];
+   wire			sv [0:LOG2N];
 
    assign sr[0] = in_real;
    assign si[0] = in_imag;
@@ -77,18 +77,18 @@ endmodule
 // One R2SDF stage: butterfly + feedback delay line + twiddle multiply
 //#############################################################################
 module fft_bf2sdf
-  #(parameter DW    = 16,
-    parameter NP    = 64,   // full FFT size
+  #(parameter DW = 16,
+    parameter NP = 64, // full FFT size
     parameter LOG2N = 6,
     parameter STAGE = 0
     )
    (
-    input                  clk,
-    input                  rst,
-    input                  in_valid,
-    input signed [DW-1:0]  in_real,
-    input signed [DW-1:0]  in_imag,
-    output reg             out_valid,
+    input		       clk,
+    input		       rst,
+    input		       in_valid,
+    input signed [DW-1:0]      in_real,
+    input signed [DW-1:0]      in_imag,
+    output reg		       out_valid,
     output reg signed [DW-1:0] out_real,
     output reg signed [DW-1:0] out_imag
     );
@@ -101,42 +101,42 @@ module fft_bf2sdf
 
    // sample counter (position within the N-point frame at this stage)
    reg [LOG2N-1:0] cnt;
-   wire            cb = cnt[FBLOG];               // 0 = load half, 1 = bfly half
+   wire		   cb = cnt[FBLOG];               // 0 = load half, 1 = bfly half
    wire [LOG2N-1:0] p = cnt & ((1 << FBLOG) - 1); // index within half
 
    // feedback shift register (complex), depth FBDEPTH
    reg signed [DW-1:0] fb_r [0:FBDEPTH-1];
    reg signed [DW-1:0] fb_i [0:FBDEPTH-1];
-   wire signed [DW-1:0] fbo_r = fb_r[FBDEPTH-1];
-   wire signed [DW-1:0] fbo_i = fb_i[FBDEPTH-1];
+   wire signed [DW-1:0]	fbo_r = fb_r[FBDEPTH-1];
+   wire signed [DW-1:0]	fbo_i = fb_i[FBDEPTH-1];
 
-   integer i;
+   integer		i;
 
    // butterfly (scaled by 1/2)
-   wire signed [DW:0] sum_r = fbo_r + in_real;    // one extra bit
-   wire signed [DW:0] sum_i = fbo_i + in_imag;
-   wire signed [DW:0] dif_r = fbo_r - in_real;
-   wire signed [DW:0] dif_i = fbo_i - in_imag;
-   wire signed [DW-1:0] sum_r2 = sum_r >>> 1;
-   wire signed [DW-1:0] sum_i2 = sum_i >>> 1;
-   wire signed [DW-1:0] dif_r2 = dif_r >>> 1;
-   wire signed [DW-1:0] dif_i2 = dif_i >>> 1;
+   wire signed [DW:0]	sum_r = fbo_r + in_real;    // one extra bit
+   wire signed [DW:0]	sum_i = fbo_i + in_imag;
+   wire signed [DW:0]	dif_r = fbo_r - in_real;
+   wire signed [DW:0]	dif_i = fbo_i - in_imag;
+   wire signed [DW-1:0]	sum_r2 = sum_r >>> 1;
+   wire signed [DW-1:0]	sum_i2 = sum_i >>> 1;
+   wire signed [DW-1:0]	dif_r2 = dif_r >>> 1;
+   wire signed [DW-1:0]	dif_i2 = dif_i >>> 1;
 
    // twiddle for the difference path: W_N^(p<<STAGE)
-   wire [7:0] addr = (p << (STAGE + SHIFT256));
-   wire signed [DW-1:0] wr =  sinrom((addr + 8'd64));  // cos
-   wire signed [DW-1:0] wi = -sinrom(addr);            // -sin
+   wire [7:0]		addr = (p << (STAGE + SHIFT256));
+   wire signed [DW-1:0]	wr =  sinrom((addr + 8'd64));  // cos
+   wire signed [DW-1:0]	wi = -sinrom(addr);            // -sin
    // complex multiply (dif2 * W), Q1.15
    wire signed [2*DW-1:0] m_rr = dif_r2 * wr;
    wire signed [2*DW-1:0] m_ii = dif_i2 * wi;
    wire signed [2*DW-1:0] m_ri = dif_r2 * wi;
    wire signed [2*DW-1:0] m_ir = dif_i2 * wr;
-   wire signed [DW-1:0] tw_r = (m_rr - m_ii) >>> 15;
-   wire signed [DW-1:0] tw_i = (m_ri + m_ir) >>> 15;
+   wire signed [DW-1:0]	  tw_r = (m_rr - m_ii) >>> 15;
+   wire signed [DW-1:0]	  tw_i = (m_ri + m_ir) >>> 15;
 
    // next value written to the delay line
-   wire signed [DW-1:0] nd_r = cb ? tw_r : in_real;
-   wire signed [DW-1:0] nd_i = cb ? tw_i : in_imag;
+   wire signed [DW-1:0]	  nd_r = cb ? tw_r : in_real;
+   wire signed [DW-1:0]	  nd_i = cb ? tw_i : in_imag;
 
    always @(posedge clk) begin
       if (rst) begin
@@ -178,263 +178,263 @@ module fft_bf2sdf
       input [7:0] idx;
       begin
          case (idx)
-        8'd0: sinrom = 16'sd0;
-        8'd1: sinrom = 16'sd804;
-        8'd2: sinrom = 16'sd1608;
-        8'd3: sinrom = 16'sd2410;
-        8'd4: sinrom = 16'sd3212;
-        8'd5: sinrom = 16'sd4011;
-        8'd6: sinrom = 16'sd4808;
-        8'd7: sinrom = 16'sd5602;
-        8'd8: sinrom = 16'sd6393;
-        8'd9: sinrom = 16'sd7179;
-        8'd10: sinrom = 16'sd7962;
-        8'd11: sinrom = 16'sd8739;
-        8'd12: sinrom = 16'sd9512;
-        8'd13: sinrom = 16'sd10278;
-        8'd14: sinrom = 16'sd11039;
-        8'd15: sinrom = 16'sd11793;
-        8'd16: sinrom = 16'sd12539;
-        8'd17: sinrom = 16'sd13279;
-        8'd18: sinrom = 16'sd14010;
-        8'd19: sinrom = 16'sd14732;
-        8'd20: sinrom = 16'sd15446;
-        8'd21: sinrom = 16'sd16151;
-        8'd22: sinrom = 16'sd16846;
-        8'd23: sinrom = 16'sd17530;
-        8'd24: sinrom = 16'sd18204;
-        8'd25: sinrom = 16'sd18868;
-        8'd26: sinrom = 16'sd19519;
-        8'd27: sinrom = 16'sd20159;
-        8'd28: sinrom = 16'sd20787;
-        8'd29: sinrom = 16'sd21403;
-        8'd30: sinrom = 16'sd22005;
-        8'd31: sinrom = 16'sd22594;
-        8'd32: sinrom = 16'sd23170;
-        8'd33: sinrom = 16'sd23731;
-        8'd34: sinrom = 16'sd24279;
-        8'd35: sinrom = 16'sd24811;
-        8'd36: sinrom = 16'sd25329;
-        8'd37: sinrom = 16'sd25832;
-        8'd38: sinrom = 16'sd26319;
-        8'd39: sinrom = 16'sd26790;
-        8'd40: sinrom = 16'sd27245;
-        8'd41: sinrom = 16'sd27683;
-        8'd42: sinrom = 16'sd28105;
-        8'd43: sinrom = 16'sd28510;
-        8'd44: sinrom = 16'sd28898;
-        8'd45: sinrom = 16'sd29268;
-        8'd46: sinrom = 16'sd29621;
-        8'd47: sinrom = 16'sd29956;
-        8'd48: sinrom = 16'sd30273;
-        8'd49: sinrom = 16'sd30571;
-        8'd50: sinrom = 16'sd30852;
-        8'd51: sinrom = 16'sd31113;
-        8'd52: sinrom = 16'sd31356;
-        8'd53: sinrom = 16'sd31580;
-        8'd54: sinrom = 16'sd31785;
-        8'd55: sinrom = 16'sd31971;
-        8'd56: sinrom = 16'sd32137;
-        8'd57: sinrom = 16'sd32285;
-        8'd58: sinrom = 16'sd32412;
-        8'd59: sinrom = 16'sd32521;
-        8'd60: sinrom = 16'sd32609;
-        8'd61: sinrom = 16'sd32678;
-        8'd62: sinrom = 16'sd32728;
-        8'd63: sinrom = 16'sd32757;
-        8'd64: sinrom = 16'sd32767;
-        8'd65: sinrom = 16'sd32757;
-        8'd66: sinrom = 16'sd32728;
-        8'd67: sinrom = 16'sd32678;
-        8'd68: sinrom = 16'sd32609;
-        8'd69: sinrom = 16'sd32521;
-        8'd70: sinrom = 16'sd32412;
-        8'd71: sinrom = 16'sd32285;
-        8'd72: sinrom = 16'sd32137;
-        8'd73: sinrom = 16'sd31971;
-        8'd74: sinrom = 16'sd31785;
-        8'd75: sinrom = 16'sd31580;
-        8'd76: sinrom = 16'sd31356;
-        8'd77: sinrom = 16'sd31113;
-        8'd78: sinrom = 16'sd30852;
-        8'd79: sinrom = 16'sd30571;
-        8'd80: sinrom = 16'sd30273;
-        8'd81: sinrom = 16'sd29956;
-        8'd82: sinrom = 16'sd29621;
-        8'd83: sinrom = 16'sd29268;
-        8'd84: sinrom = 16'sd28898;
-        8'd85: sinrom = 16'sd28510;
-        8'd86: sinrom = 16'sd28105;
-        8'd87: sinrom = 16'sd27683;
-        8'd88: sinrom = 16'sd27245;
-        8'd89: sinrom = 16'sd26790;
-        8'd90: sinrom = 16'sd26319;
-        8'd91: sinrom = 16'sd25832;
-        8'd92: sinrom = 16'sd25329;
-        8'd93: sinrom = 16'sd24811;
-        8'd94: sinrom = 16'sd24279;
-        8'd95: sinrom = 16'sd23731;
-        8'd96: sinrom = 16'sd23170;
-        8'd97: sinrom = 16'sd22594;
-        8'd98: sinrom = 16'sd22005;
-        8'd99: sinrom = 16'sd21403;
-        8'd100: sinrom = 16'sd20787;
-        8'd101: sinrom = 16'sd20159;
-        8'd102: sinrom = 16'sd19519;
-        8'd103: sinrom = 16'sd18868;
-        8'd104: sinrom = 16'sd18204;
-        8'd105: sinrom = 16'sd17530;
-        8'd106: sinrom = 16'sd16846;
-        8'd107: sinrom = 16'sd16151;
-        8'd108: sinrom = 16'sd15446;
-        8'd109: sinrom = 16'sd14732;
-        8'd110: sinrom = 16'sd14010;
-        8'd111: sinrom = 16'sd13279;
-        8'd112: sinrom = 16'sd12539;
-        8'd113: sinrom = 16'sd11793;
-        8'd114: sinrom = 16'sd11039;
-        8'd115: sinrom = 16'sd10278;
-        8'd116: sinrom = 16'sd9512;
-        8'd117: sinrom = 16'sd8739;
-        8'd118: sinrom = 16'sd7962;
-        8'd119: sinrom = 16'sd7179;
-        8'd120: sinrom = 16'sd6393;
-        8'd121: sinrom = 16'sd5602;
-        8'd122: sinrom = 16'sd4808;
-        8'd123: sinrom = 16'sd4011;
-        8'd124: sinrom = 16'sd3212;
-        8'd125: sinrom = 16'sd2410;
-        8'd126: sinrom = 16'sd1608;
-        8'd127: sinrom = 16'sd804;
-        8'd128: sinrom = 16'sd0;
-        8'd129: sinrom = -16'sd804;
-        8'd130: sinrom = -16'sd1608;
-        8'd131: sinrom = -16'sd2410;
-        8'd132: sinrom = -16'sd3212;
-        8'd133: sinrom = -16'sd4011;
-        8'd134: sinrom = -16'sd4808;
-        8'd135: sinrom = -16'sd5602;
-        8'd136: sinrom = -16'sd6393;
-        8'd137: sinrom = -16'sd7179;
-        8'd138: sinrom = -16'sd7962;
-        8'd139: sinrom = -16'sd8739;
-        8'd140: sinrom = -16'sd9512;
-        8'd141: sinrom = -16'sd10278;
-        8'd142: sinrom = -16'sd11039;
-        8'd143: sinrom = -16'sd11793;
-        8'd144: sinrom = -16'sd12539;
-        8'd145: sinrom = -16'sd13279;
-        8'd146: sinrom = -16'sd14010;
-        8'd147: sinrom = -16'sd14732;
-        8'd148: sinrom = -16'sd15446;
-        8'd149: sinrom = -16'sd16151;
-        8'd150: sinrom = -16'sd16846;
-        8'd151: sinrom = -16'sd17530;
-        8'd152: sinrom = -16'sd18204;
-        8'd153: sinrom = -16'sd18868;
-        8'd154: sinrom = -16'sd19519;
-        8'd155: sinrom = -16'sd20159;
-        8'd156: sinrom = -16'sd20787;
-        8'd157: sinrom = -16'sd21403;
-        8'd158: sinrom = -16'sd22005;
-        8'd159: sinrom = -16'sd22594;
-        8'd160: sinrom = -16'sd23170;
-        8'd161: sinrom = -16'sd23731;
-        8'd162: sinrom = -16'sd24279;
-        8'd163: sinrom = -16'sd24811;
-        8'd164: sinrom = -16'sd25329;
-        8'd165: sinrom = -16'sd25832;
-        8'd166: sinrom = -16'sd26319;
-        8'd167: sinrom = -16'sd26790;
-        8'd168: sinrom = -16'sd27245;
-        8'd169: sinrom = -16'sd27683;
-        8'd170: sinrom = -16'sd28105;
-        8'd171: sinrom = -16'sd28510;
-        8'd172: sinrom = -16'sd28898;
-        8'd173: sinrom = -16'sd29268;
-        8'd174: sinrom = -16'sd29621;
-        8'd175: sinrom = -16'sd29956;
-        8'd176: sinrom = -16'sd30273;
-        8'd177: sinrom = -16'sd30571;
-        8'd178: sinrom = -16'sd30852;
-        8'd179: sinrom = -16'sd31113;
-        8'd180: sinrom = -16'sd31356;
-        8'd181: sinrom = -16'sd31580;
-        8'd182: sinrom = -16'sd31785;
-        8'd183: sinrom = -16'sd31971;
-        8'd184: sinrom = -16'sd32137;
-        8'd185: sinrom = -16'sd32285;
-        8'd186: sinrom = -16'sd32412;
-        8'd187: sinrom = -16'sd32521;
-        8'd188: sinrom = -16'sd32609;
-        8'd189: sinrom = -16'sd32678;
-        8'd190: sinrom = -16'sd32728;
-        8'd191: sinrom = -16'sd32757;
-        8'd192: sinrom = -16'sd32767;
-        8'd193: sinrom = -16'sd32757;
-        8'd194: sinrom = -16'sd32728;
-        8'd195: sinrom = -16'sd32678;
-        8'd196: sinrom = -16'sd32609;
-        8'd197: sinrom = -16'sd32521;
-        8'd198: sinrom = -16'sd32412;
-        8'd199: sinrom = -16'sd32285;
-        8'd200: sinrom = -16'sd32137;
-        8'd201: sinrom = -16'sd31971;
-        8'd202: sinrom = -16'sd31785;
-        8'd203: sinrom = -16'sd31580;
-        8'd204: sinrom = -16'sd31356;
-        8'd205: sinrom = -16'sd31113;
-        8'd206: sinrom = -16'sd30852;
-        8'd207: sinrom = -16'sd30571;
-        8'd208: sinrom = -16'sd30273;
-        8'd209: sinrom = -16'sd29956;
-        8'd210: sinrom = -16'sd29621;
-        8'd211: sinrom = -16'sd29268;
-        8'd212: sinrom = -16'sd28898;
-        8'd213: sinrom = -16'sd28510;
-        8'd214: sinrom = -16'sd28105;
-        8'd215: sinrom = -16'sd27683;
-        8'd216: sinrom = -16'sd27245;
-        8'd217: sinrom = -16'sd26790;
-        8'd218: sinrom = -16'sd26319;
-        8'd219: sinrom = -16'sd25832;
-        8'd220: sinrom = -16'sd25329;
-        8'd221: sinrom = -16'sd24811;
-        8'd222: sinrom = -16'sd24279;
-        8'd223: sinrom = -16'sd23731;
-        8'd224: sinrom = -16'sd23170;
-        8'd225: sinrom = -16'sd22594;
-        8'd226: sinrom = -16'sd22005;
-        8'd227: sinrom = -16'sd21403;
-        8'd228: sinrom = -16'sd20787;
-        8'd229: sinrom = -16'sd20159;
-        8'd230: sinrom = -16'sd19519;
-        8'd231: sinrom = -16'sd18868;
-        8'd232: sinrom = -16'sd18204;
-        8'd233: sinrom = -16'sd17530;
-        8'd234: sinrom = -16'sd16846;
-        8'd235: sinrom = -16'sd16151;
-        8'd236: sinrom = -16'sd15446;
-        8'd237: sinrom = -16'sd14732;
-        8'd238: sinrom = -16'sd14010;
-        8'd239: sinrom = -16'sd13279;
-        8'd240: sinrom = -16'sd12539;
-        8'd241: sinrom = -16'sd11793;
-        8'd242: sinrom = -16'sd11039;
-        8'd243: sinrom = -16'sd10278;
-        8'd244: sinrom = -16'sd9512;
-        8'd245: sinrom = -16'sd8739;
-        8'd246: sinrom = -16'sd7962;
-        8'd247: sinrom = -16'sd7179;
-        8'd248: sinrom = -16'sd6393;
-        8'd249: sinrom = -16'sd5602;
-        8'd250: sinrom = -16'sd4808;
-        8'd251: sinrom = -16'sd4011;
-        8'd252: sinrom = -16'sd3212;
-        8'd253: sinrom = -16'sd2410;
-        8'd254: sinrom = -16'sd1608;
-        8'd255: sinrom = -16'sd804;
-         default: sinrom = 16'sd0;
+           8'd0: sinrom = 16'sd0;
+           8'd1: sinrom = 16'sd804;
+           8'd2: sinrom = 16'sd1608;
+           8'd3: sinrom = 16'sd2410;
+           8'd4: sinrom = 16'sd3212;
+           8'd5: sinrom = 16'sd4011;
+           8'd6: sinrom = 16'sd4808;
+           8'd7: sinrom = 16'sd5602;
+           8'd8: sinrom = 16'sd6393;
+           8'd9: sinrom = 16'sd7179;
+           8'd10: sinrom = 16'sd7962;
+           8'd11: sinrom = 16'sd8739;
+           8'd12: sinrom = 16'sd9512;
+           8'd13: sinrom = 16'sd10278;
+           8'd14: sinrom = 16'sd11039;
+           8'd15: sinrom = 16'sd11793;
+           8'd16: sinrom = 16'sd12539;
+           8'd17: sinrom = 16'sd13279;
+           8'd18: sinrom = 16'sd14010;
+           8'd19: sinrom = 16'sd14732;
+           8'd20: sinrom = 16'sd15446;
+           8'd21: sinrom = 16'sd16151;
+           8'd22: sinrom = 16'sd16846;
+           8'd23: sinrom = 16'sd17530;
+           8'd24: sinrom = 16'sd18204;
+           8'd25: sinrom = 16'sd18868;
+           8'd26: sinrom = 16'sd19519;
+           8'd27: sinrom = 16'sd20159;
+           8'd28: sinrom = 16'sd20787;
+           8'd29: sinrom = 16'sd21403;
+           8'd30: sinrom = 16'sd22005;
+           8'd31: sinrom = 16'sd22594;
+           8'd32: sinrom = 16'sd23170;
+           8'd33: sinrom = 16'sd23731;
+           8'd34: sinrom = 16'sd24279;
+           8'd35: sinrom = 16'sd24811;
+           8'd36: sinrom = 16'sd25329;
+           8'd37: sinrom = 16'sd25832;
+           8'd38: sinrom = 16'sd26319;
+           8'd39: sinrom = 16'sd26790;
+           8'd40: sinrom = 16'sd27245;
+           8'd41: sinrom = 16'sd27683;
+           8'd42: sinrom = 16'sd28105;
+           8'd43: sinrom = 16'sd28510;
+           8'd44: sinrom = 16'sd28898;
+           8'd45: sinrom = 16'sd29268;
+           8'd46: sinrom = 16'sd29621;
+           8'd47: sinrom = 16'sd29956;
+           8'd48: sinrom = 16'sd30273;
+           8'd49: sinrom = 16'sd30571;
+           8'd50: sinrom = 16'sd30852;
+           8'd51: sinrom = 16'sd31113;
+           8'd52: sinrom = 16'sd31356;
+           8'd53: sinrom = 16'sd31580;
+           8'd54: sinrom = 16'sd31785;
+           8'd55: sinrom = 16'sd31971;
+           8'd56: sinrom = 16'sd32137;
+           8'd57: sinrom = 16'sd32285;
+           8'd58: sinrom = 16'sd32412;
+           8'd59: sinrom = 16'sd32521;
+           8'd60: sinrom = 16'sd32609;
+           8'd61: sinrom = 16'sd32678;
+           8'd62: sinrom = 16'sd32728;
+           8'd63: sinrom = 16'sd32757;
+           8'd64: sinrom = 16'sd32767;
+           8'd65: sinrom = 16'sd32757;
+           8'd66: sinrom = 16'sd32728;
+           8'd67: sinrom = 16'sd32678;
+           8'd68: sinrom = 16'sd32609;
+           8'd69: sinrom = 16'sd32521;
+           8'd70: sinrom = 16'sd32412;
+           8'd71: sinrom = 16'sd32285;
+           8'd72: sinrom = 16'sd32137;
+           8'd73: sinrom = 16'sd31971;
+           8'd74: sinrom = 16'sd31785;
+           8'd75: sinrom = 16'sd31580;
+           8'd76: sinrom = 16'sd31356;
+           8'd77: sinrom = 16'sd31113;
+           8'd78: sinrom = 16'sd30852;
+           8'd79: sinrom = 16'sd30571;
+           8'd80: sinrom = 16'sd30273;
+           8'd81: sinrom = 16'sd29956;
+           8'd82: sinrom = 16'sd29621;
+           8'd83: sinrom = 16'sd29268;
+           8'd84: sinrom = 16'sd28898;
+           8'd85: sinrom = 16'sd28510;
+           8'd86: sinrom = 16'sd28105;
+           8'd87: sinrom = 16'sd27683;
+           8'd88: sinrom = 16'sd27245;
+           8'd89: sinrom = 16'sd26790;
+           8'd90: sinrom = 16'sd26319;
+           8'd91: sinrom = 16'sd25832;
+           8'd92: sinrom = 16'sd25329;
+           8'd93: sinrom = 16'sd24811;
+           8'd94: sinrom = 16'sd24279;
+           8'd95: sinrom = 16'sd23731;
+           8'd96: sinrom = 16'sd23170;
+           8'd97: sinrom = 16'sd22594;
+           8'd98: sinrom = 16'sd22005;
+           8'd99: sinrom = 16'sd21403;
+           8'd100: sinrom = 16'sd20787;
+           8'd101: sinrom = 16'sd20159;
+           8'd102: sinrom = 16'sd19519;
+           8'd103: sinrom = 16'sd18868;
+           8'd104: sinrom = 16'sd18204;
+           8'd105: sinrom = 16'sd17530;
+           8'd106: sinrom = 16'sd16846;
+           8'd107: sinrom = 16'sd16151;
+           8'd108: sinrom = 16'sd15446;
+           8'd109: sinrom = 16'sd14732;
+           8'd110: sinrom = 16'sd14010;
+           8'd111: sinrom = 16'sd13279;
+           8'd112: sinrom = 16'sd12539;
+           8'd113: sinrom = 16'sd11793;
+           8'd114: sinrom = 16'sd11039;
+           8'd115: sinrom = 16'sd10278;
+           8'd116: sinrom = 16'sd9512;
+           8'd117: sinrom = 16'sd8739;
+           8'd118: sinrom = 16'sd7962;
+           8'd119: sinrom = 16'sd7179;
+           8'd120: sinrom = 16'sd6393;
+           8'd121: sinrom = 16'sd5602;
+           8'd122: sinrom = 16'sd4808;
+           8'd123: sinrom = 16'sd4011;
+           8'd124: sinrom = 16'sd3212;
+           8'd125: sinrom = 16'sd2410;
+           8'd126: sinrom = 16'sd1608;
+           8'd127: sinrom = 16'sd804;
+           8'd128: sinrom = 16'sd0;
+           8'd129: sinrom = -16'sd804;
+           8'd130: sinrom = -16'sd1608;
+           8'd131: sinrom = -16'sd2410;
+           8'd132: sinrom = -16'sd3212;
+           8'd133: sinrom = -16'sd4011;
+           8'd134: sinrom = -16'sd4808;
+           8'd135: sinrom = -16'sd5602;
+           8'd136: sinrom = -16'sd6393;
+           8'd137: sinrom = -16'sd7179;
+           8'd138: sinrom = -16'sd7962;
+           8'd139: sinrom = -16'sd8739;
+           8'd140: sinrom = -16'sd9512;
+           8'd141: sinrom = -16'sd10278;
+           8'd142: sinrom = -16'sd11039;
+           8'd143: sinrom = -16'sd11793;
+           8'd144: sinrom = -16'sd12539;
+           8'd145: sinrom = -16'sd13279;
+           8'd146: sinrom = -16'sd14010;
+           8'd147: sinrom = -16'sd14732;
+           8'd148: sinrom = -16'sd15446;
+           8'd149: sinrom = -16'sd16151;
+           8'd150: sinrom = -16'sd16846;
+           8'd151: sinrom = -16'sd17530;
+           8'd152: sinrom = -16'sd18204;
+           8'd153: sinrom = -16'sd18868;
+           8'd154: sinrom = -16'sd19519;
+           8'd155: sinrom = -16'sd20159;
+           8'd156: sinrom = -16'sd20787;
+           8'd157: sinrom = -16'sd21403;
+           8'd158: sinrom = -16'sd22005;
+           8'd159: sinrom = -16'sd22594;
+           8'd160: sinrom = -16'sd23170;
+           8'd161: sinrom = -16'sd23731;
+           8'd162: sinrom = -16'sd24279;
+           8'd163: sinrom = -16'sd24811;
+           8'd164: sinrom = -16'sd25329;
+           8'd165: sinrom = -16'sd25832;
+           8'd166: sinrom = -16'sd26319;
+           8'd167: sinrom = -16'sd26790;
+           8'd168: sinrom = -16'sd27245;
+           8'd169: sinrom = -16'sd27683;
+           8'd170: sinrom = -16'sd28105;
+           8'd171: sinrom = -16'sd28510;
+           8'd172: sinrom = -16'sd28898;
+           8'd173: sinrom = -16'sd29268;
+           8'd174: sinrom = -16'sd29621;
+           8'd175: sinrom = -16'sd29956;
+           8'd176: sinrom = -16'sd30273;
+           8'd177: sinrom = -16'sd30571;
+           8'd178: sinrom = -16'sd30852;
+           8'd179: sinrom = -16'sd31113;
+           8'd180: sinrom = -16'sd31356;
+           8'd181: sinrom = -16'sd31580;
+           8'd182: sinrom = -16'sd31785;
+           8'd183: sinrom = -16'sd31971;
+           8'd184: sinrom = -16'sd32137;
+           8'd185: sinrom = -16'sd32285;
+           8'd186: sinrom = -16'sd32412;
+           8'd187: sinrom = -16'sd32521;
+           8'd188: sinrom = -16'sd32609;
+           8'd189: sinrom = -16'sd32678;
+           8'd190: sinrom = -16'sd32728;
+           8'd191: sinrom = -16'sd32757;
+           8'd192: sinrom = -16'sd32767;
+           8'd193: sinrom = -16'sd32757;
+           8'd194: sinrom = -16'sd32728;
+           8'd195: sinrom = -16'sd32678;
+           8'd196: sinrom = -16'sd32609;
+           8'd197: sinrom = -16'sd32521;
+           8'd198: sinrom = -16'sd32412;
+           8'd199: sinrom = -16'sd32285;
+           8'd200: sinrom = -16'sd32137;
+           8'd201: sinrom = -16'sd31971;
+           8'd202: sinrom = -16'sd31785;
+           8'd203: sinrom = -16'sd31580;
+           8'd204: sinrom = -16'sd31356;
+           8'd205: sinrom = -16'sd31113;
+           8'd206: sinrom = -16'sd30852;
+           8'd207: sinrom = -16'sd30571;
+           8'd208: sinrom = -16'sd30273;
+           8'd209: sinrom = -16'sd29956;
+           8'd210: sinrom = -16'sd29621;
+           8'd211: sinrom = -16'sd29268;
+           8'd212: sinrom = -16'sd28898;
+           8'd213: sinrom = -16'sd28510;
+           8'd214: sinrom = -16'sd28105;
+           8'd215: sinrom = -16'sd27683;
+           8'd216: sinrom = -16'sd27245;
+           8'd217: sinrom = -16'sd26790;
+           8'd218: sinrom = -16'sd26319;
+           8'd219: sinrom = -16'sd25832;
+           8'd220: sinrom = -16'sd25329;
+           8'd221: sinrom = -16'sd24811;
+           8'd222: sinrom = -16'sd24279;
+           8'd223: sinrom = -16'sd23731;
+           8'd224: sinrom = -16'sd23170;
+           8'd225: sinrom = -16'sd22594;
+           8'd226: sinrom = -16'sd22005;
+           8'd227: sinrom = -16'sd21403;
+           8'd228: sinrom = -16'sd20787;
+           8'd229: sinrom = -16'sd20159;
+           8'd230: sinrom = -16'sd19519;
+           8'd231: sinrom = -16'sd18868;
+           8'd232: sinrom = -16'sd18204;
+           8'd233: sinrom = -16'sd17530;
+           8'd234: sinrom = -16'sd16846;
+           8'd235: sinrom = -16'sd16151;
+           8'd236: sinrom = -16'sd15446;
+           8'd237: sinrom = -16'sd14732;
+           8'd238: sinrom = -16'sd14010;
+           8'd239: sinrom = -16'sd13279;
+           8'd240: sinrom = -16'sd12539;
+           8'd241: sinrom = -16'sd11793;
+           8'd242: sinrom = -16'sd11039;
+           8'd243: sinrom = -16'sd10278;
+           8'd244: sinrom = -16'sd9512;
+           8'd245: sinrom = -16'sd8739;
+           8'd246: sinrom = -16'sd7962;
+           8'd247: sinrom = -16'sd7179;
+           8'd248: sinrom = -16'sd6393;
+           8'd249: sinrom = -16'sd5602;
+           8'd250: sinrom = -16'sd4808;
+           8'd251: sinrom = -16'sd4011;
+           8'd252: sinrom = -16'sd3212;
+           8'd253: sinrom = -16'sd2410;
+           8'd254: sinrom = -16'sd1608;
+           8'd255: sinrom = -16'sd804;
+           default: sinrom = 16'sd0;
          endcase
       end
    endfunction

@@ -15,9 +15,9 @@ module test_viterbi_smoke;
    localparam SHI    = (1<<SW) - 1;   // soft "1"
    localparam SLO    = 0;             // soft "0"
 
-   reg            clk, rst, in_valid, in_last;
-   reg  [SW-1:0]  in_sym0, in_sym1;
-   wire           out_valid, out_bit;
+   reg	      clk, rst, in_valid, in_last;
+   reg [SW-1:0]	in_sym0, in_sym1;
+   wire		out_valid, out_bit;
 
    viterbi #(.SW(SW), .MAXLEN(MAXLEN)) dut
      (.clk(clk), .rst(rst), .in_valid(in_valid), .in_sym0(in_sym0),
@@ -27,11 +27,11 @@ module test_viterbi_smoke;
    always #5 clk = ~clk;
 
    reg        orig [0:MAXLEN-1];   // original bits (data + tail)
-   reg [SW-1:0] sym0 [0:MAXLEN-1];
-   reg [SW-1:0] sym1 [0:MAXLEN-1];
-   reg        dec  [0:MAXLEN-1];   // decoded bits
-   integer    odx;
-   integer    errors, test_num;
+   reg [SW-1:0]	sym0 [0:MAXLEN-1];
+   reg [SW-1:0]	sym1 [0:MAXLEN-1];
+   reg		dec  [0:MAXLEN-1];   // decoded bits
+   integer	odx;
+   integer	errors, test_num;
 
    // capture decoder output
    always @(posedge clk)
@@ -47,8 +47,8 @@ module test_viterbi_smoke;
       input integer ndata;
       input integer nerr;        // coded-bit errors to inject
       input [8*16-1:0] tag;
-      integer i, len, k, g0, g1, pos, which, bad;
-      reg [6:0] v;
+      integer	       i, len, k, g0, g1, pos, which, bad;
+      reg [6:0]	       v;
       begin
          test_num = test_num + 1;
          len = ndata + 6;        // + zero tail
