@@ -1,4 +1,3 @@
-import numpy as np
 from os.path import dirname, abspath
 from siliconcompiler import Design
 
@@ -24,23 +23,7 @@ class Fft(Design):
         # top module
         self.set_topmodule(name, fileset)
 
-    def sin_table(self, width=16, size=256):
-        '''
-        Generates sin table with:
-        1 sign bit, N-1 fractional bits
-
-        '''
-        maxval = (2**(width-1)-1)
-
-        for i in range(size):
-            val = int(np.sin(2 * np.pi * i / size) * maxval)
-            if val < 0:
-                print(f"sine_lut[{i}] = -16'sd{abs(val)};")
-            else:
-                print(f"sine_lut[{i}] = 16'sd{val};")
-
 
 if __name__ == "__main__":
     d = Fft()
     d.write_fileset("fft.f", fileset="rtl")
-    d.sin_table()
