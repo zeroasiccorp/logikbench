@@ -75,3 +75,27 @@ no latches.
   ```
 
   (Add `-DWAVES` for a VCD dump.)
+
+## References
+
+This `crc32.v` is an original RTL implementation, written from the CRC
+definition and the standard parallel-CRC (unrolled LFSR) architecture; it is
+not derived from a specific HDL source.
+
+### Algorithm and standard
+
+1. W. W. Peterson and D. T. Brown, "Cyclic codes for error detection," *Proc.
+   IRE*, vol. 49, no. 1, pp. 228-235, Jan. 1961. (cyclic redundancy check)
+2. IEEE Std 802.3 (Ethernet), frame check sequence: CRC-32, polynomial
+   0x04C11DB7, reflected, init/xorout 0xFFFFFFFF. Check value 0xCBF43926.
+
+### Hardware implementation (parallel CRC)
+
+3. T.-B. Pei and C. Zukowski, "High-speed parallel CRC circuits in VLSI,"
+   *IEEE Trans. Communications*, vol. 40, no. 4, pp. 653-657, Apr. 1992.
+   (parallel/unrolled CRC computation in hardware)
+4. G. Albertengo and R. Sisto, "Parallel CRC generation," *IEEE Micro*,
+   vol. 10, no. 5, pp. 63-71, Oct. 1990.
+5. D. V. Sarwate, "Computation of cyclic redundancy checks via table look-up,"
+   *Communications of the ACM*, vol. 31, no. 8, pp. 1008-1013, Aug. 1988.
+   (byte-at-a-time CRC; basis of the testbench's reference model)
