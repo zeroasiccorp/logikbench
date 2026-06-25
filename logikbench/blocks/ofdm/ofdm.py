@@ -8,7 +8,7 @@ class Ofdm(Design):
 
         name = 'ofdm'
         root = f'{name}_root'
-        source = [f'rtl/{name}.v']
+        source = ['rtl/ofdm_tx.v', 'rtl/ofdm_rx.v', 'rtl/ofdm.v']
 
         # create a Design object
         super().__init__(name)

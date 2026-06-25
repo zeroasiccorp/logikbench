@@ -1,3 +1,23 @@
+/******************************************************************************
+ * Testbench: ofdm loopback modem smoke test (self-checking, round-trip).
+ *
+ * Drives random bits + a modulation select through the full TX->RX loopback
+ * (ofdm = ofdm_tx + ofdm_rx, ideal internal channel) and checks the recovered
+ * bits equal the transmitted bits.
+ *
+ * TESTED:
+ *   - End-to-end bit recovery for every supported modulation: QPSK, 16-QAM,
+ *     and 64-QAM (multiple random frames each).
+ *   - The QAM map/demap, IFFT/FFT (via the fft block), cyclic prefix, and the
+ *     16/64-QAM amplitude rescale path.
+ *
+ * NOT TESTED:
+ *   - Ideal channel only: no AWGN/multipath, equalizer is identity, so this
+ *     is a clean encode/decode round-trip (no BER/EVM characterization).
+ *   - No pilot/null subcarrier map (all 64 subcarriers carry data).
+ *   - Only N=64 / CP=16 / DW=16; no carrier/timing sync or channel estimation.
+ *   - Back-to-back symbols (one symbol per transaction).
+ ******************************************************************************/
 `timescale 1ns/1ps
 module test_ofdm_smoke;
    localparam N=64, DW=16, NB=6*N;

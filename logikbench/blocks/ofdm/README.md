@@ -70,14 +70,19 @@ are parallel-access, so flip-flops rather than BRAM), and 48 DSP cells (the two
 
 ## Files
 
-- `rtl/ofdm.v` -- the modem (mapper/demapper + CP + reorder + control; two
-  `fft` instances).
+- `rtl/ofdm.v` -- top: the full TX+RX loopback example, instantiates
+  `ofdm_tx` + `ofdm_rx` with the TX stream wired to the RX (ideal channel).
+- `rtl/ofdm_tx.v` -- transmitter (QAM map -> IFFT -> cyclic prefix), streams
+  out N+CP time samples; one `fft` instance.
+- `rtl/ofdm_rx.v` -- receiver (CP removal -> FFT -> rescale -> QAM demap);
+  one `fft` instance.
 - `testbench/test_ofdm_smoke.v` -- Verilog-2005 self-checking loopback smoke
   test: random frames at each modulation order (QPSK/16-QAM/64-QAM) through
   TX->RX, checking recovered bits == input bits. Run (compile fft + ofdm):
 
   ```
-  iverilog -g2005 -o sim.out ../fft/rtl/fft.v rtl/ofdm.v \
+  iverilog -g2005 -o sim.out ../fft/rtl/fft.v \
+           rtl/ofdm_tx.v rtl/ofdm_rx.v rtl/ofdm.v \
            testbench/test_ofdm_smoke.v
   vvp sim.out
   ```
