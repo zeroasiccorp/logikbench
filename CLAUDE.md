@@ -12,6 +12,29 @@
 
 - [SiliconCompiler](https://github.com/siliconcompiler/siliconcompiler) — Build system
 
+## Benchmark Blocks: documentation and references
+
+- Every block you architect and generate (i.e. RTL you design or substantially
+  author, as opposed to vendored/imported RTL) MUST ship a `README.md` in the
+  block directory containing, at minimum:
+  - what the block is and what the circuit contains (function, interface,
+    parameters);
+  - how it maps in synthesis (LUT/FF/DSP/BRAM expectations) when known;
+  - a **References** section.
+- The References section MUST cite:
+  - the **algorithm / standard** the block implements (papers, specs); and
+  - the **hardware-implementation** sources whose architecture the RTL follows
+    (e.g. VLSI-architecture papers/textbooks), kept separate from the algorithm
+    references.
+- State the provenance honestly: if the RTL is an original implementation, say
+  so (it follows the cited architectures but is not copied from them); if it is
+  vendored/imported, give the source URL, commit/branch, and license instead.
+- Also provide a Verilog-2005 self-checking testbench under `testbench/` for
+  blocks you generate (see existing blocks for the pattern).
+- For vendored/imported blocks, a References/provenance section is still
+  required (source, commit, license), even though no hardware-implementation
+  citation applies.
+
 ## Verilog Directives
 
 - Only ever edit `*.v` and `*.vh` files, ignore files listed in `.gitignore`.
