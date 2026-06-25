@@ -13,11 +13,11 @@ LogikBench is a curated suite of tech agnostic RTL benchmarks.
 The semiconductor industry lacks a comprehensive, standardized benchmark suite for evaluating EDA tools, design flows, foundry processes, and FPGA devices. Existing RTL benchmark suites suffer from critical gaps. These gaps make it difficult to objectively compare tools, validate improvements, and track progress across the industry.
 
 * **No standardization** --> no "ImageNet/SpecInt/Dhrystone for EDA"
-* **No diversity** --> limited coverage
-* **Hard-coded circuits** --> no parametric sweeps
-* **Limited provenance** --> benchmark origin and intent unknown
-* **No infrastructure** -->  not reproducibility
-* **Ambiguous licenses** --> blocking commercial use
+* **No diversity** --> too many CPUs, not represntative of real designs
+* **No parameters** --> not representative of full range of performance targets
+* **No provanance** --> benchmark origin and intent often unknown
+* **No infrastructure** -->  no clear path to reproducibility
+* **No open source license** --> license often ambiguous/unknown
 
 ## Logikbench Solution
 
