@@ -52,7 +52,7 @@ classifiers = [
 dependencies = [
              "siliconcompiler >= 0.37.12",
              "lambdapdk >= 0.2.11",
-             "lambdalib >= 0.12.3",
+             "lambdalib >= 0.13.0",
              "umi >= 0.4.14",
              "jinja2 >= 3.0"
 ]
