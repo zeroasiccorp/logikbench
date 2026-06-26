@@ -371,7 +371,7 @@ lb run -g basic -t asap7_demo --to synthesis
 | regfile | Register file | [regfile.v](logikbench/memory/regfile/rtl/regfile.v) |
 | rom | Read-only memory | [rom.v](logikbench/memory/rom/rtl/rom.v) |
 
-### Complex Blocks (40 benchmarks)
+### Complex Blocks (41 benchmarks)
 
 | Benchmark | Description | Verilog |
 |-----------|-------------|---------|
@@ -395,6 +395,7 @@ lb run -g basic -t asap7_demo --to synthesis
 | i2c | I2C controller | [i2c.sv](logikbench/blocks/i2c/rtl/i2c.sv) |
 | ialu | Integer ALU | [ialu.v](logikbench/blocks/ialu/rtl/ialu.v) |
 | lfsr | Linear feedback shift register | [lfsr.v](logikbench/blocks/lfsr/rtl/lfsr.v) |
+| lpddr5 | LPDDR5 memory controller (UMI + DFI, ECC) | [lpddr5_umi.v](logikbench/blocks/lpddr5/rtl/lpddr5_umi.v) |
 | lz77 | LZ77 (LZSS) compressor/decompressor | [lz77.v](logikbench/blocks/lz77/rtl/lz77.v) |
 | median3x3 | Streaming 3x3 median filter | [median3x3.v](logikbench/blocks/median3x3/rtl/median3x3.v) |
 | nvdla | NVDLA deep-learning accelerator | [nvdla/](logikbench/blocks/nvdla/) |
