@@ -34,6 +34,11 @@ from .viterbi.viterbi import Viterbi
 from .vortex.vortex import Vortex
 from .wally.wally import Wally
 
+from .conv2d.conv2d import Conv2d
+from .median3x3.median3x3 import Median3x3
+from .sad8x8.sad8x8 import Sad8x8
+from .sobel3x3.sobel3x3 import Sobel3x3
+
 __all__ = [
     "Aes",
     "Apbregs",
@@ -70,4 +75,8 @@ __all__ = [
     "Viterbi",
     "Vortex",
     "Wally",
+    "Conv2d",
+    "Median3x3",
+    "Sad8x8",
+    "Sobel3x3",
 ]
