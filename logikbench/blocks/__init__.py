@@ -5,6 +5,7 @@ from .blackparrot.blackparrot import BlackParrot
 from .coralnpu.coralnpu import CoralNPU
 from .crc32.crc32 import Crc32
 from .cva6.cva6 import Cva6
+from .ddc.ddc import Ddc
 from .ethmac.ethmac import Ethmac
 from .fft.fft import Fft
 from .firfix.firfix import Firfix
@@ -21,6 +22,7 @@ from .nvdla.nvdla import Nvdla
 from .ofdm.ofdm import Ofdm
 from .openpiton.openpiton import Openpiton
 from .picorv32.picorv32 import Picorv32
+from .reedsolomon.reedsolomon import Reedsolomon
 from .rocket.rocket import Rocket
 from .spi.spi import Spi
 from .serv.serv import Serv
@@ -40,6 +42,7 @@ __all__ = [
     "CoralNPU",
     "Crc32",
     "Cva6",
+    "Ddc",
     "Ethmac",
     "Fft",
     "Firfix",
@@ -52,11 +55,11 @@ __all__ = [
     "I2c",
     "Lfsr",
     "Lz77",
-    "Memtest",
     "Nvdla",
     "Ofdm",
     "Openpiton",
     "Picorv32",
+    "Reedsolomon",
     "Rocket",
     "Spi",
     "Serv",
