@@ -26,6 +26,7 @@ from .reedsolomon.reedsolomon import Reedsolomon
 from .rocket.rocket import Rocket
 from .spi.spi import Spi
 from .serv.serv import Serv
+from .tpu.tpu import Tpu
 from .uart.uart import Uart
 from .umicross.umicross import Umicross
 from .umidev.umidev import Umidev
@@ -68,6 +69,7 @@ __all__ = [
     "Rocket",
     "Spi",
     "Serv",
+    "Tpu",
     "Uart",
     "Umicross",
     "Umidev",
