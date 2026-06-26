@@ -10,11 +10,14 @@
 [![Lint](https://github.com/zeroasiccorp/logikbench/actions/workflows/lint.yml/badge.svg)](https://github.com/zeroasiccorp/logikbench/actions/workflows/lint.yml)
 [![Downloads](https://static.pepy.tech/badge/logikbench)](https://pepy.tech/project/logikbench)
 
+## TL;DR
+
 LogikBench is a curated suite of high quality technology agnostic RTL benchmarks.
 
-The suite includes basic logic gates, arithmetic and memory primitives, DSP and codec blocks, and full subsystems like CPUs and accelerators. Each benchmark includes synthesizable, parameterized, fully documented RTL that compiles cleantly using FPGA or ASIC synthesis tools.
-
-## TL;DR
+- 📦 Curated collection of high-quality RTL designs
+- 🔁 Reproducible build and synthesis flows
+- 📊 Standard QoR metrics across multiple tools
+- 🤖 Designed for both EDA research and LLM evaluation
 
 Install logikbench via PyPI, then optionally use the `sc-install` script to install all EDA tools, Use `lb` application to run benchmarks.
 
@@ -25,7 +28,7 @@ lb --target lattice_ice40 -j 4
 ```
 ----
 
-## Problems
+## Problems Addressed
 
 The semiconductor industry lacks a comprehensive, standardized benchmark suite for evaluating EDA tools, design flows, foundry processes, and FPGA devices. Existing RTL benchmark suites suffer from critical gaps. These gaps make it difficult to objectively compare tools, validate improvements, and track progress across the industry.
 
