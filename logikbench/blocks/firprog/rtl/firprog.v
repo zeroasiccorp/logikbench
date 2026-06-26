@@ -20,24 +20,25 @@
  *
  ***************************************************************************/
 module firprog
-  #(parameter DW = 16,   // data width
+  #(parameter DW = 16,	 // data width
     parameter ACCW = 32, // accumulator width
-    parameter N = 16     // number of taps
+    parameter N = 16	 // number of taps
     )
    (
-    input                        clk,
-    input                        clear,
-    input                        valid,
-    input signed [N*DW-1:0]      h,
-    input signed [DW-1:0]        x,
-    output reg signed [ACCW-1:0] y
+    input		  clk,
+    input		  clear,
+    input		  valid,
+    input [N*DW-1:0]	  h,
+    input [DW-1:0]	  x,
+    output reg [ACCW-1:0] y
     );
 
    // Shift register to hold input samples samples
-   reg signed [DW-1:0] shift_reg [0:N-1];
-   integer             i;
+   reg [DW-1:0]          shift_reg [0:N-1];
+   integer		 i;
 
-   // Multiply-Accumulate result
+   // Multiply-Accumulate result. Kept signed so the signed products
+   // sign-extend correctly into the (possibly wider) accumulator.
    reg signed [ACCW-1:0] acc;
 
    always @(posedge clk) begin
@@ -51,10 +52,11 @@ module firprog
          for (i = N-1; i > 0; i = i - 1)
            shift_reg[i] <= shift_reg[i-1];
          shift_reg[0] <= x;
-         // dot-product
+         // dot-product (signed MAC: $signed re-applies signedness that the
+         // part-select h[i*DW+:DW] would otherwise strip)
          acc = 0;
          for (i = 0; i < N; i = i + 1)
-           acc = acc + shift_reg[i] * h[i*DW+:DW];
+           acc = acc + $signed(shift_reg[i]) * $signed(h[i*DW+:DW]);
          y <= acc;
       end
    end

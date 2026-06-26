@@ -1,8 +1,13 @@
+//#############################################################################
+// Copyright: Zero ASIC. All rights Reserved.
+// Author: Andreas Olofsson
+// License:  MIT (see LICENSE file in LogikBench repository)
+//#############################################################################
 module regfile
   # (parameter AW = 6,  // address with (regs = 2**AW)
      parameter DW = 32, // register width
-     parameter RP = 2,  // # read ports
-     parameter WP = 1   // # write prots
+     parameter RP = 4,  // # read ports
+     parameter WP = 2   // # write prots
      )
    (// Single clock
     input              clk,
@@ -19,53 +24,31 @@ module regfile
    localparam REGS = (2**AW);
 
    reg [DW-1:0]        mem[REGS-1:0];
-   wire [WP-1:0]       write_en [REGS-1:0];
-   reg [DW-1:0]        mux [REGS-1:0];
 
-   genvar 	       i,j;
+   integer 	       w;
+   genvar 	       r;
 
    //#########################################
    // write ports
    //#########################################
 
-   //One hot write enables
-   for(i=0;i<REGS;i=i+1)
-     begin: gen_regwrite
-	for(j=0;j<WP;j=j+1)
-	  begin: gen_wp
-	     assign write_en[i][j] = wr_valid[j] & (wr_addr[j*AW+:AW] == i);
-	  end
-     end
-
-   //Write-Port Mux
-   for(i=0;i<REGS;i=i+1)
-     begin: gen_wrmux
-        integer k;
-        always @*
-          begin
-	     mux[i] = 'b0;
-	     for(k=0;k<WP;k=k+1)
-	       mux[i] = mux[i] | ({(DW){write_en[i][k]}} &
-                                  wr_data[((k+1)*DW-1)-:DW]);
-          end
-     end
-
-   //Memory Array Write
-   for(i=0;i<REGS;i=i+1)
-     begin: gen_reg
-	always @ (posedge clk)
-	  if (|write_en[i][WP-1:0])
-	    mem[i] <= mux[i];
-     end
-
+   // Behavioral inferred memory so the tool maps it to a RAM resource
+   // (distributed RAM/LUTRAM) instead of a discrete flop array. On a same
+   // cycle write collision (two ports, same address) the highest-numbered
+   // port wins.
+   always @(posedge clk)
+     for (w=0;w<WP;w=w+1)
+       if (wr_valid[w])
+	 mem[wr_addr[w*AW+:AW]] <= wr_data[w*DW+:DW];
 
    //#########################################
    // read ports
    //#########################################
 
-   for (i=0;i<RP;i=i+1) begin: gen_rdport
-      assign rd_data[i*DW+:DW] = {(DW){rd_valid[i]}} &
-				 mem[rd_addr[i*AW+:AW]];
+   // Asynchronous (combinational) read, gated by rd_valid.
+   for (r=0;r<RP;r=r+1) begin: gen_rdport
+      assign rd_data[r*DW+:DW] = {(DW){rd_valid[r]}} &
+				 mem[rd_addr[r*AW+:AW]];
    end
 
 endmodule

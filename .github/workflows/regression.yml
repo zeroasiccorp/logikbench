@@ -27,4 +27,28 @@ jobs:
           python3 -m venv .venv
           . .venv/bin/activate
 
-          pytest -n auto
+          # everything except EDA-tool tests (lint, setup); smoke runs in eda_ci
+          pytest -n auto -m "not eda"
+
+  eda_ci:
+    name: "Run EDA"
+    runs-on: ubuntu-latest
+    # prebuilt image with the EDA tools (iverilog, etc.) on PATH
+    container: ghcr.io/siliconcompiler/sc_runner:latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Run pytest (eda)
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+          python3 -m venv .venv
+          . .venv/bin/activate
+
+          pip install --upgrade pip
+          pip install -e .[test]
+
+          # iverilog smoke tests (and any other eda-marked tests)
+          pytest -n auto -m "eda" --verbose

@@ -1,3 +1,9 @@
+//#############################################################################
+// Copyright: Zero ASIC. All rights Reserved.
+// Author: Andreas Olofsson
+// License:  MIT (see LICENSE file in LogikBench repository)
+//#############################################################################
+
 module ialu
   #(parameter DW  = 64 // address width
     )
@@ -6,23 +12,23 @@ module ialu
     input [DW-1:0]  op_rs1,    //primary input operand
     input [DW-1:0]  op_rs2,    //secondary input operand
     output [DW-1:0] ia_result, //bpu result
-    output          ia_zero,   // zero flag
-    output          ia_carry,  // carry flag
-    output          ia_neg,    // negative flag
-    output          ia_over,   // negative flag
+    output	    ia_zero,   // zero flag
+    output	    ia_carry,  // carry flag
+    output	    ia_neg,    // negative flag
+    output	    ia_over,   // negative flag
     // CONTROL
-    input           clk,
-    input           de_add,    // rd=rs1 + rs2
-    input           de_sub,    // rd=rs1 - rs2
-    input           de_sll,    // rd=rs1 << rs2
-    input           de_srl,    // rd=rs1 >> rs2
-    input           de_sra,    // rd=rs1 >>> rs2
-    input           de_and,    // rd=rs1 & rs2
-    input           de_or,     // rd=rs1 | rs2
-    input           de_xor,    // rd=rs1 ^ rs2
-    input           de_sltu,   // rd=1 if rs1<rs2, else rd=0
-    input           de_slt,    // rd=1 if rs1<rs2, else rd=0
-    input           de_sext    // addiw, addw, instr, etc
+    input	    clk,
+    input	    de_add,    // rd=rs1 + rs2
+    input	    de_sub,    // rd=rs1 - rs2
+    input	    de_sll,    // rd=rs1 << rs2
+    input	    de_srl,    // rd=rs1 >> rs2
+    input	    de_sra,    // rd=rs1 >>> rs2
+    input	    de_and,    // rd=rs1 & rs2
+    input	    de_or,     // rd=rs1 | rs2
+    input	    de_xor,    // rd=rs1 ^ rs2
+    input	    de_sltu,   // rd=1 if rs1<rs2, else rd=0
+    input	    de_slt,    // rd=1 if rs1<rs2, else rd=0
+    input	    de_sext    // addiw, addw, instr, etc
     );
 
    //local wires
@@ -30,10 +36,10 @@ module ialu
    wire [DW-1:0]   op_b;
    wire [DW-1:0]   op_b_inv;
    wire [2*DW-1:0] a_sext;
-   wire [5:0]      shamt;
+   wire [5:0]	   shamt;
    wire [DW-1:0]   add_result;
    wire [DW-1:0]   add_carry;
-   wire            add_carry_out;
+   wire		   add_carry_out;
    wire [DW-1:0]   slt_result;
    wire [DW-1:0]   asr_result;
    wire [DW-1:0]   lsl_result;
@@ -41,29 +47,29 @@ module ialu
    wire [DW-1:0]   or_result;
    wire [DW-1:0]   and_result;
    wire [DW-1:0]   muxed_result;
-   wire            arch16;
-   wire            arch32;
-   wire            arch64;
-   wire            arch128;
-   wire            op_a_sign;
-   wire            op_b_sign;
-   wire            add_cout;
-   wire            add_over;
-   wire            add_neg;
-   wire            slt_flag;
-   wire            ia_zero_lo;
-   wire            ia_zero_hi;
-   wire            sel_full;
-   wire            sel_half;
-   wire            sel_quarter;
-   wire            asr_sign;
-   wire            sel_sext;
-   wire            sign_sext;
-   wire            ia_zero_quarter;
-   wire            ia_zero_half;
-   wire            ia_zero_full;
+   wire		   arch16;
+   wire		   arch32;
+   wire		   arch64;
+   wire		   arch128;
+   wire		   op_a_sign;
+   wire		   op_b_sign;
+   wire		   add_cout;
+   wire		   add_over;
+   wire		   add_neg;
+   wire		   slt_flag;
+   wire		   ia_zero_lo;
+   wire		   ia_zero_hi;
+   wire		   sel_full;
+   wire		   sel_half;
+   wire		   sel_quarter;
+   wire		   asr_sign;
+   wire		   sel_sext;
+   wire		   sign_sext;
+   wire		   ia_zero_quarter;
+   wire		   ia_zero_half;
+   wire		   ia_zero_full;
 
-   integer         i;
+   integer	   i;
 
 
 
@@ -81,10 +87,13 @@ module ialu
 
    assign op_b_sign = op_b[DW-1];
 
-   //Sub operation
-   assign op_b_inv[DW-1:0] = ({(DW){de_sub}} ^ op_b[DW-1:0]);
+   //Sub operation: subtract for explicit de_sub and for the slt/sltu compares
+   //(slt/sltu derive their result from the a-b adder flags below).
+   wire sub_en = de_sub | de_slt | de_sltu;
 
-   assign {add_carry_out,add_result} =  op_a + op_b_inv + de_sub;
+   assign op_b_inv[DW-1:0] = ({(DW){sub_en}} ^ op_b[DW-1:0]);
+
+   assign {add_carry_out,add_result} =  op_a + op_b_inv + sub_en;
 
    //Adder Flags
    assign add_cout  = add_carry_out;
@@ -92,8 +101,8 @@ module ialu
 
    assign add_neg  = add_result[DW-1];
 
-   assign add_over = (~op_a_sign & ~(op_b_sign ^ de_sub) & add_neg) |
-                     (op_a_sign  &  (op_b_sign ^ de_sub) & ~add_neg);
+   assign add_over = (~op_a_sign & ~(op_b_sign ^ sub_en) & add_neg) |
+                     (op_a_sign  &  (op_b_sign ^ sub_en) & ~add_neg);
 
 
    //#############################
@@ -144,13 +153,13 @@ module ialu
    // result mux
    //############################
 
-   assign muxed_result = (de_add        & add_result)  |
-                         ((de_slt | de_sltu) & slt_result) |
-                         ((de_srl | de_sra)  & asr_result) |
-                         (de_sll        & lsl_result) |
-                         (de_xor        & xor_result) |
-                         (de_or         & or_result)  |
-                         (de_and        & and_result);
+   assign muxed_result = ({DW{de_add | de_sub}}  & add_result) |
+                         ({DW{de_slt | de_sltu}} & slt_result) |
+                         ({DW{de_srl | de_sra}}  & asr_result) |
+                         ({DW{de_sll}}           & lsl_result) |
+                         ({DW{de_xor}}           & xor_result) |
+                         ({DW{de_or}}            & or_result)  |
+                         ({DW{de_and}}           & and_result);
 
    //sign extend 32b results for RV addiw type instructions
    assign sign_sext = muxed_result[DW/2-1];
@@ -158,11 +167,13 @@ module ialu
    assign ia_result[DW/2-1:0]  = muxed_result[DW/2-1:0];
 
    assign ia_result[DW-1:DW/2] = de_sext ? {(DW/2){sign_sext}} :
-				           muxed_result[DW-1:DW/2];
+				 muxed_result[DW-1:DW/2];
 
    //#############################
    // flags
    //############################
+
+   assign ia_zero_half    = ~|ia_result[DW/2-1:0];
 
    assign ia_zero_full    = (~|ia_result[DW-1:DW/2])   & ia_zero_half;
 

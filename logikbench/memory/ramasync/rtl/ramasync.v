@@ -1,3 +1,9 @@
+//#############################################################################
+// Copyright: Zero ASIC. All rights Reserved.
+// Author: Andreas Olofsson
+// License:  MIT (see LICENSE file in LogikBench repository)
+//#############################################################################
+
 module ramasync #(parameter DW = 16,
                   parameter AW = 8
                   )

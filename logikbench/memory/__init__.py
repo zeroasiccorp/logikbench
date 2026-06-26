@@ -6,10 +6,10 @@ from .fifosync.fifosync import Fifosync
 from .ramasync.ramasync import Ramasync
 from .rambit.rambit import Rambit
 from .rambyte.rambyte import Rambyte
-from .ramdp.ramdp import Ramdp
 from .ramsdp.ramsdp import Ramsdp
 from .ramsp.ramsp import Ramsp
 from .ramspnc.ramspnc import Ramspnc
+from .ramtdp.ramtdp import Ramtdp
 from .regfile.regfile import Regfile
 from .rom.rom import Rom
 
@@ -21,10 +21,10 @@ __all__ = [
     "Ramasync",
     "Rambit",
     "Rambyte",
-    "Ramdp",
     "Ramsdp",
     "Ramsp",
     "Ramspnc",
+    "Ramtdp",
     "Regfile",
     "Rom",
 ]

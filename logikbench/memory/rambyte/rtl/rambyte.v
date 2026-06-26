@@ -1,3 +1,13 @@
+//#############################################################################
+// Copyright: Zero ASIC. All rights Reserved.
+// Author: Andreas Olofsson
+// License:  MIT (see LICENSE file in LogikBench repository)
+//#############################################################################
+//
+// Per-byte write-mask single-port RAM. Implemented on lambdalib la_spram in
+// byte mask mode (BYTEMODE=1) so memory mapping is technology agnostic (FPGA
+// byte-wide BRAM / ASIC macro) and handled by lambdalib.
+
 module rambyte #(parameter DW = 16,
                  parameter AW = 8
                  )
@@ -6,20 +16,29 @@ module rambyte #(parameter DW = 16,
     input [DW/8-1:0]    we,   // per byte write mask
     input [AW-1:0]      addr, // write address
     input [DW-1:0]      din,  // write data
-    output reg [DW-1:0] dout  // read output data
+    output [DW-1:0]     dout  // read output data
     );
 
-   // Generic RTL RAM
-   reg     [DW-1:0] ram[(2**AW)-1:0];
-   integer          i;
+   // Expand the per-byte mask to a byte-aligned per-bit mask; la_spram in
+   // byte mode consumes wmask[i*8] for each 8-bit lane.
+   wire [DW-1:0] wmask;
+   genvar gi;
+   generate
+      for (gi = 0; gi < DW/8; gi = gi + 1) begin : g_lane
+         assign wmask[gi*8+:8] = {8{we[gi]}};
+      end
+   endgenerate
 
-   // ASIC style bytemask
-   always @(posedge clk)
-     if (ce) begin
-        for (i=0;i<DW/8;i=i+1)
-          if (we[i])
-            ram[addr[AW-1:0]][i*8+:8] <= din[i*8+:8];
-        dout[DW-1:0] <= ram[addr[AW-1:0]];
-     end
+   la_spram #(.DW(DW), .AW(AW), .BYTEMODE(1)) memory
+     (.clk     (clk),
+      .ce      (ce),
+      .we      (1'b1),
+      .wmask   (wmask),
+      .addr    (addr),
+      .din     (din),
+      .dout    (dout),
+      .selctrl (1'b0),
+      .ctrl    ('b0),
+      .status  ());
 
 endmodule

@@ -1,5 +1,6 @@
 from os.path import dirname, abspath
 from siliconcompiler import Design
+from lambdalib.ramlib import Spram
 
 
 class Rambyte(Design):
@@ -19,6 +20,9 @@ class Rambyte(Design):
         fileset = 'rtl'
         for item in source:
             self.add_file(item, fileset, dataroot=root)
+
+        # lambdalib memory primitive
+        self.add_depfileset(Spram(), fileset=fileset)
 
         # top module
         self.set_topmodule(name, fileset)

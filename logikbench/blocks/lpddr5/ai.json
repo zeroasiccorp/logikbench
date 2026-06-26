@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0",
+  "name": "lpddr5",
+  "spec_ref": "README.md",
+  "authorship": "Zero ASIC Corporation; author Andreas Olofsson",
+  "generated_by": {
+    "model": "claude-opus-4-8",
+    "provider": "Anthropic",
+    "interface": "Claude Code",
+    "date": "2026-06-18"
+  },
+  "human_review": {
+    "reviewed": true,
+    "reviewer": "Andreas Olofsson",
+    "date": "2026-06-18",
+    "notes": "Architecture, feature scope, and per-stage verification directed and reviewed by the author; controller verified stage-by-stage (reorder, ECC, power) and as a full UMI+DFI stack against a JEDEC-checking DFI model."
+  },
+  "origin": {
+    "type": "original",
+    "notes": "Original implementation written for LogikBench. Follows the JEDEC LPDDR5 command/timing model and the cited DRAM-controller and SEC-DED architectures; not copied from or derived from any specific HDL source."
+  }
+}

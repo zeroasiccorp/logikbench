@@ -1,0 +1,118 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/zeroasiccorp/logikbench/docs/ai_json_schema.json",
+  "title": "LogikBench ai.json",
+  "description": "AI-authorship provenance record for a single LogikBench benchmark. One ai.json sits in each AI-authored benchmark directory. It records ONLY what no other artifact captures: which model produced the RTL, the human review/sign-off, and the provenance type. The specification (function, interface, design decisions, references) lives in the benchmark README linked by spec_ref, and the file list / build recipe lives in the benchmark's Design (.py) -- those are the single sources of truth and are intentionally not duplicated here.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "name",
+    "spec_ref",
+    "authorship",
+    "generated_by",
+    "human_review",
+    "origin"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "description": "Version of this ai.json schema the file targets.",
+      "pattern": "^[0-9]+\\.[0-9]+$"
+    },
+    "name": {
+      "type": "string",
+      "description": "Benchmark name (matches the block directory and Design name).",
+      "minLength": 1
+    },
+    "spec_ref": {
+      "type": "string",
+      "description": "Relative path (from the benchmark directory) to the README that serves as the benchmark specification/plan. The spec is NOT duplicated here -- this is the link to it.",
+      "minLength": 1
+    },
+    "authorship": {
+      "type": "string",
+      "description": "Human/organization credited with the RTL (e.g. 'Zero ASIC Corporation; author Andreas Olofsson').",
+      "minLength": 1
+    },
+    "generated_by": {
+      "type": "object",
+      "description": "How the RTL was produced -- the model and interface used. This is the primary reason the file exists.",
+      "additionalProperties": false,
+      "required": ["model", "provider", "interface", "date"],
+      "properties": {
+        "model": {
+          "type": "string",
+          "description": "Model name/ID that authored or generated the RTL (e.g. 'claude-opus-4-8')."
+        },
+        "provider": {
+          "type": "string",
+          "description": "Model provider (e.g. 'Anthropic')."
+        },
+        "interface": {
+          "type": "string",
+          "description": "Tool/interface used to drive the model (e.g. 'Claude Code')."
+        },
+        "date": {
+          "type": "string",
+          "description": "Date the RTL was generated/authored (YYYY-MM-DD).",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        }
+      }
+    },
+    "human_review": {
+      "type": "object",
+      "description": "Human review/sign-off on the generated RTL.",
+      "additionalProperties": false,
+      "required": ["reviewed"],
+      "properties": {
+        "reviewed": {
+          "type": "boolean",
+          "description": "Whether a human reviewed the RTL."
+        },
+        "reviewer": {
+          "type": "string",
+          "description": "Who reviewed it."
+        },
+        "date": {
+          "type": "string",
+          "description": "Review date (YYYY-MM-DD).",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        },
+        "notes": {
+          "type": "string",
+          "description": "Review notes / scope of the review."
+        }
+      }
+    },
+    "origin": {
+      "type": "object",
+      "description": "Provenance of the RTL.",
+      "additionalProperties": false,
+      "required": ["type"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "original = written for LogikBench; vendored = imported as-is; derived = adapted from another source.",
+          "enum": ["original", "vendored", "derived"]
+        },
+        "url": {
+          "type": "string",
+          "description": "Source repository/URL (vendored/derived)."
+        },
+        "commit": {
+          "type": "string",
+          "description": "Upstream commit/branch/tag (vendored/derived)."
+        },
+        "notes": {
+          "type": "string",
+          "description": "Provenance notes (e.g. 'follows the cited architectures but not copied')."
+        }
+      }
+    },
+    "notes": {
+      "type": "string",
+      "description": "Optional free-form notes specific to the generation that do NOT belong in the README spec (e.g. 'regenerated after the part-select signedness fix')."
+    }
+  }
+}

@@ -1,9 +1,14 @@
+//#############################################################################
+// Copyright: Zero ASIC. All rights Reserved.
+// Author: Andreas Olofsson
+// License:  MIT (see LICENSE file in LogikBench repository)
+//#############################################################################
 module mulreg #(parameter DW = 16,
                 parameter OW = 32
 	        )
    (
     //Inputs
-    input                      clk, // clock
+    input		       clk, // clock
     input signed [DW-1:0]      a,   // a input (multiplier)
     input signed [DW-1:0]      b,   // b input (multiplicand)
     //Outputs
@@ -12,7 +17,7 @@ module mulreg #(parameter DW = 16,
 
    reg signed [DW-1:0] areg;
    reg signed [DW-1:0] breg;
-   wire signed [OW-1:0] prod;
+   wire signed [OW-1:0]	prod;
 
    // register inputs
    always @ (posedge clk)
@@ -22,7 +27,7 @@ module mulreg #(parameter DW = 16,
      end
 
    // multiplier
-   assign prod[OW-1:0] = areg[DW-1:0] * breg[DW-1:0];
+   assign prod[OW-1:0] = $signed(areg) * $signed(breg);
 
    // register output
    always @ (posedge clk)

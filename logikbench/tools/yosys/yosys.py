@@ -94,6 +94,15 @@ class Synthesis(YosysTask):
         self.add_output_file(ext="vg")
         self.add_output_file(ext="netlist.json")
 
+    def pre_process(self):
+        super().pre_process()
+        # Dump a resolved slang command file covering the full dependency
+        # graph (e.g. lambdalib la_spram, umi sub-blocks). synthesis.tcl reads
+        # it via 'read_slang -F'. Slang options are passed as flags there, and
+        # there are no command-file filesets, so the dump is clean.
+        fileset = self.project.get("option", "fileset")[0]
+        self.project.design.write_fileset("sc_rtl.f", fileset=fileset)
+
     def post_process(self):
         super().post_process()
         # reuse YosysTask's stat.json metric extraction (cells, cellarea, ...)

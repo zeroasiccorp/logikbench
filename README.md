@@ -6,37 +6,44 @@
 [![Lint](https://github.com/zeroasiccorp/logikbench/actions/workflows/lint.yml/badge.svg)](https://github.com/zeroasiccorp/logikbench/actions/workflows/lint.yml)
 [![Downloads](https://static.pepy.tech/badge/logikbench)](https://pepy.tech/project/logikbench)
 
+LogikBench is a curated suite of high quality technology agnostic RTL benchmarks.
+
+Logikbench includes basic logic gates, arithmetic and memory primitives, DSP and codec blocks, and full subsystems like CPUs and accelerators. Each benchmark includes synthesizable, parameterized, fully documented RTL that compiles cleantly using FPGA or ASIC synthesis tools.
+
+## TLDR
+
+Install logikbench via PyPI, then optionally use the `sc-install` script to install all EDA tools, Use `lb` application to run benchmarks.
+
+```bash
+pip install logikbench
+sc-install -group fpga asic # optional
+lb --target lattice_ice40 -j 4
+```
+----
+
+
 ## Problems
 
 The semiconductor industry lacks a comprehensive, standardized benchmark suite for evaluating EDA tools, design flows, foundry processes, and FPGA devices. Existing RTL benchmark suites suffer from critical gaps. These gaps make it difficult to objectively compare tools, validate improvements, and track progress across the industry.
 
 * **No standardization** --> no "ImageNet/SpecInt/Dhrystone for EDA"
-* **No diversity** --> limited coverage
-* **Hard-coded circuits** --> no parametric sweeps
-* **Limited provenance** --> benchmark origin and intent unknown
-* **No infrastructure** -->  not reproducibility
-* **Ambiguous licenses** --> blocking commercial use
+* **No diversity** --> too many CPUs, not represntative of real designs
+* **No parameters** --> not representative of full range of performance targets
+* **No provanance** --> benchmark origin and intent often unknown
+* **No infrastructure** -->  no clear path to reproducibility
+* **No open source license** --> license often ambiguous/unknown
 
 ## Logikbench Solution
 
 "Sunlight is said to be the best of disinfectants." --Supreme Court Justice Louis Brandeis
 
 * **100+ unique benchmark circuits** spanning basic logic to complex subsystems
+* **Synthesis ready** ...not just raw text string blobs
 * **10,000+ configurations** through parameter sweeping
 * **Standardized metrics** and execution infrastructure
 * **100% open source** no license or membership fees!
 * **Full provenance** documented source code provenance
 
-## TLDR
-
-Install logikbench via PyPI, use the `sc-install` script to install all EDA tools, and then use `lb` to run the benchmarks.
-
-```bash
-pip install logikbench
-sc-install -group fpga
-lb --target lattice_ice40 -j 4
-```
-----
 
 ## FPGA Synthesis Ranking
 
@@ -285,7 +292,7 @@ lb run -g basic -t asap7_demo --to synthesis
 
 | Benchmark | Description | Verilog |
 |-----------|-------------|---------|
-| arbfix | Fixed-priority arbiter | [arbfix.v](logikbench/basic/arbfix/rtl/arbfix.v) |
+| arbiter | Fixed-priority arbiter | [arbiter.v](logikbench/basic/arbiter/rtl/arbiter.v) |
 | band | Bitwise AND | [band.v](logikbench/basic/band/rtl/band.v) |
 | bbuf | Buffer | [bbuf.v](logikbench/basic/bbuf/rtl/bbuf.v) |
 | bin2gray | Binary to Gray code converter | [bin2gray.v](logikbench/basic/bin2gray/rtl/bin2gray.v) |
@@ -357,33 +364,58 @@ lb run -g basic -t asap7_demo --to synthesis
 | ramasync | Asynchronous RAM | [ramasync.v](logikbench/memory/ramasync/rtl/ramasync.v) |
 | rambit | Bit-wide RAM | [rambit.v](logikbench/memory/rambit/rtl/rambit.v) |
 | rambyte | Byte-wide RAM | [rambyte.v](logikbench/memory/rambyte/rtl/rambyte.v) |
-| ramdp | Dual-port RAM | [ramdp.v](logikbench/memory/ramdp/rtl/ramdp.v) |
+| ramtdp | True dual-port RAM | [ramtdp.v](logikbench/memory/ramtdp/rtl/ramtdp.v) |
 | ramsdp | Simple dual-port RAM | [ramsdp.v](logikbench/memory/ramsdp/rtl/ramsdp.v) |
 | ramsp | Single-port RAM | [ramsp.v](logikbench/memory/ramsp/rtl/ramsp.v) |
 | ramspnc | Single-port RAM (no change) | [ramspnc.v](logikbench/memory/ramspnc/rtl/ramspnc.v) |
 | regfile | Register file | [regfile.v](logikbench/memory/regfile/rtl/regfile.v) |
 | rom | Read-only memory | [rom.v](logikbench/memory/rom/rtl/rom.v) |
 
-### Complex Blocks (16 benchmarks)
+### Complex Blocks (41 benchmarks)
 
 | Benchmark | Description | Verilog |
 |-----------|-------------|---------|
-| aes | AES encryption | [aes.v](logikbench/blocks/aes/rtl/aes.v) |
-| apbregs | APB register block | [apbregs.v](logikbench/blocks/apbregs/rtl/apbregs.v) |
-| axicrossbar | AXI crossbar | [axi_crossbar.v](logikbench/blocks/axicrossbar/rtl/axi_crossbar.v) |
+| aes | AES encryption core | [aes.sv](logikbench/blocks/aes/rtl/aes.sv) |
+| apbregs | APB register file | [apbregs.v](logikbench/blocks/apbregs/rtl/apbregs.v) |
+| axicrossbar | AXI crossbar | [arbiter.v](logikbench/blocks/axicrossbar/rtl/arbiter.v) |
+| blackparrot | BlackParrot RISC-V core | [blackparrot/](logikbench/blocks/blackparrot/) |
+| conv2d | Streaming 3x3 2D convolution | [conv2d.v](logikbench/blocks/conv2d/rtl/conv2d.v) |
+| coralnpu | CoralNPU neural accelerator | [coralnpu.sv](logikbench/blocks/coralnpu/rtl/coralnpu.sv) |
+| crc32 | CRC-32 generator | [crc32.v](logikbench/blocks/crc32/rtl/crc32.v) |
+| cva6 | CVA6 (Ariane) RISC-V core | [cva6.sv](logikbench/blocks/cva6/rtl/cva6.sv) |
+| ddc | Digital down-converter (NCO/mixer/CIC/FIR) | [ddc.v](logikbench/blocks/ddc/rtl/ddc.v) |
 | ethmac | Ethernet MAC | [ethmac.v](logikbench/blocks/ethmac/rtl/ethmac.v) |
 | fft | Fast Fourier Transform | [fft.v](logikbench/blocks/fft/rtl/fft.v) |
-| firfix | Fixed-point FIR filter | [firfix.v](logikbench/blocks/firfix/rtl/firfix.v) |
+| firfix | Fixed-coefficient FIR filter | [firfix.v](logikbench/blocks/firfix/rtl/firfix.v) |
 | firprog | Programmable FIR filter | [firprog.v](logikbench/blocks/firprog/rtl/firprog.v) |
-| fpu32 | 32-bit floating-point unit | [fpu.v](logikbench/blocks/fpu32/rtl/fpu.v) |
-| fpu64 | 64-bit floating-point unit | [ct_vfdsu_double.v](logikbench/blocks/fpu64/rtl/ct_vfdsu_double.v) |
-| i2c | I2C controller | [i2c.v](logikbench/blocks/i2c/rtl/i2c.v) |
+| fpu64 | 64-bit floating-point unit | [fpu64/](logikbench/blocks/fpu64/) |
+| hamming | Hamming ECC encoder/decoder | [hamming.v](logikbench/blocks/hamming/rtl/hamming.v) |
+| hmac | HMAC-SHA hashing | [hmac.sv](logikbench/blocks/hmac/rtl/hmac.sv) |
+| huffman | Canonical Huffman encoder/decoder | [huffman.v](logikbench/blocks/huffman/rtl/huffman.v) |
+| i2c | I2C controller | [i2c.sv](logikbench/blocks/i2c/rtl/i2c.sv) |
 | ialu | Integer ALU | [ialu.v](logikbench/blocks/ialu/rtl/ialu.v) |
 | lfsr | Linear feedback shift register | [lfsr.v](logikbench/blocks/lfsr/rtl/lfsr.v) |
+| lpddr5 | LPDDR5 memory controller (UMI + DFI, ECC) | [lpddr5_umi.v](logikbench/blocks/lpddr5/rtl/lpddr5_umi.v) |
+| lz77 | LZ77 (LZSS) compressor/decompressor | [lz77.v](logikbench/blocks/lz77/rtl/lz77.v) |
+| median3x3 | Streaming 3x3 median filter | [median3x3.v](logikbench/blocks/median3x3/rtl/median3x3.v) |
+| nvdla | NVDLA deep-learning accelerator | [nvdla/](logikbench/blocks/nvdla/) |
+| ofdm | OFDM modem (QAM + IFFT/FFT) | [ofdm.v](logikbench/blocks/ofdm/rtl/ofdm.v) |
+| openpiton | OpenPiton manycore tile | [openpiton.v](logikbench/blocks/openpiton/rtl/openpiton.v) |
 | picorv32 | PicoRV32 RISC-V core | [picorv32.v](logikbench/blocks/picorv32/rtl/picorv32.v) |
-| serv | SERV bit-serial RISC-V core | [serv_top.v](logikbench/blocks/serv/rtl/serv_top.v) |
-| uart | UART | [uart.v](logikbench/blocks/uart/rtl/uart.v) |
-| umiregs | UMI register block | [umiregs.v](logikbench/blocks/umiregs/rtl/umiregs.v) |
+| reedsolomon | Reed-Solomon RS(544,514) codec | [reedsolomon.v](logikbench/blocks/reedsolomon/rtl/reedsolomon.v) |
+| rocket | Rocket RISC-V core | [rocket.v](logikbench/blocks/rocket/rtl/rocket.v) |
+| sad8x8 | 8x8 sum of absolute differences | [sad8x8.v](logikbench/blocks/sad8x8/rtl/sad8x8.v) |
+| serv | SERV bit-serial RISC-V core | [serv/](logikbench/blocks/serv/) |
+| sobel3x3 | Streaming 3x3 Sobel edge detector | [sobel3x3.v](logikbench/blocks/sobel3x3/rtl/sobel3x3.v) |
+| spi | SPI controller | [spi.sv](logikbench/blocks/spi/rtl/spi.sv) |
+| tpu | Weight-stationary systolic matrix multiply (TPU MXU) | [tpu.v](logikbench/blocks/tpu/rtl/tpu.v) |
+| uart | UART | [uart.sv](logikbench/blocks/uart/rtl/uart.sv) |
+| umicross | UMI crossbar | [umicross/](logikbench/blocks/umicross/) |
+| umidev | UMI device endpoint | [umidev/](logikbench/blocks/umidev/) |
+| umiregs | UMI register file | [umiregs.v](logikbench/blocks/umiregs/rtl/umiregs.v) |
+| viterbi | Viterbi decoder | [viterbi.v](logikbench/blocks/viterbi/rtl/viterbi.v) |
+| vortex | Vortex GPU core | [vortex/](logikbench/blocks/vortex/) |
+| wally | CVW-Wally RISC-V core | [wally/](logikbench/blocks/wally/) |
 
 ### EPFL Benchmarks (19 benchmarks)
 

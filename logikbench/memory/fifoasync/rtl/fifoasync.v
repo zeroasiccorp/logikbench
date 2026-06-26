@@ -1,5 +1,11 @@
+//#############################################################################
+// Copyright: Zero ASIC. All rights Reserved.
+// Author: Andreas Olofsson
+// License:  MIT (see LICENSE file in LogikBench repository)
+//#############################################################################
+
 module fifoasync #(parameter DW = 16,
-                   parameter AW = 4 // DEPTH = 1 << AW
+                   parameter AW = 6 // DEPTH = 1 << AW
                    )
    (
     // write port

@@ -1,3 +1,9 @@
+//#############################################################################
+// Copyright: Zero ASIC. All rights Reserved.
+// Author: Andreas Olofsson
+// License:  MIT (see LICENSE file in LogikBench repository)
+//#############################################################################
+
 module bin2prio #(parameter DW = 64)
    (
     input [DW-1:0]      in,   // binary input vector

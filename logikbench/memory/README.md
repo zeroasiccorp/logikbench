@@ -9,9 +9,9 @@
 |ramasync   | DW,AW        | RAM with asynchronous read
 |rambit     | DW,AW        | RAM with write bit mask
 |rambyte    | DW,AW        | RAM with write byte mask
-|ramdp      | DW,AW        | RAM with two access ports
-|ramsdp     | DW,SW        | RAM with one read port & one write port
-|ramsp      | DW,SW        | RAM with one access ports
-|ramspnc    | DW,AW        |
+|ramsdp     | DW,AW        | Simple dual-port RAM (1 write port + 1 read port)
+|ramsp      | DW,AW        | RAM with one access port
+|ramspnc    | DW,AW        | Single-port RAM, no-change read
+|ramtdp     | DW,AW        | True dual-port RAM (two read/write ports)
 |regfile    | DW,AW,RP,WP  | Multi ported register file
 |rom        | DW,AW        | ROM

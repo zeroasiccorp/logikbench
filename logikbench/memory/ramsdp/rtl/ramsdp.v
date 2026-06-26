@@ -1,3 +1,12 @@
+//#############################################################################
+// Copyright: Zero ASIC. All rights Reserved.
+// Author: Andreas Olofsson
+// License:  MIT (see LICENSE file in LogikBench repository)
+//#############################################################################
+// Simple dual-port RAM (1 write port + 1 read port), single clock, whole
+// word. Implemented on lambdalib la_dpram so memory mapping is technology
+// agnostic (FPGA BRAM / ASIC macro) and handled by lambdalib.
+
 module ramsdp #(parameter DW = 16,
                 parameter AW = 10
                 )
@@ -12,23 +21,22 @@ module ramsdp #(parameter DW = 16,
     // Port B - Read Only
     input               en_b,
     input [AW-1:0]      addr_b,
-    output reg [DW-1:0] dout_b
+    output [DW-1:0]     dout_b
     );
 
-   // Memory declaration
-   reg [DW-1:0] mem [(2**AW)-1:0];
-
-   // Port A: Write Only
-   always @(posedge clk) begin
-      if (en_a)
-        if (we_a)
-          mem[addr_a] <= din_a;
-   end
-
-   // Port B: Read Only
-   always @(posedge clk) begin
-      if (en_b)
-        dout_b <= mem[addr_b];
-   end
+   la_dpram #(.DW(DW), .AW(AW), .BYTEMODE(0)) memory
+     (.wr_clk   (clk),
+      .wr_ce    (en_a),
+      .wr_we    (we_a),
+      .wr_wmask ({DW{1'b1}}),
+      .wr_addr  (addr_a),
+      .wr_din   (din_a),
+      .rd_clk   (clk),
+      .rd_ce    (en_b),
+      .rd_addr  (addr_b),
+      .rd_dout  (dout_b),
+      .selctrl  (1'b0),
+      .ctrl     ('b0),
+      .status   ());
 
 endmodule

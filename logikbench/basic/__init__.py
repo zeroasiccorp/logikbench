@@ -1,5 +1,5 @@
 
-from .arbfix.arbfix import Arbfix
+from .arbiter.arbiter import Arbiter
 from .band.band import Band
 from .bbuf.bbuf import Bbuf
 from .bin2gray.bin2gray import Bin2gray
@@ -23,7 +23,7 @@ from .pipeline.pipeline import Pipeline
 from .shiftreg.shiftreg import Shiftreg
 
 
-__all__ = ['Arbfix',
+__all__ = ['Arbiter',
            'Band',
            'Bbuf',
            'Bin2gray',

@@ -1,19 +1,40 @@
-Simple AES128 (Rijndael) Core
-============================================
+# Summary
 
-## Original Sources
+AES (DOM-masked default config). OpenTitan comportable IP (`aes`), pickled into a single
+self-contained Verilog file with generic technology primitives.
 
-- Author: Rudolf Usselman
-- Repo: https://opencores.org/projects/aes_core on 8/8/2019
+# Source
 
-## License
+- author: lowRISC (OpenTitan project)
+- repo: https://github.com/lowRISC/opentitan
+- branch: master
+- commit: fc79657331cdea51cd59da2d56653202816e736c
+- core: `lowrisc:ip:aes:1.0`
 
-MIT. See LICENSE for more details.
+# License
 
-# Modifications
+Apache-2.0 (see `LICENSE`).
 
-- Added SDC timing constraints
-- Updated verilog to use standard verilog attributes
-- Removed timescale
-- Changed top level to 'aes'
-- Added LICENSE file from [here](http://asics.ws/v6/free-ip-cores).
+# Verilog Generation
+
+OpenTitan IP are FuseSoC-managed SystemVerilog (TileLink-UL struct ports, `prim_*`
+technology primitives selected via FuseSoC virtual cores). The single
+`rtl/aes.sv` was generated with FuseSoC (==2.4.5) + morty:
+
+```
+git clone https://github.com/lowRISC/opentitan.git   # commit fc79657331cdea51cd59da2d56653202816e736c
+# resolve the synth filelist with GENERIC prim implementations
+fusesoc --cores-root opentitan run --target=default --tool=icarus --setup \
+        --mapping=lowrisc:prim_generic:all:0.1 lowrisc:ip:aes:1.0
+# convert the generated *.scr (+incdir+ -> -I, files as positional) and pickle
+morty <args from .scr> --top aes -o rtl/aes.sv
+```
+
+The default virtual `top_pkg`/`top_racl_pkg` (earlgrey constants) are used.
+The struct TL-UL / alert / RACL / ram_cfg ports become plain top-level ports
+(no wrapper needed).
+
+# Configuration
+
+DOM-masked AES (OpenTitan default): secure masking with EDN entropy. The EDN
+and keymgr key-sideload struct ports are top-level (tied off externally).

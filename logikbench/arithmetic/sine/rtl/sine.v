@@ -1,16 +1,22 @@
+//#############################################################################
+// Copyright: Zero ASIC. All rights Reserved.
+// Author: Andreas Olofsson
+// License:  MIT (see LICENSE file in LogikBench repository)
+//#############################################################################
+
 module sine #(parameter DW = 8
 	      )
    (
-    input               clk,
-    input               nreset,
-    input [DW-1:0]      a,
-    output reg [DW-1:0] out
+    input		clk,
+    input		nreset,
+    input [DW-1:0]	a,
+    output reg [DW-1:0]	out
     );
 
 `include "sine_table256.vh"
 
    wire [DW-1:0] sine_table[2**DW-1:0];
-   genvar i;
+   genvar	 i;
 
    //#############################
    // one shot lookup
@@ -29,7 +35,7 @@ module sine #(parameter DW = 8
    if (DW==8)
      begin
         for (i = 0; i < 2**DW; i = i + 1)
-          assign sine_table[i] = SINETABLE_256[i];
+          assign sine_table[i] = SINETABLE_256[i*DW +: DW];
      end
    else
      begin

@@ -1,13 +1,19 @@
+//#############################################################################
+// Copyright: Zero ASIC. All rights Reserved.
+// Author: Andreas Olofsson
+// License:  MIT (see LICENSE file in LogikBench repository)
+//#############################################################################
+
 module shiftar #(parameter DW = 16
-	       )
+		 )
    (
     //Inputs
-    input signed [DW-1:0]         a,  // data
+    input signed [DW-1:0]	  a,  // data
     input signed [$clog2(DW)-1:0] b,  // shift amount
     //Outputs
-    output [DW-1:0]               out // a >> b
+    output [DW-1:0]		  out // a >> b
     );
 
-   assign out[DW-1:0] = a >> b;
+   assign out[DW-1:0] = a >>> b;
 
 endmodule

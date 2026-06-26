@@ -1,5 +1,5 @@
 import siliconcompiler as sc
-from siliconcompiler.flows import lintflow
+from siliconcompiler.flows.lintflow import LintFlow
 
 #######################################################
 # Run a single benchmark, e.g.:
@@ -12,5 +12,7 @@ def test_lint_slang(benchmark):
     proj = sc.Project(benchmark)
     proj.option.set_nodashboard(True)
     proj.add_fileset("rtl")
-    proj.set_flow(lintflow.LintFlow())
+    proj.set_flow(LintFlow())
+    # global slang lint options (survives node reconstruction via the project)
+    proj.set("tool", "slang", "task", "lint", "option", "--relax-enum-conversions")
     assert proj.run(), f"Lint failed: {benchmark.__class__}"

@@ -1,3 +1,13 @@
+//#############################################################################
+// Copyright: Zero ASIC. All rights Reserved.
+// Author: Andreas Olofsson
+// License:  MIT (see LICENSE file in LogikBench repository)
+//#############################################################################
+//
+// Per-bit write-mask single-port RAM. Implemented on lambdalib la_spram in
+// per-bit mask mode (BYTEMODE=0) so memory mapping is technology agnostic
+// (FPGA BRAM / ASIC macro) and handled by lambdalib.
+
 module rambit #(parameter DW = 16,
                 parameter AW = 8
                 )
@@ -6,20 +16,19 @@ module rambit #(parameter DW = 16,
     input [DW-1:0]      we,   // per bit write mask
     input [AW-1:0]      addr, // write address
     input [DW-1:0]      din,  // write data
-    output reg [DW-1:0] dout  // read output data
+    output [DW-1:0]     dout  // read output data
     );
 
-   // Generic RTL RAM
-   reg     [DW-1:0] ram[(2**AW)-1:0];
-   integer          i;
-
-   // ASIC style bitmask
-   always @(posedge clk)
-     if (ce) begin
-        for (i=0;i<DW;i=i+1)
-          if (we[i])
-            ram[addr[AW-1:0]][i] <= din[i];
-        dout[DW-1:0] <= ram[addr[AW-1:0]];
-     end
+   la_spram #(.DW(DW), .AW(AW), .BYTEMODE(0)) memory
+     (.clk     (clk),
+      .ce      (ce),
+      .we      (1'b1),
+      .wmask   (we),
+      .addr    (addr),
+      .din     (din),
+      .dout    (dout),
+      .selctrl (1'b0),
+      .ctrl    ('b0),
+      .status  ());
 
 endmodule
