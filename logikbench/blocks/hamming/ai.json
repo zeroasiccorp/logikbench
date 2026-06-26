@@ -1,10 +1,7 @@
 {
   "schema_version": "1.0",
   "name": "hamming",
-  "group": "blocks",
-  "topmodule": "hamming",
-  "version": "1.0",
-  "description": "A parameterizable Hsiao single-error-correcting, double-error-detecting (SEC-DED) codec: an encoder that appends PW check bits to a DW-bit word and a decoder that corrects any single-bit error and detects any double-bit error.",
+  "spec_ref": "README.md",
   "authorship": "Zero ASIC Corporation; author Andreas Olofsson",
   "generated_by": {
     "model": "claude-opus-4-8",
@@ -18,55 +15,8 @@
     "date": "2025-06-25",
     "notes": "Provenance (model and date) confirmed by the author; architecture, scope, and verification were directed and reviewed by the author."
   },
-  "spec": {
-    "summary": "Synthesizable, parameterizable Hsiao SEC-DED codec. The encoder hamming_enc appends PW check bits to a DW-bit data word to form a DW+PW-bit systematic codeword, computing each check bit as a constant-folded XOR tree over the data. The decoder hamming_dec recomputes the syndrome, compares it against the constant column table, corrects the matching single-bit error, and outputs the DW-bit corrected data plus the PW-bit syndrome. The parity-check matrix is H = [ M | I_PW ], where data bit k owns the k-th distinct odd-weight, weight>=3 PW-bit column taken lightest-weight first. The benchmark top hamming wires the encoder codeword into the decoder through an error-injection XOR (err_mask) so the round-trip can exercise correction and detection. Because every column is odd weight, single-bit errors map to odd-weight syndromes and double errors to even-weight syndromes. The construction is the standard ECC used on memory and data paths.",
-    "key_decisions": [
-      "Use the Hsiao minimum odd-weight-column SEC-DED construction (H = [ M | I_PW ], identity check block) so single errors give odd-weight syndromes, double errors give even-weight syndromes, and parity-tree fan-in is balanced.",
-      "Assign data columns lightest-weight first (all weight-3 columns, then weight-5, ...) and require PW large enough that the count of odd-weight weight>=3 columns is at least DW (DW=64 needs PW=8: 56 weight-3 plus 8 weight-5).",
-      "Build the column table once in an always @* block via popcount and weight-ordered fill, with no Verilog functions, so the entire table folds to constants at synthesis and each check bit becomes a fixed XOR of data bits.",
-      "Keep encoder and decoder on the identical column assignment, guarded by the round-trip smoke test, so syndrome equality compares match the encoder's parity tree.",
-      "Expose PIPELINE so the codec is either purely combinational (PIPELINE=0) or registers the input for a one-cycle path (PIPELINE=1) using clk and async active-low nreset.",
-      "Map to LUTs only (plus FFs when pipelined): combinational XOR parity trees, syndrome equality compares, and correction XORs; no DSP and no BRAM."
-    ]
-  },
-  "source": {
-    "rtl": [
-      "rtl/hamming_enc.v",
-      "rtl/hamming_dec.v",
-      "rtl/hamming.v"
-    ],
-    "generator": null,
-    "testbench": [
-      "testbench/test_hamming_smoke.v"
-    ],
-    "parameters": {
-      "DW": 64,
-      "PW": 8,
-      "PIPELINE": 1
-    }
-  },
-  "dependencies": [],
-  "reproduce": {
-    "build": "lb run -t zeroasic_z1015 -g blocks -n hamming",
-    "lint": "pytest tests/test_lint.py -k Hamming",
-    "smoke": "pytest tests/test_smoke.py -k Hamming",
-    "tools": {
-      "iverilog": "12 (-g2005)",
-      "slang": "via siliconcompiler lintflow",
-      "yosys": "0.66",
-      "siliconcompiler": "installed (editable)"
-    },
-    "results_ref": "build/zeroasic_z1015/hamming/job0/synthesis/0/reports/stat.json"
-  },
-  "license": "MIT",
   "origin": {
     "type": "original",
     "notes": "Original implementation written for LogikBench; follows the cited algorithm/standard and hardware architectures, not copied from any specific HDL source."
-  },
-  "references": [
-    "R. W. Hamming, 'Error detecting and error correcting codes,' Bell System Technical Journal, vol. 29, no. 2, pp. 147-160, Apr. 1950.",
-    "M. Y. Hsiao, 'A class of optimal minimum odd-weight-column SEC-DED codes,' IBM Journal of Research and Development, vol. 14, no. 4, pp. 395-401, Jul. 1970.",
-    "S. Lin and D. J. Costello, Error Control Coding, 2nd ed., Prentice Hall, 2004.",
-    "C. L. Chen and M. Y. Hsiao, 'Error-correcting codes for semiconductor memory applications: A state-of-the-art review,' IBM Journal of Research and Development, vol. 28, no. 2, pp. 124-134, Mar. 1984."
-  ]
+  }
 }

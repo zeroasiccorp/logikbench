@@ -1,10 +1,7 @@
 {
   "schema_version": "1.0",
   "name": "reedsolomon",
-  "group": "blocks",
-  "topmodule": "reedsolomon",
-  "version": "1.0",
-  "description": "A full Reed-Solomon RS(544,514) codec over GF(2^10) -- the KP4 forward error correction used in IEEE 802.3 (400/200/100 GbE), correcting up to t=15 symbol errors per 544-symbol codeword.",
+  "spec_ref": "README.md",
   "authorship": "Zero ASIC Corporation; author Andreas Olofsson",
   "generated_by": {
     "model": "claude-opus-4-8",
@@ -18,62 +15,8 @@
     "date": "2026-06-25",
     "notes": "Provenance (model and date) confirmed by the author; architecture, scope, and verification were directed and reviewed by the author."
   },
-  "spec": {
-    "summary": "Synthesizable RS(544,514) codec over GF(2^10) with primitive polynomial p(x)=x^10+x^3+1 (0x409), implementing the IEEE 802.3 Clause 91 KP4 RS-FEC. It corrects up to t=15 symbol errors per 544-symbol codeword (n=544, k=514, 2t=30 parity, 10-bit symbols, first consecutive root FCR=0). The top module reedsolomon is a self-checking loopback: a systematic LFSR encoder feeds the full decoder through a per-symbol error-injection port, so with <= t injected errors the recovered data equals the input. The decode datapath is syndrome -> Berlekamp-Massey key-equation solver -> Chien search -> Forney evaluation -> correction, buffering the codeword and streaming it out while XORing each error magnitude at its root location. It flags uncorrectable when the Chien root count does not equal the degree of the error-locator polynomial Lambda(x). GF arithmetic maps to XOR/AND LUT logic (no DSP, since GF multiply is not integer multiply).",
-    "key_decisions": [
-      "Fix the code to the IEEE 802.3 KP4 standard: GF(2^10) with primitive polynomial p(x)=x^10+x^3+1 (0x409), n=544, k=514, t=15, generator g(x)=prod_{i=0}^{29}(x-alpha^i) with first consecutive root FCR=0 shared by encoder and decoder.",
-      "rs_gfmul implements GF(2^10) multiply as a carryless product plus fixed reduction mod p(x) in a flat XOR network, so constant operands fold to constant multipliers in synthesis.",
-      "rs_gfinv computes the multiplicative inverse via a power chain (a^1022) with no log/antilog ROM.",
-      "Per-element GF hardware (30 parallel Horner syndrome cells, multipliers, Chien/Forney cells) is modeled with generate plus explicit reduction rather than a single large unrolled procedural sweep.",
-      "rs_enc is a systematic encoder doing LFSR division by g(x) with 30 constant taps at one symbol/clock (data-then-parity); rs_kes runs Berlekamp-Massey one iteration/clock for 2t cycles.",
-      "The 544-symbol codeword buffer is implemented as a shift register (flops); the BRAM-backed la_spram buffer is noted only as a future area follow-up and is not used by the current RTL."
-    ]
-  },
-  "source": {
-    "rtl": [
-      "rtl/rs_gfmul.v",
-      "rtl/rs_gfinv.v",
-      "rtl/rs_syndrome.v",
-      "rtl/rs_kes.v",
-      "rtl/rs_enc.v",
-      "rtl/rs_dec.v",
-      "rtl/reedsolomon.v"
-    ],
-    "generator": "genrs.py",
-    "testbench": [
-      "testbench/test_reedsolomon_smoke.v"
-    ],
-    "parameters": {
-      "n": 544,
-      "k": 514,
-      "t": 15,
-      "m": 10
-    }
-  },
-  "dependencies": [],
-  "reproduce": {
-    "build": "lb run -t zeroasic_z1015 -g blocks -n reedsolomon",
-    "lint": "pytest tests/test_lint.py -k Reedsolomon",
-    "smoke": "pytest tests/test_smoke.py -k Reedsolomon",
-    "tools": {
-      "iverilog": "12 (-g2005)",
-      "slang": "via siliconcompiler lintflow",
-      "yosys": "0.66",
-      "siliconcompiler": "installed (editable)"
-    },
-    "results_ref": "build/zeroasic_z1015/reedsolomon/job0/synthesis/0/reports/stat.json"
-  },
-  "license": "MIT",
   "origin": {
     "type": "original",
     "notes": "Original implementation written for LogikBench; follows the cited algorithm/standard and hardware architectures, not copied from any specific HDL source."
-  },
-  "references": [
-    "I. S. Reed and G. Solomon, 'Polynomial codes over certain finite fields,' J. SIAM, vol. 8, no. 2, pp. 300-304, 1960.",
-    "E. R. Berlekamp, Algebraic Coding Theory, 1968; J. L. Massey, 'Shift-register synthesis and BCH decoding,' IEEE Trans. IT, 1969.",
-    "G. D. Forney, 'On decoding BCH codes,' IEEE Trans. IT, vol. 11, no. 4, pp. 549-557, 1965.",
-    "IEEE Std 802.3, Clause 91 (RS-FEC, KP4 RS(544,514) over GF(2^10)).",
-    "R. T. Chien, 'Cyclic decoding procedures for BCH codes,' IEEE Trans. IT, 1964 (Chien search).",
-    "H. Lee, 'High-speed VLSI architecture for parallel Reed-Solomon decoder,' IEEE Trans. VLSI Systems, vol. 11, no. 2, 2003 (syndrome/BM/Chien/Forney pipeline this design follows)."
-  ]
+  }
 }

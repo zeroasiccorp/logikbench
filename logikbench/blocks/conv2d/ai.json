@@ -1,10 +1,7 @@
 {
   "schema_version": "1.0",
   "name": "conv2d",
-  "group": "blocks",
-  "topmodule": "conv2d",
-  "version": "1.0",
-  "description": "A streaming programmable 3x3 2D convolution with nine runtime signed coefficients, one multiplier per tap, adder tree, and round/saturate.",
+  "spec_ref": "README.md",
   "authorship": "Zero ASIC Corporation; author Andreas Olofsson",
   "generated_by": {
     "model": "claude-opus-4-8",
@@ -18,55 +15,8 @@
     "date": "2025-06-25",
     "notes": "Provenance (model and date) confirmed by the author; architecture, scope, and verification were directed and reviewed by the author."
   },
-  "spec": {
-    "summary": "Synthesizable streaming programmable 3x3 2D convolution. Nine runtime signed coefficients (packed coeff, Q1.(CW-1)) multiply the 3x3 window, one multiplier per tap (9 DSPs), summed in an adder tree, then rounded and saturated. It shares an identical streaming pixel interface with sobel3x3 and median3x3 (one 8-bit pixel/cycle in raster order, in_sof on the first pixel of a frame) so the three filters cascade directly. Output is same-size (one output pixel per input pixel, zero-padded border), preserving geometry across a chain. Two line buffers use lambdalib la_spram (BRAM) with depth IMGW, chained with a 2-stage alignment pipeline to absorb the synchronous-read latency and a 3-column shift register to form the window. The coeff port is the one addition to the shared interface.",
-    "key_decisions": [
-      "Share an identical streaming pixel interface with sobel3x3 and median3x3 so the three 3x3 filters cascade directly, with coeff as the only added port.",
-      "Same-size output (one output pixel per input pixel, zero-padded border) so geometry is preserved across a filter chain.",
-      "One multiplier per tap (9 DSPs) with runtime-programmable coefficients to prevent constant-folding, followed by an adder tree plus round/saturate.",
-      "Two lambdalib la_spram line buffers (BRAM), depth IMGW, read-first and chained with a 2-stage alignment pipeline to absorb the 1-cycle synchronous-read latency.",
-      "Verified self-checking against a software 2D convolution reference for identity and blur kernels, and as a cascade sobel3x3 -> median3x3 -> conv2d against a software sobel->median->conv reference."
-    ]
-  },
-  "source": {
-    "rtl": [
-      "rtl/conv2d.v"
-    ],
-    "generator": null,
-    "testbench": [
-      "testbench/test_conv2d_smoke.v"
-    ],
-    "parameters": {
-      "DW": 8,
-      "CW": 8,
-      "IMGW": 512,
-      "IMGH": 512,
-      "AW": 9,
-      "PW": 19
-    }
-  },
-  "dependencies": [
-    "lambdalib"
-  ],
-  "reproduce": {
-    "build": "lb run -t zeroasic_z1015 -g blocks -n conv2d",
-    "lint": "pytest tests/test_lint.py -k Conv2d",
-    "smoke": "pytest tests/test_smoke.py -k Conv2d",
-    "tools": {
-      "iverilog": "12 (-g2005)",
-      "slang": "via siliconcompiler lintflow",
-      "yosys": "0.66",
-      "siliconcompiler": "installed (editable)"
-    },
-    "results_ref": "build/zeroasic_z1015/conv2d/job0/synthesis/0/reports/stat.json"
-  },
-  "license": "MIT",
   "origin": {
     "type": "original",
     "notes": "Original implementation written for LogikBench; follows the cited algorithm/standard and hardware architectures, not copied from any specific HDL source."
-  },
-  "references": [
-    "Discrete 2D convolution / FIR image filtering; R. C. Gonzalez and R. E. Woods, Digital Image Processing.",
-    "Hardware: multiply-accumulate per tap with line-buffer sliding window (FPGA convolution engines)."
-  ]
+  }
 }

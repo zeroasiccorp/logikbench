@@ -1,10 +1,7 @@
 {
   "schema_version": "1.0",
   "name": "median3x3",
-  "group": "blocks",
-  "topmodule": "median3x3",
-  "version": "1.0",
-  "description": "A streaming 3x3 median filter (salt-and-pepper denoise) using an odd-even transposition sorting network; compares only, no multiplier.",
+  "spec_ref": "README.md",
   "authorship": "Zero ASIC Corporation; author Andreas Olofsson",
   "generated_by": {
     "model": "claude-opus-4-8",
@@ -18,55 +15,8 @@
     "date": "2025-06-25",
     "notes": "Provenance (model and date) confirmed by the author; architecture, scope, and verification were directed and reviewed by the author."
   },
-  "spec": {
-    "summary": "Synthesizable streaming 3x3 median filter for salt-and-pepper (impulse) denoise. One 8-bit pixel per cycle enters in raster order; in_sof pulses on the first pixel of a frame and the same framing is reproduced on out_valid/out_pix/out_sof, so the output is same-size (one output pixel per input pixel, zero-padded border) and a valid input to the next filter. Two line buffers (lambdalib la_spram BRAM, depth IMGW) plus a 2-stage alignment pipeline absorb the synchronous-read latency and align three window rows; a 3-column shift register forms the 3x3 window. The nine window pixels feed an odd-even transposition sorting network (36 compare-swaps) and the middle element (median of 9) is output. It shares an identical streaming interface with sobel3x3 and conv2d so the three filters cascade directly.",
-    "key_decisions": [
-      "Median computed with a sorting network of compare-swap cells (odd-even transposition / Batcher style), so the datapath is compares only with 0 DSP.",
-      "Compare-swap network built with generate (one combinational compare-swap unit per element) rather than a single large unrolled procedural loop.",
-      "Two line buffers implemented with lambdalib la_spram (BRAM), depth IMGW, read-first row delay, chained with a 2-stage alignment pipeline to absorb 1-cycle synchronous-read latency.",
-      "Same-size output with zero-padded borders (out-of-frame neighbors forced to zero) so image geometry is preserved across a cascade.",
-      "Shared pixel-stream interface (clk/rst/in_valid/in_sof/in_pix -> out_valid/out_sof/out_pix) common to sobel3x3, median3x3, and conv2d so filters chain directly."
-    ]
-  },
-  "source": {
-    "rtl": [
-      "rtl/median3x3.v"
-    ],
-    "generator": null,
-    "testbench": [
-      "testbench/test_median3x3_smoke.v"
-    ],
-    "parameters": {
-      "DW": 8,
-      "IMGW": 512,
-      "IMGH": 512,
-      "AW": 9,
-      "PW": 19
-    }
-  },
-  "dependencies": [
-    "lambdalib"
-  ],
-  "reproduce": {
-    "build": "lb run -t zeroasic_z1015 -g blocks -n median3x3",
-    "lint": "pytest tests/test_lint.py -k Median3x3",
-    "smoke": "pytest tests/test_smoke.py -k Median3x3",
-    "tools": {
-      "iverilog": "12 (-g2005)",
-      "slang": "via siliconcompiler lintflow",
-      "yosys": "0.66",
-      "siliconcompiler": "installed (editable)"
-    },
-    "results_ref": "build/zeroasic_z1015/median3x3/job0/synthesis/0/reports/stat.json"
-  },
-  "license": "MIT",
   "origin": {
     "type": "original",
     "notes": "Original implementation written for LogikBench; follows the cited algorithm/standard and hardware architectures, not copied from any specific HDL source."
-  },
-  "references": [
-    "J. Tukey, Exploratory Data Analysis, Addison-Wesley, 1977 (running median; median filtering for impulse noise).",
-    "K. E. Batcher, 'Sorting networks and their applications,' AFIPS Spring Joint Computer Conference, 1968 (sorting-network median, odd-even transposition).",
-    "Line-buffer streaming image-filter architecture (sliding-window line buffers)."
-  ]
+  }
 }

@@ -1,10 +1,7 @@
 {
   "schema_version": "1.0",
   "name": "tpu",
-  "group": "blocks",
-  "topmodule": "tpu",
-  "version": "1.0",
-  "description": "Weight-stationary systolic matrix-multiply tile, in the style of the Google TPU matrix-multiply unit (MXU).",
+  "spec_ref": "README.md",
   "authorship": "Zero ASIC Corporation; author Andreas Olofsson",
   "generated_by": {
     "model": "claude-opus-4-8",
@@ -18,53 +15,8 @@
     "date": "2026-06-26",
     "notes": "Provenance (model and date) confirmed by the author; architecture, scope, and verification were directed and reviewed by the author."
   },
-  "spec": {
-    "summary": "Synthesizable, technology-agnostic 8x8 weight-stationary systolic matrix-multiply accelerator in the style of the Google TPU MXU. The benchmark top tpu computes one tile product C = A * B, where A and B are N x N signed int8 matrices and C is N x N signed int32 (defaults N = 8, DW = 8, ACCW = 32). B is the weight matrix, loaded into and held stationary in the processing elements; A is the activation matrix, streamed through the array, with results draining out the bottom. The design is a 2D mesh of N x N identical tpu_pe cells (assembled by tpu_array and wrapped by tpu), each holding one stationary weight and performing the only arithmetic: a signed DW x DW multiply and an ACCW-bit accumulate. The streaming wrapper adds the input skew and output de-skew shift registers needed to time-align the systolic data flow, so a result row appears 2*N-1 cycles after its activation row was accepted. The interface is a single streamed tile over a generic valid-based handshake (w_valid/w_data load phase, a_valid/a_data compute phase, c_valid/c_data result), with no on-chip RAM and no AXI.",
-    "key_decisions": [
-      "Weight-stationary mapping: weights B are loaded into and held in the PEs, activations A stream west-to-east, and partial sums accumulate north-to-south, the canonical TPU MXU dataflow.",
-      "Fixed 8x8 (N = 8) 64-PE array as the default with TPU int8 x int8 -> int32 datatype (DW = 8, ACCW = 32); N, DW, and ACCW are parameters.",
-      "int8 signed MAC per PE: a single signed DW x DW multiply plus an ACCW-bit add, with signedness isolated to the multiply via $signed() so part-selects do not strip the sign.",
-      "Per-element hardware is modeled with generate (one tpu_pe per element, one shift-register stage per skew tap); no procedural unroll of the WIN x WIN array.",
-      "Generic valid-based streaming interface (w_valid/a_valid/c_valid), not AXI or any bus protocol, keeping the block self-contained.",
-      "No on-chip RAM: a single tile streams through, so there are no large buffers and no BRAM, avoiding block-RAM mapping pitfalls."
-    ]
-  },
-  "source": {
-    "rtl": [
-      "rtl/tpu_pe.v",
-      "rtl/tpu_array.v",
-      "rtl/tpu.v"
-    ],
-    "generator": null,
-    "testbench": [
-      "testbench/test_tpu_smoke.v"
-    ],
-    "parameters": {
-      "N": 8,
-      "DW": 8,
-      "ACCW": 32
-    }
-  },
-  "dependencies": [],
-  "reproduce": {
-    "build": "lb run -t zeroasic_z1015 -g blocks -n tpu",
-    "lint": "pytest tests/test_lint.py -k Tpu",
-    "smoke": "pytest tests/test_smoke.py -k Tpu",
-    "tools": {
-      "iverilog": "12 (-g2005)",
-      "slang": "via siliconcompiler lintflow",
-      "yosys": "0.66",
-      "siliconcompiler": "installed (editable)"
-    },
-    "results_ref": "build/zeroasic_z1015/tpu/job0/synthesis/0/reports/stat.json"
-  },
-  "license": "MIT",
   "origin": {
     "type": "original",
     "notes": "Original implementation written for LogikBench; follows the cited algorithm/standard and hardware architectures, not copied from any specific HDL source."
-  },
-  "references": [
-    "N. P. Jouppi et al., 'In-Datacenter Performance Analysis of a Tensor Processing Unit,' ISCA 2017.",
-    "H. T. Kung and C. E. Leiserson, 'Systolic Arrays (for VLSI),' in Sparse Matrix Proceedings, 1978."
-  ]
+  }
 }

@@ -1,10 +1,7 @@
 {
   "schema_version": "1.0",
   "name": "ofdm",
-  "group": "blocks",
-  "topmodule": "ofdm",
-  "version": "1.0",
-  "description": "An OFDM modem (802.11a/g style) with a complete transmit + receive chain in one block, looped back internally (ideal channel) so the recovered bits equal the input bits.",
+  "spec_ref": "README.md",
   "authorship": "Zero ASIC Corporation; author Andreas Olofsson",
   "generated_by": {
     "model": "claude-opus-4-8",
@@ -18,56 +15,8 @@
     "date": "2025-06-25",
     "notes": "Provenance (model and date) confirmed by the author; architecture, scope, and verification were directed and reviewed by the author."
   },
-  "spec": {
-    "summary": "Synthesizable OFDM loopback modem in the 802.11a/g style, with a full transmit and receive chain in one block. The TX path maps input bits to a Gray-coded square QAM constellation (QPSK, 16-QAM, or 64-QAM selected by mod), runs an IFFT, and inserts a cyclic prefix to produce N+CP time samples; the RX path removes the cyclic prefix, runs an FFT, rescales, and demaps back to bits. The transform engine reuses the logikbench fft block, with the IFFT realized as ifft(X) = conj(fft(conj(X))). The chain is wired in an internal ideal-channel loopback (identity 1-tap equalizer) so the recovered bits equal the input bits, exercising the OFDM-specific datapath (QAM map/demap, subcarrier handling, cyclic prefix, bit-reversal reorder, IFFT/FFT sequencing) on top of two FFT instances. Operation is frame-based, one OFDM symbol per transaction, defaulting to the 802.11a 64-point profile (N=64, CP=16).",
-    "key_decisions": [
-      "Compose the existing logikbench fft block as the transform engine (two instances, one in TX and one in RX) rather than building a separate IFFT, realizing the IFFT as conj(fft(conj(X))) and reusing the fft's 1/N scaling as the IFFT scale.",
-      "Frame-based, one OFDM symbol per transaction; the fft block is streaming with fixed latency (70 for N=64) and bit-reversed output, so the modem adds bit-reversal reorder buffers and holds the fft instances in reset between symbols for a clean per-symbol pipeline.",
-      "Support QPSK, 16-QAM, and 64-QAM as Gray-coded square QAM with constellation levels +/-{1,3,5,7}*AMP (AMP=2048); QPSK slicing is sign-only while 16/64-QAM slicing needs amplitude, motivating an RX rescale (<<LOG2N) before the PAM slicer.",
-      "Carry bits in fixed 6-bit per-subcarrier slots ({Qfield[2:0], Ifield[2:0]}) with the low B = mod+1 bits significant per axis, keeping the interface width fixed across modulation orders.",
-      "Fixed-point Q1.15 datapath (DW=16): function-based code was refactored to part-selects, with signed casts applied at the multiply since Verilog part-selects are unsigned, so the mapper/demapper slicing remains correct.",
-      "Scope limited to a clean encode/decode round-trip: all 64 subcarriers carry data (no pilot/null map) over an ideal internal loopback, leaving real 802.11a pilot/null mapping and a pilot-based equalizer as follow-ons."
-    ]
-  },
-  "source": {
-    "rtl": [
-      "rtl/ofdm_tx.v",
-      "rtl/ofdm_rx.v",
-      "rtl/ofdm.v"
-    ],
-    "generator": null,
-    "testbench": [
-      "testbench/test_ofdm_smoke.v"
-    ],
-    "parameters": {
-      "DW": 16,
-      "N": 64,
-      "CP": 16
-    }
-  },
-  "dependencies": [],
-  "reproduce": {
-    "build": "lb run -t zeroasic_z1015 -g blocks -n ofdm",
-    "lint": "pytest tests/test_lint.py -k Ofdm",
-    "smoke": "pytest tests/test_smoke.py -k Ofdm",
-    "tools": {
-      "iverilog": "12 (-g2005)",
-      "slang": "via siliconcompiler lintflow",
-      "yosys": "0.66",
-      "siliconcompiler": "installed (editable)"
-    },
-    "results_ref": "build/zeroasic_z1015/ofdm/job0/synthesis/0/reports/stat.json"
-  },
-  "license": "MIT",
   "origin": {
     "type": "original",
     "notes": "Original implementation written for LogikBench; follows the cited algorithm/standard and hardware architectures, not copied from any specific HDL source. Composes the logikbench fft block with original mapper/demapper/CP/control logic."
-  },
-  "references": [
-    "S. B. Weinstein and P. M. Ebert, 'Data transmission by frequency-division multiplexing using the discrete Fourier transform,' IEEE Trans. Communications, vol. 19, no. 5, pp. 628-634, Oct. 1971.",
-    "IEEE Std 802.11a-1999, OFDM PHY (64-point FFT, CP, BPSK/QPSK/16-/64-QAM, Gray-coded constellations and normalization).",
-    "R. van Nee and R. Prasad, OFDM for Wireless Multimedia Communications, Artech House, 2000.",
-    "Pipelined R2SDF FFT core; see logikbench fft block and its references (Wold & Despain 1984; He & Torkelson 1996; Parhi 1999).",
-    "K. K. Parhi, VLSI Digital Signal Processing Systems, Wiley, 1999 -- FFT/IFFT datapaths and fixed-point QAM mapping used in OFDM modems."
-  ]
+  }
 }

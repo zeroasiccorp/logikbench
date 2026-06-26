@@ -1,10 +1,7 @@
 {
   "schema_version": "1.0",
   "name": "lpddr5",
-  "group": "blocks",
-  "topmodule": "lpddr5_umi",
-  "version": "1.0",
-  "description": "LPDDR5 memory controller (JESD209-5) with a UMI front-end and a DFI PHY port; deep per-bank reorder, link SEC-DED ECC, and power management.",
+  "spec_ref": "README.md",
   "authorship": "Zero ASIC Corporation; author Andreas Olofsson",
   "generated_by": {
     "model": "claude-opus-4-8",
@@ -18,65 +15,8 @@
     "date": "2026-06-18",
     "notes": "Architecture, feature scope, and per-stage verification directed and reviewed by the author; controller verified stage-by-stage (reorder, ECC, power) and as a full UMI+DFI stack against a JEDEC-checking DFI model."
   },
-  "spec": {
-    "summary": "Synthesizable, technology-agnostic LPDDR5 memory controller. The benchmark top lpddr5_umi wraps the lpddr5 controller with a UMI (SUMI) device endpoint: it unpacks read/write/posted requests into LPDDR5 bursts, tracks per-bank state, schedules a JEDEC-legal command stream honoring the bank-group timing model, and routes read data / write acks back to the requester. The PHY is out of scope and attaches at the DFI boundary. Bank-group mode (NBG groups x NBPG banks); one host request maps to one BL-column burst; all tXXX timings are CK-unit parameters (defaults: a representative LPDDR5-6400 bin).",
-    "key_decisions": [
-      "Build our own pure-RTL controller (not adapt OpenDRAM/UberDDR3/litedram) so it is both ASIC- and FPGA-applicable; the non-portable PHY is excluded and the cut is made at the DFI boundary.",
-      "Target a credible JESD209-5 LPDDR5 core: bank-group mode with the full timing set (tRCD/tRP/tRAS/tRC/tRTP/write-recovery/tRRD_S-L/tFAW/tCCD_S-L/tWTR_S-L/tRTW), an all-bank auto-refresh engine (PREA + REFab, tREFI/tRFCab), and an open-page scheduler.",
-      "Four production features added: deep per-bank request reorder (per-bank queues, depth QD), link ECC as a (39,32) SEC-DED extended-Hamming lane per 32 data bits, power management (automatic power-down and self-refresh with tXP/tXSR and idle-precharge), and a UMI front-end with per-tag routing context and an output response queue.",
-      "Per-bank hardware is modeled with generate (one lpddr5_bank FSM per bank) and saturating down-counters; cross-bank timing lives in the top. No functions in RTL; the ECC column table is a packed constant sliced by genvar (no SV literals).",
-      "Verified at the DFI layer with a behavioral LPDDR5 model that both stores/returns ECC-coded data and actively checks the JEDEC timing and power-management protocol, rather than a full PHY + memory-device model.",
-      "Read responses are checked order-independently: the bank-group scheduler legitimately reorders reads across banks, so responses are matched back to their request by UMI routing address, not arrival order."
-    ]
-  },
-  "source": {
-    "rtl": [
-      "rtl/lpddr5_bank.v",
-      "rtl/lpddr5_ecc.v",
-      "rtl/lpddr5.v",
-      "rtl/lpddr5_umi.v"
-    ],
-    "generator": null,
-    "testbench": [
-      "testbench/test_lpddr5_smoke.v"
-    ],
-    "parameters": {
-      "DQW": 16,
-      "BL": 32,
-      "NBG": 4,
-      "NBPG": 4,
-      "ROWW": 16,
-      "COLW": 6,
-      "IDW": 6,
-      "QD": 4,
-      "RL": 20,
-      "WL": 10
-    }
-  },
-  "dependencies": [],
-  "reproduce": {
-    "build": "lb run -t zeroasic_z1015 -g blocks -n lpddr5",
-    "lint": "pytest tests/test_lint.py -k Lpddr5",
-    "smoke": "pytest tests/test_smoke.py -k Lpddr5",
-    "tools": {
-      "iverilog": "12 (-g2005)",
-      "slang": "via siliconcompiler lintflow",
-      "yosys": "0.66",
-      "siliconcompiler": "installed (editable)"
-    },
-    "results_ref": "build/zeroasic_z1015/lpddr5/job0/synthesis/0/reports/stat.json"
-  },
-  "license": "MIT",
   "origin": {
     "type": "original",
     "notes": "Original implementation written for LogikBench. Follows the JEDEC LPDDR5 command/timing model and the cited DRAM-controller and SEC-DED architectures; not copied from or derived from any specific HDL source."
-  },
-  "references": [
-    "JEDEC JESD209-5, Low Power Double Data Rate 5/5X (LPDDR5/5X) SDRAM Standard.",
-    "JEDEC DDR PHY Interface (DFI) Specification, v5.0.",
-    "R. W. Hamming, 'Error detecting and error correcting codes,' Bell System Technical Journal, 29(2):147-160, 1950.",
-    "Universal Memory Interface (UMI) specification, https://github.com/zeroasiccorp/umi.",
-    "B. Jacob, S. W. Ng, D. T. Wang, Memory Systems: Cache, DRAM, Disk, Morgan Kaufmann, 2007.",
-    "S. Rixner et al., 'Memory access scheduling,' ISCA, 2000."
-  ]
+  }
 }

@@ -1,10 +1,7 @@
 {
   "schema_version": "1.0",
   "name": "sqrt",
-  "group": "arithmetic",
-  "topmodule": "sqrt",
-  "version": "1.0",
-  "description": "Unsigned integer square root.",
+  "spec_ref": "README.md",
   "authorship": "Zero ASIC Corporation; author Andreas Olofsson",
   "generated_by": {
     "model": "claude-opus-4-8",
@@ -18,49 +15,8 @@
     "date": "2025-06-24",
     "notes": "Provenance (model and date) confirmed by the author; architecture, scope, and verification were directed and reviewed by the author."
   },
-  "spec": {
-    "summary": "Computes root = floor(sqrt(x)) for a DW-bit unsigned input x, together with the remainder rem = x - root*root, where DW must be even, root is DW/2 bits, and rem is DW/2+1 bits. The remainder always satisfies 0 <= rem <= 2*root so that root*root + rem == x holds exactly. The circuit is a sequential digit-by-digit (non-restoring) square root: a one-hot weight bitm sweeps from 4^(DW/2-1) down to 4^0, one position per clock, and each cycle the running remainder is trial-compared against res + bitm and, when it fits, that amount is subtracted and the result bit is set. The datapath is a single add plus a compare/subtract and two shifts -- no multiplier and no memory. A pulse on in_valid latches x and starts iteration, busy is high while iterating, and out_valid pulses for one cycle when root/rem are valid; latency is DW/2 cycles per operation. Default DW = 32.",
-    "key_decisions": [
-      "Digit-recurrence (digit-by-digit non-restoring) square-root algorithm, producing one result digit per clock cycle.",
-      "Multiplier-free and memory-free datapath: a single DW-bit adder/subtractor plus comparator and two shifts (0 DSP, 0 BRAM).",
-      "Latency is DW/2 cycles per operation; throughput is one result every DW/2 cycles.",
-      "Three DW-bit registers (num, res, bitm) hold the running remainder, result, and one-hot weight; a one-hot bitm sweeps from 4^(DW/2-1) down to 4^0.",
-      "Valid/busy handshake: in_valid pulse latches x and starts, busy marks iteration, out_valid pulses one cycle on completion.",
-      "Parameterized fixed-point widths: DW must be even, root is DW/2 bits, rem is DW/2+1 bits, with the invariant root*root + rem == x and rem <= 2*root."
-    ]
-  },
-  "source": {
-    "rtl": [
-      "rtl/sqrt.v"
-    ],
-    "generator": null,
-    "testbench": [
-      "testbench/test_sqrt_smoke.v"
-    ],
-    "parameters": {
-      "DW": 32
-    }
-  },
-  "dependencies": [],
-  "reproduce": {
-    "build": "lb run -t zeroasic_z1015 -g arithmetic -n sqrt",
-    "lint": "pytest tests/test_lint.py -k Sqrt",
-    "smoke": "pytest tests/test_smoke.py -k Sqrt",
-    "tools": {
-      "iverilog": "12 (-g2005)",
-      "slang": "via siliconcompiler lintflow",
-      "yosys": "0.66",
-      "siliconcompiler": "installed (editable)"
-    },
-    "results_ref": "build/zeroasic_z1015/sqrt/job0/synthesis/0/reports/stat.json"
-  },
-  "license": "MIT",
   "origin": {
     "type": "original",
     "notes": "Original implementation written for LogikBench; follows the cited algorithm/standard and hardware architectures, not copied from any specific HDL source."
-  },
-  "references": [
-    "B. Parhami, Computer Arithmetic: Algorithms and Hardware Designs, square-root chapter (digit-by-digit / digit-recurrence square root).",
-    "Classic binary non-restoring shift-subtract square-root method (one result digit per cycle, add/compare/subtract datapath)."
-  ]
+  }
 }
