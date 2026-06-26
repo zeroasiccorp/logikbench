@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/logikbench-readme-header.png" alt="LogikBench" />
+</p>
+
 # LogikBench
 
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
@@ -8,7 +12,7 @@
 
 LogikBench is a curated suite of high quality technology agnostic RTL benchmarks.
 
-Logikbench includes basic logic gates, arithmetic and memory primitives, DSP and codec blocks, and full subsystems like CPUs and accelerators. Each benchmark includes synthesizable, parameterized, fully documented RTL that compiles cleantly using FPGA or ASIC synthesis tools.
+The suite includes basic logic gates, arithmetic and memory primitives, DSP and codec blocks, and full subsystems like CPUs and accelerators. Each benchmark includes synthesizable, parameterized, fully documented RTL that compiles cleantly using FPGA or ASIC synthesis tools.
 
 ## TLDR
 
@@ -20,7 +24,6 @@ sc-install -group fpga asic # optional
 lb --target lattice_ice40 -j 4
 ```
 ----
-
 
 ## Problems
 
@@ -43,33 +46,6 @@ The semiconductor industry lacks a comprehensive, standardized benchmark suite f
 * **Standardized metrics** and execution infrastructure
 * **100% open source** no license or membership fees!
 * **Full provenance** documented source code provenance
-
-
-## FPGA Synthesis Ranking
-
-!!!Work-In-Progress!!!
-
-Targets ranked by total LUTs over all benchmarks (config: `small`), lowest first. A benchmark with no result for a target is charged the highest LUT count any target reached on it.
-Comparing different FPGA architectures is by definition an apples to oranges exercise. Ranking by no means implies quality or goodness, it's just a neat way to compress and order data.
-
-<!-- RANKING:START -->
-| Rank | Target | Arch | Total LUTs | Missing |
-|-----:|--------|------|-----------:|--------:|
-| 1 | zeroasic_z1060 | LUT6 | 161,693 | 5 |
-| 2 | gatemate_cologne | LUT8 | 190,534 | 5 |
-| 3 | microchip_polarfire | LUT4 | 224,143 | 7 |
-| 4 | zeroasic_z1015 | LUT4 | 225,818 | 5 |
-| 5 | adi_flex16ffc | LUT6 | 227,133 | 4 |
-| 6 | xilinx_virtex7 | LUT6 | 247,199 | 9 |
-| 7 | quicklogic_polarpro | LUT4/MUX | 253,639 | 2 |
-| 8 | lattice_ice40 | LUT4 | 256,531 | 4 |
-| 9 | efinix_trion | LUT4 | 263,076 | 8 |
-| 10 | fabulous_generic | LUT4 | 278,615 | 8 |
-| 11 | achronix_speedster | LUT6 | 439,740 | 10 |
-| 12 | lattice_ecp5 | LUT4 | 442,540 | 8 |
-| 13 | zeroasic_z1015opt | LUT4 | 497,161 | 29 |
-| 14 | gowin_gw5a | LUT4 | 617,752 | 7 |
-<!-- RANKING:END -->
 
 ----
 
@@ -442,6 +418,33 @@ lb run -g basic -t asap7_demo --to synthesis
 | epfl_voter | Voter circuit | [epfl_voter.v](logikbench/epfl/epfl_voter/rtl/epfl_voter.v) |
 
 ----
+
+
+
+## Leaderboard (WIP)
+
+Targets ranked by total LUTs over all benchmarks (config: `small`), lowest first. A benchmark with no result for a target is charged the highest LUT count any target reached on it.
+Comparing different FPGA architectures is by definition an apples to oranges exercise. Ranking by no means implies quality or goodness, it's just a neat way to compress and order data.
+
+<!-- RANKING:START -->
+| Rank | Target | Arch | Total LUTs | Missing |
+|-----:|--------|------|-----------:|--------:|
+| 1 | zeroasic_z1060 | LUT6 | 161,693 | 5 |
+| 2 | gatemate_cologne | LUT8 | 190,534 | 5 |
+| 3 | microchip_polarfire | LUT4 | 224,143 | 7 |
+| 4 | zeroasic_z1015 | LUT4 | 225,818 | 5 |
+| 5 | adi_flex16ffc | LUT6 | 227,133 | 4 |
+| 6 | xilinx_virtex7 | LUT6 | 247,199 | 9 |
+| 7 | quicklogic_polarpro | LUT4/MUX | 253,639 | 2 |
+| 8 | lattice_ice40 | LUT4 | 256,531 | 4 |
+| 9 | efinix_trion | LUT4 | 263,076 | 8 |
+| 10 | fabulous_generic | LUT4 | 278,615 | 8 |
+| 11 | achronix_speedster | LUT6 | 439,740 | 10 |
+| 12 | lattice_ecp5 | LUT4 | 442,540 | 8 |
+| 13 | zeroasic_z1015opt | LUT4 | 497,161 | 29 |
+| 14 | gowin_gw5a | LUT4 | 617,752 | 7 |
+<!-- RANKING:END -->
+
 
 ## License
 
