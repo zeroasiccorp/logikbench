@@ -10,9 +10,10 @@
 // with non-blocking assignments (the DUT is combinational; the clock paces the
 // vectors).
 //
-// TESTED: add, sub, and, or, xor, sll, srl, sra, sltu, slt at DW=64.
-// NOT TESTED here: de_sext word-ops and the flag outputs (ia_zero/carry/neg/
-//   over) are not checked at smoke level.
+// TESTED: add, sub, and, or, xor, sll, srl, sra, sltu, slt at DW=64, plus the
+//   ia_zero and ia_neg flags on every op.
+// NOT TESTED here: de_sext word-ops and the add/sub-specific ia_carry/ia_over
+//   flags are not checked at smoke level.
 //
 //#############################################################################
 `timescale 1ns/1ps
@@ -51,6 +52,16 @@ module test_ialu_smoke;
             errors = errors + 1;
             $display("FAIL %0s: got %h exp %h (a=%h b=%h)", nm, r, want, a, b);
          end
+         if (z !== (want == {DW{1'b0}})) begin
+            errors = errors + 1;
+            $display("FAIL %0s zero: got %b exp %b (r=%h)", nm, z,
+                     (want == {DW{1'b0}}), want);
+         end
+         if (n !== want[DW-1]) begin
+            errors = errors + 1;
+            $display("FAIL %0s neg: got %b exp %b (r=%h)", nm, n,
+                     want[DW-1], want);
+         end
       end
    endtask
 
@@ -87,6 +98,7 @@ module test_ialu_smoke;
       run_ops(64'hFFFFFFFFFFFFFFF0, 64'd4);
       run_ops(64'h8000000000000000, 64'd1);
       run_ops(64'd0, 64'd0);
+      run_ops(64'd7, 64'd7);   // equal operands: sub/slt/sltu/xor -> 0 (zero flag)
 
       // random vectors
       for (t = 0; t < 24; t = t + 1)

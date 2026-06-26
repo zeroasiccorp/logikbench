@@ -12,23 +12,23 @@ module ialu
     input [DW-1:0]  op_rs1,    //primary input operand
     input [DW-1:0]  op_rs2,    //secondary input operand
     output [DW-1:0] ia_result, //bpu result
-    output          ia_zero,   // zero flag
-    output          ia_carry,  // carry flag
-    output          ia_neg,    // negative flag
-    output          ia_over,   // negative flag
+    output	    ia_zero,   // zero flag
+    output	    ia_carry,  // carry flag
+    output	    ia_neg,    // negative flag
+    output	    ia_over,   // negative flag
     // CONTROL
-    input           clk,
-    input           de_add,    // rd=rs1 + rs2
-    input           de_sub,    // rd=rs1 - rs2
-    input           de_sll,    // rd=rs1 << rs2
-    input           de_srl,    // rd=rs1 >> rs2
-    input           de_sra,    // rd=rs1 >>> rs2
-    input           de_and,    // rd=rs1 & rs2
-    input           de_or,     // rd=rs1 | rs2
-    input           de_xor,    // rd=rs1 ^ rs2
-    input           de_sltu,   // rd=1 if rs1<rs2, else rd=0
-    input           de_slt,    // rd=1 if rs1<rs2, else rd=0
-    input           de_sext    // addiw, addw, instr, etc
+    input	    clk,
+    input	    de_add,    // rd=rs1 + rs2
+    input	    de_sub,    // rd=rs1 - rs2
+    input	    de_sll,    // rd=rs1 << rs2
+    input	    de_srl,    // rd=rs1 >> rs2
+    input	    de_sra,    // rd=rs1 >>> rs2
+    input	    de_and,    // rd=rs1 & rs2
+    input	    de_or,     // rd=rs1 | rs2
+    input	    de_xor,    // rd=rs1 ^ rs2
+    input	    de_sltu,   // rd=1 if rs1<rs2, else rd=0
+    input	    de_slt,    // rd=1 if rs1<rs2, else rd=0
+    input	    de_sext    // addiw, addw, instr, etc
     );
 
    //local wires
@@ -172,6 +172,8 @@ module ialu
    //#############################
    // flags
    //############################
+
+   assign ia_zero_half    = ~|ia_result[DW/2-1:0];
 
    assign ia_zero_full    = (~|ia_result[DW-1:DW/2])   & ia_zero_half;
 
