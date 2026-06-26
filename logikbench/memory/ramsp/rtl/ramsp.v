@@ -1,3 +1,8 @@
+//#############################################################################
+// Copyright: Zero ASIC. All rights Reserved.
+// Author: Andreas Olofsson
+// License:  MIT (see LICENSE file in LogikBench repository)
+//#############################################################################
 // Whole-word single-port RAM. Implemented on lambdalib la_spram (write mask
 // tied all-ones) so memory mapping is technology agnostic (FPGA BRAM / ASIC
 // macro) and handled by lambdalib.

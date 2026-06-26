@@ -1,3 +1,8 @@
+//#############################################################################
+// Copyright: Zero ASIC. All rights Reserved.
+// Author: Andreas Olofsson
+// License:  MIT (see LICENSE file in LogikBench repository)
+//#############################################################################
 module regfile
   # (parameter AW = 6,  // address with (regs = 2**AW)
      parameter DW = 32, // register width

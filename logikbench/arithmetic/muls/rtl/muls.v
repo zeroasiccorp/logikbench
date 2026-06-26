@@ -1,3 +1,8 @@
+//#############################################################################
+// Copyright: Zero ASIC. All rights Reserved.
+// Author: Andreas Olofsson
+// License:  MIT (see LICENSE file in LogikBench repository)
+//#############################################################################
 module muls #(parameter DW = 16,
               parameter OW = 32
 	      )

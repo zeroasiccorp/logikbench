@@ -1,3 +1,8 @@
+//#############################################################################
+// Copyright: Zero ASIC. All rights Reserved.
+// Author: Andreas Olofsson
+// License:  MIT (see LICENSE file in LogikBench repository)
+//#############################################################################
 // Simple dual-port RAM (1 write port + 1 read port), single clock, whole
 // word. Implemented on lambdalib la_dpram so memory mapping is technology
 // agnostic (FPGA BRAM / ASIC macro) and handled by lambdalib.
