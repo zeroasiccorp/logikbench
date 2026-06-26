@@ -12,14 +12,14 @@
 
 ## TL;DR
 
-LogikBench is a curated suite of high quality technology agnostic RTL benchmarks.
+LogikBench is a high quality curated open source RTL benchmark suite that enables reproducible evaluation of EDA tools and LLMs by combining open-source hardware, standardized build flows, and automated QoR measurement.
 
 - 📦 Curated collection of high-quality RTL designs
 - 🔁 Reproducible build and synthesis flows
 - 📊 Standard QoR metrics across multiple tools
 - 🤖 Designed for both EDA research and LLM evaluation
 
-Install logikbench via PyPI, then optionally use the `sc-install` script to install all EDA tools, Use `lb` application to run benchmarks.
+Install logikbench via PyPI, then optionally use the `sc-install` script to install all all required open source EDA tools (yosys, openroad,...). Use `lb` application to run benchmarks.
 
 ```bash
 pip install logikbench
