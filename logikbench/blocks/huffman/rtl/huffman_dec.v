@@ -1,5 +1,6 @@
 //#############################################################################
 // Copyright: Zero ASIC. All rights Reserved.
+// Author: Andreas Olofsson
 // License:  MIT (see LICENSE file in LogikBench repository)
 //#############################################################################
 //
@@ -14,12 +15,12 @@
 
 module huffman_dec
   (
-   input	    clk,
-   input	    rst,
-   input	    in_valid,
-   input [7:0]	    in_byte,
-   output	    in_ready,
-   output reg	    out_valid,
+   input            clk,
+   input            rst,
+   input            in_valid,
+   input [7:0]      in_byte,
+   output           in_ready,
+   output reg       out_valid,
    output reg [7:0] out_sym
    );
 
@@ -38,7 +39,7 @@ module huffman_dec
    assign in_ready = (navail <= 8);
 
    wire        have_bit = (navail > 0);
-   wire	       next_bit = bitbuf[15];                // MSB of valid field
+   wire        next_bit = bitbuf[15];                // MSB of valid field
    wire [15:0] code1    = code | {15'b0, next_bit};  // add bit (no pre-shift)
 
    //##########################################################################
@@ -51,7 +52,7 @@ module huffman_dec
    //   dsym_r : symbol at canonical index 'symidx' (symbols sorted by code
    //            length, then by symbol value)
    //##########################################################################
-   reg [8:0]   cnt_r;
+   reg [8:0] cnt_r;
    always @* begin
       case (len)
         4'd1: cnt_r = 9'd0;
@@ -74,10 +75,10 @@ module huffman_dec
    end
 
    wire [8:0] count  = cnt_r;
-   wire	      match  = (code1 < (first + count));
+   wire       match  = (code1 < (first + count));
    wire [7:0] symidx = index + (code1 - first);
 
-   reg [7:0]  dsym_r;
+   reg [7:0] dsym_r;
    always @* begin
       case (symidx)
         8'd0: dsym_r = 8'd0;

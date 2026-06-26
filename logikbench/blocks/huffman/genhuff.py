@@ -64,6 +64,7 @@ def emit_dec(cnt, order, maxlen):
 
 ENC_TMPL = r'''//#############################################################################
 // Copyright: Zero ASIC. All rights Reserved.
+// Author: Andreas Olofsson
 // License:  MIT (see LICENSE file in LogikBench repository)
 //#############################################################################
 //
@@ -153,6 +154,7 @@ endmodule
 
 DEC_TMPL = r'''//#############################################################################
 // Copyright: Zero ASIC. All rights Reserved.
+// Author: Andreas Olofsson
 // License:  MIT (see LICENSE file in LogikBench repository)
 //#############################################################################
 //
