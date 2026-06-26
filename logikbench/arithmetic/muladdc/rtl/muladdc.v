@@ -18,8 +18,8 @@ module muladdc #(parameter DW = 16,
     output signed [OW-1:0] out_im
     );
 
-   wire [2*DW-1:0] prod_re;
-   wire [2*DW-1:0] prod_im;
+   wire signed [2*DW-1:0] prod_re;
+   wire signed [2*DW-1:0] prod_im;
 
    assign prod_re[2*DW-1:0] = (a_re * b_re) - (a_im * b_im);
    assign prod_im[2*DW-1:0] = (a_re * b_im) + (a_im * b_re);

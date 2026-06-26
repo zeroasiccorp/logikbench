@@ -1,3 +1,8 @@
+//#############################################################################
+// Copyright: Zero ASIC. All rights Reserved.
+// Author: Andreas Olofsson
+// License:  MIT (see LICENSE file in LogikBench repository)
+//#############################################################################
 /******************************************************************************
  * Testbench: median3x3 streaming filter (self-checking).
  * Streams an 8x8 salt-and-pepper image and compares each output to a software

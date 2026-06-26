@@ -1,3 +1,8 @@
+//#############################################################################
+// Copyright: Zero ASIC. All rights Reserved.
+// Author: Andreas Olofsson
+// License:  MIT (see LICENSE file in LogikBench repository)
+//#############################################################################
 /******************************************************************************
  * Testbench: Reed-Solomon RS(544,514) KP4 codec smoke test (self-checking).
  *

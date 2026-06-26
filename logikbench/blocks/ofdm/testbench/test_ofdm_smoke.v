@@ -1,3 +1,8 @@
+//#############################################################################
+// Copyright: Zero ASIC. All rights Reserved.
+// Author: Andreas Olofsson
+// License:  MIT (see LICENSE file in LogikBench repository)
+//#############################################################################
 /******************************************************************************
  * Testbench: ofdm loopback modem smoke test (self-checking, round-trip).
  *

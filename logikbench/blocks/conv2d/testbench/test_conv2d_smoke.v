@@ -1,3 +1,8 @@
+//#############################################################################
+// Copyright: Zero ASIC. All rights Reserved.
+// Author: Andreas Olofsson
+// License:  MIT (see LICENSE file in LogikBench repository)
+//#############################################################################
 /******************************************************************************
  * Testbench: conv2d programmable 3x3 convolution (self-checking).
  * Loads identity and box-blur kernels, streams an 8x8 image, and compares each

@@ -1,3 +1,8 @@
+//#############################################################################
+// Copyright: Zero ASIC. All rights Reserved.
+// Author: Andreas Olofsson
+// License:  MIT (see LICENSE file in LogikBench repository)
+//#############################################################################
 /******************************************************************************
  * Testbench: tpu 8x8 weight-stationary systolic matrix multiply (self-check).
  * Loads a weight matrix B, streams an activation matrix A, and compares each

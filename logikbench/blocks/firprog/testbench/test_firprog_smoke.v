@@ -1,3 +1,8 @@
+//#############################################################################
+// Copyright: Zero ASIC. All rights Reserved.
+// Author: Andreas Olofsson
+// License:  MIT (see LICENSE file in LogikBench repository)
+//#############################################################################
 /****************************************************************************
  * Testbench: firprog programmable FIR (self-checking, signed).
  * Streams random signed samples through the DUT with a mix of positive and

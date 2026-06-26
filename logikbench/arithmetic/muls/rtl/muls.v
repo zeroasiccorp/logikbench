@@ -3,8 +3,8 @@
 // Author: Andreas Olofsson
 // License:  MIT (see LICENSE file in LogikBench repository)
 //#############################################################################
-module muls #(parameter DW = 16,
-              parameter OW = 32
+module muls #(parameter	DW = 16,
+              parameter	OW = 32
 	      )
    (
     //Inputs
@@ -14,6 +14,6 @@ module muls #(parameter DW = 16,
     output signed [OW-1:0] c  // a * b final product
     );
 
-   assign c[OW-1:0] = a[DW-1:0] * b[DW-1:0];
+   assign c[OW-1:0] = $signed(a) * $signed(b);
 
 endmodule
