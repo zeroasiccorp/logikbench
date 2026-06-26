@@ -14,7 +14,7 @@ LogikBench is a curated suite of high quality technology agnostic RTL benchmarks
 
 The suite includes basic logic gates, arithmetic and memory primitives, DSP and codec blocks, and full subsystems like CPUs and accelerators. Each benchmark includes synthesizable, parameterized, fully documented RTL that compiles cleantly using FPGA or ASIC synthesis tools.
 
-## TLDR
+## TL;DR
 
 Install logikbench via PyPI, then optionally use the `sc-install` script to install all EDA tools, Use `lb` application to run benchmarks.
 
