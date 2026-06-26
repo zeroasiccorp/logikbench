@@ -87,16 +87,16 @@ module sobel3x3
    wire [DW-1:0] p20=(d_ok&&l_ok)?b0:0, p21=d_ok?b1:0, p22=(d_ok&&r_ok)?b2:0;
 
    localparam	 GW = DW+3;
-   wire signed [GW-1:0]	gx = $signed({1'b0,p02}) + ($signed({1'b0,p12})<<<1)
-			+ $signed({1'b0,p22}) - $signed({1'b0,p00}) - ($signed({1'b0,p10})<<<1)
-			- $signed({1'b0,p20});
-   wire signed [GW-1:0]	gy = $signed({1'b0,p20}) + ($signed({1'b0,p21})<<<1)
-			+ $signed({1'b0,p22}) - $signed({1'b0,p00}) - ($signed({1'b0,p01})<<<1)
-			- $signed({1'b0,p02});
-   wire [GW-1:0]	agx = gx[GW-1] ? (~gx + 1'b1) : gx;
-   wire [GW-1:0]	agy = gy[GW-1] ? (~gy + 1'b1) : gy;
-   wire [GW:0]		sum = agx + agy;
-   wire [DW-1:0]	mag = (sum > {DW{1'b1}}) ? {DW{1'b1}} : sum[DW-1:0];
+   wire [GW-1:0] gx = $signed({1'b0,p02}) + ($signed({1'b0,p12})<<<1)
+		 + $signed({1'b0,p22}) - $signed({1'b0,p00}) - ($signed({1'b0,p10})<<<1)
+		 - $signed({1'b0,p20});
+   wire [GW-1:0] gy = $signed({1'b0,p20}) + ($signed({1'b0,p21})<<<1)
+		 + $signed({1'b0,p22}) - $signed({1'b0,p00}) - ($signed({1'b0,p01})<<<1)
+		 - $signed({1'b0,p02});
+   wire [GW-1:0] agx = gx[GW-1] ? (~gx + 1'b1) : gx;
+   wire [GW-1:0] agy = gy[GW-1] ? (~gy + 1'b1) : gy;
+   wire [GW:0]	 sum = agx + agy;
+   wire [DW-1:0] mag = (sum > {DW{1'b1}}) ? {DW{1'b1}} : sum[DW-1:0];
 
    always @(posedge clk) begin
       if (rst) begin
