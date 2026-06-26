@@ -6,7 +6,21 @@
 [![Lint](https://github.com/zeroasiccorp/logikbench/actions/workflows/lint.yml/badge.svg)](https://github.com/zeroasiccorp/logikbench/actions/workflows/lint.yml)
 [![Downloads](https://static.pepy.tech/badge/logikbench)](https://pepy.tech/project/logikbench)
 
-LogikBench is a curated suite of tech agnostic RTL benchmarks.
+LogikBench is a curated suite of high quality technology agnostic RTL benchmarks.
+
+Logikbench includes basic logic gates, arithmetic and memory primitives, DSP and codec blocks, and full subsystems like CPUs and accelerators. Each benchmark includes synthesizable, parameterized, fully documented RTL that compiles cleantly using FPGA or ASIC synthesis tools.
+
+## TLDR
+
+Install logikbench via PyPI, then optionally use the `sc-install` script to install all EDA tools, Use `lb` application to run benchmarks.
+
+```bash
+pip install logikbench
+sc-install -group fpga asic # optional
+lb --target lattice_ice40 -j 4
+```
+----
+
 
 ## Problems
 
@@ -30,16 +44,6 @@ The semiconductor industry lacks a comprehensive, standardized benchmark suite f
 * **100% open source** no license or membership fees!
 * **Full provenance** documented source code provenance
 
-## TLDR
-
-Install logikbench via PyPI, use the `sc-install` script to install all EDA tools, and then use `lb` to run the benchmarks.
-
-```bash
-pip install logikbench
-sc-install -group fpga
-lb --target lattice_ice40 -j 4
-```
-----
 
 ## FPGA Synthesis Ranking
 
