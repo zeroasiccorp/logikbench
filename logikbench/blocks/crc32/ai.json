@@ -1,0 +1,68 @@
+{
+  "schema_version": "1.0",
+  "name": "crc32",
+  "group": "blocks",
+  "topmodule": "crc32",
+  "version": "1.0",
+  "description": "A parallel CRC-32 generator implementing the IEEE 802.3 / Ethernet frame check sequence (FCS), sized for 10 Gigabit Ethernet.",
+  "authorship": "Zero ASIC Corporation; author Andreas Olofsson",
+  "generated_by": {
+    "model": "claude-opus-4-8",
+    "provider": "Anthropic",
+    "interface": "Claude Code",
+    "date": "2025-06-25"
+  },
+  "human_review": {
+    "reviewed": true,
+    "reviewer": "Andreas Olofsson",
+    "date": "2025-06-25",
+    "notes": "Provenance (model and date) confirmed by the author; architecture, scope, and verification were directed and reviewed by the author."
+  },
+  "spec": {
+    "summary": "Parallel CRC-32 generator implementing the IEEE 802.3 / Ethernet frame check sequence (FCS), sized for 10 Gigabit Ethernet. It consumes W bits per clock (default 64, the 10GbE XGMII datapath: 64 b x 156.25 MHz = 10 Gb/s) and produces the frame FCS. The CRC uses polynomial 0x04C11DB7 with reflected input/output, init 0xFFFFFFFF, and final XOR 0xFFFFFFFF (check value CRC32(\"123456789\") = 0xCBF43926). A streaming interface asserts in_valid with W bits of data; the first valid word after reset or after in_last starts a new frame and re-initializes the CRC. Arbitrary frame byte-lengths are supported: on the last word, in_bytes gives the number of valid bytes (1..W/8) occupying the low byte lanes, and out_crc / out_valid present the frame FCS one cycle after the last word.",
+    "key_decisions": [
+      "Datapath width W is a parameter (default 64, multiple of 8) so the same source covers 8 / 32 / 64-bit datapaths by changing W.",
+      "The CRC update is written as a per-bit reflected loop over the W input bits that synthesis unrolls into the parallel CRC XOR tree (unrolled LFSR architecture).",
+      "The running CRC is tapped at every byte boundary so the final, possibly partial, word can fold in only its valid bytes via an in_bytes byte-count mux (an 8:1 select for W=64), supporting arbitrary frame byte-lengths.",
+      "Pure XOR logic plus a single 32-bit CRC state register: maps to LUTs and flip-flops with no DSP and no BRAM (~608 LUTs + 66 FF at W=64 on zeroasic_z1015, no latches).",
+      "The width 64 refers to the datapath, not the polynomial width; the 10GbE FCS remains CRC-32."
+    ]
+  },
+  "source": {
+    "rtl": [
+      "rtl/crc32.v"
+    ],
+    "generator": null,
+    "testbench": [
+      "testbench/test_crc32_smoke.v"
+    ],
+    "parameters": {
+      "W": 64
+    }
+  },
+  "dependencies": [],
+  "reproduce": {
+    "build": "lb run -t zeroasic_z1015 -g blocks -n crc32",
+    "lint": "pytest tests/test_lint.py -k Crc32",
+    "smoke": "pytest tests/test_smoke.py -k Crc32",
+    "tools": {
+      "iverilog": "12 (-g2005)",
+      "slang": "via siliconcompiler lintflow",
+      "yosys": "0.66",
+      "siliconcompiler": "installed (editable)"
+    },
+    "results_ref": "build/zeroasic_z1015/crc32/job0/synthesis/0/reports/stat.json"
+  },
+  "license": "MIT",
+  "origin": {
+    "type": "original",
+    "notes": "Original implementation written for LogikBench; follows the cited algorithm/standard and hardware architectures, not copied from any specific HDL source."
+  },
+  "references": [
+    "W. W. Peterson and D. T. Brown, 'Cyclic codes for error detection,' Proc. IRE, vol. 49, no. 1, pp. 228-235, Jan. 1961.",
+    "IEEE Std 802.3 (Ethernet), frame check sequence: CRC-32, polynomial 0x04C11DB7, reflected, init/xorout 0xFFFFFFFF. Check value 0xCBF43926.",
+    "T.-B. Pei and C. Zukowski, 'High-speed parallel CRC circuits in VLSI,' IEEE Trans. Communications, vol. 40, no. 4, pp. 653-657, Apr. 1992.",
+    "G. Albertengo and R. Sisto, 'Parallel CRC generation,' IEEE Micro, vol. 10, no. 5, pp. 63-71, Oct. 1990.",
+    "D. V. Sarwate, 'Computation of cyclic redundancy checks via table look-up,' Communications of the ACM, vol. 31, no. 8, pp. 1008-1013, Aug. 1988."
+  ]
+}

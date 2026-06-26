@@ -1,0 +1,69 @@
+{
+  "schema_version": "1.0",
+  "name": "fft",
+  "group": "blocks",
+  "topmodule": "fft",
+  "version": "1.0",
+  "description": "A synthesizable, parameterizable streaming Fast Fourier Transform accelerator.",
+  "authorship": "Zero ASIC Corporation; author Andreas Olofsson",
+  "generated_by": {
+    "model": "claude-opus-4-8",
+    "provider": "Anthropic",
+    "interface": "Claude Code",
+    "date": "2025-07-02"
+  },
+  "human_review": {
+    "reviewed": true,
+    "reviewer": "Andreas Olofsson",
+    "date": "2025-07-02",
+    "notes": "Provenance (model and date) confirmed by the author; architecture, scope, and verification were directed and reviewed by the author."
+  },
+  "spec": {
+    "summary": "Synthesizable, parameterizable streaming FFT accelerator using a radix-2 decimation-in-frequency single-path delay feedback (R2SDF) pipeline. It accepts one complex sample per clock and, after the pipeline fills, produces one complex frequency bin per clock; total latency is ~N + LOG2N cycles. The design has LOG2N = log2(N) pipeline stages, each a radix-2 butterfly plus a feedback delay line of depth N/2^(stage+1) plus a complex twiddle multiplier fed by a shared sine ROM. Data is Q1.15 signed fixed-point (DW=16), with each stage scaling its butterfly outputs by 1/2 so the result is the true FFT divided by N (block scaling that keeps Q1.15 from overflowing). Output is in native R2SDF bit-reversed bin order. The twiddle source is a 256-entry sine ROM read combinationally, so it folds into LUTs (not BRAM) and the twiddle multiplies map to DSP blocks.",
+    "key_decisions": [
+      "Radix-2 DIF single-path delay feedback (R2SDF) pipeline with one complex sample in/out per clock and LOG2N stages.",
+      "Per-stage 1/2 butterfly scaling so the output is the FFT divided by N, keeping Q1.15 fixed-point from overflowing.",
+      "Twiddle source is a 256-entry sine ROM emitted as a synthesizable combinational case (sinrom), which maps to LUTs (zero BRAM) and survives --ignore-initial.",
+      "Output is left in native R2SDF bit-reversed order; bit-reversal reorder is intentionally omitted to keep the core small.",
+      "N is limited to <= 256 because the twiddle source is a 256-entry sine ROM.",
+      "rtl/fft.v is emitted by genfft.py, which generates the exact twiddle case table for the chosen ROM resolution."
+    ]
+  },
+  "source": {
+    "rtl": [
+      "rtl/fft.v"
+    ],
+    "generator": "genfft.py",
+    "testbench": [
+      "testbench/test_fft_smoke.v"
+    ],
+    "parameters": {
+      "N": 64,
+      "DW": 16
+    }
+  },
+  "dependencies": [],
+  "reproduce": {
+    "build": "lb run -t zeroasic_z1015 -g blocks -n fft",
+    "lint": "pytest tests/test_lint.py -k Fft",
+    "smoke": "pytest tests/test_smoke.py -k Fft",
+    "tools": {
+      "iverilog": "12 (-g2005)",
+      "slang": "via siliconcompiler lintflow",
+      "yosys": "0.66",
+      "siliconcompiler": "installed (editable)"
+    },
+    "results_ref": "build/zeroasic_z1015/fft/job0/synthesis/0/reports/stat.json"
+  },
+  "license": "MIT",
+  "origin": {
+    "type": "original",
+    "notes": "Original implementation written for LogikBench; follows the cited algorithm/standard and hardware architectures, not copied from any specific HDL source."
+  },
+  "references": [
+    "J. W. Cooley and J. W. Tukey, 'An algorithm for the machine calculation of complex Fourier series,' Mathematics of Computation, vol. 19, no. 90, pp. 297-301, 1965.",
+    "E. H. Wold and A. M. Despain, 'Pipeline and parallel-pipeline FFT processors for VLSI implementations,' IEEE Trans. Computers, vol. C-33, no. 5, pp. 414-426, May 1984.",
+    "S. He and M. Torkelson, 'A new approach to pipeline FFT processor,' Proc. 10th Int. Parallel Processing Symp. (IPPS), pp. 766-770, 1996.",
+    "K. K. Parhi, VLSI Digital Signal Processing Systems, Wiley, 1999 -- chapter on FFT architectures (pipelined SDF, scaling, twiddle ROMs)."
+  ]
+}

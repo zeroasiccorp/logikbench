@@ -1,0 +1,81 @@
+{
+  "schema_version": "1.0",
+  "name": "lz77",
+  "group": "blocks",
+  "topmodule": "lz77",
+  "version": "1.0",
+  "description": "A hardware LZ77/LZSS compressor (encoder) plus a matching decompressor (decoder), wired together as a self-checking loopback so the reconstructed byte stream equals the input.",
+  "authorship": "Zero ASIC Corporation; author Andreas Olofsson",
+  "generated_by": {
+    "model": "claude-opus-4-8",
+    "provider": "Anthropic",
+    "interface": "Claude Code",
+    "date": "2026-06-25"
+  },
+  "human_review": {
+    "reviewed": true,
+    "reviewer": "Andreas Olofsson",
+    "date": "2026-06-25",
+    "notes": "Provenance (model and date) confirmed by the author; architecture, scope, and verification were directed and reviewed by the author."
+  },
+  "spec": {
+    "summary": "Synthesizable, technology-agnostic LZ77/LZSS compressor codec. The benchmark top lz77 wires an encoder (lz77_enc) into a decoder (lz77_dec) as a loopback so the reconstructed byte stream equals the input. The encoder is a hash-based FPGA-compressor structure: a 4-byte multiplicative hash indexes a table holding the NWAY most-recent positions, candidates are extended in parallel over a 32 KB sliding window with a 64-byte parallel match-extend datapath, and the longest match >= MINMATCH wins (emitting a {len,dist} token) or else a literal token is emitted. The decoder reconstructs into a 32 KB circular output history, copying matched bytes back with overlap (RLE) support. The hash is only a hint: every candidate is verified by an explicit byte compare and gated by a legal distance, so the codec is lossless regardless of match quality. All sliding-window and table sizes are parameters (defaults: 32 KB window, WW=64 parallel compare, NWAY=4 candidates).",
+    "key_decisions": [
+      "Use a hash-based match finder (4-byte multiplicative hash into an NWAY table) instead of a dynamic-index/content-addressed match finder, which avoids the catastrophic LUT blowup observed with the dynamic-index approach.",
+      "Store the hash table, the shared 32 KB compressor history, and the decoder's 32 KB output history in single-port la_spram BRAM (half the ASIC area of dual-port); probe candidates serially over NWAY.",
+      "Verify every hash candidate with an explicit byte compare and gate it by dist in [1, min(pos, WIN)] so a stale or aliased hash entry can never produce an invalid match -- it degrades to a literal, keeping the codec lossless.",
+      "Word-organize the history with byte-write enable so the two words covering any source byte read in a single cycle, enabling ~64 B/cycle on long matches.",
+      "Accept two ratio-only simplifications (never correctness): insert only the current position into the hash table each step, and check only NWAY candidates per bucket.",
+      "Handle the decoder dist==1 read-after-write hazard with a 1-deep write-forward on the synchronous-read output history BRAM."
+    ]
+  },
+  "source": {
+    "rtl": [
+      "rtl/lz77_hash.v",
+      "rtl/lz77_cand.v",
+      "rtl/lz77_hbank.v",
+      "rtl/lz77_enc.v",
+      "rtl/lz77_dec.v",
+      "rtl/lz77.v"
+    ],
+    "generator": null,
+    "testbench": [
+      "testbench/test_lz77_smoke.v"
+    ],
+    "parameters": {
+      "WIN": 32768,
+      "WW": 64,
+      "NWAY": 4,
+      "HASHBITS": 12,
+      "MINMATCH": 4,
+      "PW": 16
+    }
+  },
+  "dependencies": [
+    "lambdalib"
+  ],
+  "reproduce": {
+    "build": "lb run -t zeroasic_z1015 -g blocks -n lz77",
+    "lint": "pytest tests/test_lint.py -k Lz77",
+    "smoke": "pytest tests/test_smoke.py -k Lz77",
+    "tools": {
+      "iverilog": "12 (-g2005)",
+      "slang": "via siliconcompiler lintflow",
+      "yosys": "0.66",
+      "siliconcompiler": "installed (editable)"
+    },
+    "results_ref": "build/zeroasic_z1015/lz77/job0/synthesis/0/reports/stat.json"
+  },
+  "license": "MIT",
+  "origin": {
+    "type": "original",
+    "notes": "Original implementation written for LogikBench; follows the cited algorithm/standard and hardware architectures, not copied from any specific HDL source."
+  },
+  "references": [
+    "J. Ziv and A. Lempel, 'A universal algorithm for sequential data compression,' IEEE Trans. Information Theory, vol. 23, no. 3, pp. 337-343, 1977. (LZ77)",
+    "J. A. Storer and T. G. Szymanski, 'Data compression via textual substitution,' Journal of the ACM, vol. 29, no. 4, pp. 928-951, 1982. (LZSS: explicit literal/match flagging)",
+    "DEFLATE Compressed Data Format Specification, RFC 1951, 1996. (hashed 3/4-byte match finding over a 32 KB window, as in zlib)",
+    "zlib deflate.c (J. Gailly, M. Adler) -- the hash-chain match finder (4-byte hash, recent-position chains) this design parallelizes.",
+    "M. S. Abdelfattah et al., 'Gzip on a chip: high performance lossless data compression on FPGAs using OpenCL,' IWOCL, 2014. (parallel windowed LZ77 match finding on FPGA)"
+  ]
+}

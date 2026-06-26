@@ -17,6 +17,7 @@ from .ialu.ialu import Ialu
 from .hmac.hmac import Hmac
 from .i2c.i2c import I2c
 from .lfsr.lfsr import Lfsr
+from .lpddr5.lpddr5 import Lpddr5
 from .lz77.lz77 import Lz77
 from .nvdla.nvdla import Nvdla
 from .ofdm.ofdm import Ofdm
@@ -60,6 +61,7 @@ __all__ = [
     "Hmac",
     "I2c",
     "Lfsr",
+    "Lpddr5",
     "Lz77",
     "Nvdla",
     "Ofdm",

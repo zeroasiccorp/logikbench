@@ -1,0 +1,73 @@
+{
+  "schema_version": "1.0",
+  "name": "viterbi",
+  "group": "blocks",
+  "topmodule": "viterbi",
+  "version": "1.0",
+  "description": "A soft-decision Viterbi decoder for the K=7, rate-1/2 convolutional code with generator polynomials G0 = 133, G1 = 171 (octal), the standard code used by IEEE 802.11a/g, DVB, and CCSDS/NASA.",
+  "authorship": "Zero ASIC Corporation; author Andreas Olofsson",
+  "generated_by": {
+    "model": "claude-opus-4-8",
+    "provider": "Anthropic",
+    "interface": "Claude Code",
+    "date": "2025-06-25"
+  },
+  "human_review": {
+    "reviewed": true,
+    "reviewer": "Andreas Olofsson",
+    "date": "2025-06-25",
+    "notes": "Provenance (model and date) confirmed by the author; architecture, scope, and verification were directed and reviewed by the author."
+  },
+  "spec": {
+    "summary": "Soft-decision Viterbi decoder for the K=7, rate-1/2 convolutional code with generator polynomials G0=133, G1=171 (octal), the de-facto standard code used by IEEE 802.11a/g, DVB, and CCSDS/NASA. It finds the maximum-likelihood transmitted bit sequence through the 64-state code trellis and corrects channel errors. The decoder is fully parallel: all 64 add-compare-select (ACS) butterflies are evaluated every clock for one trellis step per clock, with each coded bit arriving as an SW-bit soft confidence symbol whose branch metric is the soft correlation distance. Path metrics are normalized every step by subtracting the running minimum so a fixed metric width never overflows. Survivor decisions (1 bit per state) are written to a RAM-based traceback memory each step; the frame is traced back from the best (minimum path-metric) state to recover the decoded bits, with the survivor memory mapping to FPGA BRAM. It is a frame-based decoder: stream a frame of soft symbol pairs (in_valid/in_last), then trace back the whole frame and stream decoded bits out (out_valid/out_bit), oldest first, at roughly two clocks per decoded bit.",
+    "key_decisions": [
+      "Fully-parallel ACS: all 64 trellis-state butterflies (2^(K-1) states) are evaluated every clock, one trellis step per clock, modeled as per-state generated combinational hardware plus an explicit reduction.",
+      "Soft-decision branch-metric unit: each coded bit arrives as an SW-bit confidence symbol and the branch metric is the soft (correlation) distance rather than a hard Hamming distance.",
+      "Path-metric normalization every step by subtracting the running 64-way minimum, so a fixed metric width never overflows (the subtract-minimum scheme).",
+      "RAM-based traceback: survivor decisions (1 bit/state) are written to memory each step and the frame is traced back from the best state; the survivor memory maps to FPGA BRAM (sdpram_16384x1 + sdpram_1024x16).",
+      "Block/frame decoder (accept the whole frame, then trace it back) chosen so the traceback is simple and bit-exact, rather than a continuous multi-bank streaming traceback; frame length must be <= MAXLEN with a K-1 zero tail terminating the trellis in state 0.",
+      "The code (K=7, G0=133, G1=171) is fixed; only the soft symbol width SW and the maximum frame length MAXLEN are configurable parameters."
+    ]
+  },
+  "source": {
+    "rtl": [
+      "rtl/viterbi.v"
+    ],
+    "generator": null,
+    "testbench": [
+      "testbench/test_viterbi_smoke.v"
+    ],
+    "parameters": {
+      "SW": 3,
+      "MAXLEN": 256
+    }
+  },
+  "dependencies": [],
+  "reproduce": {
+    "build": "lb run -t zeroasic_z1015 -g blocks -n viterbi",
+    "lint": "pytest tests/test_lint.py -k Viterbi",
+    "smoke": "pytest tests/test_smoke.py -k Viterbi",
+    "tools": {
+      "iverilog": "12 (-g2005)",
+      "slang": "via siliconcompiler lintflow",
+      "yosys": "0.66",
+      "siliconcompiler": "installed (editable)"
+    },
+    "results_ref": "build/zeroasic_z1015/viterbi/job0/synthesis/0/reports/stat.json"
+  },
+  "license": "MIT",
+  "origin": {
+    "type": "original",
+    "notes": "Original implementation written for LogikBench; follows the cited algorithm/standard and hardware architectures, not copied from any specific HDL source."
+  },
+  "references": [
+    "A. J. Viterbi, 'Error bounds for convolutional codes and an asymptotically optimum decoding algorithm,' IEEE Trans. Information Theory, vol. 13, no. 2, pp. 260-269, Apr. 1967.",
+    "G. D. Forney, Jr., 'The Viterbi algorithm,' Proceedings of the IEEE, vol. 61, no. 3, pp. 268-278, Mar. 1973.",
+    "S. Lin and D. J. Costello, Error Control Coding, 2nd ed., Prentice Hall, 2004.",
+    "IEEE Std 802.11-2020, sec. on convolutional coding (the K=7, rate-1/2 G0=133 / G1=171 octal code used here); same code as CCSDS 131.0-B.",
+    "K. K. Parhi, VLSI Digital Signal Processing Systems, Wiley, 1999, chapter on Viterbi decoders (add-compare-select units, survivor/traceback memory, pipelining).",
+    "H.-L. Lou, 'Implementing the Viterbi algorithm,' IEEE Signal Processing Magazine, vol. 12, no. 5, pp. 42-52, Sep. 1995.",
+    "C. B. Shung, P. H. Siegel, G. Ungerboeck, and H. K. Thapar, 'VLSI architectures for metric normalization in the Viterbi algorithm,' Proc. IEEE Int. Conf. Communications (ICC), 1990.",
+    "G. Feygin and P. G. Gulak, 'Architectural tradeoffs for survivor sequence memory management in Viterbi decoders,' IEEE Trans. Communications, vol. 41, no. 3, pp. 425-429, Mar. 1993."
+  ]
+}

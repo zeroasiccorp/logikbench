@@ -1,0 +1,66 @@
+{
+  "schema_version": "1.0",
+  "name": "sad8x8",
+  "group": "blocks",
+  "topmodule": "sad8x8",
+  "version": "1.0",
+  "description": "An 8x8 SAD block matcher for motion estimation that computes all 64 absolute pixel differences in parallel and sums them in an adder tree to a 14-bit SAD.",
+  "authorship": "Zero ASIC Corporation; author Andreas Olofsson",
+  "generated_by": {
+    "model": "claude-opus-4-8",
+    "provider": "Anthropic",
+    "interface": "Claude Code",
+    "date": "2025-06-25"
+  },
+  "human_review": {
+    "reviewed": true,
+    "reviewer": "Andreas Olofsson",
+    "date": "2025-06-25",
+    "notes": "Provenance (model and date) confirmed by the author; architecture, scope, and verification were directed and reviewed by the author."
+  },
+  "spec": {
+    "summary": "Synthesizable 8x8 sum-of-absolute-differences (SAD) block matcher for motion estimation. Two NxN pixel blocks (current and reference) are presented as packed buses, with pixel k located at bit position [k*PW+:PW]. All 64 absolute differences |a-b| are computed in parallel and reduced through an adder tree to a single SAD value (max 16320, 14-bit). The block has registered I/O with a single-cycle latency from valid_in to valid_out, and uses no multiply and no memory. It shares the clk/rst/valid/8-bit-pixel conventions of the streaming 3x3 filters and acts as a measurement (reduction) block at the tail of an image pipeline. Parameters are N (block size, default 8) and PW (pixel width, default 8).",
+    "key_decisions": [
+      "Model the 64 absolute-difference cells with generate (one combinational subtract/compare/select unit per pixel) plus an explicit adder-tree reduction, rather than a single large unrolled procedural loop.",
+      "Use a 63-adder binary reduction tree for the summation to keep the critical path logarithmic in the number of pixels.",
+      "Register both inputs and output so valid_in maps to valid_out with a fixed single-cycle latency, matching the streaming-filter conventions.",
+      "Pack both blocks as N*N*PW buses with pixel k at [k*PW+:PW] so the interface is parametric and tool-portable.",
+      "Compute absolute difference with subtract/compare/select (no multiply) and keep the design memoryless, so it maps to LUTs/FFs with 0 DSP and 0 BRAM."
+    ]
+  },
+  "source": {
+    "rtl": [
+      "rtl/sad8x8.v"
+    ],
+    "generator": null,
+    "testbench": [
+      "testbench/test_sad8x8_smoke.v"
+    ],
+    "parameters": {
+      "N": 8,
+      "PW": 8
+    }
+  },
+  "dependencies": [],
+  "reproduce": {
+    "build": "lb run -t zeroasic_z1015 -g blocks -n sad8x8",
+    "lint": "pytest tests/test_lint.py -k Sad8x8",
+    "smoke": "pytest tests/test_smoke.py -k Sad8x8",
+    "tools": {
+      "iverilog": "12 (-g2005)",
+      "slang": "via siliconcompiler lintflow",
+      "yosys": "0.66",
+      "siliconcompiler": "installed (editable)"
+    },
+    "results_ref": "build/zeroasic_z1015/sad8x8/job0/synthesis/0/reports/stat.json"
+  },
+  "license": "MIT",
+  "origin": {
+    "type": "original",
+    "notes": "Original implementation written for LogikBench; follows the cited algorithm/standard and hardware architectures, not copied from any specific HDL source."
+  },
+  "references": [
+    "Block-matching motion estimation, sum-of-absolute-differences (SAD) metric (MPEG / H.26x video coding standards).",
+    "Systolic/parallel SAD arrays for VLSI motion estimation (e.g. Vos & Stegherr; standard motion-estimation accelerator designs)."
+  ]
+}

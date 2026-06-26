@@ -1,0 +1,71 @@
+{
+  "schema_version": "1.0",
+  "name": "sobel3x3",
+  "group": "blocks",
+  "topmodule": "sobel3x3",
+  "version": "1.0",
+  "description": "A streaming 3x3 Sobel edge detector that computes Gx/Gy gradients with shifts/adds and outputs the saturated L1 edge magnitude |Gx|+|Gy|.",
+  "authorship": "Zero ASIC Corporation; author Andreas Olofsson",
+  "generated_by": {
+    "model": "claude-opus-4-8",
+    "provider": "Anthropic",
+    "interface": "Claude Code",
+    "date": "2025-06-25"
+  },
+  "human_review": {
+    "reviewed": true,
+    "reviewer": "Andreas Olofsson",
+    "date": "2025-06-25",
+    "notes": "Provenance (model and date) confirmed by the author; architecture, scope, and verification were directed and reviewed by the author."
+  },
+  "spec": {
+    "summary": "Synthesizable streaming 3x3 Sobel edge detector. Pixels arrive in raster order on a valid/start-of-frame interface; two la_spram line buffers (depth IMGW) reconstruct the 3x3 sliding window. The constant +-1/+-2 Sobel kernels compute the Gx and Gy gradients using only shifts and adds (no multiplier), and the output is the saturated L1 edge magnitude |Gx|+|Gy|. The output is same-size (one output pixel per input pixel, zero-padded border) so frame geometry is preserved, and the streaming interface is shared with median3x3/conv2d so the filters cascade directly. Parameters DW (pixel width), IMGW/IMGH (frame size) set the data path width and line-buffer depth.",
+    "key_decisions": [
+      "Streaming valid/start-of-frame pixel interface shared with median3x3 and conv2d so the three 3x3 filters cascade directly without glue.",
+      "Same-size output with zero-padded borders (one output pixel per input pixel) to preserve frame geometry across a filter chain.",
+      "Constant Sobel kernels folded to shifts and adds so the gradient path uses 0 DSP blocks.",
+      "Output is the saturated L1 edge magnitude |Gx|+|Gy| rather than the sqrt(Gx^2+Gy^2) L2 norm, avoiding multipliers and a square-root.",
+      "Two line buffers implemented with lambdalib la_spram (BRAM) at depth IMGW for the sliding window.",
+      "Self-checking testbench compares the RTL against a software Sobel reference."
+    ]
+  },
+  "source": {
+    "rtl": [
+      "rtl/sobel3x3.v"
+    ],
+    "generator": null,
+    "testbench": [
+      "testbench/test_sobel3x3_smoke.v"
+    ],
+    "parameters": {
+      "DW": 8,
+      "IMGW": 512,
+      "IMGH": 512
+    }
+  },
+  "dependencies": [
+    "lambdalib"
+  ],
+  "reproduce": {
+    "build": "lb run -t zeroasic_z1015 -g blocks -n sobel3x3",
+    "lint": "pytest tests/test_lint.py -k Sobel3x3",
+    "smoke": "pytest tests/test_smoke.py -k Sobel3x3",
+    "tools": {
+      "iverilog": "12 (-g2005)",
+      "slang": "via siliconcompiler lintflow",
+      "yosys": "0.66",
+      "siliconcompiler": "installed (editable)"
+    },
+    "results_ref": "build/zeroasic_z1015/sobel3x3/job0/synthesis/0/reports/stat.json"
+  },
+  "license": "MIT",
+  "origin": {
+    "type": "original",
+    "notes": "Original implementation written for LogikBench; follows the cited algorithm/standard and hardware architectures, not copied from any specific HDL source."
+  },
+  "references": [
+    "I. Sobel, G. Feldman, 'A 3x3 isotropic gradient operator for image processing,' 1968.",
+    "R. Gonzalez, R. Woods, Digital Image Processing.",
+    "Standard line-buffer/sliding-window streaming filter architecture (e.g. FPGA image-processing line-buffer designs)."
+  ]
+}
