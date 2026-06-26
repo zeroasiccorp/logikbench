@@ -26,14 +26,13 @@ so geometry is preserved across a chain. Verified: `sobel3x3 -> median3x3 ->
 conv2d` cascaded matches a software sobel->median->conv reference.
 
 Parameters: `DW` (pixel width, 8), `IMGW`/`IMGH` (frame size; `IMGW` sets the
-line-buffer depth). Two line buffers (currently shift registers; `la_spram`
-BRAM is the area follow-up for large `IMGW`).
+line-buffer depth). Two line buffers use lambdalib `la_spram` (BRAM), depth `IMGW` (default 512).
 
 Extra port: `coeff [9*CW-1:0]` (nine signed taps c0..c8 = window p00..p22).
 
 ## Mapping
 **9 DSP** multipliers (programmable coeffs prevent constant-folding), adder
-tree + round/saturate + window -> LUTs/FFs, 2 line buffers. (CW=8 Q1.7 default.)
+tree + round/saturate + window -> LUTs/FFs, 2 BRAM line buffers (la_spram). (CW=8 Q1.7 default.)
 
 ## Files
 `rtl/conv2d.v`, `testbench/test_conv2d_smoke.v` (self-checking vs software 2D

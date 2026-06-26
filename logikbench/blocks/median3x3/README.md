@@ -25,8 +25,7 @@ so geometry is preserved across a chain. Verified: `sobel3x3 -> median3x3 ->
 conv2d` cascaded matches a software sobel->median->conv reference.
 
 Parameters: `DW` (pixel width, 8), `IMGW`/`IMGH` (frame size; `IMGW` sets the
-line-buffer depth). Two line buffers (currently shift registers; `la_spram`
-BRAM is the area follow-up for large `IMGW`).
+line-buffer depth). Two line buffers use lambdalib `la_spram` (BRAM), depth `IMGW` (default 512).
 
 ## Mapping
 ~36 8-bit compare-swap cells + window/control -> LUTs/FFs, **0 DSP**, 2 line
@@ -34,7 +33,9 @@ buffers.
 
 ## Files
 `rtl/median3x3.v`, `testbench/test_median3x3_smoke.v` (self-checking vs a
-software median-of-9). Run: `iverilog -g2005 -o sim.out rtl/median3x3.v
+software median-of-9). Run: `iverilog -g2005 -o sim.out rtl/median3x3.v \\
+         <lambdalib>/ramlib/la_spram/rtl/la_spram.v \\
+         <lambdalib>/ramlib/la_spram/rtl/la_spram_impl.v
 testbench/test_median3x3_smoke.v && vvp sim.out`.
 
 ## References

@@ -1,5 +1,6 @@
 from os.path import dirname, abspath
 from siliconcompiler import Design
+from lambdalib.ramlib import Spram
 
 
 class Sobel3x3(Design):
@@ -19,6 +20,9 @@ class Sobel3x3(Design):
         fileset = 'rtl'
         for item in source:
             self.add_file(item, fileset, dataroot=root)
+
+        # line-buffer BRAM
+        self.add_depfileset(Spram(), "rtl", fileset=fileset)
 
         # top module
         self.set_topmodule(name, fileset)
