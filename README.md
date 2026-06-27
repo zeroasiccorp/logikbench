@@ -1,4 +1,6 @@
-# LogikBench
+<p align="center">
+  <img src="docs/logikbench-readme-header.png" alt="LogikBench" />
+</p>
 
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python Version](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
@@ -6,70 +8,47 @@
 [![Lint](https://github.com/zeroasiccorp/logikbench/actions/workflows/lint.yml/badge.svg)](https://github.com/zeroasiccorp/logikbench/actions/workflows/lint.yml)
 [![Downloads](https://static.pepy.tech/badge/logikbench)](https://pepy.tech/project/logikbench)
 
-LogikBench is a curated suite of high quality technology agnostic RTL benchmarks.
+## TL;DR
 
-Logikbench includes basic logic gates, arithmetic and memory primitives, DSP and codec blocks, and full subsystems like CPUs and accelerators. Each benchmark includes synthesizable, parameterized, fully documented RTL that compiles cleantly using FPGA or ASIC synthesis tools.
+LogikBench is a high quality curated open source RTL benchmark suite that enables reproducible evaluation of EDA tools, process technologies, and LLMs by combining open-source hardware, standardized build flows, and automated QoR measurement.
 
-## TLDR
+- 📦 Curated collection of high-quality RTL designs
+- 🔁 Reproducible build and synthesis flows
+- 📊 Standard QoR metrics across multiple tools
+- 🤖 Designed for both EDA research and LLM evaluation
 
-Install logikbench via PyPI, then optionally use the `sc-install` script to install all EDA tools, Use `lb` application to run benchmarks.
 
 ```bash
-pip install logikbench
-sc-install -group fpga asic # optional
-lb --target lattice_ice40 -j 4
+pip install logikbench               # install logikbench  
+lb -h                                # help
+lb run --target zeroasic_z1015 -j 4  # run benchmarks on z1015
 ```
+
+See [Tool Installation](#tool-installation) for EDA tool pre-requisites and customization. To quickly install OpenROAD and Yosys, just enter `sc-install -group asic fpga` after pip installing logikbench.
+
 ----
 
-
-## Problems
+## Problem Statement
 
 The semiconductor industry lacks a comprehensive, standardized benchmark suite for evaluating EDA tools, design flows, foundry processes, and FPGA devices. Existing RTL benchmark suites suffer from critical gaps. These gaps make it difficult to objectively compare tools, validate improvements, and track progress across the industry.
 
-* **No standardization** --> no "ImageNet/SpecInt/Dhrystone for EDA"
-* **No diversity** --> too many CPUs, not represntative of real designs
-* **No parameters** --> not representative of full range of performance targets
-* **No provanance** --> benchmark origin and intent often unknown
-* **No infrastructure** -->  no clear path to reproducibility
-* **No open source license** --> license often ambiguous/unknown
+* **No standardization:** no "ImageNet/SpecInt/Dhrystone for EDA"
+* **No diversity:** too many CPUs, not representative of real designs
+* **No parameters:** not representative of full range of performance targets
+* **No provenance:** benchmark origin and intent often unknown
+* **No infrastructure:** no clear path to reproducibility
+* **No open source license:** license often ambiguous/unknown
 
-## Logikbench Solution
+## Our Solution
 
 "Sunlight is said to be the best of disinfectants." --Supreme Court Justice Louis Brandeis
 
-* **100+ unique benchmark circuits** spanning basic logic to complex subsystems
-* **Synthesis ready** ...not just raw text string blobs
-* **10,000+ configurations** through parameter sweeping
-* **Standardized metrics** and execution infrastructure
-* **100% open source** no license or membership fees!
-* **Full provenance** documented source code provenance
-
-
-## FPGA Synthesis Ranking
-
-!!!Work-In-Progress!!!
-
-Targets ranked by total LUTs over all benchmarks (config: `small`), lowest first. A benchmark with no result for a target is charged the highest LUT count any target reached on it.
-Comparing different FPGA architectures is by definition an apples to oranges exercise. Ranking by no means implies quality or goodness, it's just a neat way to compress and order data.
-
-<!-- RANKING:START -->
-| Rank | Target | Arch | Total LUTs | Missing |
-|-----:|--------|------|-----------:|--------:|
-| 1 | zeroasic_z1060 | LUT6 | 161,693 | 5 |
-| 2 | gatemate_cologne | LUT8 | 190,534 | 5 |
-| 3 | microchip_polarfire | LUT4 | 224,143 | 7 |
-| 4 | zeroasic_z1015 | LUT4 | 225,818 | 5 |
-| 5 | adi_flex16ffc | LUT6 | 227,133 | 4 |
-| 6 | xilinx_virtex7 | LUT6 | 247,199 | 9 |
-| 7 | quicklogic_polarpro | LUT4/MUX | 253,639 | 2 |
-| 8 | lattice_ice40 | LUT4 | 256,531 | 4 |
-| 9 | efinix_trion | LUT4 | 263,076 | 8 |
-| 10 | fabulous_generic | LUT4 | 278,615 | 8 |
-| 11 | achronix_speedster | LUT6 | 439,740 | 10 |
-| 12 | lattice_ecp5 | LUT4 | 442,540 | 8 |
-| 13 | zeroasic_z1015opt | LUT4 | 497,161 | 29 |
-| 14 | gowin_gw5a | LUT4 | 617,752 | 7 |
-<!-- RANKING:END -->
+* **128 unique benchmark circuits:** spanning basic logic to complex subsystems
+* **Synthesis ready:** not just raw text string blobs
+* **10,000+ configurations:** through parameter sweeping
+* **Standardized metrics:** and execution infrastructure
+* **100% open source:** no license or membership fees!
+* **Full provenance:** documented source code provenance
 
 ----
 
@@ -107,58 +86,60 @@ d.write_fileset('mux.f', fileset='rtl')
 
 ## Benchmark Metrics
 
-FPGA runs report three metrics, all extracted from the Yosys synthesis run (no
-place-and-route): **LUTs**, **logic depth**, and **runtime**.
+FPGA runs report three metrics, all extracted from the Yosys synthesis run (no place-and-route): **LUTs**, **logic depth**, and **runtime**.
 
-### LUTs
+ASIC runs report three metrics, **Cell Area**, **FMAX**, and **runtime**. Cell
+Area comes from the Yosys synthesis run; FMAX is computed by an OpenSTA timing
+run on the synthesized netlist. Neither involves place-and-route.
 
-The LUT count is the synthesized logic-fabric usage, read from Yosys'
-`stat` per-cell-type report (`num_cells_by_type`). It sums three kinds of cell:
 
-1. **Lookup tables** — the basic LUT primitives, whose names vary by vendor:
-   `LUT1..LUT6`, `$lut`, `SB_LUT4` (ice40), `EFX_LUT4` (efinix), `CC_LUT*`
-   (gatemate), `LUTFF` (fabulous), and `CFG1..CFG4` (microchip PolarFire).
-2. **Dedicated mux-fabric cells** — the hardwired wide multiplexers that live in
-   the same logic block as the LUTs and implement muxing a LUT-only fabric would
-   otherwise spend LUTs on: `MUXF7/MUXF8` (xilinx), `mux4x0/mux8x0` (quicklogic),
-   `MUX2_LUT5..8` (gowin), `LUTMUX7/8` (adi), `L6MUX21/PFUMX` (lattice ECP5),
-   `CC_MX4/CC_MX8` (gatemate), `MX4` (microchip).
-3. **Hard DSP / multiply / MAC blocks** — dedicated multiplier and
-   multiply-accumulate cells: `DSP48E1` (xilinx), `MULT18X18D` (lattice ECP5),
-   `CC_MULT` (gatemate), `MACC_PA` (microchip), `RBBDSP` (adi), `efpga_mult*`
-   (Zero ASIC). A fabric without them builds multipliers out of LUTs, so a
-   target that uses a hard block would otherwise read as artificially LUT-light.
-   (Carry/ALU cells such as `CARRY4`, `ALU`, `CCU2C`, `ARI1` are *not* DSPs and
-   are not counted.)
+### FPGA LUTs
 
-Including the mux cells keeps the comparison fair: ice40 has no dedicated mux, so
-its read/select logic is built entirely from LUTs and is fully counted; fabrics
-like QuickLogic or GateMate offload that same logic to mux cells, which would
-otherwise make their LUT count read artificially low (e.g. `regfile` on
-QuickLogic is mostly `mux8x0` cells, not LUTs).
+> NOTE that it is impossible to do a truly fair synthesis comparison between different FPGA architectures because it's an apples to oranges comparison. The approach below is our attempt at normalization. File an issue if you disagree with it.
 
-Every fabric cell counts as one, regardless of its capacity: a 6-input LUT
-(Xilinx, ADI) packs more logic than a 4-input LUT, and a hard mux (e.g.
-QuickLogic `mux8x0`) does an 8:1 select that a LUT-only fabric would spend
-several LUTs on — but each is one cell. This makes the metric a clean
-*logic-cell utilization* count, most directly comparable *within* an
-architecture family (e.g. the Zero ASIC `z10xx` parts, or two synthesis options
-on one target). Across vendors the cells differ in size, so cross-vendor LUT
-counts are informative rather than a strict apples-to-apples ranking — each
-architecture wins where its cell type fits the design (mux fabrics on
-mux/select/decode logic, LUT/carry fabrics on arithmetic).
+The LUT count is the synthesized logic-fabric usage, read from Yosys' `stat` per-cell-type report (`num_cells_by_type`). Note that ideally, each target should have a custom post processing function blessed by the vendor to fairly extract their metrics. LUTs include three kinds of cell:
 
-### Logic depth
+1. **Lookup tables** — the basic LUT primitives, whose names vary by vendor: `LUT1..LUT6`, `$lut`, `SB_LUT4` (ice40), `EFX_LUT4` (efinix), `CC_LUT*` (gatemate), `LUTFF` (fabulous), and `CFG1..CFG4` (microchip PolarFire).
 
-Logic depth is the **longest combinational path** through the mapped netlist,
-measured by Yosys' `ltp -noff` (longest topological path, flip-flops excluded).
-It is the count of cells on that path, reported uniformly across all targets;
-the per-vendor ABC mapping reports are inconsistent (some flows print nothing),
-so `ltp` gives one comparable number. `ltp` only spans a single module, but the
-vendor `synth_*` flows flatten by default, so it covers the whole design.
+2. **Dedicated mux-fabric cells** — the hardwired wide multiplexers that live in the same logic block as the LUTs and implement muxing a LUT-only fabric would otherwise spend LUTs on: `MUXF7/MUXF8` (xilinx), `mux4x0/mux8x0` (quicklogic), `MUX2_LUT5..8` (gowin), `LUTMUX7/8` (adi), `L6MUX21/PFUMX` (lattice ECP5), `CC_MX4/CC_MX8` (gatemate), `MX4` (microchip).
 
-Because it counts *cells*, the path includes carry-chain and mux cells, not just
-LUT levels — so depth, like LUTs, reflects each architecture's primitives.
+3. **Hard DSP / multiply / MAC blocks** — dedicated multiplier and multiply-accumulate cells: `DSP48E1` (xilinx), `MULT18X18D` (lattice ECP5), `CC_MULT` (gatemate), `MACC_PA` (microchip) `RBBDSP` (adi), `efpga_mult*` (Zero ASIC). A fabric without them builds multipliers out of LUTs, so a target that uses a hard block would otherwise read as artificially LUT-light. (Carry/ALU cells such as `CARRY4`, `ALU`, `CCU2C`, `ARI1` are *not* DSPs and are not counted.)
+
+Including mux cells keeps the comparison fair: ice40 has no dedicated mux, so its read/select logic is built entirely from LUTs and is fully counted; fabrics like QuickLogic or GateMate offload that same logic to mux cells, which would otherwise make their LUT count read artificially low (e.g. `regfile` on QuickLogic is mostly `mux8x0` cells, not LUTs).
+
+Every fabric cell counts as one, regardless of its capacity: a 6-input LUT (Xilinx, ADI) packs more logic than a 4-input LUT, and a hard mux (e.g. QuickLogic `mux8x0`) does an 8:1 select that a LUT-only fabric would spend several LUTs on — but each is one cell. This makes the metric a clean *logic-cell utilization* count, most directly comparable *within* an architecture family (e.g. the Zero ASIC `z10xx` parts, or two synthesis options on one target). Across vendors the cells differ in size, so cross-vendor LUT counts are informative rather than a strict apples-to-apples ranking — each architecture wins where its cell type fits the design (mux fabrics on mux/select/decode logic, LUT/carry fabrics on arithmetic).
+
+### FPGA Logic depth
+
+Logic depth is the **longest combinational path** through the mapped netlist, measured by Yosys' `ltp -noff` (longest topological path, flip-flops excluded). It is the count of cells on that path, reported uniformly across all targets; the per-vendor ABC mapping reports are inconsistent (some flows print nothing), so `ltp` gives one comparable number. `ltp` only spans a single module, but the vendor `synth_*` flows flatten by default, so it covers the whole design.
+
+Because it counts *cells*, the path includes carry-chain and mux cells, not just LUT levels — so depth, like LUTs, reflects each architecture's primitives.
+
+### ASIC Cell Area
+
+Cell Area is the total standard-cell area of the synthesized (mapped) netlist,
+read from the same Yosys `stat` report as the FPGA cell counts. It is the sum of
+the areas of every instantiated standard cell, in the area units of the target's
+liberty (um^2 for the Nangate45 library used by `freepdk45`). Yosys also reports
+the raw **cell count** alongside the area.
+
+This is a *pre-layout* synthesis-area figure: it reflects the logic mapped to the
+standard-cell library but not place-and-route effects (buffering, sizing, or
+filler), so it tracks logic complexity rather than final silicon area. As with
+the FPGA LUT count, it is most directly comparable within one PDK/library.
+
+### ASIC FMAX
+
+FMAX is the maximum operating frequency, computed by an OpenSTA timing run on the
+synthesized netlist (`logikbench/targets/asic/<target>/timing.tcl`). For each
+clock STA finds the minimum achievable period (`find_clk_min_period`), and FMAX
+is `1 / min_period`, reported in MHz.
+
+The benchmarks ship no constraints, so a generic SDC attaches a 1 ns clock to a
+port named `clk` when present, or a virtual clock for purely combinational
+designs (so input-to-output paths are still constrained). The 1 ns period is only
+a starting reference; FMAX is derived from the minimum achievable period, not
+that value.
 
 ### Runtime
 
@@ -168,8 +149,7 @@ Runtime is the wall-clock time of the synthesis step, reported to 0.01 s.
 
 ## Running Benchmarks
 
-LogikBench includes the `lb` command-line tool for batch processing benchmarks.
-It drives synthesis through [SiliconCompiler](https://github.com/siliconcompiler/siliconcompiler):
+LogikBench includes the `lb` command-line tool for batch processing benchmarks. It drives synthesis through [SiliconCompiler](https://github.com/siliconcompiler/siliconcompiler):
 each benchmark is a SiliconCompiler `Design`, and `lb` has two subcommands:
 
 - `lb run` synthesizes the selected benchmarks for one or more targets.
@@ -178,7 +158,7 @@ each benchmark is a SiliconCompiler `Design`, and `lb` has two subcommands:
 Both take `-g/--group` and the required `-t/--target`. Run `lb run -h` or
 `lb collect -h` for the full option list.
 
-### Targets
+### FPGA Targets
 
 `-t/--target` selects what runs and is required; pass several to sweep them in
 turn. FPGA targets are named `<vendor>_<partname>` and map to a Yosys synth
@@ -204,16 +184,25 @@ The `zeroasic_*` targets load the [Wildebeest](https://github.com/zeroasiccorp/w
 plugin and run `synth_fpga -config <arch>`, where `<arch>` is the per-part
 architecture config vendored under `logikbench/targets/fpga/zeroasic/`.
 
-ASIC targets:
+### ASIC Targets
 
-- `freepdk45` -- ASIC synthesis + OpenSTA timing via LogikBench's `lbflow`
-  (pre-layout STA, so it reports `fmax` without place & route).
-- `<pdk>_demo` (`freepdk45_demo`, `asap7_demo`, `skywater130_demo`, `gf180_demo`,
-  `ihp130_demo`) -- the official SiliconCompiler demo target for that PDK, run
-  through SC's `asicflow` (full RTL-to-GDS). Use `--to` to limit how far it runs.
+ASIC targets are named after their PDK. There are two flavors:
 
-Metrics are fixed by the run mode: `luts`, `logicdepth`, `tasktime` for FPGA;
-`cells`, `cellarea`, `fmax` for ASIC.
+| Target | PDK / library | Flow |
+|--------|---------------|------|
+| `freepdk45` | FreePDK45 / Nangate45 (lambdapdk) | `lbflow`: Yosys synthesis + OpenSTA timing (no place-and-route) |
+| `freepdk45_demo` | FreePDK45 | SiliconCompiler `asicflow` (synth -> floorplan -> place -> cts -> route) |
+| `asap7_demo` | ASAP7 7nm | SiliconCompiler `asicflow` |
+| `skywater130_demo` | SkyWater 130 | SiliconCompiler `asicflow` |
+| `gf180_demo` | GlobalFoundries 180 | SiliconCompiler `asicflow` |
+| `ihp130_demo` | IHP SG13G2 130 | SiliconCompiler `asicflow` |
+
+The plain PDK name (`freepdk45`) runs the lightweight `lbflow` path used for the
+QoR metrics above: Yosys maps to the standard-cell library and OpenSTA reports
+FMAX, with no place-and-route. The `<pdk>_demo` targets run the full official
+SiliconCompiler `asicflow` (through routing) and are trimmed to a single library
+and a single setup corner so each benchmark stays fast; use `--to synthesis` to
+stop after synthesis.
 
 ### Options
 
@@ -442,6 +431,73 @@ lb run -g basic -t asap7_demo --to synthesis
 | epfl_voter | Voter circuit | [epfl_voter.v](logikbench/epfl/epfl_voter/rtl/epfl_voter.v) |
 
 ----
+
+
+
+## Leaderboard (WIP)
+
+
+
+Targets ranked by total LUTs over all benchmarks (config: `small`), lowest first. A benchmark with no result for a target is charged the highest LUT count any target reached on it.
+Comparing different FPGA architectures is by definition an apples to oranges exercise. Ranking by no means implies quality or goodness, it's just a neat way to compress and order data.
+
+<!-- RANKING:START -->
+| Rank | Target | Arch | Total LUTs | Missing |
+|-----:|--------|------|-----------:|--------:|
+| 1 | zeroasic_z1060 | LUT6 | 161,693 | 5 |
+| 2 | gatemate_cologne | LUT8 | 190,534 | 5 |
+| 3 | microchip_polarfire | LUT4 | 224,143 | 7 |
+| 4 | zeroasic_z1015 | LUT4 | 225,818 | 5 |
+| 5 | adi_flex16ffc | LUT6 | 227,133 | 4 |
+| 6 | xilinx_virtex7 | LUT6 | 247,199 | 9 |
+| 7 | quicklogic_polarpro | LUT4/MUX | 253,639 | 2 |
+| 8 | lattice_ice40 | LUT4 | 256,531 | 4 |
+| 9 | efinix_trion | LUT4 | 263,076 | 8 |
+| 10 | fabulous_generic | LUT4 | 278,615 | 8 |
+| 11 | achronix_speedster | LUT6 | 439,740 | 10 |
+| 12 | lattice_ecp5 | LUT4 | 442,540 | 8 |
+| 13 | zeroasic_z1015opt | LUT4 | 497,161 | 29 |
+| 14 | gowin_gw5a | LUT4 | 617,752 | 7 |
+<!-- RANKING:END -->
+
+### ASIC Synthesis
+
+ASIC leaderboard tables (cell area and FMAX, starting with `freepdk45`) are
+work in progress and will be published here once results are collected.
+
+## Tool Installation
+
+LogikBench itself is pure Python and installs from PyPI:
+
+```bash
+pip install logikbench
+```
+
+Running benchmarks additionally needs the EDA tools that SiliconCompiler drives.
+The `sc-install` helper (shipped with SiliconCompiler) builds and installs them.
+Install by group, or name individual tools:
+
+```bash
+sc-install -group fpga          # FPGA synthesis (Yosys + vendor plugins)
+sc-install -group asic          # ASIC synthesis + timing (Yosys, OpenROAD, OpenSTA)
+sc-install -group asic fpga     # both
+sc-install yosys openroad       # specific tools only
+```
+
+Useful flags: `-prefix <path>` to install somewhere other than the default,
+`-build_dir <path>` to build elsewhere, and `-jobs <N>` to limit parallel build
+jobs on memory-constrained machines.
+
+| Use case | Tools | Group |
+|----------|-------|-------|
+| FPGA LUT / depth metrics | Yosys (+ vendor synth plugins) | `fpga` |
+| ASIC area / FMAX metrics | Yosys, OpenROAD, OpenSTA | `asic` |
+| RTL simulation (testbenches) | Icarus Verilog, Verilator | `digital-simulation` |
+
+The Zero ASIC FPGA targets (`zeroasic_z1015`, `zeroasic_z1060`) also need the
+[Wildebeest](https://github.com/zeroasiccorp/wildebeest) Yosys plugin
+(`sc-install wildebeest`).
+
 
 ## License
 
