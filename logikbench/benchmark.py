@@ -23,10 +23,27 @@ from siliconcompiler.targets import (
     freepdk45_demo, asap7_demo, skywater130_demo, gf180_demo, ihp130_demo)
 
 from logikbench.flows.synth import FPGASynthesis, ASICSynthesis
+from logikbench import sdc
 
 # SC-standard metric names tracked per run mode.
 FPGA_METRICS = ["luts", "logicdepth", "tasktime"]
 ASIC_METRICS = ["cells", "cellarea", "fmax", "tasktime"]
+
+# Default clock period (ns) for the generic ASIC SDC; overridable with --clk.
+DEFAULT_CLK_NS = 1.0
+
+# SDC command time unit (ns) per ASIC target. 'create_clock -period' is read in
+# the unit OpenROAD/OpenSTA derive from the liberty, so the requested ns period
+# is scaled into this unit (see logikbench/sdc.py). Values are each PDK
+# liberty's 'time_unit' (ASAP7 is 1 ps; the other PDKs are 1 ns).
+ASIC_TIME_UNIT_NS = {
+    "freepdk45": 1.0,
+    "freepdk45_demo": 1.0,
+    "asap7_demo": 0.001,
+    "skywater130_demo": 1.0,
+    "gf180_demo": 1.0,
+    "ihp130_demo": 1.0,
+}
 
 _INDEX = "0"
 _LBFLOW_ASIC_RECIPE = "asic/freepdk45"
@@ -113,10 +130,17 @@ _STEP_TO = {
 }
 
 
-def default_sdc(recipe=_LBFLOW_ASIC_RECIPE):
-    """Path to a generic clock-constraint SDC (create_clock on a 'clk' port)."""
-    here = os.path.dirname(os.path.abspath(__file__))
-    return os.path.join(here, "targets", *recipe.split("/"), "default.sdc")
+def _clock_sdc(target, name, builddir, clk_ns):
+    """Write the generic clock SDC for a target and return its path.
+
+    The requested period (ns) is emitted in the target's native SDC time unit
+    (ASIC_TIME_UNIT_NS). The file is written to the build-dir root, not the
+    per-benchmark dir (which is wiped before each run), so parallel benchmarks
+    do not collide.
+    """
+    unit = ASIC_TIME_UNIT_NS.get(target, 1.0)
+    path = os.path.join(builddir, f"{name}.clock.sdc")
+    return sdc.write_sdc(path, clk_ns, unit)
 
 
 def _set_range(proj, start, stop):
@@ -232,7 +256,8 @@ def _run_fpga(design, target, options, builddir, quiet, start, stop, timeout):
     proj.run()
 
 
-def _run_lbflow_asic(design, target, builddir, quiet, start, stop, timeout):
+def _run_lbflow_asic(design, target, builddir, quiet, start, stop, timeout,
+                     clk_ns=DEFAULT_CLK_NS):
     """lbflow ASIC (Yosys synthesis + OpenSTA timing) for a single-liberty PDK."""
     liberty = _LBFLOW_PDKS[target]()
     proj = _base_project(design, builddir, ASICMetricsSchema(), quiet, timeout)
@@ -242,7 +267,8 @@ def _run_lbflow_asic(design, target, builddir, quiet, start, stop, timeout):
     proj.set("tool", "yosys", "task", "synthesis", "var", "liberty", liberty)
     proj.set("tool", "opensta", "task", "timing", "var", "target", _LBFLOW_ASIC_RECIPE)
     proj.set("tool", "opensta", "task", "timing", "var", "liberty", liberty)
-    proj.set("tool", "opensta", "task", "timing", "var", "sdc", default_sdc())
+    proj.set("tool", "opensta", "task", "timing", "var", "sdc",
+             _clock_sdc(target, design.name, builddir, clk_ns))
     _set_range(proj, start, stop)
     proj.run()
 
@@ -273,7 +299,8 @@ def _single_corner(proj):
             timing.remove_scenario(s)
 
 
-def _run_demo(design, target, builddir, quiet, start, stop, timeout):
+def _run_demo(design, target, builddir, quiet, start, stop, timeout,
+              clk_ns=DEFAULT_CLK_NS):
     """Official SC demo target (PDK + libs + scenarios) run through asicflow."""
     proj = ASIC(design)
     proj.set("option", "builddir", builddir)
@@ -285,7 +312,8 @@ def _run_demo(design, target, builddir, quiet, start, stop, timeout):
     # STA node (see _single_corner); LogikBench needs only single-corner QoR.
     _single_corner(proj)
     # benchmarks ship no SDC; attach a generic clock so STA can constrain
-    design.add_file(default_sdc(), fileset="sdc")
+    design.add_file(_clock_sdc(target, design.name, builddir, clk_ns),
+                    fileset="sdc")
     proj.add_fileset("rtl")
     proj.add_fileset("sdc")
     proj.set_flow(asicflow.ASICFlow())
@@ -309,13 +337,15 @@ def benchmark_name(group, item):
 
 
 def run_one(group, item, target=None, options="", builddir="build", quiet=True,
-            start=None, stop=None, timeout=None):
+            start=None, stop=None, timeout=None, clk=DEFAULT_CLK_NS):
     """Run a single benchmark; return (group, item, metrics, error).
 
     Dispatches on --target. Catches errors and returns them so a pool worker
     never crashes the parent. Module-level so it is picklable for the pool.
     'timeout' (seconds, or None) caps each step's wall clock; SC kills the tool
     tree on expiry and the step fails, so one hung synth cannot stall a sweep.
+    'clk' is the ASIC clock period in ns for the generic SDC (ignored for FPGA
+    targets).
     """
     import logikbench
     design = getattr(getattr(logikbench, group), item)()
@@ -330,10 +360,11 @@ def run_one(group, item, target=None, options="", builddir="build", quiet=True,
         shutil.rmtree(os.path.join(builddir, name), ignore_errors=True)
     try:
         if target in _DEMO_TARGETS:
-            _run_demo(design, target, builddir, quiet, start, stop, timeout)
+            _run_demo(design, target, builddir, quiet, start, stop, timeout, clk)
             metrics = read_metrics(name, ASIC_METRICS, builddir)
         elif target in _LBFLOW_PDKS:
-            _run_lbflow_asic(design, target, builddir, quiet, start, stop, timeout)
+            _run_lbflow_asic(design, target, builddir, quiet, start, stop,
+                             timeout, clk)
             metrics = read_metrics(name, ASIC_METRICS, builddir)
         elif target in FPGA_TARGETS:
             _run_fpga(design, target, options, builddir, quiet, start, stop, timeout)

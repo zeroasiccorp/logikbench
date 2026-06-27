@@ -1,17 +1,19 @@
 ###############################################################################
 # LogikBench default ASIC timing constraints
+#
+# File: logikbench/targets/asic/default.sdc
 ###############################################################################
 #
 # Generic constraints shared by every benchmark. A per-benchmark SDC defines
 # its signal lists and then sources this file:
 #
-#   set clk_port     [get_ports clk]        ;# empty for combinational designs
-#   set data_inputs  [get_ports {...}]
-#   set data_outputs [get_ports {...}]
-#   source $LB_DEFAULT_SDC
+#   set LB_CLK     [get_ports clk]          ;# empty for combinational designs
+#   set LB_INPUTS  [get_ports {...}]
+#   set LB_OUTPUTS [get_ports {...}]
+#   source default.sdc
 #
-# The flow injects the timing knobs before the SDC is sourced (LB_CLK_PERIOD is
-# in the target's SDC time unit):
+# The technology file (tech.tcl) injects the timing knobs before this file is
+# sourced (LB_CLK_PERIOD is in the target's SDC time unit):
 #
 #   LB_CLK_PERIOD  LB_SETUP_MARGIN  LB_HOLD_MARGIN  LB_LOAD  LB_SLEW
 #
@@ -20,21 +22,21 @@
 ########################################
 # Derived parameters
 ########################################
-# External I/O is modeled as a fraction of the clock period so the constraints
-# scale with LB_CLK_PERIOD. Setup (-max) uses the larger fraction; hold (-min)
-# a small one.
+# External I/O delays. Input/output delays scale with the clock period;
+# hold is a fixed floor (not frequency dependent).
 
-set lb_io_setup [expr {0.20 * $LB_CLK_PERIOD}]
-set lb_io_hold  [expr {0.05 * $LB_CLK_PERIOD}]
+set LB_IO_IDELAY [expr {0.50 * $LB_CLK_PERIOD}]
+set LB_IO_ODELAY [expr {0.50 * $LB_CLK_PERIOD}]
+set LB_IO_HOLD  0
 
 ########################################
 # Clock
 ########################################
-# A real clock is created on clk_port when present; combinational designs have
+# A real clock is created on LB_CLK when present; combinational designs have
 # no clock port, so a virtual clock (same name) is created instead.
 
-if {[llength $clk_port] > 0} {
-    create_clock -name clk -period $LB_CLK_PERIOD $clk_port
+if {[llength $LB_CLK] > 0} {
+    create_clock -name clk -period $LB_CLK_PERIOD $LB_CLK
 } else {
     create_clock -name clk -period $LB_CLK_PERIOD
 }
@@ -46,19 +48,21 @@ set_clock_uncertainty -hold  $LB_HOLD_MARGIN  [get_clocks clk]
 # Input constraints
 ########################################
 
-if {[llength $data_inputs] > 0} {
-    set_input_delay -clock clk -max $lb_io_setup $data_inputs
-    set_input_delay -clock clk -min $lb_io_hold  $data_inputs
-    set_input_transition $LB_SLEW $data_inputs
-    set_max_capacitance  $LB_LOAD $data_inputs
+if {[llength $LB_INPUTS] > 0} {
+    # how long after clock edge data arrives at input
+    set_input_delay -clock clk -max $LB_IO_IDELAY $LB_INPUTS
+    set_input_delay -clock clk -min $LB_IO_HOLD  $LB_INPUTS
+    set_input_transition $LB_SLEW $LB_INPUTS
+    set_max_capacitance  $LB_LOAD $LB_INPUTS
 }
 
 ########################################
 # Output constraints
 ########################################
 
-if {[llength $data_outputs] > 0} {
-    set_output_delay -clock clk -max $lb_io_setup $data_outputs
-    set_output_delay -clock clk -min $lb_io_hold  $data_outputs
-    set_load $LB_LOAD $data_outputs
+if {[llength $LB_OUTPUTS] > 0} {
+    # external delay after our output; data must be ready this long before the edge
+    set_output_delay -clock clk -max $LB_IO_ODELAY $LB_OUTPUTS
+    set_output_delay -clock clk -min $LB_IO_HOLD  $LB_OUTPUTS
+    set_load $LB_LOAD $LB_OUTPUTS
 }

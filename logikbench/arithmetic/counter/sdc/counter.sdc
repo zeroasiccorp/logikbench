@@ -1,17 +1,25 @@
 ###############################################################################
 # Counter Module SDC Constraints
+# File: logikbench/arithmetic/counter/sdc/counter.sdc
+#
+# These signals get used inside logikbench/targets/asic/default.sdc
+#
+# Alternatively, you could hard code the constraints in this file and
+# not read the LB_DEFAULT.SDC
+#
 ###############################################################################
 
 ########################################
 # Signal lists
+# Note that names are
 ########################################
 
-set clk_port     [get_ports clk]
-set data_inputs  [get_ports {clear en}]
-set data_outputs [get_ports {count[*]}]
+set LB_CLK     [get_ports clk]
+set LB_INPUTS  [get_ports {clear en}]
+set LB_OUTPUTS [get_ports {count[*]}]
 
-##########################################
-# Apply the shared LogikBench constraints
-##########################################
+########################################
+# Source constraints
+########################################
 
 source $LB_DEFAULT_SDC

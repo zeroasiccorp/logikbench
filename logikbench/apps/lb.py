@@ -9,7 +9,7 @@ import logikbench as lb
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
 from logikbench.benchmark import (
-    FPGA_METRICS, ASIC_METRICS, TARGETS, FPGA_TARGETS, STEPS,
+    FPGA_METRICS, ASIC_METRICS, TARGETS, FPGA_TARGETS, STEPS, DEFAULT_CLK_NS,
     run_one, read_metrics, read_asic_metrics, read_tool_var, is_complete,
     benchmark_name,
 )
@@ -118,7 +118,7 @@ def run_sweep(args, targets, worklist):
                 builddir = target_builddir(args, target)
                 future = pool.submit(run_one, group, item, target,
                                      args.options, builddir, quiet,
-                                     args.start, args.stop, timeout)
+                                     args.start, args.stop, timeout, args.clk)
                 futures[future] = (target, group, name)
             for future in as_completed(futures):
                 target, group, name = futures[future]
@@ -129,7 +129,7 @@ def run_sweep(args, targets, worklist):
             builddir = target_builddir(args, target)
             _, _, _, error = run_one(group, item, target, args.options,
                                      builddir, quiet, args.start, args.stop,
-                                     timeout)
+                                     timeout, args.clk)
             record(target, group, name, error)
 
     return failures
@@ -275,6 +275,14 @@ LogikBench commandline runner.
                             f"(shortcut for that stage's last node) or a raw SC "
                             f"node 'step.task' such as 'floorplan.init' "
                             f"(default: to the end)")
+    run_p.add_argument('--clk',
+                       type=float,
+                       default=DEFAULT_CLK_NS,
+                       metavar="NS",
+                       help='ASIC clock period in nanoseconds for the generic '
+                            'SDC (create_clock); scaled into each PDK time '
+                            f'unit. Ignored for FPGA targets (default: '
+                            f'{DEFAULT_CLK_NS})')
     run_p.add_argument('--resume',
                        action='store_true',
                        help='Skip benchmarks whose build already completed '
