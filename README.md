@@ -16,6 +16,7 @@ LogikBench is a high quality curated open source RTL benchmark suite that enable
 - 🔁 Reproducible build and synthesis flows
 - 📊 Standard QoR metrics across multiple tools
 - 🤖 Designed for both EDA research and LLM evaluation
+- 🏆 [Live results dashboard](https://zeroasiccorp.github.io/logikbench/) (FPGA & ASIC)
 
 
 ```bash
