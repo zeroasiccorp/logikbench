@@ -21,9 +21,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.x"
 
@@ -33,7 +33,7 @@ jobs:
         run: python scripts/fetch_zeroasic_arch.py --clean
 
       - name: Open PR with changes
-        uses: peter-evans/create-pull-request@v6
+        uses: peter-evans/create-pull-request@v8
         with:
           branch: bot/update-zeroasic-arch
           title: "Update zeroasic FPGA architectures from logiklib"
