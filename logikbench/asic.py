@@ -180,6 +180,8 @@ def _run_lbflow_asic(design, target, builddir, quiet, start, stop, timeout,
     proj.set("tool", "yosys", "task", "synthesis", "var", "mode", "asic")
     proj.set("tool", "yosys", "task", "synthesis", "var", "liberty",
              _LBFLOW_PDKS[target]())
+    proj.set("tool", "yosys", "task", "synthesis", "var", "ignore_initial",
+             bool(getattr(design, "ignore_initial", False)))
     _set_range(proj, start, stop)
     proj.run()
     proj.summary()

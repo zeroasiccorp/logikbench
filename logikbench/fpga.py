@@ -59,6 +59,8 @@ def _run_fpga(design, target, options, builddir, quiet, start, stop, timeout):
     proj.set("tool", "yosys", "task", "synthesis", "var", "command",
              FPGA_TARGETS[target])
     proj.set("tool", "yosys", "task", "synthesis", "var", "options", options)
+    proj.set("tool", "yosys", "task", "synthesis", "var", "ignore_initial",
+             bool(getattr(design, "ignore_initial", False)))
     _set_range(proj, start, stop)
     proj.run()
     proj.summary()
