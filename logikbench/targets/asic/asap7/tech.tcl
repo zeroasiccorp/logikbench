@@ -11,11 +11,17 @@
 #
 ###############################################################################
 
-# Clock period (ps). Default here; the flow may override it (e.g. lb --clk) by
-# setting LB_CLK_PERIOD before this file is sourced.
-if {![info exists LB_CLK_PERIOD]} {
-    set LB_CLK_PERIOD 500.0
+# Liberty time unit for this PDK, in nanoseconds (ASAP7 time = 1 ps = 0.001 ns).
+# Used to convert lb --clk (always nanoseconds) into the SDC command time unit.
+set LB_TIME_UNIT_NS 0.001
+
+# Clock period. lb --clk supplies the target period in nanoseconds via
+# LB_CLK_NS (the only external timing number); it is converted to this PDK's
+# SDC time unit here. Default 0.5 ns when the flow does not set LB_CLK_NS.
+if {![info exists LB_CLK_NS]} {
+    set LB_CLK_NS 0.5
 }
+set LB_CLK_PERIOD [expr {$LB_CLK_NS / $LB_TIME_UNIT_NS}]
 
 # Clock uncertainty (ps): ~5% / ~2% of the default period (jitter + skew)
 set LB_SETUP_MARGIN 25.0
