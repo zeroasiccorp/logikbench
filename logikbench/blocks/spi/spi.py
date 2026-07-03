@@ -19,6 +19,7 @@ class Spi(Design):
                 # default top_pkg). See README for generation details.
                 self.set_topmodule("spi_host")
                 self.add_file("rtl/spi.sv")
+        self.add_file("sdc/spi.sdc", "sdc", dataroot="local")
 
 
 if __name__ == "__main__":

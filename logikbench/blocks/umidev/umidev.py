@@ -1,3 +1,4 @@
+from os.path import dirname, abspath
 from siliconcompiler import Design
 from umi.sumi import Endpoint
 from umi.sumi import Decode, Pack, Unpack

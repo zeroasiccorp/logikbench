@@ -21,6 +21,7 @@ class Vortex(Design):
                 # VX_core's interface ports. See README for generation details.
                 self.set_topmodule("vortex_core_wrap")
                 self.add_file("rtl/vortex.v")
+        self.add_file("sdc/vortex.sdc", "sdc", dataroot="local")
 
 
 if __name__ == "__main__":

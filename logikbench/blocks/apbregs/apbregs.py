@@ -22,6 +22,7 @@ class Apbregs(Design):
 
         # top module
         self.set_topmodule('apbdev', fileset)
+        self.add_file(f'sdc/{name}.sdc', 'sdc', dataroot=root)
 
 
 if __name__ == "__main__":

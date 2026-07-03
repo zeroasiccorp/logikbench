@@ -19,6 +19,7 @@ class Aes(Design):
                 # (generic prims, default top_pkg). See README for generation.
                 self.set_topmodule("aes")
                 self.add_file("rtl/aes.sv")
+        self.add_file("sdc/aes.sdc", "sdc", dataroot="local")
 
 
 if __name__ == "__main__":

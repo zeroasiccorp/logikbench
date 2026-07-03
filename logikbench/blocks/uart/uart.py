@@ -19,6 +19,7 @@ class Uart(Design):
                 # top_pkg). See README for generation details.
                 self.set_topmodule("uart")
                 self.add_file("rtl/uart.sv")
+        self.add_file("sdc/uart.sdc", "sdc", dataroot="local")
 
 
 if __name__ == "__main__":

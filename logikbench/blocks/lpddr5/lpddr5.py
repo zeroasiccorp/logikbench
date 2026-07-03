@@ -25,6 +25,7 @@ class Lpddr5(Design):
 
         # top module
         self.set_topmodule('lpddr5_umi', fileset)
+        self.add_file(f'sdc/{name}.sdc', 'sdc', dataroot=root)
 
 
 if __name__ == "__main__":

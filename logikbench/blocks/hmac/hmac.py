@@ -19,6 +19,7 @@ class Hmac(Design):
                 # top_pkg). See README for generation details.
                 self.set_topmodule("hmac")
                 self.add_file("rtl/hmac.sv")
+        self.add_file("sdc/hmac.sdc", "sdc", dataroot="local")
 
 
 if __name__ == "__main__":

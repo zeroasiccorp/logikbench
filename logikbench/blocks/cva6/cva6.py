@@ -19,6 +19,7 @@ class Cva6(Design):
                 # pickled with morty from openhwgroup/cva6 v5.3.0. See README.
                 self.set_topmodule("cva6")
                 self.add_file("rtl/cva6.sv")
+        self.add_file("sdc/cva6.sdc", "sdc", dataroot="local")
 
 
 if __name__ == "__main__":

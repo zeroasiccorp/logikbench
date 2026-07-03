@@ -22,6 +22,7 @@ class Openpiton(Design):
 
         # top module: single OpenPiton dynamic_node 2D-mesh NoC router
         self.set_topmodule('dynamic_node_top_wrap', fileset)
+        self.add_file(f'sdc/{name}.sdc', 'sdc', dataroot=root)
 
 
 if __name__ == "__main__":
