@@ -1,9 +1,10 @@
 """OpenSTA timing task for LogikBench synthesis flows.
 
-OpenStaTask is built only on the base SiliconCompiler Task. It runs a
-per-target timing recipe (logikbench/targets/<target>/timing.tcl) on the
-synthesized netlist staged from the upstream synthesis node, and records
-the fmax timing metric parsed from the OpenSTA log.
+OpenStaTask is built only on the base SiliconCompiler Task. It runs the shared
+scripts/timing.tcl recipe on the synthesized netlist staged from the upstream
+synthesis node, and records the fmax timing metric parsed from the OpenSTA log.
+The recipe is PDK-agnostic; per-PDK timing constants come from each PDK's
+tech.tcl, whose path is passed in as a task variable.
 """
 
 import os
@@ -11,31 +12,27 @@ import re
 
 from siliconcompiler import Task, sc_open
 
-# logikbench/tools/opensta/opensta.py -> logikbench/ -> logikbench/targets
-_TARGETS_DIR = os.path.join(
-    os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
-    "targets")
+# directory holding this tool's TCL scripts: scripts/timing.tcl
+_TOOLDIR = os.path.dirname(os.path.abspath(__file__))
 
 
 class OpenStaTask(Task):
-    """Run a per-target OpenSTA timing recipe and record timing metrics."""
+    """Run the shared OpenSTA timing recipe and record timing metrics."""
 
     def __init__(self):
-        """Declare the per-flow target, liberty, and SDC inputs.
+        """Declare the per-flow liberty, SDC, and constraint inputs.
 
-        These are set by the flow: 'target' selects the timing.tcl recipe,
-        'liberty' is the standard-cell library used for delay calculation, and
-        'sdc' is the timing-constraints file. Stored as task variables so they
-        survive SiliconCompiler's node reconstruction.
+        These are set by the flow: 'liberty' is the standard-cell library used
+        for delay calculation, 'sdc' is the benchmark timing-constraints file,
+        and 'clk'/'techfile'/'defaultsdc' feed the constraint sourcing. Stored
+        as task variables so they survive SiliconCompiler's node reconstruction.
         """
         super().__init__()
-        self.add_parameter(
-            "target",
-            "str",
-            "directory under logikbench/targets containing timing.tcl",
-            "asic/nangate45")
         self.add_parameter("liberty", "str", "standard-cell liberty for STA", "")
-        self.add_parameter("sdc", "str", "timing constraints (SDC) file", "")
+        self.add_parameter("sdc", "str", "benchmark timing constraints (SDC) file", "")
+        self.add_parameter("clk", "str", "clock period in ns injected as LB_CLK_NS", "")
+        self.add_parameter("techfile", "str", "PDK tech.tcl the benchmark SDC sources", "")
+        self.add_parameter("defaultsdc", "str", "default.sdc the benchmark SDC sources", "")
 
     def tool(self):
         """Tool/executable group (namespaces settings + the 'sta' binary)."""
@@ -53,11 +50,11 @@ class OpenStaTask(Task):
         self.set_exe("sta", vswitch="-version", format="tcl")
         self.add_version(">=2.0.0")
 
-        target = self.get("var", "target")
-        self.set_dataroot("logikbench-targets", _TARGETS_DIR)
-        with self.active_dataroot("logikbench-targets"):
-            self.set_refdir(target)
-            self.set_script("timing.tcl")
+        # run scripts/timing.tcl from this tool's directory (PDK-agnostic)
+        self.set_dataroot("logikbench-opensta", _TOOLDIR)
+        with self.active_dataroot("logikbench-opensta"):
+            self.set_refdir("scripts", clobber=True)
+            self.set_script("timing.tcl", clobber=True)
 
         # the synthesized netlist is produced by the upstream synthesis node
         self.set("input", f"{self.design_topmodule}.vg")
