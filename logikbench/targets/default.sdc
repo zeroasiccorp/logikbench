@@ -47,6 +47,17 @@ set_clock_uncertainty -hold  $LB_HOLD_MARGIN  [get_clocks clk]
 ########################################
 # Input constraints
 ########################################
+# Remove the clock port(s) from LB_INPUTS so I/O constraints never land on the
+# clock (LB_INPUTS may be [all_inputs]). Filtered by name: this OpenSTA has no
+# remove_from_collection.
+
+set _clknames {}
+foreach _c $LB_CLK { lappend _clknames [get_name $_c] }
+set _datains {}
+foreach _p $LB_INPUTS {
+    if { [get_name $_p] ni $_clknames } { lappend _datains $_p }
+}
+set LB_INPUTS $_datains
 
 if {[llength $LB_INPUTS] > 0} {
     # how long after clock edge data arrives at input
