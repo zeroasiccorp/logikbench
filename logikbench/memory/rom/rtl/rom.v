@@ -16,12 +16,13 @@ module rom #(parameter DW = 16,
 
    reg [DW-1:0] mem [(2**AW)-1:0];
 
-   // ROM initialization
+   // ROM initialization. Non-trivial content (a squares table) so the memory
+   // is not optimized away to a pass-through and infers a real ROM/BRAM.
    integer      i;
    initial
      begin
         for (i = 0; i < 2**AW; i = i + 1)
-          mem[i] = i;
+          mem[i] = i * i;
      end
 
    always @(posedge clk)
