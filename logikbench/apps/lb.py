@@ -94,6 +94,24 @@ def make_worklist(args):
     return worklist
 
 
+def check_worklist(args, worklist):
+    """Fail loudly (exit 2) when the selection resolves to no benchmarks, so a
+    run/collect never silently does nothing. -n searches all groups (names are
+    globally unique), so an unmatched name is simply not a known benchmark.
+    """
+    if args.name:
+        matched = {name for _, _, name in worklist}
+        unmatched = [n for n in args.name if n.lower() not in matched]
+        if unmatched:
+            print("error: not a known benchmark: "
+                  f"{', '.join(unmatched)}", file=sys.stderr)
+            sys.exit(2)
+    if not worklist:
+        print("error: no benchmarks selected for group(s): "
+              f"{', '.join(args.group)}", file=sys.stderr)
+        sys.exit(2)
+
+
 def target_runlist(target, args, worklist):
     """Worklist triples to synthesize for a target, applying --resume
     (skip benchmarks whose build already completed successfully)."""
@@ -228,19 +246,23 @@ def add_common_args(parser):
                         metavar="TARGET",
                         help=_TARGET_HELP)
 
-    parser.add_argument("-g", "--group",
+    # -g and -n are two ways to pick benchmarks and are mutually exclusive:
+    # -g runs whole group(s); -n names specific benchmarks. Benchmark names are
+    # globally unique, so -n needs no group and searches all of them.
+    select = parser.add_mutually_exclusive_group()
+    select.add_argument("-g", "--group",
                         nargs='+',
                         choices=ALL_GROUPS,
                         default=ALL_GROUPS,
                         metavar="GROUP",
                         help=f"Benchmark group(s) to run (choices: {ALL_GROUPS}; "
-                             f"default: all)")
+                             f"default: all). Mutually exclusive with -n")
 
-    parser.add_argument("-n", "--name",
+    select.add_argument("-n", "--name",
                         nargs='+',
-                        help="Only act on benchmark(s) matching these names. "
-                             "Filtered against the selected group(s) "
-                             "(default: all)")
+                        help="Run specific benchmark(s) by name, searched across "
+                             "all groups (names are globally unique). Mutually "
+                             "exclusive with -g")
 
     parser.add_argument('-b',
                         dest='builddir',
@@ -344,6 +366,7 @@ LogikBench commandline runner.
     targets = args.target
 
     worklist = make_worklist(args)
+    check_worklist(args, worklist)
 
     #################################################
     # Dispatch
