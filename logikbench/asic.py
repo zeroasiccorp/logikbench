@@ -6,8 +6,10 @@ Two flavors:
   * a '<pdk>_demo' name (e.g. 'asap7_demo') -> the official SC demo target
     (PDK + libraries + scenarios) run through SiliconCompiler's 'asicflow'.
 
-Benchmarks ship no timing constraints, so a generic clock SDC is generated per
-run (see logikbench/sdc.py) and attached to the flow.
+Timing constraints come from each benchmark's own SDC (its 'sdc' fileset),
+which declares its signal lists and then sources the PDK tech.tcl (ns->unit
+scaling plus knobs) and the shared default.sdc. lb --clk (always nanoseconds)
+is injected as LB_CLK_NS. Benchmarks that ship no SDC run unconstrained.
 """
 
 import importlib
@@ -20,26 +22,27 @@ from siliconcompiler.metrics import ASICMetricsSchema
 from siliconcompiler.flows import asicflow
 
 from logikbench.flows.synth import ASICSynthesis
-from logikbench import sdc
 from logikbench.common import _base_project, _set_range, _quiet
 
-# Default clock period (ns) for the generic ASIC SDC; overridable with --clk.
+# Default clock period (ns) injected as LB_CLK_NS; overridable with --clk.
 DEFAULT_CLK_NS = 1.0
 
-_LBFLOW_ASIC_RECIPE = "asic/freepdk45"
+# Shared ASIC constraint files under logikbench/targets/asic. The per-PDK
+# tech.tcl (timing knobs + ns->unit scaling) and the shared default.sdc are
+# sourced by each benchmark's own SDC via LB_TECH_FILE / LB_DEFAULT_SDC.
+_ASIC_DIR = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), "targets", "asic")
+_DEFAULT_SDC = os.path.join(_ASIC_DIR, "default.sdc")
 
-# SDC command time unit (ns) per ASIC target. 'create_clock -period' is read in
-# the unit OpenROAD/OpenSTA derive from the liberty, so the requested ns period
-# is scaled into this unit (see logikbench/sdc.py). Values are each PDK
-# liberty's 'time_unit' (ASAP7 is 1 ps; the other PDKs are 1 ns).
-ASIC_TIME_UNIT_NS = {
-    "freepdk45": 1.0,
-    "freepdk45_demo": 1.0,
-    "asap7_demo": 0.001,
-    "skywater130_demo": 1.0,
-    "gf180_demo": 1.0,
-    "ihp130_demo": 1.0,
-}
+
+def _tech_tcl(pdk):
+    """Absolute path to a PDK's tech.tcl (timing knobs + ns->unit scaling)."""
+    return os.path.join(_ASIC_DIR, pdk, "tech.tcl")
+
+
+def _pdk_of(target):
+    """PDK directory name for a target ('asap7_demo' -> 'asap7')."""
+    return target[:-len("_demo")] if target.endswith("_demo") else target
 
 
 def _nangate45_liberty():
@@ -71,17 +74,16 @@ def _sc_target(name):
     return getattr(module, name, None)
 
 
-def _clock_sdc(target, name, builddir, clk_ns):
-    """Write the generic clock SDC for a target and return its path.
+def _bench_sdc(design):
+    """The benchmark's own SDC path from its 'sdc' fileset, or '' if none.
 
-    The requested period (ns) is emitted in the target's native SDC time unit
-    (ASIC_TIME_UNIT_NS). The file is written to the build-dir root, not the
-    per-benchmark dir (which is wiped before each run), so parallel benchmarks
-    do not collide.
+    The SDC (when a benchmark ships one) declares its signal lists and sources
+    the tech.tcl and default.sdc handed to it via LB_TECH_FILE / LB_DEFAULT_SDC.
     """
-    unit = ASIC_TIME_UNIT_NS.get(target, 1.0)
-    path = os.path.join(builddir, f"{name}.clock.sdc")
-    return sdc.write_sdc(path, clk_ns, unit)
+    if not design.has_fileset("sdc"):
+        return ""
+    files = design.get_file(fileset="sdc")
+    return files[0] if files else ""
 
 
 def _run_lbflow_asic(design, target, builddir, quiet, start, stop, timeout,
@@ -93,10 +95,17 @@ def _run_lbflow_asic(design, target, builddir, quiet, start, stop, timeout,
     proj.set_flow(ASICSynthesis())
     proj.set("tool", "yosys", "task", "synthesis", "var", "mode", "asic")
     proj.set("tool", "yosys", "task", "synthesis", "var", "liberty", liberty)
-    proj.set("tool", "opensta", "task", "timing", "var", "target", _LBFLOW_ASIC_RECIPE)
     proj.set("tool", "opensta", "task", "timing", "var", "liberty", liberty)
+    # Timing constraints: --clk (ns) plus the paths the benchmark SDC sources
+    # (tech.tcl scales ns->unit; default.sdc is the shared body). A benchmark
+    # that ships no SDC runs unconstrained.
+    proj.set("tool", "opensta", "task", "timing", "var", "clk", str(clk_ns))
+    proj.set("tool", "opensta", "task", "timing", "var", "techfile",
+             _tech_tcl(_pdk_of(target)))
+    proj.set("tool", "opensta", "task", "timing", "var", "defaultsdc",
+             _DEFAULT_SDC)
     proj.set("tool", "opensta", "task", "timing", "var", "sdc",
-             _clock_sdc(target, design.name, builddir, clk_ns))
+             _bench_sdc(design))
     _set_range(proj, start, stop)
     proj.run()
 
@@ -127,6 +136,29 @@ def _single_corner(proj):
             timing.remove_scenario(s)
 
 
+def _write_sc_wrapper(builddir, name, target, clk_ns, bench_sdc):
+    """Write the SC-path SDC wrapper and return its (absolute) path.
+
+    OpenROAD reads the sdc fileset with no earlier hook to set variables, so a
+    benchmark SDC cannot be read directly (it references LB_CLK_NS / LB_TECH_FILE
+    / LB_DEFAULT_SDC). This wrapper injects those, then sources the benchmark
+    SDC. Written to the build-dir root (the per-benchmark dir is wiped each run)
+    with an absolute path so SC resolves it regardless of the design dataroot.
+    """
+    path = os.path.abspath(os.path.join(builddir, f"{name}_lbsdc.sdc"))
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "w") as f:
+        f.write(
+            "# Generated by logikbench (asic.py): SC-path SDC wrapper.\n"
+            "# Injects lb --clk (ns) and the tech/default paths the benchmark\n"
+            "# SDC sources, then sources the benchmark SDC.\n"
+            f"set LB_CLK_NS {clk_ns}\n"
+            f"set LB_TECH_FILE {{{_tech_tcl(_pdk_of(target))}}}\n"
+            f"set LB_DEFAULT_SDC {{{_DEFAULT_SDC}}}\n"
+            f"source {{{bench_sdc}}}\n")
+    return path
+
+
 def _run_demo(design, target, builddir, quiet, start, stop, timeout,
               clk_ns=DEFAULT_CLK_NS):
     """Official SC demo target (PDK + libs + scenarios) run through asicflow."""
@@ -139,14 +171,17 @@ def _run_demo(design, target, builddir, quiet, start, stop, timeout,
     # one library / one corner: avoid reading every Vt x corner liberty on each
     # STA node (see _single_corner); LogikBench needs only single-corner QoR.
     _single_corner(proj)
-    # benchmarks ship no SDC; attach a generic clock so STA can constrain.
-    # Only wire up the sdc fileset if the file is actually on disk, so a
-    # failed/skipped SDC write cannot leave an unresolvable fileset entry.
-    sdc_path = _clock_sdc(target, design.name, builddir, clk_ns)
     proj.add_fileset("rtl")
-    if os.path.isfile(sdc_path):
-        design.add_file(sdc_path, fileset="sdc")
-        proj.add_fileset("sdc")
+    # A benchmark that ships an SDC is read through a generated wrapper (it
+    # injects LB_CLK_NS and the tech/default paths, then sources the benchmark
+    # SDC). Kept in its own 'lbsdc' fileset so the raw benchmark SDC is not read
+    # standalone. Benchmarks with no SDC run unconstrained.
+    bench_sdc = _bench_sdc(design)
+    if bench_sdc:
+        wrapper = _write_sc_wrapper(builddir, design.name, target, clk_ns,
+                                    bench_sdc)
+        design.add_file(wrapper, fileset="lbsdc")
+        proj.add_fileset("lbsdc")
     proj.set_flow(asicflow.ASICFlow())
     # LogikBench designs are IO-dominated (wide buses, tiny logic), so the
     # demo's 40%-utilization die can't fit the pins on its perimeter. Grow the

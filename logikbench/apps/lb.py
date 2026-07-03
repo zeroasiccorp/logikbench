@@ -44,8 +44,8 @@ _TARGET_HELP = (
     "Synthesis target(s). Pass several to sweep them in turn.\n"
     "Format:\n"
     "  - '<vendor>_<partname>' -> FPGA target (e.g., xilinx_virtex7)\n"
-    "  - '<pdk>'              -> ASIC path via lbflow\n"
-    "  - '<pdk>_demo'         -> SiliconCompiler demo via asicflow\n"
+    "  - '<sc-target>'         -> SiliconCompiler built-in target\n"
+    "  - '<lb-target>'         -> LB built-in target\n"
     + textwrap.fill(", ".join(TARGETS), width=54,
                     initial_indent="Choices: ", subsequent_indent="")
 )

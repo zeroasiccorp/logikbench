@@ -4,14 +4,16 @@ This module is the public entry point: it assembles the full set of valid
 targets and dispatches a single benchmark to the right flow. The flow
 implementations live in sibling modules and are kept apart by run mode:
   * logikbench.fpga   -- the custom 'lbflow' FPGA synthesis path;
-  * logikbench.asic   -- the 'lbflow' ASIC path and the '<pdk>_demo' asicflow;
+  * logikbench.asic   -- the 'lbflow' ASIC path and the SC path (targets
+    built into SiliconCompiler, run through asicflow);
   * logikbench.common -- flow-agnostic plumbing (project setup, step ranges,
     manifest readers) shared by both.
 
 Targets (--target) select what runs:
   * an FPGA target name (e.g. 'xilinx_virtex7') -> logikbench.fpga;
   * a lambdapdk PDK name (e.g. 'freepdk45') -> logikbench.asic lbflow path;
-  * a '<pdk>_demo' name (e.g. 'asap7_demo') -> logikbench.asic demo path.
+  * a '<pdk>_demo' name (e.g. 'asap7_demo') -> logikbench.asic SC path (a
+    target built into SiliconCompiler).
 
 The names re-exported below (metrics, targets, step names, DEFAULT_CLK_NS and
 the manifest readers) are the stable interface used by lb, the dashboard, and
@@ -39,7 +41,7 @@ __all__ = [
 
 # all valid --target values, and the subset the custom lbflow supports
 TARGETS = (list(fpga.FPGA_TARGETS) + list(asic._LBFLOW_PDKS)
-           + list(asic._DEMO_TARGETS))
+           + list(asic.SC_TARGETS))
 LBFLOW_TARGETS = list(fpga.FPGA_TARGETS) + list(asic._LBFLOW_PDKS)
 
 
@@ -66,7 +68,7 @@ def run_one(group, item, target=None, options="", builddir="build", quiet=True,
     if not start:
         shutil.rmtree(os.path.join(builddir, name), ignore_errors=True)
     try:
-        if target in asic._DEMO_TARGETS:
+        if target in asic.SC_TARGETS:
             asic._run_demo(design, target, builddir, quiet, start, stop,
                            timeout, clk)
             metrics = read_metrics(name, ASIC_METRICS, builddir)
