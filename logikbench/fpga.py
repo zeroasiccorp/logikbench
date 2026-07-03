@@ -63,4 +63,5 @@ def _run_fpga(design, target, options, builddir, quiet, start, stop, timeout):
              bool(getattr(design, "ignore_initial", False)))
     _set_range(proj, start, stop)
     proj.run()
-    proj.summary()
+    if not quiet:
+        proj.summary()

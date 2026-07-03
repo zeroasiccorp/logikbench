@@ -144,14 +144,14 @@ def run_sweep(args, targets, worklist):
     quiet = not args.verbose
     failures = []
     total = len(tasks)
-    done = 0  # completed-job counter; printed 0-based as [i/N] progress
+    done = 0  # completed-job counter; printed as [done/total] progress
 
     # Same completion message for every job, regardless of target (FPGA or
     # ASIC) or scheduling (-j sequential vs parallel).
     def record(target, group, name, error):
         nonlocal done
-        prefix = f"[{done}/{total}]"
         done += 1
+        prefix = f"[{done}/{total}]"
         if error is not None:
             print(f"{prefix} Error synthesizing {name} ({target}/{group}): "
                   f"{error}", file=sys.stderr)

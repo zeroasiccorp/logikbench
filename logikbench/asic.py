@@ -184,7 +184,8 @@ def _run_lbflow_asic(design, target, builddir, quiet, start, stop, timeout,
              bool(getattr(design, "ignore_initial", False)))
     _set_range(proj, start, stop)
     proj.run()
-    proj.summary()
+    if not quiet:
+        proj.summary()
 
 
 def _run_demo(design, target, builddir, quiet, start, stop, timeout,
@@ -201,4 +202,5 @@ def _run_demo(design, target, builddir, quiet, start, stop, timeout,
              "ppl_arguments", ["-min_distance", "1", "-min_distance_in_tracks"])
     _set_range(proj, start, stop)
     proj.run()
-    proj.summary()
+    if not quiet:
+        proj.summary()
