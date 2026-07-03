@@ -1,3 +1,4 @@
+from os.path import dirname, abspath
 from siliconcompiler import Design
 from umi.sumi import Crossbar
 from umi.sumi import Arbiter
@@ -25,6 +26,10 @@ class Umicross(Design):
             self.set_param('DW', '64')
             self.set_param('AW', '64')
             self.set_param('CW', '32')
+
+        # timing constraints (SDC lives in this block dir)
+        self.set_dataroot("local", dirname(abspath(__file__)))
+        self.add_file("sdc/umicross.sdc", "sdc", dataroot="local")
 
 
 if __name__ == "__main__":
