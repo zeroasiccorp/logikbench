@@ -4,6 +4,7 @@ import argparse
 import os
 import sys
 import json
+import textwrap
 
 import logikbench as lb
 from concurrent.futures import ProcessPoolExecutor, as_completed
@@ -19,6 +20,35 @@ ALL_GROUPS = ['basic', 'memory', 'arithmetic', 'epfl', 'blocks']
 
 # metrics tracked are determined by the run mode (fpga vs asic synthesis)
 FLOW_METRICS = {'fpga': FPGA_METRICS, 'asic': ASIC_METRICS}
+
+
+class LbHelpFormatter(argparse.HelpFormatter):
+    """Help formatter that keeps pre-wrapped (multi-line) help strings verbatim
+    while still auto-wrapping plain single-line ones, and puts a blank line
+    between arguments so long entries stay readable."""
+
+    def _split_lines(self, text, width):
+        # a help string with explicit newlines is already laid out by hand
+        # (e.g. the --target format/choices block): keep it as authored.
+        if "\n" in text:
+            return text.splitlines()
+        return super()._split_lines(text, width)
+
+    def _format_action(self, action):
+        return super()._format_action(action) + "\n"
+
+
+# --target help: a fixed format legend plus the (dynamic) list of valid choices,
+# wrapped so it lines up under the help column.
+_TARGET_HELP = (
+    "Synthesis target(s). Pass several to sweep them in turn.\n"
+    "Format:\n"
+    "  - '<vendor>_<partname>' -> FPGA target (e.g., xilinx_virtex7)\n"
+    "  - '<pdk>'              -> ASIC path via lbflow\n"
+    "  - '<pdk>_demo'         -> SiliconCompiler demo via asicflow\n"
+    + textwrap.fill(", ".join(TARGETS), width=54,
+                    initial_indent="Choices: ", subsequent_indent="")
+)
 
 
 def flow_step(value):
@@ -196,35 +226,28 @@ def add_common_args(parser):
                         choices=TARGETS,
                         required=True,
                         metavar="TARGET",
-                        help=f"Synthesis target(s) (choices: {TARGETS}). An FPGA "
-                             f"target is named '<vendor>_<partname>' (e.g. "
-                             f"xilinx_virtex7, zeroasic_z1015) and picks the "
-                             f"yosys synth command; a plain PDK name runs the "
-                             f"lbflow ASIC path, and a '<pdk>_demo' name runs "
-                             f"the SC demo target via asicflow. Pass several to "
-                             f"sweep them in turn.")
+                        help=_TARGET_HELP)
 
     parser.add_argument("-g", "--group",
                         nargs='+',
                         choices=ALL_GROUPS,
                         default=ALL_GROUPS,
                         metavar="GROUP",
-                        help=f"Benchmark group(s) (choices: {ALL_GROUPS}; "
+                        help=f"Benchmark group(s) to run (choices: {ALL_GROUPS}; "
                              f"default: all)")
 
     parser.add_argument("-n", "--name",
                         nargs='+',
-                        help="Only act on benchmark(s) with these name(s); "
-                             "names are matched against the benchmarks in the "
-                             "selected group(s), so each runs in whichever "
-                             "group defines it (default: all of them)")
+                        help="Only act on benchmark(s) matching these names. "
+                             "Filtered against the selected group(s) "
+                             "(default: all)")
 
     parser.add_argument('-b',
                         dest='builddir',
                         default="build",
                         metavar="DIR",
-                        help='Build directory root; per-benchmark work goes in '
-                             '<builddir>/<target>/<name> (default root: build)')
+                        help='Build directory root. Per-benchmark artifacts go '
+                             'to: <builddir>/<target>/<name> (default: build)')
 
 
 def main():
@@ -241,7 +264,8 @@ LogikBench commandline runner.
                                 metavar="{run,collect}")
 
     # ---- run: synthesize benchmarks (no metric collection) ----
-    run_p = sub.add_parser("run", help="Synthesize benchmarks")
+    run_p = sub.add_parser("run", help="Synthesize benchmarks",
+                           formatter_class=LbHelpFormatter)
     add_common_args(run_p)
     run_p.add_argument('-j',
                        dest='jobs',
@@ -253,35 +277,34 @@ LogikBench commandline runner.
     run_p.add_argument('--options',
                        default="",
                        metavar="OPTS",
-                       help="Extra options passed verbatim as arguments to the "
-                            "FPGA synth command. Use the '=' form so leading "
-                            "dashes are not parsed as flags: --options=-abc9 "
-                            "(quote multiple: --options='-abc9 -nocarry')")
+                       help="Extra options passed verbatim to the FPGA synth "
+                            "command. NOTE: Use the '=' form to prevent leading "
+                            "dashes from being parsed as flags (e.g., "
+                            "--options=-abc9 or --options='-abc9 -nocarry')")
     # 'from' is a Python keyword, so keep the dest names start/stop
     run_p.add_argument('--from',
                        dest='start',
                        type=flow_step,
                        default=None,
                        metavar="STEP",
-                       help=f"First flow step to run: a stage name {STEPS} "
-                            f"(shortcut for that stage's first node) or a raw "
-                            f"SC node 'step.task' (default: from the start)")
+                       help=f"First flow step to run. Can be a stage name "
+                            f"{STEPS} or a raw SC node 'step.task' "
+                            f"(default: from the start)")
     run_p.add_argument('--to',
                        dest='stop',
                        type=flow_step,
                        default=None,
                        metavar="STEP",
-                       help=f"Last flow step to run: a stage name {STEPS} "
-                            f"(shortcut for that stage's last node) or a raw SC "
-                            f"node 'step.task' such as 'floorplan.init' "
-                            f"(default: to the end)")
+                       help=f"Last flow step to run. Can be a stage name "
+                            f"{STEPS} or a raw SC node 'step.task' like "
+                            f"'floorplan.init' (default: to the end)")
     run_p.add_argument('--clk',
                        type=float,
                        default=DEFAULT_CLK_NS,
-                       metavar="NS",
+                       metavar="PERIOD",
                        help='ASIC clock period in nanoseconds for the generic '
                             'SDC (create_clock); scaled into each PDK time '
-                            f'unit. Ignored for FPGA targets (default: '
+                            'unit. Ignored for FPGA targets (default: '
                             f'{DEFAULT_CLK_NS})')
     run_p.add_argument('--resume',
                        action='store_true',
@@ -291,10 +314,9 @@ LogikBench commandline runner.
                        type=float,
                        default=3600,
                        metavar="SEC",
-                       help='Per-step wall-clock cap in seconds; a step that '
-                            'exceeds it is killed and marked failed, so one '
-                            'hung synth cannot stall the sweep (default: 3600; '
-                            '0 to disable)')
+                       help='Per-step wall-clock cap in seconds. Steps '
+                            'exceeding this are killed and marked failed to '
+                            'prevent stalls (default: 3600; 0 to disable)')
     run_p.add_argument('-v', '--verbose',
                        action='store_true',
                        help='Show full SiliconCompiler tool/scheduler logs '
