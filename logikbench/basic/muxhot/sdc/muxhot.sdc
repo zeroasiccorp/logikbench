@@ -1,6 +1,6 @@
 ###############################################################################
-# bbuf SDC timing constraints
-# File: logikbench/basic/bbuf/sdc/bbuf.sdc
+# muxhot SDC timing constraints
+# File: logikbench/basic/muxhot/sdc/muxhot.sdc
 ###############################################################################
 
 # Signal lists (clock is removed from LB_INPUTS by default.sdc)
