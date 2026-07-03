@@ -20,7 +20,7 @@ LogikBench is a high quality curated open source RTL benchmark suite that enable
 
 
 ```bash
-pip install logikbench               # install logikbench  
+pip install logikbench               # install logikbench
 lb -h                                # help
 lb run --target zeroasic_z1015 -j 4  # run benchmarks on z1015
 ```
@@ -290,7 +290,6 @@ lb run -g basic -t asap7_demo --to synthesis
 |-----------|-------------|---------|
 | arbiter | Fixed-priority arbiter | [arbiter.v](logikbench/basic/arbiter/rtl/arbiter.v) |
 | band | Bitwise AND | [band.v](logikbench/basic/band/rtl/band.v) |
-| bbuf | Buffer | [bbuf.v](logikbench/basic/bbuf/rtl/bbuf.v) |
 | bin2gray | Binary to Gray code converter | [bin2gray.v](logikbench/basic/bin2gray/rtl/bin2gray.v) |
 | bin2prio | Binary to priority encoder | [bin2prio.v](logikbench/basic/bin2prio/rtl/bin2prio.v) |
 | binv | Bitwise inverter | [binv.v](logikbench/basic/binv/rtl/binv.v) |
@@ -479,7 +478,6 @@ LogikBench itself is pure Python and installs from PyPI:
 ```bash
 pip install logikbench
 ```
-
 Running benchmarks additionally needs the EDA tools that SiliconCompiler drives.
 The `sc-install` helper (shipped with SiliconCompiler) builds and installs them.
 Install by group, or name individual tools:
@@ -487,8 +485,6 @@ Install by group, or name individual tools:
 ```bash
 sc-install -group fpga          # FPGA synthesis (Yosys + vendor plugins)
 sc-install -group asic          # ASIC synthesis + timing (Yosys, OpenROAD, OpenSTA)
-sc-install -group asic fpga     # both
-sc-install yosys openroad       # specific tools only
 ```
 
 Useful flags: `-prefix <path>` to install somewhere other than the default,
@@ -500,11 +496,6 @@ jobs on memory-constrained machines.
 | FPGA LUT / depth metrics | Yosys (+ vendor synth plugins) | `fpga` |
 | ASIC area / FMAX metrics | Yosys, OpenROAD, OpenSTA | `asic` |
 | RTL simulation (testbenches) | Icarus Verilog, Verilator | `digital-simulation` |
-
-The Zero ASIC FPGA targets (`zeroasic_z1015`, `zeroasic_z1060`) also need the
-[Wildebeest](https://github.com/zeroasiccorp/wildebeest) Yosys plugin
-(`sc-install wildebeest`).
-
 
 ## License
 
