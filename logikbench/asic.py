@@ -18,11 +18,10 @@ import pkgutil
 
 import siliconcompiler.targets as sc_targets
 from siliconcompiler import ASIC
-from siliconcompiler.metrics import ASICMetricsSchema
 from siliconcompiler.flows import asicflow
 
 from logikbench.flows.synth import ASICSynthesis
-from logikbench.common import _base_project, _set_range, _quiet
+from logikbench.common import _set_range, _quiet
 
 # Default clock period (ns) injected as LB_CLK_NS; overridable with --clk.
 DEFAULT_CLK_NS = 1.0
@@ -86,30 +85,6 @@ def _bench_sdc(design):
     return files[0] if files else ""
 
 
-def _run_lbflow_asic(design, target, builddir, quiet, start, stop, timeout,
-                     clk_ns=DEFAULT_CLK_NS):
-    """lbflow ASIC (Yosys synthesis + OpenSTA timing) for a single-liberty PDK."""
-    liberty = _LBFLOW_PDKS[target]()
-    proj = _base_project(design, builddir, ASICMetricsSchema(), quiet, timeout)
-    proj.add_fileset("rtl")
-    proj.set_flow(ASICSynthesis())
-    proj.set("tool", "yosys", "task", "synthesis", "var", "mode", "asic")
-    proj.set("tool", "yosys", "task", "synthesis", "var", "liberty", liberty)
-    proj.set("tool", "opensta", "task", "timing", "var", "liberty", liberty)
-    # Timing constraints: --clk (ns) plus the paths the benchmark SDC sources
-    # (tech.tcl scales ns->unit; default.sdc is the shared body). A benchmark
-    # that ships no SDC runs unconstrained.
-    proj.set("tool", "opensta", "task", "timing", "var", "clk", str(clk_ns))
-    proj.set("tool", "opensta", "task", "timing", "var", "techfile",
-             _tech_tcl(_pdk_of(target)))
-    proj.set("tool", "opensta", "task", "timing", "var", "defaultsdc",
-             _DEFAULT_SDC)
-    proj.set("tool", "opensta", "task", "timing", "var", "sdc",
-             _bench_sdc(design))
-    _set_range(proj, start, stop)
-    proj.run()
-
-
 def _single_corner(proj):
     """Trim a demo target to one library and one STA corner.
 
@@ -159,15 +134,20 @@ def _write_sc_wrapper(builddir, name, target, clk_ns, bench_sdc):
     return path
 
 
-def _run_demo(design, target, builddir, quiet, start, stop, timeout,
-              clk_ns=DEFAULT_CLK_NS):
-    """Official SC demo target (PDK + libs + scenarios) run through asicflow."""
+def _setup_asic_project(design, setup_target, builddir, quiet, timeout, clk_ns):
+    """Build the ASIC project shared by both ASIC paths (caller sets the flow).
+
+    Configures the PDK, standard-cell library, and timing scenarios via the SC
+    built-in target 'setup_target', trims to a single corner, and attaches the
+    benchmark SDC (through the LB_* wrapper) to a dedicated 'lbsdc' fileset so
+    SC's STA reads it. A benchmark with no SDC runs unconstrained.
+    """
     proj = ASIC(design)
     proj.set("option", "builddir", builddir)
     if timeout is not None:
         proj.set("option", "timeout", timeout)
     _quiet(proj, quiet)
-    _sc_target(target)(proj)
+    _sc_target(setup_target)(proj)
     # one library / one corner: avoid reading every Vt x corner liberty on each
     # STA node (see _single_corner); LogikBench needs only single-corner QoR.
     _single_corner(proj)
@@ -175,13 +155,39 @@ def _run_demo(design, target, builddir, quiet, start, stop, timeout,
     # A benchmark that ships an SDC is read through a generated wrapper (it
     # injects LB_CLK_NS and the tech/default paths, then sources the benchmark
     # SDC). Kept in its own 'lbsdc' fileset so the raw benchmark SDC is not read
-    # standalone. Benchmarks with no SDC run unconstrained.
+    # standalone.
     bench_sdc = _bench_sdc(design)
     if bench_sdc:
-        wrapper = _write_sc_wrapper(builddir, design.name, target, clk_ns,
+        wrapper = _write_sc_wrapper(builddir, design.name, setup_target, clk_ns,
                                     bench_sdc)
         design.add_file(wrapper, fileset="lbsdc")
         proj.add_fileset("lbsdc")
+    return proj
+
+
+def _run_lbflow_asic(design, target, builddir, quiet, start, stop, timeout,
+                     clk_ns=DEFAULT_CLK_NS):
+    """lbflow ASIC: Yosys synthesis + SC OpenSTA timing (synth + STA, no P&R).
+
+    Uses the '<pdk>_demo' SC target for PDK/library/scenario setup (single
+    corner), then a synth+timing flow. SC's TimingTask records the full metric
+    set (fmax, cells, cellarea, nets, pins, registers, slacks, power, ...).
+    """
+    proj = _setup_asic_project(design, f"{target}_demo", builddir, quiet,
+                               timeout, clk_ns)
+    proj.set_flow(ASICSynthesis())
+    proj.set("tool", "yosys", "task", "synthesis", "var", "mode", "asic")
+    proj.set("tool", "yosys", "task", "synthesis", "var", "liberty",
+             _LBFLOW_PDKS[target]())
+    _set_range(proj, start, stop)
+    proj.run()
+    proj.summary()
+
+
+def _run_demo(design, target, builddir, quiet, start, stop, timeout,
+              clk_ns=DEFAULT_CLK_NS):
+    """SC built-in target (PDK + libs + scenarios) run through asicflow."""
+    proj = _setup_asic_project(design, target, builddir, quiet, timeout, clk_ns)
     proj.set_flow(asicflow.ASICFlow())
     # LogikBench designs are IO-dominated (wide buses, tiny logic), so the
     # demo's 40%-utilization die can't fit the pins on its perimeter. Grow the
@@ -192,3 +198,4 @@ def _run_demo(design, target, builddir, quiet, start, stop, timeout,
              "ppl_arguments", ["-min_distance", "1", "-min_distance_in_tracks"])
     _set_range(proj, start, stop)
     proj.run()
+    proj.summary()

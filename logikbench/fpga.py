@@ -61,3 +61,4 @@ def _run_fpga(design, target, options, builddir, quiet, start, stop, timeout):
     proj.set("tool", "yosys", "task", "synthesis", "var", "options", options)
     _set_range(proj, start, stop)
     proj.run()
+    proj.summary()
