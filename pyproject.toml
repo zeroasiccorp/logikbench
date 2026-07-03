@@ -22,7 +22,7 @@ include-package-data = true
 # never ship the collected results / dashboard databases (the results/ tree)
 # inside the wheel. Scoped to that directory so other package data still ships
 # (e.g. the vendored zeroasic FPGA architecture configs under
-# targets/fpga/zeroasic, needed by 'synth_fpga -config').
+# targets/zeroasic, needed by 'synth_fpga -config').
 "*" = ["results/*", "results/**/*"]
 
 [tool.check-wheel-contents]
