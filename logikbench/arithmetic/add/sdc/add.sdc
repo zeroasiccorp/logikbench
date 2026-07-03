@@ -1,6 +1,6 @@
 ###############################################################################
-# mul SDC timing constraints
-# File: logikbench/arithmetic/mul/sdc/mul.sdc
+# add SDC timing constraints
+# File: logikbench/arithmetic/add/sdc/add.sdc
 ###############################################################################
 
 # Signal lists (clock is removed from LB_INPUTS by default.sdc)
