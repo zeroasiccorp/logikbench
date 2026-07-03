@@ -31,6 +31,7 @@ DEFAULT_CLK_NS = 1.0
 # each benchmark's own SDC via LB_TECH_FILE / LB_DEFAULT_SDC.
 _TARGETS_DIR = os.path.join(
     os.path.dirname(os.path.abspath(__file__)), "targets")
+
 _DEFAULT_SDC = os.path.join(_TARGETS_DIR, "default.sdc")
 
 
