@@ -311,11 +311,14 @@ def _run_demo(design, target, builddir, quiet, start, stop, timeout,
     # one library / one corner: avoid reading every Vt x corner liberty on each
     # STA node (see _single_corner); LogikBench needs only single-corner QoR.
     _single_corner(proj)
-    # benchmarks ship no SDC; attach a generic clock so STA can constrain
-    design.add_file(_clock_sdc(target, design.name, builddir, clk_ns),
-                    fileset="sdc")
+    # benchmarks ship no SDC; attach a generic clock so STA can constrain.
+    # Only wire up the sdc fileset if the file is actually on disk, so a
+    # failed/skipped SDC write cannot leave an unresolvable fileset entry.
+    sdc_path = _clock_sdc(target, design.name, builddir, clk_ns)
     proj.add_fileset("rtl")
-    proj.add_fileset("sdc")
+    if os.path.isfile(sdc_path):
+        design.add_file(sdc_path, fileset="sdc")
+        proj.add_fileset("sdc")
     proj.set_flow(asicflow.ASICFlow())
     # LogikBench designs are IO-dominated (wide buses, tiny logic), so the
     # demo's 40%-utilization die can't fit the pins on its perimeter. Grow the
