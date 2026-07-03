@@ -1,7 +1,7 @@
 ###############################################################################
 # LogikBench default ASIC timing constraints
 #
-# File: logikbench/targets/asic/default.sdc
+# File: logikbench/targets/default.sdc
 ###############################################################################
 #
 # Generic constraints shared by every benchmark. A per-benchmark SDC defines

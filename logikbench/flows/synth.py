@@ -1,8 +1,8 @@
 """LogikBench synthesis flows (built on base SiliconCompiler classes).
 
-Each flow is a single-node Flowgraph whose 'synthesis' node is a YosysTask
-configured for a particular target recipe under logikbench/targets. The flows
-differ only in which target's synth.tcl they select.
+Each flow is a single-node Flowgraph whose 'synthesis' node is a YosysTask.
+The flows differ only in the yosys 'mode' ('fpga' or 'asic'), which selects
+the synthesis core the shared scripts/synthesis.tcl sources.
 """
 
 from siliconcompiler import Flowgraph

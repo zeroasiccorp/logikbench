@@ -27,17 +27,17 @@ from logikbench.common import _base_project, _set_range, _quiet
 # Default clock period (ns) injected as LB_CLK_NS; overridable with --clk.
 DEFAULT_CLK_NS = 1.0
 
-# Shared ASIC constraint files under logikbench/targets/asic. The per-PDK
-# tech.tcl (timing knobs + ns->unit scaling) and the shared default.sdc are
-# sourced by each benchmark's own SDC via LB_TECH_FILE / LB_DEFAULT_SDC.
-_ASIC_DIR = os.path.join(
-    os.path.dirname(os.path.abspath(__file__)), "targets", "asic")
-_DEFAULT_SDC = os.path.join(_ASIC_DIR, "default.sdc")
+# Shared ASIC constraint files under logikbench/targets. The per-PDK tech.tcl
+# (timing knobs + ns->unit scaling) and the shared default.sdc are sourced by
+# each benchmark's own SDC via LB_TECH_FILE / LB_DEFAULT_SDC.
+_TARGETS_DIR = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), "targets")
+_DEFAULT_SDC = os.path.join(_TARGETS_DIR, "default.sdc")
 
 
 def _tech_tcl(pdk):
     """Absolute path to a PDK's tech.tcl (timing knobs + ns->unit scaling)."""
-    return os.path.join(_ASIC_DIR, pdk, "tech.tcl")
+    return os.path.join(_TARGETS_DIR, pdk, "tech.tcl")
 
 
 def _pdk_of(target):

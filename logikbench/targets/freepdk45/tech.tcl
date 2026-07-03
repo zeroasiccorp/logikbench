@@ -1,7 +1,7 @@
 ###############################################################################
 # Technology Settings
 #
-# File: logikbench/targets/asic/freepdk45/tech.tcl
+# File: logikbench/targets/freepdk45/tech.tcl
 ###############################################################################
 #
 # Per-technology LogikBench timing constants, expressed in this PDK's liberty

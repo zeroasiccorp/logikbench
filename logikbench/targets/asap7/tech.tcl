@@ -1,7 +1,7 @@
 ###############################################################################
 # Technology Settings
 #
-# File: logikbench/targets/asic/asap7/tech.tcl
+# File: logikbench/targets/asap7/tech.tcl
 ###############################################################################
 #
 # Per-technology LogikBench timing constants, expressed in this PDK's liberty

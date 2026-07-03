@@ -16,7 +16,7 @@ from logikbench.common import _base_project, _set_range
 # dir holds a '<part>_yosys_config.json' passed to wildebeest 'synth_fpga
 # -config', which sets partname, lut size, and the flop/BRAM/DSP techmaps.
 _ZEROASIC_ARCH_DIR = os.path.join(
-    os.path.dirname(os.path.abspath(__file__)), "targets", "fpga", "zeroasic")
+    os.path.dirname(os.path.abspath(__file__)), "targets", "zeroasic")
 
 
 def _zeroasic_command(part):
