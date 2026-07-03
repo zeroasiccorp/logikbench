@@ -10,13 +10,14 @@ Benchmarks ship no timing constraints, so a generic clock SDC is generated per
 run (see logikbench/sdc.py) and attached to the flow.
 """
 
+import importlib
 import os
+import pkgutil
 
+import siliconcompiler.targets as sc_targets
 from siliconcompiler import ASIC
 from siliconcompiler.metrics import ASICMetricsSchema
 from siliconcompiler.flows import asicflow
-from siliconcompiler.targets import (
-    freepdk45_demo, asap7_demo, skywater130_demo, gf180_demo, ihp130_demo)
 
 from logikbench.flows.synth import ASICSynthesis
 from logikbench import sdc
@@ -52,14 +53,22 @@ _LBFLOW_PDKS = {
     "freepdk45": _nangate45_liberty,
 }
 
-# '<pdk>_demo' targets -> official SC demo target setup function (run asicflow).
-_DEMO_TARGETS = {
-    "freepdk45_demo": freepdk45_demo,
-    "asap7_demo": asap7_demo,
-    "skywater130_demo": skywater130_demo,
-    "gf180_demo": gf180_demo,
-    "ihp130_demo": ihp130_demo,
-}
+# SC built-in ASIC targets, discovered from siliconcompiler.targets (one setup
+# function per submodule, e.g. 'asap7_demo') so we track SC's set rather than
+# mirroring it in a hand-maintained list.
+SC_TARGETS = sorted(m.name for m in pkgutil.iter_modules(sc_targets.__path__))
+
+
+def _sc_target(name):
+    """Return the SC built-in target setup function for 'name', or None.
+
+    Resolves siliconcompiler.targets.<name> dynamically. Helper callables in
+    the package (ASIC, asic_target) are defined in the package itself, so a
+    real target is one whose function lives in its own '<name>' submodule."""
+    if name not in SC_TARGETS:
+        return None
+    module = importlib.import_module(f"{sc_targets.__name__}.{name}")
+    return getattr(module, name, None)
 
 
 def _clock_sdc(target, name, builddir, clk_ns):
@@ -126,7 +135,7 @@ def _run_demo(design, target, builddir, quiet, start, stop, timeout,
     if timeout is not None:
         proj.set("option", "timeout", timeout)
     _quiet(proj, quiet)
-    _DEMO_TARGETS[target](proj)
+    _sc_target(target)(proj)
     # one library / one corner: avoid reading every Vt x corner liberty on each
     # STA node (see _single_corner); LogikBench needs only single-corner QoR.
     _single_corner(proj)
