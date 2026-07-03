@@ -1,2 +1,15 @@
-create_clock -period 8000 rx_clk
-create_clock -period 8000 tx_clk
+###############################################################################
+# ethmac SDC timing constraints
+# File: logikbench/blocks/ethmac/sdc/ethmac.sdc
+###############################################################################
+
+# Signal lists (clock is removed from LB_INPUTS by default.sdc)
+set LB_CLK     [get_ports -quiet {*clk* *clock*}]
+set LB_INPUTS  [all_inputs]
+set LB_OUTPUTS [all_outputs]
+
+# Technology constants (required)
+source $LB_TECH_FILE
+
+# Default constraints (required)
+source $LB_DEFAULT_SDC

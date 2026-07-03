@@ -1,15 +1,15 @@
-# TODO: drive these via siliconcompiler
+###############################################################################
+# picorv32 SDC timing constraints
+# File: logikbench/blocks/picorv32/sdc/picorv32.sdc
+###############################################################################
 
-set clk_period 10000
-set input_delay 0
-set output_delay 0
+# Signal lists (clock is removed from LB_INPUTS by default.sdc)
+set LB_CLK     [get_ports -quiet {*clk* *clock*}]
+set LB_INPUTS  [all_inputs]
+set LB_OUTPUTS [all_outputs]
 
-set clk_port [get_ports clk]
+# Technology constants (required)
+source $LB_TECH_FILE
 
-create_clock -name clk -period $clk_period $clk_port
-
-set non_clock_inputs [lsearch -inline -all -not -exact [all_inputs] $clk_port]
-
-set_input_delay $input_delay -clock clk $non_clock_inputs
-
-set_output_delay $output_delay  -clock clk [all_outputs]
+# Default constraints (required)
+source $LB_DEFAULT_SDC

@@ -4,7 +4,7 @@
 ###############################################################################
 
 # Signal lists (clock is removed from LB_INPUTS by default.sdc)
-set LB_CLK     [get_ports clk -quiet]
+set LB_CLK     [get_ports -quiet {*clk* *clock*}]
 set LB_INPUTS  [all_inputs]
 set LB_OUTPUTS [all_outputs]
 
