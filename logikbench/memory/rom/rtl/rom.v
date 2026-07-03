@@ -5,7 +5,10 @@
 //#############################################################################
 
 module rom #(parameter DW = 16,
-             parameter AW = 8
+             // ROM depth. AW also drives how the array maps: at this depth it
+             // infers a block RAM (BRAM) on FPGA; a smaller AW maps to a
+             // distributed/LUT ROM (the mapping threshold is target-dependent).
+             parameter AW = 10
              )
    (
     input               clk,  // clock
