@@ -9,8 +9,12 @@ FPGA flow (--flow fpga, default):
   5. refresh the README ranking table                             (ranking.py)
 
 ASIC flow (--flow asic):
-  1. synthesize every benchmark on the demo PDK target(s), through place.global
-     (the first node that yields fmax), with single-corner libs    (lb run)
+  1. synthesize every benchmark on the ASIC target(s) (lb run):
+       - a bare PDK name (e.g. freepdk45): the fast lbflow path -- Yosys synth +
+         OpenSTA timing, no place-and-route (fmax from the timing step);
+       - a <pdk>_demo (e.g. asap7_demo): the SC asicflow, stopped at
+         floorplan.init (earliest node that yields fmax), single-corner libs.
+     --clk sets the target clock period in ns (default: lb's own default).
   2. collect ASIC metrics into results/asic/<config>/<target>.json (lb collect)
   3. rebuild the per-config database with the ASIC metric set       (build_db.py)
   4. regenerate the static site under site/asic/                    (generate.py)
@@ -22,6 +26,7 @@ Run from anywhere -- paths resolve relative to the repo root.
     python scripts/rerun.py --config fast -j 8
     python scripts/rerun.py -t xilinx_virtex7 lattice_ice40   # subset
     python scripts/rerun.py --flow asic -j 8      # all benchmarks on asap7_demo
+    python scripts/rerun.py --flow asic -t freepdk45 --clk 2  # fast lbflow path
 
 Synthesis is the slow part; each step's command is echoed. 'lb run' is allowed
 to return nonzero (a few benchmark/target pairs always fail) so the pipeline
@@ -68,6 +73,12 @@ def main():
                     metavar="TARGET",
                     help="targets to sweep (default: all FPGA targets for "
                          "--flow fpga, asap7_demo for --flow asic)")
+    ap.add_argument("--clk", type=float, default=None, metavar="PERIOD",
+                    help="ASIC clock period in ns passed to 'lb run' (default: "
+                         "lb's own default). Ignored for --flow fpga.")
+    ap.add_argument("--timeout", type=float, default=None, metavar="SEC",
+                    help="per-step wall-clock cap in seconds passed to 'lb run' "
+                         "(default: lb's own default)")
     args = ap.parse_args()
 
     asic = args.flow == "asic"
@@ -81,10 +92,21 @@ def main():
           f"target(s): {', '.join(targets)}\n")
 
     # 1. synthesize all benchmarks on all targets (partial failures are OK).
-    #    ASIC runs through place.global so fmax is captured.
+    #    Only the SC asicflow (<pdk>_demo) has a floorplan.init node to stop at;
+    #    bare-PDK lbflow targets run synth + timing to completion (fmax from the
+    #    timing step), so no --to is passed for them.
+    demo = asic and all(t.endswith("_demo") for t in targets)
+    if asic and not demo and any(t.endswith("_demo") for t in targets):
+        print("warning: mixing _demo (asicflow) and bare-PDK (lbflow) ASIC "
+              "targets; run them separately so the --to floorplan.init cutoff "
+              "applies to the demo targets.", file=sys.stderr)
     run_cmd = lb + ["run", "-t", *targets, "-j", str(args.jobs)]
-    if asic:
+    if demo:
         run_cmd += ["--to", _ASIC_STOP]
+    if asic and args.clk is not None:
+        run_cmd += ["--clk", str(args.clk)]
+    if args.timeout is not None:
+        run_cmd += ["--timeout", str(args.timeout)]
     result = run(run_cmd, check=False)
     if result.returncode != 0:
         print("\n(note: some benchmark/target pairs failed; collecting the "
@@ -98,7 +120,8 @@ def main():
          "--metrics", args.flow])
 
     # 4. regenerate the static site
-    title = "ASIC Synthesis (ASAP7)" if asic else "FPGA Synthesis"
+    title = (f"ASIC Synthesis ({', '.join(targets)})" if asic
+             else "FPGA Synthesis")
     run([sys.executable, "dashboard/generate.py",
          "--db", resultsdir, "--out", sitedir, "--title", title])
 
