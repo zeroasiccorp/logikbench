@@ -51,15 +51,11 @@ source $script
 # Record Stats
 ########################################################
 
-# liberty (ASIC only) lets 'stat' report cell area
-set stat_libs {}
-if {$sc_liberty ne ""} {
-    set stat_libs [list -liberty $sc_liberty]
-}
-
-# turn off echo to prevent the stat command from showing up in the json file
+# 'stat' runs without a liberty: on the ASIC path cell area comes from the
+# OpenSTA timing node (SC TimingTask), and passing a gzipped liberty here would
+# tee yosys' "decompressing" message into the JSON report and break parsing.
 yosys echo off
-yosys tee -o ./reports/stat.json stat -json -top $sc_topmodule {*}$stat_libs
+yosys tee -o ./reports/stat.json stat -json -top $sc_topmodule
 yosys echo on
 
 ########################################################
