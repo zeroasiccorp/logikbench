@@ -159,10 +159,11 @@ def run_sweep(args, targets, worklist):
             failures.append(f"{target}/{group}/{name}")
         else:
             print(f"{prefix} Finished {name} benchmark ({target}/{group}).")
-        # --clean: reclaim disk as we go (pass or fail), keeping only the
-        # manifest 'lb collect'/--resume need. Runs in the parent for both the
-        # sequential and -j parallel paths, so benchmarks never race on it.
-        if args.clean:
+        # By default reclaim disk as we go (pass or fail), keeping only the
+        # manifest 'lb collect'/--resume need; --keep retains everything. Runs
+        # in the parent for both the sequential and -j parallel paths, so
+        # benchmarks never race on it.
+        if not args.keep:
             clean_build(name, builddir=target_builddir(args, target))
 
     if args.jobs > 1:
@@ -338,15 +339,16 @@ LogikBench commandline runner.
                        action='store_true',
                        help='Skip benchmarks whose build already completed '
                             'successfully; only synthesize the rest')
-    run_p.add_argument('--clean',
+    run_p.add_argument('--keep',
                        action='store_true',
-                       help='After each benchmark, delete its synthesis '
-                            'artifacts (logs, netlists, reports) as soon as it '
-                            'finishes, keeping only the manifest that collect '
-                            'and --resume need. Bounds peak disk to the '
-                            'in-flight jobs instead of the whole sweep. NOTE: '
-                            'removes the intermediate outputs a later --from '
-                            'mid-flow resume would need')
+                       help='Keep the full synthesis artifacts (logs, netlists, '
+                            'reports) for each benchmark. By default they are '
+                            'deleted as each benchmark finishes, leaving only '
+                            'the manifest that collect and --resume need, so '
+                            'peak disk stays bounded by the in-flight jobs '
+                            'instead of the whole sweep. Use --keep to retain '
+                            'everything (needed for a later --from mid-flow '
+                            'resume, at the cost of disk)')
     run_p.add_argument('--timeout',
                        type=float,
                        default=3600,
