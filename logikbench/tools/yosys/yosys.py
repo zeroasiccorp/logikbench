@@ -70,8 +70,13 @@ class Synthesis(YosysTask):
             "options", "str",
             "extra options appended verbatim to the FPGA synth command", "")
         self.add_parameter(
-            "liberty", "str",
-            "standard-cell liberty for ASIC mapping (empty for FPGA)", "")
+            "liberty", "[str]",
+            "standard-cell liberty file(s) for ASIC mapping; several when the "
+            "PDK splits its library by cell group (empty for FPGA)", [])
+        self.add_parameter(
+            "ignore_initial", "bool",
+            "pass slang --ignore-initial (drop initial blocks); opt-in for "
+            "benchmarks whose initial blocks are simulation-only", False)
 
     def task(self):
         return "synthesis"

@@ -26,7 +26,7 @@ ASSET_SUFFIX = "_cad.tar.gz"
 
 # Default destination relative to the repo root (parent of this scripts/ dir).
 DEFAULT_DEST = Path(__file__).resolve().parent.parent / \
-    "logikbench" / "targets" / "fpga" / "zeroasic"
+    "logikbench" / "targets" / "zeroasic"
 
 
 def _request(url):
@@ -154,7 +154,7 @@ fetch_zeroasic_arch.py --tag v0.3.0 --dest /tmp/zarch
         "--tag", help="logiklib release tag to fetch (default: latest stable)")
     parser.add_argument(
         "--dest", type=Path, default=DEFAULT_DEST,
-        help="destination directory (default: targets/fpga/zeroasic)")
+        help="destination directory (default: targets/zeroasic)")
     parser.add_argument(
         "--clean", action="store_true",
         help="remove part directories no longer present in the release")

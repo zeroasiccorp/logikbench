@@ -5,7 +5,7 @@
 //#############################################################################
 
 module pipeline #(parameter DW = 64,
-                  parameter N = 16   // pipeline stages
+                  parameter N = 16 // pipeline stages
                   )
    (
     input           clk,

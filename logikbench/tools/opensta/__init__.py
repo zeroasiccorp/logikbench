@@ -1,1 +1,0 @@
-"""LogikBench OpenSTA tool package."""

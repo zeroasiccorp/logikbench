@@ -4,12 +4,13 @@ import argparse
 import os
 import sys
 import json
+import textwrap
 
 import logikbench as lb
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
 from logikbench.benchmark import (
-    FPGA_METRICS, ASIC_METRICS, TARGETS, FPGA_TARGETS, STEPS,
+    FPGA_METRICS, ASIC_METRICS, TARGETS, FPGA_TARGETS, STEPS, DEFAULT_CLK_NS,
     run_one, read_metrics, read_asic_metrics, read_tool_var, is_complete,
     benchmark_name,
 )
@@ -19,6 +20,35 @@ ALL_GROUPS = ['basic', 'memory', 'arithmetic', 'epfl', 'blocks']
 
 # metrics tracked are determined by the run mode (fpga vs asic synthesis)
 FLOW_METRICS = {'fpga': FPGA_METRICS, 'asic': ASIC_METRICS}
+
+
+class LbHelpFormatter(argparse.HelpFormatter):
+    """Help formatter that keeps pre-wrapped (multi-line) help strings verbatim
+    while still auto-wrapping plain single-line ones, and puts a blank line
+    between arguments so long entries stay readable."""
+
+    def _split_lines(self, text, width):
+        # a help string with explicit newlines is already laid out by hand
+        # (e.g. the --target format/choices block): keep it as authored.
+        if "\n" in text:
+            return text.splitlines()
+        return super()._split_lines(text, width)
+
+    def _format_action(self, action):
+        return super()._format_action(action) + "\n"
+
+
+# --target help: a fixed format legend plus the (dynamic) list of valid choices,
+# wrapped so it lines up under the help column.
+_TARGET_HELP = (
+    "Synthesis target(s). Pass several to sweep them in turn.\n"
+    "Format:\n"
+    "  - '<vendor>_<partname>' -> FPGA target (e.g., xilinx_virtex7)\n"
+    "  - '<sc-target>'         -> SiliconCompiler built-in target\n"
+    "  - '<lb-target>'         -> LB built-in target\n"
+    + textwrap.fill(", ".join(TARGETS), width=54,
+                    initial_indent="Choices: ", subsequent_indent="")
+)
 
 
 def flow_step(value):
@@ -64,6 +94,24 @@ def make_worklist(args):
     return worklist
 
 
+def check_worklist(args, worklist):
+    """Fail loudly (exit 2) when the selection resolves to no benchmarks, so a
+    run/collect never silently does nothing. -n searches all groups (names are
+    globally unique), so an unmatched name is simply not a known benchmark.
+    """
+    if args.name:
+        matched = {name for _, _, name in worklist}
+        unmatched = [n for n in args.name if n.lower() not in matched]
+        if unmatched:
+            print("error: not a known benchmark: "
+                  f"{', '.join(unmatched)}", file=sys.stderr)
+            sys.exit(2)
+    if not worklist:
+        print("error: no benchmarks selected for group(s): "
+              f"{', '.join(args.group)}", file=sys.stderr)
+        sys.exit(2)
+
+
 def target_runlist(target, args, worklist):
     """Worklist triples to synthesize for a target, applying --resume
     (skip benchmarks whose build already completed successfully)."""
@@ -96,14 +144,14 @@ def run_sweep(args, targets, worklist):
     quiet = not args.verbose
     failures = []
     total = len(tasks)
-    done = 0  # completed-job counter; printed 0-based as [i/N] progress
+    done = 0  # completed-job counter; printed as [done/total] progress
 
     # Same completion message for every job, regardless of target (FPGA or
     # ASIC) or scheduling (-j sequential vs parallel).
     def record(target, group, name, error):
         nonlocal done
-        prefix = f"[{done}/{total}]"
         done += 1
+        prefix = f"[{done}/{total}]"
         if error is not None:
             print(f"{prefix} Error synthesizing {name} ({target}/{group}): "
                   f"{error}", file=sys.stderr)
@@ -118,7 +166,7 @@ def run_sweep(args, targets, worklist):
                 builddir = target_builddir(args, target)
                 future = pool.submit(run_one, group, item, target,
                                      args.options, builddir, quiet,
-                                     args.start, args.stop, timeout)
+                                     args.start, args.stop, timeout, args.clk)
                 futures[future] = (target, group, name)
             for future in as_completed(futures):
                 target, group, name = futures[future]
@@ -129,7 +177,7 @@ def run_sweep(args, targets, worklist):
             builddir = target_builddir(args, target)
             _, _, _, error = run_one(group, item, target, args.options,
                                      builddir, quiet, args.start, args.stop,
-                                     timeout)
+                                     timeout, args.clk)
             record(target, group, name, error)
 
     return failures
@@ -196,35 +244,32 @@ def add_common_args(parser):
                         choices=TARGETS,
                         required=True,
                         metavar="TARGET",
-                        help=f"Synthesis target(s) (choices: {TARGETS}). An FPGA "
-                             f"target is named '<vendor>_<partname>' (e.g. "
-                             f"xilinx_virtex7, zeroasic_z1015) and picks the "
-                             f"yosys synth command; a plain PDK name runs the "
-                             f"lbflow ASIC path, and a '<pdk>_demo' name runs "
-                             f"the SC demo target via asicflow. Pass several to "
-                             f"sweep them in turn.")
+                        help=_TARGET_HELP)
 
-    parser.add_argument("-g", "--group",
+    # -g and -n are two ways to pick benchmarks and are mutually exclusive:
+    # -g runs whole group(s); -n names specific benchmarks. Benchmark names are
+    # globally unique, so -n needs no group and searches all of them.
+    select = parser.add_mutually_exclusive_group()
+    select.add_argument("-g", "--group",
                         nargs='+',
                         choices=ALL_GROUPS,
                         default=ALL_GROUPS,
                         metavar="GROUP",
-                        help=f"Benchmark group(s) (choices: {ALL_GROUPS}; "
-                             f"default: all)")
+                        help=f"Benchmark group(s) to run (choices: {ALL_GROUPS}; "
+                             f"default: all). Mutually exclusive with -n")
 
-    parser.add_argument("-n", "--name",
+    select.add_argument("-n", "--name",
                         nargs='+',
-                        help="Only act on benchmark(s) with these name(s); "
-                             "names are matched against the benchmarks in the "
-                             "selected group(s), so each runs in whichever "
-                             "group defines it (default: all of them)")
+                        help="Run specific benchmark(s) by name, searched across "
+                             "all groups (names are globally unique). Mutually "
+                             "exclusive with -g")
 
     parser.add_argument('-b',
                         dest='builddir',
                         default="build",
                         metavar="DIR",
-                        help='Build directory root; per-benchmark work goes in '
-                             '<builddir>/<target>/<name> (default root: build)')
+                        help='Build directory root. Per-benchmark artifacts go '
+                             'to: <builddir>/<target>/<name> (default: build)')
 
 
 def main():
@@ -241,7 +286,8 @@ LogikBench commandline runner.
                                 metavar="{run,collect}")
 
     # ---- run: synthesize benchmarks (no metric collection) ----
-    run_p = sub.add_parser("run", help="Synthesize benchmarks")
+    run_p = sub.add_parser("run", help="Synthesize benchmarks",
+                           formatter_class=LbHelpFormatter)
     add_common_args(run_p)
     run_p.add_argument('-j',
                        dest='jobs',
@@ -253,28 +299,35 @@ LogikBench commandline runner.
     run_p.add_argument('--options',
                        default="",
                        metavar="OPTS",
-                       help="Extra options passed verbatim as arguments to the "
-                            "FPGA synth command. Use the '=' form so leading "
-                            "dashes are not parsed as flags: --options=-abc9 "
-                            "(quote multiple: --options='-abc9 -nocarry')")
+                       help="Extra options passed verbatim to the FPGA synth "
+                            "command. NOTE: Use the '=' form to prevent leading "
+                            "dashes from being parsed as flags (e.g., "
+                            "--options=-abc9 or --options='-abc9 -nocarry')")
     # 'from' is a Python keyword, so keep the dest names start/stop
     run_p.add_argument('--from',
                        dest='start',
                        type=flow_step,
                        default=None,
                        metavar="STEP",
-                       help=f"First flow step to run: a stage name {STEPS} "
-                            f"(shortcut for that stage's first node) or a raw "
-                            f"SC node 'step.task' (default: from the start)")
+                       help=f"First flow step to run. Can be a stage name "
+                            f"{STEPS} or a raw SC node 'step.task' "
+                            f"(default: from the start)")
     run_p.add_argument('--to',
                        dest='stop',
                        type=flow_step,
                        default=None,
                        metavar="STEP",
-                       help=f"Last flow step to run: a stage name {STEPS} "
-                            f"(shortcut for that stage's last node) or a raw SC "
-                            f"node 'step.task' such as 'floorplan.init' "
-                            f"(default: to the end)")
+                       help=f"Last flow step to run. Can be a stage name "
+                            f"{STEPS} or a raw SC node 'step.task' like "
+                            f"'floorplan.init' (default: to the end)")
+    run_p.add_argument('--clk',
+                       type=float,
+                       default=DEFAULT_CLK_NS,
+                       metavar="PERIOD",
+                       help='ASIC clock period in nanoseconds for the generic '
+                            'SDC (create_clock); scaled into each PDK time '
+                            'unit. Ignored for FPGA targets (default: '
+                            f'{DEFAULT_CLK_NS})')
     run_p.add_argument('--resume',
                        action='store_true',
                        help='Skip benchmarks whose build already completed '
@@ -283,10 +336,9 @@ LogikBench commandline runner.
                        type=float,
                        default=3600,
                        metavar="SEC",
-                       help='Per-step wall-clock cap in seconds; a step that '
-                            'exceeds it is killed and marked failed, so one '
-                            'hung synth cannot stall the sweep (default: 3600; '
-                            '0 to disable)')
+                       help='Per-step wall-clock cap in seconds. Steps '
+                            'exceeding this are killed and marked failed to '
+                            'prevent stalls (default: 3600; 0 to disable)')
     run_p.add_argument('-v', '--verbose',
                        action='store_true',
                        help='Show full SiliconCompiler tool/scheduler logs '
@@ -314,6 +366,7 @@ LogikBench commandline runner.
     targets = args.target
 
     worklist = make_worklist(args)
+    check_worklist(args, worklist)
 
     #################################################
     # Dispatch

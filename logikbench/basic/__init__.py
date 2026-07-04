@@ -1,7 +1,6 @@
 
 from .arbiter.arbiter import Arbiter
 from .band.band import Band
-from .bbuf.bbuf import Bbuf
 from .bin2gray.bin2gray import Bin2gray
 from .bin2prio.bin2prio import Bin2prio
 from .binv.binv import Binv
@@ -25,7 +24,6 @@ from .shiftreg.shiftreg import Shiftreg
 
 __all__ = ['Arbiter',
            'Band',
-           'Bbuf',
            'Bin2gray',
            'Bin2prio',
            'Binv',

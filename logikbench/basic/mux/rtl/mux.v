@@ -4,7 +4,7 @@
 // License:  MIT (see LICENSE file in LogikBench repository)
 //#############################################################################
 module mux #(parameter DW = 64,
-             parameter N = 16   // number of inputs (power of 2)
+             parameter N = 16// number of inputs (power of 2)
              )
    (
     input [$clog2(N)-1:0] sel,  // binary select signal

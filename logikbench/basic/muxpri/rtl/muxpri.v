@@ -4,7 +4,7 @@
 // License:  MIT (see LICENSE file in LogikBench repository)
 //#############################################################################
 module muxpri #(parameter DW = 64,
-                parameter N = 2    // number of inputs
+                parameter N = 16 // number of inputs
                 )
    (
     input [N-1:0]       sel,  // select signals

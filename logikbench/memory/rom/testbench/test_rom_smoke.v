@@ -5,8 +5,8 @@
 //#############################################################################
 //
 // Smoke testbench for rom (synchronous ROM, self-checking).
-// The ROM is initialized so mem[i] = i. Reads every address (synchronous,
-// 1-cycle, gated by en) and checks dout == addr.
+// The ROM is initialized so mem[i] = i*i. Reads every address (synchronous,
+// 1-cycle, gated by en) and checks dout == (i*i) truncated to DW bits.
 // TESTED: DW=8/AW=4 full read. PASSED/FAILED.
 //
 //#############################################################################
@@ -23,17 +23,19 @@ module test_rom_smoke;
      (.clk(clk), .en(en), .addr(addr), .dout(dout));
 
    integer        k, errors;
+   reg [DW-1:0]   exp;
 
    initial begin
       errors = 0; en = 0; addr = 0;
 
       for (k = 0; k < N; k = k + 1) begin
          en <= 1; addr <= k[AW-1:0];
-         @(posedge clk);     // dout <= mem[k] = k
+         @(posedge clk);     // dout <= mem[k] = k*k
          #1;
-         if (dout !== k[DW-1:0]) begin
+         exp = (k * k);
+         if (dout !== exp) begin
             errors = errors + 1;
-            $display("FAIL addr %0d: got %h exp %h", k, dout, k[DW-1:0]);
+            $display("FAIL addr %0d: got %h exp %h", k, dout, exp);
          end
       end
 

@@ -12,18 +12,24 @@ set sc_mode [sc_cfg_tool_task_get var mode]
 set sc_command [sc_cfg_tool_task_get var command]
 set sc_options [sc_cfg_tool_task_get var options]
 set sc_liberty [sc_cfg_tool_task_get var liberty]
+set sc_ignore_initial [sc_cfg_tool_task_get var ignore_initial]
 
 # The task's pre_process() dumps a resolved slang command file (sc_rtl.f) that
 # flattens the full dependency-fileset graph (+incdir+/+define+/sources). The
-# slang options below mirror the lenient handling used elsewhere and keep
-# simulation-only constructs out of synthesis:
+# slang options below keep simulation-only constructs out of synthesis:
 #   --ignore-assertions  assert/assume/cover property
-#   --ignore-initial     initial blocks (e.g. non-blocking sim init)
 #   --relax-enum-conversions  implicit int<->enum (e.g. Ara struct literals)
 set sc_slang_args [list \
     --ignore-assertions \
-    --ignore-initial \
     --relax-enum-conversions]
+
+# initial blocks are honored by default, so ROM/table content and memory init
+# synthesize (and ROMs infer BRAM on FPGA). Benchmarks whose initial blocks are
+# simulation-only (e.g. $finish parameter checks, $readmemh of files not
+# shipped) opt out by setting the 'ignore_initial' task var.
+if { $sc_ignore_initial } {
+    lappend sc_slang_args --ignore-initial
+}
 
 ###############################
 # Read in Design using Slang
@@ -45,15 +51,11 @@ source $script
 # Record Stats
 ########################################################
 
-# liberty (ASIC only) lets 'stat' report cell area
-set stat_libs {}
-if {$sc_liberty ne ""} {
-    set stat_libs [list -liberty $sc_liberty]
-}
-
-# turn off echo to prevent the stat command from showing up in the json file
+# 'stat' runs without a liberty: on the ASIC path cell area comes from the
+# OpenSTA timing node (SC TimingTask), and passing a gzipped liberty here would
+# tee yosys' "decompressing" message into the JSON report and break parsing.
 yosys echo off
-yosys tee -o ./reports/stat.json stat -json -top $sc_topmodule {*}$stat_libs
+yosys tee -o ./reports/stat.json stat -json -top $sc_topmodule
 yosys echo on
 
 ########################################################
