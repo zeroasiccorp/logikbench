@@ -24,9 +24,6 @@ class Axiram(Design):
         # top module
         self.set_topmodule(topmodule, fileset)
 
-        # timing constraints
-        self.add_file(f'sdc/{name}.sdc', 'sdc', dataroot=root)
-
 
 if __name__ == "__main__":
     d = Axiram()

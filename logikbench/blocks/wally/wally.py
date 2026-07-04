@@ -249,7 +249,6 @@ class Wally(Design):
                 self.add_idir("include")
                 self.add_file("rtl/lambda.v")
                 self.add_depfileset(Spram(), "rtl")
-        self.add_file("sdc/wally.sdc", "sdc", dataroot="local")
 
 
 if __name__ == "__main__":

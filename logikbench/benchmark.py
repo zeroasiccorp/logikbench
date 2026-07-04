@@ -39,9 +39,12 @@ __all__ = [
     "is_complete", "benchmark_name",
 ]
 
-# all valid --target values, and the subset the custom lbflow supports
-TARGETS = (list(fpga.FPGA_TARGETS) + list(asic._LBFLOW_PDKS)
-           + list(asic.SC_TARGETS))
+# all valid --target values, in match order: FPGA '<vendor>_<part>', then SC
+# built-in targets (verbatim, e.g. 'asap7_demo'), then LB bare-PDK names for the
+# fast lbflow ASIC path (e.g. 'asap7', 'freepdk45').
+TARGETS = (list(fpga.FPGA_TARGETS) + list(asic.SC_TARGETS)
+           + list(asic._LBFLOW_PDKS))
+
 LBFLOW_TARGETS = list(fpga.FPGA_TARGETS) + list(asic._LBFLOW_PDKS)
 
 
@@ -68,22 +71,23 @@ def run_one(group, item, target=None, options="", builddir="build", quiet=True,
     if not start:
         shutil.rmtree(os.path.join(builddir, name), ignore_errors=True)
     try:
-        if target in asic.SC_TARGETS:
-            asic._run_demo(design, target, builddir, quiet, start, stop,
-                           timeout, clk)
-            metrics = read_metrics(name, ASIC_METRICS, builddir)
-        elif target in asic._LBFLOW_PDKS:
-            asic._run_lbflow_asic(design, target, builddir, quiet, start, stop,
-                                  timeout, clk)
-            metrics = read_metrics(name, ASIC_METRICS, builddir)
-        elif target in fpga.FPGA_TARGETS:
+        # match order: FPGA target, then SC built-in target (verbatim), then LB
+        # bare-PDK name (fast lbflow ASIC path).
+        if target in fpga.FPGA_TARGETS:
             fpga._run_fpga(design, target, options, builddir, quiet, start,
                            stop, timeout)
             metrics = read_metrics(name, FPGA_METRICS, builddir)
+        elif target in asic.SC_TARGETS:
+            asic._run_scflow(design, target, builddir, quiet, start, stop,
+                             timeout, clk)
+            metrics = read_metrics(name, ASIC_METRICS, builddir)
+        elif target in asic._LBFLOW_PDKS:
+            asic._run_lbflow(design, target, builddir, quiet, start, stop,
+                             timeout, clk)
+            metrics = read_metrics(name, ASIC_METRICS, builddir)
         else:
             raise ValueError(
-                f"target '{target}' is not supported by lbflow; "
-                f"use its demo target (e.g. '{target}_demo')")
+                f"target '{target}' is not a known FPGA, SC, or LB target")
         return (group, item, metrics, None)
     except Exception as e:  # noqa: BLE001 - report to parent, keep the sweep going
         return (group, item, None, str(e))

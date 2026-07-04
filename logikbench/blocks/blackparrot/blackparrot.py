@@ -23,7 +23,6 @@ class BlackParrot(Design):
                 self.add_file("rtl/pickled.v")
                 self.add_file("rtl/lambda.v")
                 self.add_depfileset(Spram(), "rtl")
-        self.add_file("sdc/blackparrot.sdc", "sdc", dataroot="local")
 
 
 if __name__ == "__main__":

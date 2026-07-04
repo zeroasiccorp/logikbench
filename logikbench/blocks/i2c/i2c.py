@@ -19,7 +19,6 @@ class I2c(Design):
                 # top_pkg). See README for generation details.
                 self.set_topmodule("i2c")
                 self.add_file("rtl/i2c.sv")
-        self.add_file("sdc/i2c.sdc", "sdc", dataroot="local")
 
 
 if __name__ == "__main__":

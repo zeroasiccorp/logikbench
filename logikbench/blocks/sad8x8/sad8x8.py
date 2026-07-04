@@ -23,9 +23,6 @@ class Sad8x8(Design):
         # top module
         self.set_topmodule(name, fileset)
 
-        # timing constraints
-        self.add_file(f'sdc/{name}.sdc', 'sdc', dataroot=root)
-
 
 if __name__ == "__main__":
     d = Sad8x8()

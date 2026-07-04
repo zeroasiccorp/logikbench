@@ -21,7 +21,6 @@ class CoralNPU(Design):
                 self.add_file("rtl/coralnpu.sv")
                 self.add_file("rtl/lambda.v")
                 self.add_depfileset(Spram(), "rtl")
-        self.add_file("sdc/coralnpu.sdc", "sdc", dataroot="local")
 
 
 if __name__ == "__main__":

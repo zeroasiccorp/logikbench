@@ -20,6 +20,10 @@ class Axicrossbar(Design):
         # create a Design object
         super().__init__(name)
 
+        # RTL has non-blocking sim-init (initial ... <=) parameter-check blocks
+        # that slang rejects for synthesis; drop initial blocks for this design.
+        self.ignore_initial = True
+
         # set data home directory
         self.set_dataroot(root, dirname(abspath(__file__)))
 
@@ -30,7 +34,6 @@ class Axicrossbar(Design):
 
         # top module
         self.set_topmodule(topmodule, fileset)
-        self.add_file(f'sdc/{name}.sdc', 'sdc', dataroot=root)
 
 
 if __name__ == "__main__":

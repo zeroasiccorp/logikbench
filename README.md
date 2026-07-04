@@ -210,6 +210,54 @@ SiliconCompiler `asicflow` (through routing) and are trimmed to a single library
 and a single setup corner so each benchmark stays fast; use `--to synthesis` to
 stop after synthesis.
 
+### ASIC Timing Constraints (SDC)
+
+Every ASIC run is timing-constrained automatically. You do not need to write an
+SDC per benchmark: the flow generates a small wrapper that injects `--clk` and
+the per-PDK knobs, then sources the shared default constraints in
+`logikbench/targets/default.sdc`. Applied to every benchmark, it:
+
+- creates one clock per port whose name matches `*clk*`/`*clock*` (so
+  multi-clock designs such as `ethmac`, with `rx_clk`/`tx_clk`, are fully
+  constrained), all at the `--clk` period;
+- creates a single virtual clock for purely combinational benchmarks (no clock
+  port), so their input-to-output paths are still timed;
+- constrains all data inputs and outputs with input/output delays at 50% of the
+  clock period, and applies per-PDK input transition (slew), load capacitance,
+  and setup/hold clock uncertainty read from `logikbench/targets/<pdk>/tech.tcl`.
+
+The only number you normally set is `--clk` (the clock period in nanoseconds,
+the same value for every PDK; it is scaled into each PDK's native time unit):
+
+```bash
+lb run -g basic -t freepdk45 --clk 2      # constrain every basic benchmark at 2 ns
+```
+
+**Customizing a single benchmark.** When a benchmark needs constraints the
+defaults cannot express (e.g. a specific clock name, a subset of ports, a false
+path), ship an SDC in the block directory and register it in the benchmark's
+`.py`. Because `default.sdc` guardbands its defaults, a custom SDC only sets
+what it wants to override, then sources the shared file:
+
+```tcl
+# logikbench/<group>/<name>/sdc/<name>.sdc
+set LB_CLK     [get_ports my_clock]     ;# override clock detection
+set LB_INPUTS  [all_inputs]             ;# or a hand-picked subset
+set LB_OUTPUTS [all_outputs]
+source $LB_DEFAULT_SDC                  ;# tech.tcl + generic constraints
+```
+
+Register it in the benchmark class (alongside the `rtl` fileset):
+
+```python
+self.add_file(f'sdc/{name}.sdc', 'sdc', dataroot=root)
+```
+
+The wrapper then sources your SDC instead of `default.sdc` directly. Any of
+`LB_CLK`, `LB_INPUTS`, `LB_OUTPUTS` you leave unset fall back to the guardbanded
+defaults; `LB_CLK_NS` (from `--clk`) and `LB_TECH_FILE`/`LB_DEFAULT_SDC` (paths)
+are always injected for you.
+
 ### Options
 
 Shared by both subcommands:

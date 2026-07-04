@@ -37,9 +37,6 @@ class Nvdla(Design):
                 for item in sources:
                     self.add_file(item)
 
-        # timing constraints
-        self.add_file("sdc/nvdla.sdc", "sdc", dataroot=root)
-
 
 if __name__ == "__main__":
     d = Nvdla()
