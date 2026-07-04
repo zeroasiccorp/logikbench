@@ -37,13 +37,14 @@ The semiconductor industry lacks a comprehensive, standardized benchmark suite f
 
 > "Sunlight is said to be the best of disinfectants." --Supreme Court Justice Louis Brandeis
 
-## TL;DR
+## Quick Start
 
 ```bash
 pip install logikbench               # install logikbench
 lb -h                                # help
 lb run --target zeroasic_z1015 -j 4  # run benchmarks on z1015
 ```
+
 See [Tool Installation](#tool-installation) for EDA tool pre-requisites and customization. To quickly install OpenROAD and Yosys, just enter `sc-install -group asic fpga` after pip installing logikbench.
 
 ----
