@@ -9,6 +9,7 @@ from siliconcompiler import Flowgraph
 from siliconcompiler.tools.opensta.timing import TimingTask
 
 from logikbench.tools.yosys.yosys import Synthesis
+from logikbench.tools.tardigrade.tardigrade import Synthesis as TardigradeSynthesis
 
 
 class FPGASynthesis(Flowgraph):
@@ -26,18 +27,23 @@ class FPGASynthesis(Flowgraph):
 
 
 class ASICSynthesis(Flowgraph):
-    """Two-node ASIC synthesis flow: Yosys synthesis followed by OpenSTA.
+    """Two-node ASIC synthesis flow: synthesis mapper followed by OpenSTA.
 
-    The synthesis node maps the design to a standard-cell library (liberty);
-    the timing node is SiliconCompiler's OpenSTA TimingTask, which records the
+    The synthesis node maps the design to a standard-cell library (liberty) and
+    the 'tool' argument selects which mapper runs it -- 'yosys' (default) or
+    'tardigrade'. Both emit the same gate-level netlist contract, so the timing
+    node is unchanged: SiliconCompiler's OpenSTA TimingTask, which records the
     full metric set (fmax, cells, cellarea, nets, pins, registers, slacks,
     power, ...). It reads liberty/scenarios from the ASIC project, so the
     runner sets this flow on an ASIC() project (PDK + single corner).
     """
 
-    def __init__(self, name="asic_synth"):
+    # synthesis mapper by tool name -> its SC Task class
+    _SYNTH = {"yosys": Synthesis, "tardigrade": TardigradeSynthesis}
+
+    def __init__(self, tool="yosys", name="asic_synth"):
         super().__init__()
         self.set_name(name)
-        self.node("synthesis", Synthesis())
+        self.node("synthesis", self._SYNTH[tool]())
         self.node("timing", TimingTask())
         self.edge("synthesis", "timing")
