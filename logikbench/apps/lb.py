@@ -10,9 +10,9 @@ import logikbench as lb
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
 from logikbench.runner import (
-    FPGA_METRICS, ASIC_METRICS, TARGETS, FPGA_TARGETS, STEPS, DEFAULT_CLK_NS,
-    run_one, read_metrics, read_asic_metrics, read_tool_var, is_complete,
-    clean_build, benchmark_name,
+    FPGA_METRICS, ASIC_METRICS, TARGETS, FPGA_TARGETS, LBFLOW_TARGETS, STEPS,
+    DEFAULT_CLK_NS, run_one, read_metrics, read_asic_metrics, read_tool_var,
+    is_complete, clean_build, benchmark_name,
 )
 
 # benchmark groups available to both subcommands
@@ -40,15 +40,29 @@ class LbHelpFormatter(argparse.HelpFormatter):
 
 
 # --target help: a fixed format legend plus the (dynamic) list of valid choices,
-# wrapped so it lines up under the help column.
+# grouped by kind and wrapped so each list lines up under the help column. The
+# three kinds partition TARGETS: FPGA targets, then SiliconCompiler built-in
+# targets, then LB bare-PDK targets (LBFLOW_TARGETS is FPGA + LB, so the LB set
+# is what remains after removing the FPGA targets, and SC is the rest).
+_FPGA_CHOICES = list(FPGA_TARGETS)
+_LB_CHOICES = [t for t in LBFLOW_TARGETS if t not in FPGA_TARGETS]
+_SC_CHOICES = [t for t in TARGETS if t not in LBFLOW_TARGETS]
+
+
+def _choices_block(label, choices):
+    return textwrap.fill(", ".join(choices), width=54,
+                         initial_indent=label, subsequent_indent="")
+
+
 _TARGET_HELP = (
     "Synthesis target(s). Pass several to sweep them in turn.\n"
     "Format:\n"
     "  - '<vendor>_<partname>' -> FPGA target (e.g., xilinx_virtex7)\n"
     "  - '<sc-target>'         -> SiliconCompiler built-in target\n"
     "  - '<lb-target>'         -> LB built-in target\n"
-    + textwrap.fill(", ".join(TARGETS), width=54,
-                    initial_indent="Choices: ", subsequent_indent="")
+    + "\n" + _choices_block("FPGA: ", _FPGA_CHOICES)
+    + "\n\n" + _choices_block("ASIC (SiliconCompiler): ", _SC_CHOICES)
+    + "\n\n" + _choices_block("ASIC (LB): ", _LB_CHOICES)
 )
 
 
