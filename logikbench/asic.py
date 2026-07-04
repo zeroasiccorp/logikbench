@@ -1,10 +1,14 @@
 """ASIC synthesis paths for LogikBench.
 
-Two flavors:
-  * a lambdapdk PDK name (e.g. 'freepdk45') -> the custom 'lbflow' ASIC path
+Targets are named '<tool>_<pdk>', matching the FPGA '<vendor>_<part>' scheme.
+Three flavors:
+  * 'yosys_<pdk>' (e.g. 'yosys_freepdk45') -> the custom 'lbflow' ASIC path
     (Yosys synthesis plus OpenSTA timing) for a single-liberty PDK;
-  * a '<pdk>_demo' name (e.g. 'asap7_demo') -> the official SC demo target
-    (PDK + libraries + scenarios) run through SiliconCompiler's 'asicflow'.
+  * 'tardigrade_<pdk>' (e.g. 'tardigrade_freepdk45') -> the same lbflow path
+    with tardigrade as the synthesis mapper instead of yosys;
+  * 'sc_<pdk>' (e.g. 'sc_asap7') -> the official SC target (PDK + libraries +
+    scenarios) run through SiliconCompiler's 'asicflow'. SC names its setup
+    modules '<pdk>_demo', so a pdk->module lookup maps 'sc_asap7'->'asap7_demo'.
 
 Timing constraints come from each benchmark's own SDC (its 'sdc' fileset),
 which declares its signal lists and then sources the PDK tech.tcl (ns->unit
@@ -40,21 +44,33 @@ def _tech_tcl(pdk):
     return os.path.join(_TARGETS_DIR, pdk, "tech.tcl")
 
 
-def _pdk_of(target):
-    """PDK directory name for a target ('asap7_demo' -> 'asap7')."""
-    return target[:-len("_demo")] if target.endswith("_demo") else target
+def _pdk_of(module):
+    """PDK name for an SC target module ('asap7_demo' -> 'asap7')."""
+    return module[:-len("_demo")] if module.endswith("_demo") else module
 
 
-# SC built-in ASIC targets, discovered from siliconcompiler.targets (one setup
-# function per submodule, e.g. 'asap7_demo') so we track SC's set rather than
-# mirroring it in a hand-maintained list.
-SC_TARGETS = sorted(m.name for m in pkgutil.iter_modules(sc_targets.__path__))
+# Raw SC built-in target module names (e.g. 'asap7_demo'), discovered from
+# siliconcompiler.targets so we track SC's set rather than mirroring it. These
+# are the names passed to the SC setup function; lb exposes them as 'sc_<pdk>'.
+_SC_MODULES = sorted(m.name for m in pkgutil.iter_modules(sc_targets.__path__))
 
-# Bare PDK names for the fast lbflow ASIC path (Yosys synth + OpenSTA, no P&R).
-# Every synthesizable lambdapdk PDK has a '<pdk>_demo' SC target; the lbflow
-# path reuses that target's PDK/library/scenario setup but runs synth+timing
-# only. Interposer has no standard cells, so it is excluded.
-_LBFLOW_PDKS = sorted({_pdk_of(t) for t in SC_TARGETS} - {"interposer"})
+# pdk -> SC target module ('asap7' -> 'asap7_demo'): the name lookup that maps
+# an lb ASIC target's pdk back to the SC setup module (SC names them '_demo').
+_SC_MODULE = {_pdk_of(m): m for m in _SC_MODULES}
+
+# All SC PDKs, and the std-cell subset used by the lbflow paths (yosys /
+# tardigrade). Interposer has no standard cells, so it has no lbflow variant.
+_SC_PDKS = sorted(_SC_MODULE)
+_LBFLOW_PDKS = sorted(set(_SC_PDKS) - {"interposer"})
+
+# lb-facing ASIC target names, all '<tool>_<pdk>' to match the FPGA
+# '<vendor>_<part>' scheme (tool/company first, part/pdk second):
+#   sc_<pdk>          -> SC 'asicflow' (PDK + libs + scenarios, through P&R)
+#   yosys_<pdk>       -> lbflow: yosys synthesis + OpenSTA timing (no P&R)
+#   tardigrade_<pdk>  -> lbflow with tardigrade as the synthesis mapper
+SC_TARGETS = [f"sc_{pdk}" for pdk in _SC_PDKS]
+YOSYS_TARGETS = [f"yosys_{pdk}" for pdk in _LBFLOW_PDKS]
+TARDIGRADE_TARGETS = [f"tardigrade_{pdk}" for pdk in _LBFLOW_PDKS]
 
 
 def _sc_target(name):
@@ -63,7 +79,7 @@ def _sc_target(name):
     Resolves siliconcompiler.targets.<name> dynamically. Helper callables in
     the package (ASIC, asic_target) are defined in the package itself, so a
     real target is one whose function lives in its own '<name>' submodule."""
-    if name not in SC_TARGETS:
+    if name not in _SC_MODULES:
         return None
     module = importlib.import_module(f"{sc_targets.__name__}.{name}")
     return getattr(module, name, None)
@@ -184,22 +200,33 @@ def _setup_asic_project(design, setup_target, builddir, quiet, timeout, clk_ns):
     return proj
 
 
-def _run_lbflow(design, target, builddir, quiet, start, stop, timeout,
+def _run_lbflow(design, target, options, builddir, quiet, start, stop, timeout,
                 clk_ns=DEFAULT_CLK_NS):
-    """lbflow ASIC: Yosys synthesis + SC OpenSTA timing (synth + STA, no P&R).
+    """ASIC flow: Synthesis + SC OpenSTA timing (synth + STA, no P&R).
 
-    Uses the '<pdk>_demo' SC target for PDK/library/scenario setup (single
-    corner), then a synth+timing flow. SC's TimingTask records the full metric
-    set (fmax, cells, cellarea, nets, pins, registers, slacks, power, ...).
+    The target '<tool>_<pdk>' selects the mapper: 'yosys_<pdk>' runs yosys,
+    'tardigrade_<pdk>' runs tardigrade. Both reuse the matching SC target
+    (via the pdk->module lookup) for PDK/library/single-corner setup, then run
+    the two-node synth+timing flow. SC's TimingTask records the full metric set
+    (fmax, cells, cellarea, nets, pins, registers, slacks, power, ...) from the
+    mapped netlist, so the two mappers are directly comparable. 'options' pass
+    through to the active mapper verbatim.
     """
-    proj = _setup_asic_project(design, f"{target}_demo", builddir, quiet,
+    tool, pdk = target.split("_", 1)
+    proj = _setup_asic_project(design, _SC_MODULE[pdk], builddir, quiet,
                                timeout, clk_ns)
-    proj.set_flow(ASICSynthesis())
-    proj.set("tool", "yosys", "task", "synthesis", "var", "mode", "asic")
-    proj.set("tool", "yosys", "task", "synthesis", "var", "liberty",
-             _mainlib_liberties(proj))
-    proj.set("tool", "yosys", "task", "synthesis", "var", "ignore_initial",
-             bool(getattr(design, "ignore_initial", False)))
+    proj.set_flow(ASICSynthesis(tool=tool))
+
+    def synvar(key, value):
+        proj.set("tool", tool, "task", "synthesis", "var", key, value)
+
+    synvar("liberty", _mainlib_liberties(proj))
+    if tool == "yosys":
+        synvar("mode", "asic")
+        synvar("ignore_initial",
+               bool(getattr(design, "ignore_initial", False)))
+    if options:
+        synvar("options", options.split())
     _set_range(proj, start, stop)
     proj.run()
     if not quiet:
@@ -208,8 +235,13 @@ def _run_lbflow(design, target, builddir, quiet, start, stop, timeout,
 
 def _run_scflow(design, target, builddir, quiet, start, stop, timeout,
                 clk_ns=DEFAULT_CLK_NS):
-    """SC built-in target (PDK + libs + scenarios) run through asicflow."""
-    proj = _setup_asic_project(design, target, builddir, quiet, timeout, clk_ns)
+    """SC built-in target (PDK + libs + scenarios) run through asicflow.
+
+    'target' is 'sc_<pdk>'; the pdk->module lookup resolves it to the SC setup
+    module ('sc_asap7' -> 'asap7_demo')."""
+    pdk = target.split("_", 1)[1]
+    proj = _setup_asic_project(design, _SC_MODULE[pdk], builddir, quiet,
+                               timeout, clk_ns)
     proj.set_flow(asicflow.ASICFlow())
     # LogikBench designs are IO-dominated (wide buses, tiny logic), so the
     # demo's 40%-utilization die can't fit the pins on its perimeter. Grow the
