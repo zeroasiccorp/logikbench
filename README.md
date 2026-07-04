@@ -83,6 +83,53 @@ import logikbench as lb
 d = lb.basic.Mux()
 d.write_fileset('mux.f', fileset='rtl')
 ```
+
+### AI Provenance (`ai.json`)
+
+Some LogikBench blocks are AI-generated (RTL authored with the help of a large
+language model under human direction). Any such block carries an `ai.json` file
+in its directory (e.g. [`ai.json`](logikbench/benchmarks/blocks/lz77/ai.json))
+that records its provenance so the origin of the design is transparent and
+auditable. Blocks that are hand-written or vendored/imported from an external
+source do not carry an `ai.json`.
+
+The file captures who authored the block, which model generated it and when,
+that a human reviewed it, and whether the RTL is an original implementation or
+derived from an external source:
+
+```json
+{
+  "schema_version": "1.0",
+  "name": "lz77",
+  "spec_ref": "README.md",
+  "authorship": "Zero ASIC Corporation; author Andreas Olofsson",
+  "generated_by": {
+    "model": "claude-opus-4-8",
+    "provider": "Anthropic",
+    "interface": "Claude Code",
+    "date": "2026-06-25"
+  },
+  "human_review": {
+    "reviewed": true,
+    "reviewer": "Andreas Olofsson",
+    "date": "2026-06-25",
+    "notes": "Architecture, scope, and verification were directed and reviewed by the author."
+  },
+  "origin": {
+    "type": "original",
+    "notes": "Original implementation written for LogikBench; follows the cited algorithm/standard and hardware architectures, not copied from any specific HDL source."
+  }
+}
+```
+
+| Field | Meaning |
+|-------|---------|
+| `spec_ref` | The block's specification (its `README.md`) |
+| `authorship` | The party accountable for the block |
+| `generated_by` | The model / provider / interface and date of generation |
+| `human_review` | Whether a human reviewed it, by whom, and their notes |
+| `origin` | `original` (written for LogikBench) or a derived/vendored source |
+
 ----
 
 ## Benchmark Metrics
