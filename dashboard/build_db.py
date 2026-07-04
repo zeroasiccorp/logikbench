@@ -21,7 +21,7 @@ import json
 import os
 
 import logikbench as lb
-from logikbench.benchmark import FPGA_METRICS, ASIC_METRICS
+from logikbench.runner import FPGA_METRICS, ASIC_METRICS
 
 # benchmark groups, in display order
 GROUPS = ['basic', 'memory', 'arithmetic', 'epfl', 'blocks']

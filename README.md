@@ -59,7 +59,7 @@ Each LogikBench benchmark circuit consists of:
 * **Tech-agnostic RTL Verilog files** for broad tool compatibility
 * **SiliconCompiler Design object** with metadata and configuration
 
-The SiliconCompiler Design object captures benchmark data as files, parameters, topmodule name, and other settings grouped as a `fileset`. Every circuit in the LogikBench suite has a Python class that inherits from SiliconCompiler's Design class, as shown in this [`mux`](logikbench/basic/mux/rtl/mux.v) example:
+The SiliconCompiler Design object captures benchmark data as files, parameters, topmodule name, and other settings grouped as a `fileset`. Every circuit in the LogikBench suite has a Python class that inherits from SiliconCompiler's Design class, as shown in this [`mux`](logikbench/benchmarks/basic/mux/rtl/mux.v) example:
 
 ```python
 from os.path import dirname, abspath
@@ -336,206 +336,206 @@ lb run -g basic -t asap7_demo --to synthesis
 
 | Benchmark | Description | Verilog |
 |-----------|-------------|---------|
-| arbiter | Fixed-priority arbiter | [arbiter.v](logikbench/basic/arbiter/rtl/arbiter.v) |
-| band | Bitwise AND | [band.v](logikbench/basic/band/rtl/band.v) |
-| bin2gray | Binary to Gray code converter | [bin2gray.v](logikbench/basic/bin2gray/rtl/bin2gray.v) |
-| bin2prio | Binary to priority encoder | [bin2prio.v](logikbench/basic/bin2prio/rtl/bin2prio.v) |
-| binv | Bitwise inverter | [binv.v](logikbench/basic/binv/rtl/binv.v) |
-| bnand | Bitwise NAND | [bnand.v](logikbench/basic/bnand/rtl/bnand.v) |
-| bnor | Bitwise NOR | [bnor.v](logikbench/basic/bnor/rtl/bnor.v) |
-| bor | Bitwise OR | [bor.v](logikbench/basic/bor/rtl/bor.v) |
-| bxnor | Bitwise XNOR | [bxnor.v](logikbench/basic/bxnor/rtl/bxnor.v) |
-| bxor | Bitwise XOR | [bxor.v](logikbench/basic/bxor/rtl/bxor.v) |
-| crossbar | Crossbar switch | [crossbar.v](logikbench/basic/crossbar/rtl/crossbar.v) |
-| dffasync | Asynchronous reset flip-flop | [dffasync.v](logikbench/basic/dffasync/rtl/dffasync.v) |
-| dffsync | Synchronous reset flip-flop | [dffsync.v](logikbench/basic/dffsync/rtl/dffsync.v) |
-| gray2bin | Gray to binary code converter | [gray2bin.v](logikbench/basic/gray2bin/rtl/gray2bin.v) |
-| mux | Multiplexer | [mux.v](logikbench/basic/mux/rtl/mux.v) |
-| muxcase | Case-based multiplexer | [muxcase.v](logikbench/basic/muxcase/rtl/muxcase.v) |
-| muxhot | One-hot multiplexer | [muxhot.v](logikbench/basic/muxhot/rtl/muxhot.v) |
-| muxpri | Priority multiplexer | [muxpri.v](logikbench/basic/muxpri/rtl/muxpri.v) |
-| onehot | One-hot encoder | [onehot.v](logikbench/basic/onehot/rtl/onehot.v) |
-| pipeline | Pipeline register | [pipeline.v](logikbench/basic/pipeline/rtl/pipeline.v) |
-| shiftreg | Shift register | [shiftreg.v](logikbench/basic/shiftreg/rtl/shiftreg.v) |
+| arbiter | Fixed-priority arbiter | [arbiter.v](logikbench/benchmarks/basic/arbiter/rtl/arbiter.v) |
+| band | Bitwise AND | [band.v](logikbench/benchmarks/basic/band/rtl/band.v) |
+| bin2gray | Binary to Gray code converter | [bin2gray.v](logikbench/benchmarks/basic/bin2gray/rtl/bin2gray.v) |
+| bin2prio | Binary to priority encoder | [bin2prio.v](logikbench/benchmarks/basic/bin2prio/rtl/bin2prio.v) |
+| binv | Bitwise inverter | [binv.v](logikbench/benchmarks/basic/binv/rtl/binv.v) |
+| bnand | Bitwise NAND | [bnand.v](logikbench/benchmarks/basic/bnand/rtl/bnand.v) |
+| bnor | Bitwise NOR | [bnor.v](logikbench/benchmarks/basic/bnor/rtl/bnor.v) |
+| bor | Bitwise OR | [bor.v](logikbench/benchmarks/basic/bor/rtl/bor.v) |
+| bxnor | Bitwise XNOR | [bxnor.v](logikbench/benchmarks/basic/bxnor/rtl/bxnor.v) |
+| bxor | Bitwise XOR | [bxor.v](logikbench/benchmarks/basic/bxor/rtl/bxor.v) |
+| crossbar | Crossbar switch | [crossbar.v](logikbench/benchmarks/basic/crossbar/rtl/crossbar.v) |
+| dffasync | Asynchronous reset flip-flop | [dffasync.v](logikbench/benchmarks/basic/dffasync/rtl/dffasync.v) |
+| dffsync | Synchronous reset flip-flop | [dffsync.v](logikbench/benchmarks/basic/dffsync/rtl/dffsync.v) |
+| gray2bin | Gray to binary code converter | [gray2bin.v](logikbench/benchmarks/basic/gray2bin/rtl/gray2bin.v) |
+| mux | Multiplexer | [mux.v](logikbench/benchmarks/basic/mux/rtl/mux.v) |
+| muxcase | Case-based multiplexer | [muxcase.v](logikbench/benchmarks/basic/muxcase/rtl/muxcase.v) |
+| muxhot | One-hot multiplexer | [muxhot.v](logikbench/benchmarks/basic/muxhot/rtl/muxhot.v) |
+| muxpri | Priority multiplexer | [muxpri.v](logikbench/benchmarks/basic/muxpri/rtl/muxpri.v) |
+| onehot | One-hot encoder | [onehot.v](logikbench/benchmarks/basic/onehot/rtl/onehot.v) |
+| pipeline | Pipeline register | [pipeline.v](logikbench/benchmarks/basic/pipeline/rtl/pipeline.v) |
+| shiftreg | Shift register | [shiftreg.v](logikbench/benchmarks/basic/shiftreg/rtl/shiftreg.v) |
 
 ### Arithmetic (33 benchmarks)
 
 | Benchmark | Description | Verilog |
 |-----------|-------------|---------|
-| abs | Absolute value | [abs.v](logikbench/arithmetic/abs/rtl/abs.v) |
-| absdiff | Absolute difference | [absdiff.v](logikbench/arithmetic/absdiff/rtl/absdiff.v) |
-| absdiffs | Signed absolute difference | [absdiffs.v](logikbench/arithmetic/absdiffs/rtl/absdiffs.v) |
-| add | Adder | [add.v](logikbench/arithmetic/add/rtl/add.v) |
-| addsub | Adder-subtractor | [addsub.v](logikbench/arithmetic/addsub/rtl/addsub.v) |
-| cmp | Comparator | [cmp.v](logikbench/arithmetic/cmp/rtl/cmp.v) |
-| counter | Counter | [counter.v](logikbench/arithmetic/counter/rtl/counter.v) |
-| csa32 | 3:2 carry-save adder | [csa32.v](logikbench/arithmetic/csa32/rtl/csa32.v) |
-| csa42 | 4:2 carry-save adder | [csa42.v](logikbench/arithmetic/csa42/rtl/csa42.v) |
-| dec | Decrementer | [dec.v](logikbench/arithmetic/dec/rtl/dec.v) |
-| dotprod | Dot product | [dotprod.v](logikbench/arithmetic/dotprod/rtl/dotprod.v) |
-| inc | Incrementer | [inc.v](logikbench/arithmetic/inc/rtl/inc.v) |
-| log2 | Log base 2 | [log2.v](logikbench/arithmetic/log2/rtl/log2.v) |
-| mac | Multiply-accumulate | [mac.v](logikbench/arithmetic/mac/rtl/mac.v) |
-| max | Maximum | [max.v](logikbench/arithmetic/max/rtl/max.v) |
-| min | Minimum | [min.v](logikbench/arithmetic/min/rtl/min.v) |
-| mul | Multiplier | [mul.v](logikbench/arithmetic/mul/rtl/mul.v) |
-| muladd | Multiply-add | [muladd.v](logikbench/arithmetic/muladd/rtl/muladd.v) |
-| muladdc | Multiply-add with carry | [muladdc.v](logikbench/arithmetic/muladdc/rtl/muladdc.v) |
-| mulc | Constant multiplier | [mulc.v](logikbench/arithmetic/mulc/rtl/mulc.v) |
-| mulreg | Registered multiplier | [mulreg.v](logikbench/arithmetic/mulreg/rtl/mulreg.v) |
-| muls | Signed multiplier | [muls.v](logikbench/arithmetic/muls/rtl/muls.v) |
-| relu | ReLU activation function | [relu.v](logikbench/arithmetic/relu/rtl/relu.v) |
-| round | Rounder | [round.v](logikbench/arithmetic/round/rtl/round.v) |
-| shiftar | Arithmetic right shift | [shiftar.v](logikbench/arithmetic/shiftar/rtl/shiftar.v) |
-| shiftb | Barrel shifter | [shiftb.v](logikbench/arithmetic/shiftb/rtl/shiftb.v) |
-| shiftl | Left shift | [shiftl.v](logikbench/arithmetic/shiftl/rtl/shiftl.v) |
-| shiftr | Right shift | [shiftr.v](logikbench/arithmetic/shiftr/rtl/shiftr.v) |
-| sine | Sine function | [sine.v](logikbench/arithmetic/sine/rtl/sine.v) |
-| sqdiff | Squared difference | [sqdiff.v](logikbench/arithmetic/sqdiff/rtl/sqdiff.v) |
-| sqrt | Square root | [sqrt.v](logikbench/arithmetic/sqrt/rtl/sqrt.v) |
-| sub | Subtractor | [sub.v](logikbench/arithmetic/sub/rtl/sub.v) |
-| sum | Summation tree | [sum.v](logikbench/arithmetic/sum/rtl/sum.v) |
+| abs | Absolute value | [abs.v](logikbench/benchmarks/arithmetic/abs/rtl/abs.v) |
+| absdiff | Absolute difference | [absdiff.v](logikbench/benchmarks/arithmetic/absdiff/rtl/absdiff.v) |
+| absdiffs | Signed absolute difference | [absdiffs.v](logikbench/benchmarks/arithmetic/absdiffs/rtl/absdiffs.v) |
+| add | Adder | [add.v](logikbench/benchmarks/arithmetic/add/rtl/add.v) |
+| addsub | Adder-subtractor | [addsub.v](logikbench/benchmarks/arithmetic/addsub/rtl/addsub.v) |
+| cmp | Comparator | [cmp.v](logikbench/benchmarks/arithmetic/cmp/rtl/cmp.v) |
+| counter | Counter | [counter.v](logikbench/benchmarks/arithmetic/counter/rtl/counter.v) |
+| csa32 | 3:2 carry-save adder | [csa32.v](logikbench/benchmarks/arithmetic/csa32/rtl/csa32.v) |
+| csa42 | 4:2 carry-save adder | [csa42.v](logikbench/benchmarks/arithmetic/csa42/rtl/csa42.v) |
+| dec | Decrementer | [dec.v](logikbench/benchmarks/arithmetic/dec/rtl/dec.v) |
+| dotprod | Dot product | [dotprod.v](logikbench/benchmarks/arithmetic/dotprod/rtl/dotprod.v) |
+| inc | Incrementer | [inc.v](logikbench/benchmarks/arithmetic/inc/rtl/inc.v) |
+| log2 | Log base 2 | [log2.v](logikbench/benchmarks/arithmetic/log2/rtl/log2.v) |
+| mac | Multiply-accumulate | [mac.v](logikbench/benchmarks/arithmetic/mac/rtl/mac.v) |
+| max | Maximum | [max.v](logikbench/benchmarks/arithmetic/max/rtl/max.v) |
+| min | Minimum | [min.v](logikbench/benchmarks/arithmetic/min/rtl/min.v) |
+| mul | Multiplier | [mul.v](logikbench/benchmarks/arithmetic/mul/rtl/mul.v) |
+| muladd | Multiply-add | [muladd.v](logikbench/benchmarks/arithmetic/muladd/rtl/muladd.v) |
+| muladdc | Multiply-add with carry | [muladdc.v](logikbench/benchmarks/arithmetic/muladdc/rtl/muladdc.v) |
+| mulc | Constant multiplier | [mulc.v](logikbench/benchmarks/arithmetic/mulc/rtl/mulc.v) |
+| mulreg | Registered multiplier | [mulreg.v](logikbench/benchmarks/arithmetic/mulreg/rtl/mulreg.v) |
+| muls | Signed multiplier | [muls.v](logikbench/benchmarks/arithmetic/muls/rtl/muls.v) |
+| relu | ReLU activation function | [relu.v](logikbench/benchmarks/arithmetic/relu/rtl/relu.v) |
+| round | Rounder | [round.v](logikbench/benchmarks/arithmetic/round/rtl/round.v) |
+| shiftar | Arithmetic right shift | [shiftar.v](logikbench/benchmarks/arithmetic/shiftar/rtl/shiftar.v) |
+| shiftb | Barrel shifter | [shiftb.v](logikbench/benchmarks/arithmetic/shiftb/rtl/shiftb.v) |
+| shiftl | Left shift | [shiftl.v](logikbench/benchmarks/arithmetic/shiftl/rtl/shiftl.v) |
+| shiftr | Right shift | [shiftr.v](logikbench/benchmarks/arithmetic/shiftr/rtl/shiftr.v) |
+| sine | Sine function | [sine.v](logikbench/benchmarks/arithmetic/sine/rtl/sine.v) |
+| sqdiff | Squared difference | [sqdiff.v](logikbench/benchmarks/arithmetic/sqdiff/rtl/sqdiff.v) |
+| sqrt | Square root | [sqrt.v](logikbench/benchmarks/arithmetic/sqrt/rtl/sqrt.v) |
+| sub | Subtractor | [sub.v](logikbench/benchmarks/arithmetic/sub/rtl/sub.v) |
+| sum | Summation tree | [sum.v](logikbench/benchmarks/arithmetic/sum/rtl/sum.v) |
 
 ### Memory (13 benchmarks)
 
 | Benchmark | Description | Verilog |
 |-----------|-------------|---------|
-| axiram | AXI RAM interface | [axil_ram.v](logikbench/memory/axiram/rtl/axil_ram.v) |
-| cache | Cache memory | [cache.v](logikbench/memory/cache/rtl/cache.v) |
-| fifoasync | Asynchronous FIFO | [fifoasync.v](logikbench/memory/fifoasync/rtl/fifoasync.v) |
-| fifosync | Synchronous FIFO | [fifosync.v](logikbench/memory/fifosync/rtl/fifosync.v) |
-| ramasync | Asynchronous RAM | [ramasync.v](logikbench/memory/ramasync/rtl/ramasync.v) |
-| rambit | Bit-wide RAM | [rambit.v](logikbench/memory/rambit/rtl/rambit.v) |
-| rambyte | Byte-wide RAM | [rambyte.v](logikbench/memory/rambyte/rtl/rambyte.v) |
-| ramtdp | True dual-port RAM | [ramtdp.v](logikbench/memory/ramtdp/rtl/ramtdp.v) |
-| ramsdp | Simple dual-port RAM | [ramsdp.v](logikbench/memory/ramsdp/rtl/ramsdp.v) |
-| ramsp | Single-port RAM | [ramsp.v](logikbench/memory/ramsp/rtl/ramsp.v) |
-| ramspnc | Single-port RAM (no change) | [ramspnc.v](logikbench/memory/ramspnc/rtl/ramspnc.v) |
-| regfile | Register file | [regfile.v](logikbench/memory/regfile/rtl/regfile.v) |
-| rom | Read-only memory | [rom.v](logikbench/memory/rom/rtl/rom.v) |
+| axiram | AXI RAM interface | [axil_ram.v](logikbench/benchmarks/memory/axiram/rtl/axil_ram.v) |
+| cache | Cache memory | [cache.v](logikbench/benchmarks/memory/cache/rtl/cache.v) |
+| fifoasync | Asynchronous FIFO | [fifoasync.v](logikbench/benchmarks/memory/fifoasync/rtl/fifoasync.v) |
+| fifosync | Synchronous FIFO | [fifosync.v](logikbench/benchmarks/memory/fifosync/rtl/fifosync.v) |
+| ramasync | Asynchronous RAM | [ramasync.v](logikbench/benchmarks/memory/ramasync/rtl/ramasync.v) |
+| rambit | Bit-wide RAM | [rambit.v](logikbench/benchmarks/memory/rambit/rtl/rambit.v) |
+| rambyte | Byte-wide RAM | [rambyte.v](logikbench/benchmarks/memory/rambyte/rtl/rambyte.v) |
+| ramtdp | True dual-port RAM | [ramtdp.v](logikbench/benchmarks/memory/ramtdp/rtl/ramtdp.v) |
+| ramsdp | Simple dual-port RAM | [ramsdp.v](logikbench/benchmarks/memory/ramsdp/rtl/ramsdp.v) |
+| ramsp | Single-port RAM | [ramsp.v](logikbench/benchmarks/memory/ramsp/rtl/ramsp.v) |
+| ramspnc | Single-port RAM (no change) | [ramspnc.v](logikbench/benchmarks/memory/ramspnc/rtl/ramspnc.v) |
+| regfile | Register file | [regfile.v](logikbench/benchmarks/memory/regfile/rtl/regfile.v) |
+| rom | Read-only memory | [rom.v](logikbench/benchmarks/memory/rom/rtl/rom.v) |
 
 ### Complex Blocks (41 benchmarks)
 
 | Benchmark | Description | Verilog |
 |-----------|-------------|---------|
-| aes | AES encryption core | [aes.sv](logikbench/blocks/aes/rtl/aes.sv) |
-| apbregs | APB register file | [apbregs.v](logikbench/blocks/apbregs/rtl/apbregs.v) |
-| axicrossbar | AXI crossbar | [arbiter.v](logikbench/blocks/axicrossbar/rtl/arbiter.v) |
-| blackparrot | BlackParrot RISC-V core | [blackparrot/](logikbench/blocks/blackparrot/) |
-| conv2d | Streaming 3x3 2D convolution | [conv2d.v](logikbench/blocks/conv2d/rtl/conv2d.v) |
-| coralnpu | CoralNPU neural accelerator | [coralnpu.sv](logikbench/blocks/coralnpu/rtl/coralnpu.sv) |
-| crc32 | CRC-32 generator | [crc32.v](logikbench/blocks/crc32/rtl/crc32.v) |
-| cva6 | CVA6 (Ariane) RISC-V core | [cva6.sv](logikbench/blocks/cva6/rtl/cva6.sv) |
-| ddc | Digital down-converter (NCO/mixer/CIC/FIR) | [ddc.v](logikbench/blocks/ddc/rtl/ddc.v) |
-| ethmac | Ethernet MAC | [ethmac.v](logikbench/blocks/ethmac/rtl/ethmac.v) |
-| fft | Fast Fourier Transform | [fft.v](logikbench/blocks/fft/rtl/fft.v) |
-| firfix | Fixed-coefficient FIR filter | [firfix.v](logikbench/blocks/firfix/rtl/firfix.v) |
-| firprog | Programmable FIR filter | [firprog.v](logikbench/blocks/firprog/rtl/firprog.v) |
-| fpu64 | 64-bit floating-point unit | [fpu64/](logikbench/blocks/fpu64/) |
-| hamming | Hamming ECC encoder/decoder | [hamming.v](logikbench/blocks/hamming/rtl/hamming.v) |
-| hmac | HMAC-SHA hashing | [hmac.sv](logikbench/blocks/hmac/rtl/hmac.sv) |
-| huffman | Canonical Huffman encoder/decoder | [huffman.v](logikbench/blocks/huffman/rtl/huffman.v) |
-| i2c | I2C controller | [i2c.sv](logikbench/blocks/i2c/rtl/i2c.sv) |
-| ialu | Integer ALU | [ialu.v](logikbench/blocks/ialu/rtl/ialu.v) |
-| lfsr | Linear feedback shift register | [lfsr.v](logikbench/blocks/lfsr/rtl/lfsr.v) |
-| lpddr5 | LPDDR5 memory controller (UMI + DFI, ECC) | [lpddr5_umi.v](logikbench/blocks/lpddr5/rtl/lpddr5_umi.v) |
-| lz77 | LZ77 (LZSS) compressor/decompressor | [lz77.v](logikbench/blocks/lz77/rtl/lz77.v) |
-| median3x3 | Streaming 3x3 median filter | [median3x3.v](logikbench/blocks/median3x3/rtl/median3x3.v) |
-| nvdla | NVDLA deep-learning accelerator | [nvdla/](logikbench/blocks/nvdla/) |
-| ofdm | OFDM modem (QAM + IFFT/FFT) | [ofdm.v](logikbench/blocks/ofdm/rtl/ofdm.v) |
-| openpiton | OpenPiton manycore tile | [openpiton.v](logikbench/blocks/openpiton/rtl/openpiton.v) |
-| picorv32 | PicoRV32 RISC-V core | [picorv32.v](logikbench/blocks/picorv32/rtl/picorv32.v) |
-| reedsolomon | Reed-Solomon RS(544,514) codec | [reedsolomon.v](logikbench/blocks/reedsolomon/rtl/reedsolomon.v) |
-| rocket | Rocket RISC-V core | [rocket.v](logikbench/blocks/rocket/rtl/rocket.v) |
-| sad8x8 | 8x8 sum of absolute differences | [sad8x8.v](logikbench/blocks/sad8x8/rtl/sad8x8.v) |
-| serv | SERV bit-serial RISC-V core | [serv/](logikbench/blocks/serv/) |
-| sobel3x3 | Streaming 3x3 Sobel edge detector | [sobel3x3.v](logikbench/blocks/sobel3x3/rtl/sobel3x3.v) |
-| spi | SPI controller | [spi.sv](logikbench/blocks/spi/rtl/spi.sv) |
-| tpu | Weight-stationary systolic matrix multiply (TPU MXU) | [tpu.v](logikbench/blocks/tpu/rtl/tpu.v) |
-| uart | UART | [uart.sv](logikbench/blocks/uart/rtl/uart.sv) |
-| umicross | UMI crossbar | [umicross/](logikbench/blocks/umicross/) |
-| umidev | UMI device endpoint | [umidev/](logikbench/blocks/umidev/) |
-| umiregs | UMI register file | [umiregs.v](logikbench/blocks/umiregs/rtl/umiregs.v) |
-| viterbi | Viterbi decoder | [viterbi.v](logikbench/blocks/viterbi/rtl/viterbi.v) |
-| vortex | Vortex GPU core | [vortex/](logikbench/blocks/vortex/) |
-| wally | CVW-Wally RISC-V core | [wally/](logikbench/blocks/wally/) |
+| aes | AES encryption core | [aes.sv](logikbench/benchmarks/blocks/aes/rtl/aes.sv) |
+| apbregs | APB register file | [apbregs.v](logikbench/benchmarks/blocks/apbregs/rtl/apbregs.v) |
+| axicrossbar | AXI crossbar | [arbiter.v](logikbench/benchmarks/blocks/axicrossbar/rtl/arbiter.v) |
+| blackparrot | BlackParrot RISC-V core | [blackparrot/](logikbench/benchmarks/blocks/blackparrot/) |
+| conv2d | Streaming 3x3 2D convolution | [conv2d.v](logikbench/benchmarks/blocks/conv2d/rtl/conv2d.v) |
+| coralnpu | CoralNPU neural accelerator | [coralnpu.sv](logikbench/benchmarks/blocks/coralnpu/rtl/coralnpu.sv) |
+| crc32 | CRC-32 generator | [crc32.v](logikbench/benchmarks/blocks/crc32/rtl/crc32.v) |
+| cva6 | CVA6 (Ariane) RISC-V core | [cva6.sv](logikbench/benchmarks/blocks/cva6/rtl/cva6.sv) |
+| ddc | Digital down-converter (NCO/mixer/CIC/FIR) | [ddc.v](logikbench/benchmarks/blocks/ddc/rtl/ddc.v) |
+| ethmac | Ethernet MAC | [ethmac.v](logikbench/benchmarks/blocks/ethmac/rtl/ethmac.v) |
+| fft | Fast Fourier Transform | [fft.v](logikbench/benchmarks/blocks/fft/rtl/fft.v) |
+| firfix | Fixed-coefficient FIR filter | [firfix.v](logikbench/benchmarks/blocks/firfix/rtl/firfix.v) |
+| firprog | Programmable FIR filter | [firprog.v](logikbench/benchmarks/blocks/firprog/rtl/firprog.v) |
+| fpu64 | 64-bit floating-point unit | [fpu64/](logikbench/benchmarks/blocks/fpu64/) |
+| hamming | Hamming ECC encoder/decoder | [hamming.v](logikbench/benchmarks/blocks/hamming/rtl/hamming.v) |
+| hmac | HMAC-SHA hashing | [hmac.sv](logikbench/benchmarks/blocks/hmac/rtl/hmac.sv) |
+| huffman | Canonical Huffman encoder/decoder | [huffman.v](logikbench/benchmarks/blocks/huffman/rtl/huffman.v) |
+| i2c | I2C controller | [i2c.sv](logikbench/benchmarks/blocks/i2c/rtl/i2c.sv) |
+| ialu | Integer ALU | [ialu.v](logikbench/benchmarks/blocks/ialu/rtl/ialu.v) |
+| lfsr | Linear feedback shift register | [lfsr.v](logikbench/benchmarks/blocks/lfsr/rtl/lfsr.v) |
+| lpddr5 | LPDDR5 memory controller (UMI + DFI, ECC) | [lpddr5_umi.v](logikbench/benchmarks/blocks/lpddr5/rtl/lpddr5_umi.v) |
+| lz77 | LZ77 (LZSS) compressor/decompressor | [lz77.v](logikbench/benchmarks/blocks/lz77/rtl/lz77.v) |
+| median3x3 | Streaming 3x3 median filter | [median3x3.v](logikbench/benchmarks/blocks/median3x3/rtl/median3x3.v) |
+| nvdla | NVDLA deep-learning accelerator | [nvdla/](logikbench/benchmarks/blocks/nvdla/) |
+| ofdm | OFDM modem (QAM + IFFT/FFT) | [ofdm.v](logikbench/benchmarks/blocks/ofdm/rtl/ofdm.v) |
+| openpiton | OpenPiton manycore tile | [openpiton.v](logikbench/benchmarks/blocks/openpiton/rtl/openpiton.v) |
+| picorv32 | PicoRV32 RISC-V core | [picorv32.v](logikbench/benchmarks/blocks/picorv32/rtl/picorv32.v) |
+| reedsolomon | Reed-Solomon RS(544,514) codec | [reedsolomon.v](logikbench/benchmarks/blocks/reedsolomon/rtl/reedsolomon.v) |
+| rocket | Rocket RISC-V core | [rocket.v](logikbench/benchmarks/blocks/rocket/rtl/rocket.v) |
+| sad8x8 | 8x8 sum of absolute differences | [sad8x8.v](logikbench/benchmarks/blocks/sad8x8/rtl/sad8x8.v) |
+| serv | SERV bit-serial RISC-V core | [serv/](logikbench/benchmarks/blocks/serv/) |
+| sobel3x3 | Streaming 3x3 Sobel edge detector | [sobel3x3.v](logikbench/benchmarks/blocks/sobel3x3/rtl/sobel3x3.v) |
+| spi | SPI controller | [spi.sv](logikbench/benchmarks/blocks/spi/rtl/spi.sv) |
+| tpu | Weight-stationary systolic matrix multiply (TPU MXU) | [tpu.v](logikbench/benchmarks/blocks/tpu/rtl/tpu.v) |
+| uart | UART | [uart.sv](logikbench/benchmarks/blocks/uart/rtl/uart.sv) |
+| umicross | UMI crossbar | [umicross/](logikbench/benchmarks/blocks/umicross/) |
+| umidev | UMI device endpoint | [umidev/](logikbench/benchmarks/blocks/umidev/) |
+| umiregs | UMI register file | [umiregs.v](logikbench/benchmarks/blocks/umiregs/rtl/umiregs.v) |
+| viterbi | Viterbi decoder | [viterbi.v](logikbench/benchmarks/blocks/viterbi/rtl/viterbi.v) |
+| vortex | Vortex GPU core | [vortex/](logikbench/benchmarks/blocks/vortex/) |
+| wally | CVW-Wally RISC-V core | [wally/](logikbench/benchmarks/blocks/wally/) |
 
 ### EPFL Benchmarks (19 benchmarks)
 
 | Benchmark | Description | Verilog |
 |-----------|-------------|---------|
-| epfl_adder | EPFL adder benchmark | [epfl_adder.v](logikbench/epfl/epfl_adder/rtl/epfl_adder.v) |
-| epfl_arbiter | EPFL arbiter benchmark | [epfl_arbiter.v](logikbench/epfl/epfl_arbiter/rtl/epfl_arbiter.v) |
-| epfl_bar | Barrel shifter | [epfl_bar.v](logikbench/epfl/epfl_bar/rtl/epfl_bar.v) |
-| epfl_cavlc | CAVLC encoder | [epfl_cavlc.v](logikbench/epfl/epfl_cavlc/rtl/epfl_cavlc.v) |
-| epfl_dec | Decoder | [epfl_dec.v](logikbench/epfl/epfl_dec/rtl/epfl_dec.v) |
-| epfl_div | Divider | [epfl_div.v](logikbench/epfl/epfl_div/rtl/epfl_div.v) |
-| epfl_hyp | Hypotenuse calculator | [epfl_hyp.v](logikbench/epfl/epfl_hyp/rtl/epfl_hyp.v) |
-| epfl_i2c | I2C controller | [epfl_i2c.v](logikbench/epfl/epfl_i2c/rtl/epfl_i2c.v) |
-| epfl_int2float | Integer to float converter | [epfl_int2float.v](logikbench/epfl/epfl_int2float/rtl/epfl_int2float.v) |
-| epfl_log2 | Log base 2 | [epfl_log2.v](logikbench/epfl/epfl_log2/rtl/epfl_log2.v) |
-| epfl_max | Maximum | [epfl_max.v](logikbench/epfl/epfl_max/rtl/epfl_max.v) |
-| epfl_memctrl | Memory controller | [epfl_memctrl.v](logikbench/epfl/epfl_memctrl/rtl/epfl_memctrl.v) |
-| epfl_multiplier | Multiplier | [epfl_multiplier.v](logikbench/epfl/epfl_multiplier/rtl/epfl_multiplier.v) |
-| epfl_priority | Priority encoder | [epfl_priority.v](logikbench/epfl/epfl_priority/rtl/epfl_priority.v) |
-| epfl_router | Router | [epfl_router.v](logikbench/epfl/epfl_router/rtl/epfl_router.v) |
-| epfl_sin | Sine function | [epfl_sin.v](logikbench/epfl/epfl_sin/rtl/epfl_sin.v) |
-| epfl_sqrt | Square root | [epfl_sqrt.v](logikbench/epfl/epfl_sqrt/rtl/epfl_sqrt.v) |
-| epfl_square | Square function | [epfl_square.v](logikbench/epfl/epfl_square/rtl/epfl_square.v) |
-| epfl_voter | Voter circuit | [epfl_voter.v](logikbench/epfl/epfl_voter/rtl/epfl_voter.v) |
+| epfl_adder | EPFL adder benchmark | [epfl_adder.v](logikbench/benchmarks/epfl/epfl_adder/rtl/epfl_adder.v) |
+| epfl_arbiter | EPFL arbiter benchmark | [epfl_arbiter.v](logikbench/benchmarks/epfl/epfl_arbiter/rtl/epfl_arbiter.v) |
+| epfl_bar | Barrel shifter | [epfl_bar.v](logikbench/benchmarks/epfl/epfl_bar/rtl/epfl_bar.v) |
+| epfl_cavlc | CAVLC encoder | [epfl_cavlc.v](logikbench/benchmarks/epfl/epfl_cavlc/rtl/epfl_cavlc.v) |
+| epfl_dec | Decoder | [epfl_dec.v](logikbench/benchmarks/epfl/epfl_dec/rtl/epfl_dec.v) |
+| epfl_div | Divider | [epfl_div.v](logikbench/benchmarks/epfl/epfl_div/rtl/epfl_div.v) |
+| epfl_hyp | Hypotenuse calculator | [epfl_hyp.v](logikbench/benchmarks/epfl/epfl_hyp/rtl/epfl_hyp.v) |
+| epfl_i2c | I2C controller | [epfl_i2c.v](logikbench/benchmarks/epfl/epfl_i2c/rtl/epfl_i2c.v) |
+| epfl_int2float | Integer to float converter | [epfl_int2float.v](logikbench/benchmarks/epfl/epfl_int2float/rtl/epfl_int2float.v) |
+| epfl_log2 | Log base 2 | [epfl_log2.v](logikbench/benchmarks/epfl/epfl_log2/rtl/epfl_log2.v) |
+| epfl_max | Maximum | [epfl_max.v](logikbench/benchmarks/epfl/epfl_max/rtl/epfl_max.v) |
+| epfl_memctrl | Memory controller | [epfl_memctrl.v](logikbench/benchmarks/epfl/epfl_memctrl/rtl/epfl_memctrl.v) |
+| epfl_multiplier | Multiplier | [epfl_multiplier.v](logikbench/benchmarks/epfl/epfl_multiplier/rtl/epfl_multiplier.v) |
+| epfl_priority | Priority encoder | [epfl_priority.v](logikbench/benchmarks/epfl/epfl_priority/rtl/epfl_priority.v) |
+| epfl_router | Router | [epfl_router.v](logikbench/benchmarks/epfl/epfl_router/rtl/epfl_router.v) |
+| epfl_sin | Sine function | [epfl_sin.v](logikbench/benchmarks/epfl/epfl_sin/rtl/epfl_sin.v) |
+| epfl_sqrt | Square root | [epfl_sqrt.v](logikbench/benchmarks/epfl/epfl_sqrt/rtl/epfl_sqrt.v) |
+| epfl_square | Square function | [epfl_square.v](logikbench/benchmarks/epfl/epfl_square/rtl/epfl_square.v) |
+| epfl_voter | Voter circuit | [epfl_voter.v](logikbench/benchmarks/epfl/epfl_voter/rtl/epfl_voter.v) |
 
 ### ISCAS85 Benchmarks (11 benchmarks)
 
-Combinational gate-level circuits. See [iscas85/README.md](logikbench/iscas85/README.md).
+Combinational gate-level circuits. See [iscas85/README.md](logikbench/benchmarks/iscas85/README.md).
 
 | Benchmark | Description | Verilog |
 |-----------|-------------|---------|
-| c17 | Trivial 6-gate circuit | [c17.v](logikbench/iscas85/c17/rtl/c17.v) |
-| c432 | 27-channel interrupt controller | [c432.v](logikbench/iscas85/c432/rtl/c432.v) |
-| c499 | 32-bit single-error-correcting circuit | [c499.v](logikbench/iscas85/c499/rtl/c499.v) |
-| c880 | 8-bit ALU | [c880.v](logikbench/iscas85/c880/rtl/c880.v) |
-| c1355 | 32-bit single-error-correcting circuit | [c1355.v](logikbench/iscas85/c1355/rtl/c1355.v) |
-| c1908 | 16-bit SEC/DED circuit | [c1908.v](logikbench/iscas85/c1908/rtl/c1908.v) |
-| c2670 | 12-bit ALU and controller | [c2670.v](logikbench/iscas85/c2670/rtl/c2670.v) |
-| c3540 | 8-bit ALU | [c3540.v](logikbench/iscas85/c3540/rtl/c3540.v) |
-| c5315 | ALU with parity | [c5315.v](logikbench/iscas85/c5315/rtl/c5315.v) |
-| c6288 | 16x16 combinational multiplier | [c6288.v](logikbench/iscas85/c6288/rtl/c6288.v) |
-| c7552 | 32-bit adder/comparator | [c7552.v](logikbench/iscas85/c7552/rtl/c7552.v) |
+| c17 | Trivial 6-gate circuit | [c17.v](logikbench/benchmarks/iscas85/c17/rtl/c17.v) |
+| c432 | 27-channel interrupt controller | [c432.v](logikbench/benchmarks/iscas85/c432/rtl/c432.v) |
+| c499 | 32-bit single-error-correcting circuit | [c499.v](logikbench/benchmarks/iscas85/c499/rtl/c499.v) |
+| c880 | 8-bit ALU | [c880.v](logikbench/benchmarks/iscas85/c880/rtl/c880.v) |
+| c1355 | 32-bit single-error-correcting circuit | [c1355.v](logikbench/benchmarks/iscas85/c1355/rtl/c1355.v) |
+| c1908 | 16-bit SEC/DED circuit | [c1908.v](logikbench/benchmarks/iscas85/c1908/rtl/c1908.v) |
+| c2670 | 12-bit ALU and controller | [c2670.v](logikbench/benchmarks/iscas85/c2670/rtl/c2670.v) |
+| c3540 | 8-bit ALU | [c3540.v](logikbench/benchmarks/iscas85/c3540/rtl/c3540.v) |
+| c5315 | ALU with parity | [c5315.v](logikbench/benchmarks/iscas85/c5315/rtl/c5315.v) |
+| c6288 | 16x16 combinational multiplier | [c6288.v](logikbench/benchmarks/iscas85/c6288/rtl/c6288.v) |
+| c7552 | 32-bit adder/comparator | [c7552.v](logikbench/benchmarks/iscas85/c7552/rtl/c7552.v) |
 
 ### ISCAS89 Benchmarks (28 benchmarks)
 
-Sequential gate-level circuits (clock port `CK`). See [iscas89/README.md](logikbench/iscas89/README.md).
+Sequential gate-level circuits (clock port `CK`). See [iscas89/README.md](logikbench/benchmarks/iscas89/README.md).
 
 | Benchmark | Description | Verilog |
 |-----------|-------------|---------|
-| s27 | Sequential benchmark circuit | [s27.v](logikbench/iscas89/s27/rtl/s27.v) |
-| s298 | Sequential benchmark circuit | [s298.v](logikbench/iscas89/s298/rtl/s298.v) |
-| s344 | Sequential benchmark circuit | [s344.v](logikbench/iscas89/s344/rtl/s344.v) |
-| s349 | Sequential benchmark circuit | [s349.v](logikbench/iscas89/s349/rtl/s349.v) |
-| s382 | Sequential benchmark circuit | [s382.v](logikbench/iscas89/s382/rtl/s382.v) |
-| s386 | Sequential benchmark circuit | [s386.v](logikbench/iscas89/s386/rtl/s386.v) |
-| s400 | Sequential benchmark circuit | [s400.v](logikbench/iscas89/s400/rtl/s400.v) |
-| s420 | Sequential benchmark circuit | [s420.v](logikbench/iscas89/s420/rtl/s420.v) |
-| s444 | Sequential benchmark circuit | [s444.v](logikbench/iscas89/s444/rtl/s444.v) |
-| s510 | Sequential benchmark circuit | [s510.v](logikbench/iscas89/s510/rtl/s510.v) |
-| s526 | Sequential benchmark circuit | [s526.v](logikbench/iscas89/s526/rtl/s526.v) |
-| s641 | Sequential benchmark circuit | [s641.v](logikbench/iscas89/s641/rtl/s641.v) |
-| s713 | Sequential benchmark circuit | [s713.v](logikbench/iscas89/s713/rtl/s713.v) |
-| s820 | Sequential benchmark circuit | [s820.v](logikbench/iscas89/s820/rtl/s820.v) |
-| s832 | Sequential benchmark circuit | [s832.v](logikbench/iscas89/s832/rtl/s832.v) |
-| s838 | Sequential benchmark circuit | [s838.v](logikbench/iscas89/s838/rtl/s838.v) |
-| s953 | Sequential benchmark circuit | [s953.v](logikbench/iscas89/s953/rtl/s953.v) |
-| s1196 | Sequential benchmark circuit | [s1196.v](logikbench/iscas89/s1196/rtl/s1196.v) |
-| s1238 | Sequential benchmark circuit | [s1238.v](logikbench/iscas89/s1238/rtl/s1238.v) |
-| s1423 | Sequential benchmark circuit | [s1423.v](logikbench/iscas89/s1423/rtl/s1423.v) |
-| s1488 | Sequential benchmark circuit | [s1488.v](logikbench/iscas89/s1488/rtl/s1488.v) |
-| s5378 | Sequential benchmark circuit | [s5378.v](logikbench/iscas89/s5378/rtl/s5378.v) |
-| s9234 | Sequential benchmark circuit | [s9234.v](logikbench/iscas89/s9234/rtl/s9234.v) |
-| s13207 | Sequential benchmark circuit | [s13207.v](logikbench/iscas89/s13207/rtl/s13207.v) |
-| s15850 | Sequential benchmark circuit | [s15850.v](logikbench/iscas89/s15850/rtl/s15850.v) |
-| s35932 | Sequential benchmark circuit | [s35932.v](logikbench/iscas89/s35932/rtl/s35932.v) |
-| s38417 | Sequential benchmark circuit | [s38417.v](logikbench/iscas89/s38417/rtl/s38417.v) |
-| s38584 | Sequential benchmark circuit | [s38584.v](logikbench/iscas89/s38584/rtl/s38584.v) |
+| s27 | Sequential benchmark circuit | [s27.v](logikbench/benchmarks/iscas89/s27/rtl/s27.v) |
+| s298 | Sequential benchmark circuit | [s298.v](logikbench/benchmarks/iscas89/s298/rtl/s298.v) |
+| s344 | Sequential benchmark circuit | [s344.v](logikbench/benchmarks/iscas89/s344/rtl/s344.v) |
+| s349 | Sequential benchmark circuit | [s349.v](logikbench/benchmarks/iscas89/s349/rtl/s349.v) |
+| s382 | Sequential benchmark circuit | [s382.v](logikbench/benchmarks/iscas89/s382/rtl/s382.v) |
+| s386 | Sequential benchmark circuit | [s386.v](logikbench/benchmarks/iscas89/s386/rtl/s386.v) |
+| s400 | Sequential benchmark circuit | [s400.v](logikbench/benchmarks/iscas89/s400/rtl/s400.v) |
+| s420 | Sequential benchmark circuit | [s420.v](logikbench/benchmarks/iscas89/s420/rtl/s420.v) |
+| s444 | Sequential benchmark circuit | [s444.v](logikbench/benchmarks/iscas89/s444/rtl/s444.v) |
+| s510 | Sequential benchmark circuit | [s510.v](logikbench/benchmarks/iscas89/s510/rtl/s510.v) |
+| s526 | Sequential benchmark circuit | [s526.v](logikbench/benchmarks/iscas89/s526/rtl/s526.v) |
+| s641 | Sequential benchmark circuit | [s641.v](logikbench/benchmarks/iscas89/s641/rtl/s641.v) |
+| s713 | Sequential benchmark circuit | [s713.v](logikbench/benchmarks/iscas89/s713/rtl/s713.v) |
+| s820 | Sequential benchmark circuit | [s820.v](logikbench/benchmarks/iscas89/s820/rtl/s820.v) |
+| s832 | Sequential benchmark circuit | [s832.v](logikbench/benchmarks/iscas89/s832/rtl/s832.v) |
+| s838 | Sequential benchmark circuit | [s838.v](logikbench/benchmarks/iscas89/s838/rtl/s838.v) |
+| s953 | Sequential benchmark circuit | [s953.v](logikbench/benchmarks/iscas89/s953/rtl/s953.v) |
+| s1196 | Sequential benchmark circuit | [s1196.v](logikbench/benchmarks/iscas89/s1196/rtl/s1196.v) |
+| s1238 | Sequential benchmark circuit | [s1238.v](logikbench/benchmarks/iscas89/s1238/rtl/s1238.v) |
+| s1423 | Sequential benchmark circuit | [s1423.v](logikbench/benchmarks/iscas89/s1423/rtl/s1423.v) |
+| s1488 | Sequential benchmark circuit | [s1488.v](logikbench/benchmarks/iscas89/s1488/rtl/s1488.v) |
+| s5378 | Sequential benchmark circuit | [s5378.v](logikbench/benchmarks/iscas89/s5378/rtl/s5378.v) |
+| s9234 | Sequential benchmark circuit | [s9234.v](logikbench/benchmarks/iscas89/s9234/rtl/s9234.v) |
+| s13207 | Sequential benchmark circuit | [s13207.v](logikbench/benchmarks/iscas89/s13207/rtl/s13207.v) |
+| s15850 | Sequential benchmark circuit | [s15850.v](logikbench/benchmarks/iscas89/s15850/rtl/s15850.v) |
+| s35932 | Sequential benchmark circuit | [s35932.v](logikbench/benchmarks/iscas89/s35932/rtl/s35932.v) |
+| s38417 | Sequential benchmark circuit | [s38417.v](logikbench/benchmarks/iscas89/s38417/rtl/s38417.v) |
+| s38584 | Sequential benchmark circuit | [s38584.v](logikbench/benchmarks/iscas89/s38584/rtl/s38584.v) |
 
 ----
 

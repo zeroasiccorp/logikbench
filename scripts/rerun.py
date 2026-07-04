@@ -33,7 +33,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from logikbench.benchmark import FPGA_TARGETS
+from logikbench.runner import FPGA_TARGETS
 
 REPO = Path(__file__).resolve().parent.parent
 
