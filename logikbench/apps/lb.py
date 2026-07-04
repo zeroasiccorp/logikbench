@@ -9,7 +9,7 @@ import textwrap
 import logikbench as lb
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
-from logikbench.benchmark import (
+from logikbench.runner import (
     FPGA_METRICS, ASIC_METRICS, TARGETS, FPGA_TARGETS, STEPS, DEFAULT_CLK_NS,
     run_one, read_metrics, read_asic_metrics, read_tool_var, is_complete,
     benchmark_name,

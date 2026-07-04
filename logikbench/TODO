@@ -1,0 +1,12 @@
+
+add itc99
+add iwls2005
+reorder the pdf articles in repo, actually just add the references, and remove pdf
+----------------------------
+add all tech.tcl for all targets
+summary verbose
+20/21 running in basic
+fix hold
+fix setup skew
+add all sdcs
+iscas85,89

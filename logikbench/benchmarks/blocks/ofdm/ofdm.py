@@ -1,6 +1,6 @@
 from os.path import dirname, abspath
 from siliconcompiler import Design
-from logikbench.blocks.fft.fft import Fft
+from logikbench.benchmarks.blocks.fft.fft import Fft
 
 
 class Ofdm(Design):
