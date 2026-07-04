@@ -26,7 +26,7 @@ import shutil
 from logikbench import asic, fpga
 from logikbench.common import (
     FPGA_METRICS, ASIC_METRICS, STEPS, read_metrics, read_asic_metrics,
-    read_tool_var, is_complete, benchmark_name,
+    read_tool_var, is_complete, clean_build, benchmark_name,
 )
 from logikbench.fpga import FPGA_TARGETS
 from logikbench.asic import DEFAULT_CLK_NS
@@ -36,7 +36,7 @@ __all__ = [
     "FPGA_METRICS", "ASIC_METRICS", "STEPS", "DEFAULT_CLK_NS",
     "FPGA_TARGETS", "TARGETS", "LBFLOW_TARGETS",
     "run_one", "read_metrics", "read_asic_metrics", "read_tool_var",
-    "is_complete", "benchmark_name",
+    "is_complete", "clean_build", "benchmark_name",
 ]
 
 # all valid --target values, in match order: FPGA '<vendor>_<part>', then SC

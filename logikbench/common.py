@@ -135,6 +135,37 @@ def is_complete(name, builddir="build", jobname="job0"):
     return bool(statuses) and all(s == "success" for s in statuses)
 
 
+def clean_build(name, builddir="build", jobname="job0"):
+    """Delete a benchmark's synthesis artifacts, keeping only the manifest.
+
+    'lb collect' and --resume read a single file per benchmark -- the job
+    manifest '<builddir>/<name>/<jobname>/<name>.pkg.json'. Everything else in
+    the build tree (synthesis logs, netlists, reports, tool working dirs) is
+    disposable and is what fills the disk (multi-GB logs on large designs). This
+    removes all of it and prunes the now-empty directories, leaving just the
+    manifest so a later collect (and skip-completed --resume) still works.
+
+    No-op when the manifest is absent (nothing built, or already cleaned). Note
+    that removing the intermediate node outputs makes a later mid-flow '--from'
+    resume impossible for this benchmark; skip-completed '--resume' is fine.
+    """
+    benchdir = os.path.join(builddir, name)
+    manifest = os.path.join(benchdir, jobname, f"{name}.pkg.json")
+    if not os.path.isfile(manifest):
+        return
+    keep = os.path.abspath(manifest)
+    # bottom-up so a directory is visited after its contents are removed
+    for root, dirs, files in os.walk(benchdir, topdown=False):
+        for fname in files:
+            path = os.path.join(root, fname)
+            if os.path.abspath(path) != keep:
+                os.remove(path)
+        for dname in dirs:
+            dpath = os.path.join(root, dname)
+            if not os.listdir(dpath):
+                os.rmdir(dpath)
+
+
 def benchmark_name(group, item):
     """SC design name for a benchmark class. May differ from item.lower()
     (e.g. class EPFLArbiter -> design name 'epfl_arbiter'), so callers that key

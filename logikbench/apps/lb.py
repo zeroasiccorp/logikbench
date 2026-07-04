@@ -10,9 +10,9 @@ import logikbench as lb
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
 from logikbench.runner import (
-    FPGA_METRICS, ASIC_METRICS, TARGETS, FPGA_TARGETS, STEPS, DEFAULT_CLK_NS,
-    run_one, read_metrics, read_asic_metrics, read_tool_var, is_complete,
-    benchmark_name,
+    FPGA_METRICS, ASIC_METRICS, TARGETS, FPGA_TARGETS, LBFLOW_TARGETS, STEPS,
+    DEFAULT_CLK_NS, run_one, read_metrics, read_asic_metrics, read_tool_var,
+    is_complete, clean_build, benchmark_name,
 )
 
 # benchmark groups available to both subcommands
@@ -40,15 +40,29 @@ class LbHelpFormatter(argparse.HelpFormatter):
 
 
 # --target help: a fixed format legend plus the (dynamic) list of valid choices,
-# wrapped so it lines up under the help column.
+# grouped by kind and wrapped so each list lines up under the help column. The
+# three kinds partition TARGETS: FPGA targets, then SiliconCompiler built-in
+# targets, then LB bare-PDK targets (LBFLOW_TARGETS is FPGA + LB, so the LB set
+# is what remains after removing the FPGA targets, and SC is the rest).
+_FPGA_CHOICES = list(FPGA_TARGETS)
+_LB_CHOICES = [t for t in LBFLOW_TARGETS if t not in FPGA_TARGETS]
+_SC_CHOICES = [t for t in TARGETS if t not in LBFLOW_TARGETS]
+
+
+def _choices_block(label, choices):
+    return textwrap.fill(", ".join(choices), width=54,
+                         initial_indent=label, subsequent_indent="")
+
+
 _TARGET_HELP = (
     "Synthesis target(s). Pass several to sweep them in turn.\n"
     "Format:\n"
     "  - '<vendor>_<partname>' -> FPGA target (e.g., xilinx_virtex7)\n"
     "  - '<sc-target>'         -> SiliconCompiler built-in target\n"
     "  - '<lb-target>'         -> LB built-in target\n"
-    + textwrap.fill(", ".join(TARGETS), width=54,
-                    initial_indent="Choices: ", subsequent_indent="")
+    + "\n" + _choices_block("FPGA: ", _FPGA_CHOICES)
+    + "\n\n" + _choices_block("ASIC (SiliconCompiler): ", _SC_CHOICES)
+    + "\n\n" + _choices_block("ASIC (LB): ", _LB_CHOICES)
 )
 
 
@@ -159,6 +173,12 @@ def run_sweep(args, targets, worklist):
             failures.append(f"{target}/{group}/{name}")
         else:
             print(f"{prefix} Finished {name} benchmark ({target}/{group}).")
+        # By default reclaim disk as we go (pass or fail), keeping only the
+        # manifest 'lb collect'/--resume need; --keep retains everything. Runs
+        # in the parent for both the sequential and -j parallel paths, so
+        # benchmarks never race on it.
+        if not args.keep:
+            clean_build(name, builddir=target_builddir(args, target))
 
     if args.jobs > 1:
         with ProcessPoolExecutor(max_workers=args.jobs) as pool:
@@ -333,6 +353,16 @@ LogikBench commandline runner.
                        action='store_true',
                        help='Skip benchmarks whose build already completed '
                             'successfully; only synthesize the rest')
+    run_p.add_argument('--keep',
+                       action='store_true',
+                       help='Keep the full synthesis artifacts (logs, netlists, '
+                            'reports) for each benchmark. By default they are '
+                            'deleted as each benchmark finishes, leaving only '
+                            'the manifest that collect and --resume need, so '
+                            'peak disk stays bounded by the in-flight jobs '
+                            'instead of the whole sweep. Use --keep to retain '
+                            'everything (needed for a later --from mid-flow '
+                            'resume, at the cost of disk)')
     run_p.add_argument('--timeout',
                        type=float,
                        default=3600,

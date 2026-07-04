@@ -8,16 +8,36 @@
 [![Lint](https://github.com/zeroasiccorp/logikbench/actions/workflows/lint.yml/badge.svg)](https://github.com/zeroasiccorp/logikbench/actions/workflows/lint.yml)
 [![Downloads](https://static.pepy.tech/badge/logikbench)](https://pepy.tech/project/logikbench)
 
-## TL;DR
+## Why LogikBench
 
 LogikBench is a high quality curated open source RTL benchmark suite that enables reproducible evaluation of EDA tools, process technologies, and LLMs by combining open-source hardware, standardized build flows, and automated QoR measurement.
 
-- 📦 Curated collection of high-quality RTL designs
-- 🔁 Reproducible build and synthesis flows
-- 📊 Standard QoR metrics across multiple tools
-- 🤖 Designed for both EDA research and LLM evaluation
 - 🏆 [Live results dashboard](https://zeroasiccorp.github.io/logikbench/) (FPGA & ASIC)
 
+----
+
+## The Problem
+
+The semiconductor industry lacks a comprehensive, standardized benchmark suite for evaluating EDA tools, design flows, foundry processes, and FPGA devices. Existing RTL benchmark suites suffer from critical gaps.
+
+* **Limited standardization:** no "ImageNet/SpecInt/Dhrystone for EDA"
+* **Poor diversity:** too many CPUs, not representative of real designs
+* **No parameterization:** not representative of full range of performance targets
+* **Unclear provenance:** source code origin and intent often unknown
+* **No infrastructure:** no clear path to reproducibility
+
+## The Solution
+
+* **128 unique benchmark circuits:** spanning basic logic to complex subsystems
+* **Synthesis ready:** not just raw text string blobs
+* **10,000+ configurations:** through parameter sweeping
+* **Standardized metrics:** and execution infrastructure
+* **100% open source:** no license or membership fees!
+* **Full provenance:** documented source code provenance
+
+> "Sunlight is said to be the best of disinfectants." --Supreme Court Justice Louis Brandeis
+
+## Quick Start
 
 ```bash
 pip install logikbench               # install logikbench
@@ -26,30 +46,6 @@ lb run --target zeroasic_z1015 -j 4  # run benchmarks on z1015
 ```
 
 See [Tool Installation](#tool-installation) for EDA tool pre-requisites and customization. To quickly install OpenROAD and Yosys, just enter `sc-install -group asic fpga` after pip installing logikbench.
-
-----
-
-## Problem Statement
-
-The semiconductor industry lacks a comprehensive, standardized benchmark suite for evaluating EDA tools, design flows, foundry processes, and FPGA devices. Existing RTL benchmark suites suffer from critical gaps. These gaps make it difficult to objectively compare tools, validate improvements, and track progress across the industry.
-
-* **No standardization:** no "ImageNet/SpecInt/Dhrystone for EDA"
-* **No diversity:** too many CPUs, not representative of real designs
-* **No parameters:** not representative of full range of performance targets
-* **No provenance:** benchmark origin and intent often unknown
-* **No infrastructure:** no clear path to reproducibility
-* **No open source license:** license often ambiguous/unknown
-
-## Our Solution
-
-"Sunlight is said to be the best of disinfectants." --Supreme Court Justice Louis Brandeis
-
-* **128 unique benchmark circuits:** spanning basic logic to complex subsystems
-* **Synthesis ready:** not just raw text string blobs
-* **10,000+ configurations:** through parameter sweeping
-* **Standardized metrics:** and execution infrastructure
-* **100% open source:** no license or membership fees!
-* **Full provenance:** documented source code provenance
 
 ----
 
