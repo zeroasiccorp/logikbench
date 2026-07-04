@@ -12,7 +12,7 @@
 
 LogikBench is a high quality curated open source RTL benchmark suite that enables reproducible evaluation of EDA tools, process technologies, and LLMs by combining open-source hardware, standardized build flows, and automated QoR measurement.
 
-- 🏆 [Live results dashboard](https://zeroasiccorp.github.io/logikbench/) (FPGA & ASIC)
+🏆 [Live results dashboard](https://zeroasiccorp.github.io/logikbench/)
 
 ----
 
@@ -28,12 +28,13 @@ The semiconductor industry lacks a comprehensive, standardized benchmark suite f
 
 ## The Solution
 
-* **128 unique benchmark circuits:** spanning basic logic to complex subsystems
-* **Synthesis ready:** not just raw text string blobs
-* **10,000+ configurations:** through parameter sweeping
-* **Standardized metrics:** and execution infrastructure
-* **100% open source:** no license or membership fees!
+* **166 benchmark circuits:** spanning basic logic to complex subsystems
+* **Historical overlay:** includess epfl, isca85, isca89
+* **Standardized metrics:** documenting what is measured
+* **100% open source:** no license or membership fees
 * **Full provenance:** documented source code provenance
+* **Synthesis ready:** easy to port
+* **10,000+ configurations:** through parameter sweeping
 
 > "Sunlight is said to be the best of disinfectants." --Supreme Court Justice Louis Brandeis
 
