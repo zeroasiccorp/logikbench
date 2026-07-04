@@ -103,8 +103,10 @@ class Synthesis(TardigradeTask):
             for sdc in design.get_file(fileset="lbsdc"):
                 opts += ["-s", sdc]
         opts += ["-o", f"outputs/{top}.vg", "--qor", "qor.json"]
+        # '=' form so a leading dash in the forwarded flag (e.g.
+        # -area_recovery) is not parsed as a new argument by tardigrade.
         for opt in self.get("var", "options"):
-            opts += ["--option", opt]
+            opts += [f"--option={opt}"]
         return opts
 
     def post_process(self):
