@@ -79,6 +79,11 @@ def main():
     ap.add_argument("--timeout", type=float, default=None, metavar="SEC",
                     help="per-step wall-clock cap in seconds passed to 'lb run' "
                          "(default: lb's own default)")
+    ap.add_argument("--clean", action="store_true",
+                    help="pass --clean to 'lb run': delete each benchmark's "
+                         "synthesis artifacts as it finishes, keeping only the "
+                         "manifest 'lb collect' needs. Bounds peak disk over a "
+                         "full sweep (collect still runs next as usual)")
     args = ap.parse_args()
 
     asic = args.flow == "asic"
@@ -107,6 +112,8 @@ def main():
         run_cmd += ["--clk", str(args.clk)]
     if args.timeout is not None:
         run_cmd += ["--timeout", str(args.timeout)]
+    if args.clean:
+        run_cmd += ["--clean"]
     result = run(run_cmd, check=False)
     if result.returncode != 0:
         print("\n(note: some benchmark/target pairs failed; collecting the "

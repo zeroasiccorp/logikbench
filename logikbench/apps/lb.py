@@ -12,7 +12,7 @@ from concurrent.futures import ProcessPoolExecutor, as_completed
 from logikbench.runner import (
     FPGA_METRICS, ASIC_METRICS, TARGETS, FPGA_TARGETS, STEPS, DEFAULT_CLK_NS,
     run_one, read_metrics, read_asic_metrics, read_tool_var, is_complete,
-    benchmark_name,
+    clean_build, benchmark_name,
 )
 
 # benchmark groups available to both subcommands
@@ -159,6 +159,11 @@ def run_sweep(args, targets, worklist):
             failures.append(f"{target}/{group}/{name}")
         else:
             print(f"{prefix} Finished {name} benchmark ({target}/{group}).")
+        # --clean: reclaim disk as we go (pass or fail), keeping only the
+        # manifest 'lb collect'/--resume need. Runs in the parent for both the
+        # sequential and -j parallel paths, so benchmarks never race on it.
+        if args.clean:
+            clean_build(name, builddir=target_builddir(args, target))
 
     if args.jobs > 1:
         with ProcessPoolExecutor(max_workers=args.jobs) as pool:
@@ -333,6 +338,15 @@ LogikBench commandline runner.
                        action='store_true',
                        help='Skip benchmarks whose build already completed '
                             'successfully; only synthesize the rest')
+    run_p.add_argument('--clean',
+                       action='store_true',
+                       help='After each benchmark, delete its synthesis '
+                            'artifacts (logs, netlists, reports) as soon as it '
+                            'finishes, keeping only the manifest that collect '
+                            'and --resume need. Bounds peak disk to the '
+                            'in-flight jobs instead of the whole sweep. NOTE: '
+                            'removes the intermediate outputs a later --from '
+                            'mid-flow resume would need')
     run_p.add_argument('--timeout',
                        type=float,
                        default=3600,
