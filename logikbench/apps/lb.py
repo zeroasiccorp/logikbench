@@ -16,7 +16,8 @@ from logikbench.benchmark import (
 )
 
 # benchmark groups available to both subcommands
-ALL_GROUPS = ['basic', 'memory', 'arithmetic', 'epfl', 'blocks']
+ALL_GROUPS = ['basic', 'memory', 'arithmetic', 'epfl', 'blocks',
+              'iscas85', 'iscas89']
 
 # metrics tracked are determined by the run mode (fpga vs asic synthesis)
 FLOW_METRICS = {'fpga': FPGA_METRICS, 'asic': ASIC_METRICS}

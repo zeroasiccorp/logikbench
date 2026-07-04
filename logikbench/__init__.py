@@ -11,11 +11,15 @@ from logikbench import arithmetic
 from logikbench import memory
 from logikbench import blocks
 from logikbench import epfl
+from logikbench import iscas85
+from logikbench import iscas89
 
 __all__ = [
     "basic",
     "arithmetic",
     "memory",
     "blocks",
-    "epfl"
+    "epfl",
+    "iscas85",
+    "iscas89"
 ]

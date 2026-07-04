@@ -264,7 +264,7 @@ Shared by both subcommands:
 
 | Flag | Description |
 |------|-------------|
-| `-g`, `--group` | Benchmark group(s): `basic`, `memory`, `arithmetic`, `epfl`, `blocks` (required) |
+| `-g`, `--group` | Benchmark group(s): `basic`, `memory`, `arithmetic`, `epfl`, `blocks`, `iscas85`, `iscas89` (required) |
 | `-n`, `--name` | Only act on benchmark(s) with these name(s), matched against the selected group(s) (default: all of them) |
 | `-t`, `--target` | Synthesis target(s) to sweep (required); see the Targets table above |
 | `-b` | Build directory root; per-benchmark work goes in `<builddir>/<target>/<name>` (default: `build`) |
@@ -483,6 +483,59 @@ lb run -g basic -t asap7_demo --to synthesis
 | epfl_sqrt | Square root | [epfl_sqrt.v](logikbench/epfl/epfl_sqrt/rtl/epfl_sqrt.v) |
 | epfl_square | Square function | [epfl_square.v](logikbench/epfl/epfl_square/rtl/epfl_square.v) |
 | epfl_voter | Voter circuit | [epfl_voter.v](logikbench/epfl/epfl_voter/rtl/epfl_voter.v) |
+
+### ISCAS85 Benchmarks (11 benchmarks)
+
+Combinational gate-level circuits. See [iscas85/README.md](logikbench/iscas85/README.md).
+
+| Benchmark | Description | Verilog |
+|-----------|-------------|---------|
+| c17 | Trivial 6-gate circuit | [c17.v](logikbench/iscas85/c17/rtl/c17.v) |
+| c432 | 27-channel interrupt controller | [c432.v](logikbench/iscas85/c432/rtl/c432.v) |
+| c499 | 32-bit single-error-correcting circuit | [c499.v](logikbench/iscas85/c499/rtl/c499.v) |
+| c880 | 8-bit ALU | [c880.v](logikbench/iscas85/c880/rtl/c880.v) |
+| c1355 | 32-bit single-error-correcting circuit | [c1355.v](logikbench/iscas85/c1355/rtl/c1355.v) |
+| c1908 | 16-bit SEC/DED circuit | [c1908.v](logikbench/iscas85/c1908/rtl/c1908.v) |
+| c2670 | 12-bit ALU and controller | [c2670.v](logikbench/iscas85/c2670/rtl/c2670.v) |
+| c3540 | 8-bit ALU | [c3540.v](logikbench/iscas85/c3540/rtl/c3540.v) |
+| c5315 | ALU with parity | [c5315.v](logikbench/iscas85/c5315/rtl/c5315.v) |
+| c6288 | 16x16 combinational multiplier | [c6288.v](logikbench/iscas85/c6288/rtl/c6288.v) |
+| c7552 | 32-bit adder/comparator | [c7552.v](logikbench/iscas85/c7552/rtl/c7552.v) |
+
+### ISCAS89 Benchmarks (28 benchmarks)
+
+Sequential gate-level circuits (clock port `CK`). See [iscas89/README.md](logikbench/iscas89/README.md).
+
+| Benchmark | Description | Verilog |
+|-----------|-------------|---------|
+| s27 | Sequential benchmark circuit | [s27.v](logikbench/iscas89/s27/rtl/s27.v) |
+| s298 | Sequential benchmark circuit | [s298.v](logikbench/iscas89/s298/rtl/s298.v) |
+| s344 | Sequential benchmark circuit | [s344.v](logikbench/iscas89/s344/rtl/s344.v) |
+| s349 | Sequential benchmark circuit | [s349.v](logikbench/iscas89/s349/rtl/s349.v) |
+| s382 | Sequential benchmark circuit | [s382.v](logikbench/iscas89/s382/rtl/s382.v) |
+| s386 | Sequential benchmark circuit | [s386.v](logikbench/iscas89/s386/rtl/s386.v) |
+| s400 | Sequential benchmark circuit | [s400.v](logikbench/iscas89/s400/rtl/s400.v) |
+| s420 | Sequential benchmark circuit | [s420.v](logikbench/iscas89/s420/rtl/s420.v) |
+| s444 | Sequential benchmark circuit | [s444.v](logikbench/iscas89/s444/rtl/s444.v) |
+| s510 | Sequential benchmark circuit | [s510.v](logikbench/iscas89/s510/rtl/s510.v) |
+| s526 | Sequential benchmark circuit | [s526.v](logikbench/iscas89/s526/rtl/s526.v) |
+| s641 | Sequential benchmark circuit | [s641.v](logikbench/iscas89/s641/rtl/s641.v) |
+| s713 | Sequential benchmark circuit | [s713.v](logikbench/iscas89/s713/rtl/s713.v) |
+| s820 | Sequential benchmark circuit | [s820.v](logikbench/iscas89/s820/rtl/s820.v) |
+| s832 | Sequential benchmark circuit | [s832.v](logikbench/iscas89/s832/rtl/s832.v) |
+| s838 | Sequential benchmark circuit | [s838.v](logikbench/iscas89/s838/rtl/s838.v) |
+| s953 | Sequential benchmark circuit | [s953.v](logikbench/iscas89/s953/rtl/s953.v) |
+| s1196 | Sequential benchmark circuit | [s1196.v](logikbench/iscas89/s1196/rtl/s1196.v) |
+| s1238 | Sequential benchmark circuit | [s1238.v](logikbench/iscas89/s1238/rtl/s1238.v) |
+| s1423 | Sequential benchmark circuit | [s1423.v](logikbench/iscas89/s1423/rtl/s1423.v) |
+| s1488 | Sequential benchmark circuit | [s1488.v](logikbench/iscas89/s1488/rtl/s1488.v) |
+| s5378 | Sequential benchmark circuit | [s5378.v](logikbench/iscas89/s5378/rtl/s5378.v) |
+| s9234 | Sequential benchmark circuit | [s9234.v](logikbench/iscas89/s9234/rtl/s9234.v) |
+| s13207 | Sequential benchmark circuit | [s13207.v](logikbench/iscas89/s13207/rtl/s13207.v) |
+| s15850 | Sequential benchmark circuit | [s15850.v](logikbench/iscas89/s15850/rtl/s15850.v) |
+| s35932 | Sequential benchmark circuit | [s35932.v](logikbench/iscas89/s35932/rtl/s35932.v) |
+| s38417 | Sequential benchmark circuit | [s38417.v](logikbench/iscas89/s38417/rtl/s38417.v) |
+| s38584 | Sequential benchmark circuit | [s38584.v](logikbench/iscas89/s38584/rtl/s38584.v) |
 
 ----
 
