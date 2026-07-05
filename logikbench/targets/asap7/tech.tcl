@@ -14,9 +14,11 @@
 # Liberty time unit for this PDK, in nanoseconds (ASAP7 time = 1 ps).
 set LB_TIME_UNIT_NS 0.001
 
-# Default clock period
+# Default clock period (ns). 0.2 ns = 200 ps = 5 GHz: tighter than any block's
+# critical path here, so STA slack is negative and the mapper actively optimizes
+# toward max fmax instead of stopping early.
 if {![info exists LB_CLK_NS]} {
-    set LB_CLK_NS 200
+    set LB_CLK_NS 0.2
 }
 set LB_CLK_PERIOD [expr {$LB_CLK_NS / $LB_TIME_UNIT_NS}]
 
