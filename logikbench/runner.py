@@ -16,9 +16,9 @@ Targets (--target) are named '<tool>_<part>' and select what runs:
   * 'sc_<pdk>' (e.g. 'sc_asap7') -> logikbench.asic SC asicflow path (a
     target built into SiliconCompiler).
 
-The names re-exported below (metrics, targets, step names, DEFAULT_CLK_NS and
-the manifest readers) are the stable interface used by lb, the dashboard, and
-the scripts; import them from here rather than the submodules.
+The names re-exported below (metrics, targets, step names and the manifest
+readers) are the stable interface used by lb, the dashboard, and the scripts;
+import them from here rather than the submodules.
 """
 
 import os
@@ -30,11 +30,10 @@ from logikbench.common import (
     read_tool_var, is_complete, clean_build,
 )
 from logikbench.fpga import FPGA_TARGETS
-from logikbench.asic import DEFAULT_CLK_NS
 
 # Stable public interface (import these from here, not the submodules).
 __all__ = [
-    "FPGA_METRICS", "ASIC_METRICS", "STEPS", "DEFAULT_CLK_NS",
+    "FPGA_METRICS", "ASIC_METRICS", "STEPS",
     "FPGA_TARGETS", "SC_TARGETS", "YOSYS_TARGETS", "TARDIGRADE_TARGETS",
     "TARGETS",
     "run_one", "read_metrics", "read_asic_metrics", "read_tool_var",
@@ -57,7 +56,7 @@ TARGETS = (list(fpga.FPGA_TARGETS) + SC_TARGETS + YOSYS_TARGETS
 
 
 def run_one(design_cls, target=None, options="", builddir="build", quiet=True,
-            start=None, stop=None, timeout=None, clk=DEFAULT_CLK_NS):
+            start=None, stop=None, timeout=None, clk=None):
     """Run a single benchmark class; return (metrics, error).
 
     'design_cls' is the benchmark's Design subclass (resolved by the caller); it
@@ -66,7 +65,8 @@ def run_one(design_cls, target=None, options="", builddir="build", quiet=True,
     picklable for the pool. 'timeout' (seconds, or None) caps each step's wall
     clock; SC kills the tool tree on expiry and the step fails, so one hung
     synth cannot stall a sweep. 'clk' is the ASIC clock period in ns for the
-    generic SDC (ignored for FPGA targets).
+    generic SDC (None -> use each PDK's tech.tcl default; ignored for FPGA
+    targets).
     """
     design = design_cls()
     # key off the SC design name, not the class name: a class like EPFLArbiter

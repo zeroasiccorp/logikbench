@@ -11,7 +11,7 @@ from concurrent.futures import ProcessPoolExecutor, as_completed
 
 from logikbench.runner import (
     FPGA_METRICS, ASIC_METRICS, TARGETS, FPGA_TARGETS, SC_TARGETS,
-    YOSYS_TARGETS, TARDIGRADE_TARGETS, STEPS, DEFAULT_CLK_NS, run_one,
+    YOSYS_TARGETS, TARDIGRADE_TARGETS, STEPS, run_one,
     read_metrics, read_asic_metrics, read_tool_var, is_complete, clean_build,
 )
 
@@ -352,12 +352,12 @@ LogikBench commandline runner.
                             f"'floorplan.init' (default: to the end)")
     run_p.add_argument('--clk',
                        type=float,
-                       default=DEFAULT_CLK_NS,
+                       default=None,
                        metavar="PERIOD",
                        help='ASIC clock period in nanoseconds for the generic '
                             'SDC (create_clock); scaled into each PDK time '
-                            'unit. Ignored for FPGA targets (default: '
-                            f'{DEFAULT_CLK_NS})')
+                            'unit. Ignored for FPGA targets (default: each '
+                            "PDK's tech.tcl clock)")
     run_p.add_argument('--resume',
                        action='store_true',
                        help='Skip benchmarks whose build already completed '
