@@ -225,6 +225,8 @@ def _run_lbflow(design, target, options, builddir, quiet, start, stop, timeout,
         synvar("mode", "asic")
         synvar("ignore_initial",
                bool(getattr(design, "ignore_initial", False)))
+    elif tool == "tardigrade":
+        synvar("pdk", pdk)
     if options:
         synvar("options", options.split())
     _set_range(proj, start, stop)
