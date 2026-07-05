@@ -35,8 +35,8 @@ if {![info exists LB_OUTPUTS]} { set LB_OUTPUTS [all_outputs] }
 # External I/O delays. Input/output delays scale with the clock period;
 # hold is a fixed floor (not frequency dependent).
 
-set LB_IO_IDELAY [expr {0.50 * $LB_CLK_PERIOD}]
-set LB_IO_ODELAY [expr {0.50 * $LB_CLK_PERIOD}]
+set LB_IO_IDELAY [expr {0.0 * $LB_CLK_PERIOD}]
+set LB_IO_ODELAY [expr {0.0 * $LB_CLK_PERIOD}]
 set LB_IO_HOLD  0
 
 ########################################
