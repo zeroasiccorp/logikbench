@@ -187,9 +187,10 @@ still constrained). The period defaults to 1 ns and is set with `lb run --clk
 <ns>`; it is given in nanoseconds and scaled into each PDK's SDC time unit
 (`create_clock -period` is read in the unit OpenROAD derives from the liberty --
 1 ns for most PDKs, 1 ps for ASAP7 -- so the same `--clk` is the same real
-frequency on every target). For the `freepdk45` lbflow path the period is only a
-starting reference (FMAX is the minimum achievable period); for the `*_demo`
-asicflow path it is the real optimization target that place-and-route works to.
+frequency on every target). For the `yosys_<pdk>`/`tardigrade_<pdk>` lbflow path
+the period is only a starting reference (FMAX is the minimum achievable period);
+for the `sc_<pdk>` asicflow path it is the real optimization target that
+place-and-route works to.
 
 ### Runtime
 
@@ -236,23 +237,29 @@ architecture config vendored under `logikbench/targets/zeroasic/`.
 
 ### ASIC Targets
 
-ASIC targets are named after their PDK. There are two flavors:
+ASIC targets follow the same `<tool>_<part>` scheme as FPGA targets
+(`<vendor>_<partname>`): the tool comes first, the PDK second. Three flavors --
+`yosys_<pdk>` and `tardigrade_<pdk>` run the lightweight `lbflow` path (synthesis
++ OpenSTA timing, no place-and-route), and `sc_<pdk>` runs the full
+SiliconCompiler `asicflow`:
 
 | Target | PDK / library | Flow |
 |--------|---------------|------|
-| `freepdk45` | FreePDK45 / Nangate45 (lambdapdk) | `lbflow`: Yosys synthesis + OpenSTA timing (no place-and-route) |
-| `freepdk45_demo` | FreePDK45 | SiliconCompiler `asicflow` (synth -> floorplan -> place -> cts -> route) |
-| `asap7_demo` | ASAP7 7nm | SiliconCompiler `asicflow` |
-| `skywater130_demo` | SkyWater 130 | SiliconCompiler `asicflow` |
-| `gf180_demo` | GlobalFoundries 180 | SiliconCompiler `asicflow` |
-| `ihp130_demo` | IHP SG13G2 130 | SiliconCompiler `asicflow` |
+| `yosys_freepdk45` | FreePDK45 / Nangate45 (lambdapdk) | `lbflow`: Yosys synthesis + OpenSTA timing (no place-and-route) |
+| `tardigrade_freepdk45` | FreePDK45 | `lbflow` with tardigrade as the synthesis mapper |
+| `sc_freepdk45` | FreePDK45 | SiliconCompiler `asicflow` (synth -> floorplan -> place -> cts -> route) |
+| `sc_asap7` | ASAP7 7nm | SiliconCompiler `asicflow` |
+| `sc_skywater130` | SkyWater 130 | SiliconCompiler `asicflow` |
+| `sc_gf180` | GlobalFoundries 180 | SiliconCompiler `asicflow` |
+| `sc_ihp130` | IHP SG13G2 130 | SiliconCompiler `asicflow` |
 
-The plain PDK name (`freepdk45`) runs the lightweight `lbflow` path used for the
-QoR metrics above: Yosys maps to the standard-cell library and OpenSTA reports
-FMAX, with no place-and-route. The `<pdk>_demo` targets run the full official
-SiliconCompiler `asicflow` (through routing) and are trimmed to a single library
-and a single setup corner so each benchmark stays fast; use `--to synthesis` to
-stop after synthesis.
+The `yosys_<pdk>` / `tardigrade_<pdk>` targets run the lightweight `lbflow` path
+used for the QoR metrics above: the mapper maps to the standard-cell library and
+OpenSTA reports FMAX, with no place-and-route. The `sc_<pdk>` targets run the
+full official SiliconCompiler `asicflow` (through routing) and are trimmed to a
+single library and a single setup corner so each benchmark stays fast; use
+`--to synthesis` to stop after synthesis. (`yosys_<pdk>`/`tardigrade_<pdk>`
+cover the lambdapdk std-cell PDKs; `sc_<pdk>` additionally offers `sc_interposer`.)
 
 ### ASIC Timing Constraints (SDC)
 
@@ -274,7 +281,7 @@ The only number you normally set is `--clk` (the clock period in nanoseconds,
 the same value for every PDK; it is scaled into each PDK's native time unit):
 
 ```bash
-lb run -g basic -t freepdk45 --clk 2      # constrain every basic benchmark at 2 ns
+lb run -g basic -t yosys_freepdk45 --clk 2   # constrain every basic benchmark at 2 ns
 ```
 
 **Customizing a single benchmark.** When a benchmark needs constraints the
@@ -363,14 +370,14 @@ lb run -g basic -t xilinx_virtex7 lattice_ice40 gowin_gw5a -j 8
 Run ASIC synthesis + timing (`lbflow`) on the freepdk45 PDK, then collect:
 
 ```bash
-lb run -g basic -t freepdk45
-lb collect -g basic -t freepdk45 -o results
+lb run -g basic -t yosys_freepdk45
+lb collect -g basic -t yosys_freepdk45 -o results
 ```
 
-Run the asap7 demo target (SC asicflow), synthesis only:
+Run the asap7 SC asicflow target, synthesis only:
 
 ```bash
-lb run -g basic -t asap7_demo --to synthesis
+lb run -g basic -t sc_asap7 --to synthesis
 ```
 ----
 
@@ -595,20 +602,20 @@ Comparing different FPGA architectures is by definition an apples to oranges exe
 <!-- RANKING:START -->
 | Rank | Target | Arch | Total LUTs | Missing |
 |-----:|--------|------|-----------:|--------:|
-| 1 | zeroasic_z1060 | LUT6 | 161,693 | 5 |
-| 2 | gatemate_cologne | LUT8 | 190,534 | 5 |
-| 3 | microchip_polarfire | LUT4 | 224,143 | 7 |
-| 4 | zeroasic_z1015 | LUT4 | 225,818 | 5 |
-| 5 | adi_flex16ffc | LUT6 | 227,133 | 4 |
-| 6 | xilinx_virtex7 | LUT6 | 247,199 | 9 |
-| 7 | quicklogic_polarpro | LUT4/MUX | 253,639 | 2 |
-| 8 | lattice_ice40 | LUT4 | 256,531 | 4 |
-| 9 | efinix_trion | LUT4 | 263,076 | 8 |
-| 10 | fabulous_generic | LUT4 | 278,615 | 8 |
-| 11 | achronix_speedster | LUT6 | 439,740 | 10 |
-| 12 | lattice_ecp5 | LUT4 | 442,540 | 8 |
-| 13 | zeroasic_z1015opt | LUT4 | 497,161 | 29 |
-| 14 | gowin_gw5a | LUT4 | 617,752 | 7 |
+| 1 | zeroasic_z1060 | LUT6 | 622,544 | 5 |
+| 2 | gatemate_cologne | LUT8 | 657,965 | 6 |
+| 3 | adi_flex16ffc | LUT6 | 712,670 | 4 |
+| 4 | xilinx_virtex7 | LUT6 | 727,599 | 11 |
+| 5 | zeroasic_z1015 | LUT4 | 783,697 | 5 |
+| 6 | microchip_polarfire | LUT4 | 806,090 | 14 |
+| 7 | lattice_ice40 | LUT4 | 955,767 | 8 |
+| 8 | efinix_trion | LUT4 | 972,448 | 9 |
+| 9 | lattice_ecp5 | LUT4 | 1,099,864 | 11 |
+| 10 | quicklogic_polarpro | LUT4/MUX | 1,152,443 | 14 |
+| 11 | fabulous_generic | LUT4 | 1,276,650 | 17 |
+| 12 | gowin_gw5a | LUT4 | 1,543,462 | 11 |
+| 13 | achronix_speedster | LUT6 | 1,552,803 | 25 |
+| 14 | zeroasic_z1015opt | LUT4 | 1,628,976 | 57 |
 <!-- RANKING:END -->
 
 ### ASIC Synthesis
