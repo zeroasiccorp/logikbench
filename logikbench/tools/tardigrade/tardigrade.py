@@ -1,8 +1,7 @@
 """Tardigrade ASIC synthesis.
 
-Tardigrade maps the design to a standard-cell library and writes a gate-level
-Verilog netlist (outputs/<top>.vg) that the downstream OpenSTA timing node
-reads for fmax/cellarea/cells.
+Tardigrade is Zero ASIC's standalone synthesis tool that maps RTL to a standard-cell
+library and writes out a gate-level Verilog netlist.
 
 Interface:
 
@@ -11,10 +10,10 @@ Interface:
                [-s <sdc> [-s <sdc> ...]
                [-o <output file>] [--option <opt> ...]
 
-  -f        Verilog RTL command file(s)
-  -s,--sdc  SDC file(s)
-  -l,--lib  standard-cell liberty file
-  -t,--top  top module name
+  -f          Verilog RTL command file(s)
+  -s,--sdc    SDC file(s)
+  -l,--lib    standard-cell liberty file
+  -t,--top    top module name
   -o,--output output netlist filepath
   --option    extra option passed through verbatim (repeatable)
   --qor       qor json filepath
@@ -41,13 +40,14 @@ class TardigradeTask(Task):
     def tool(self):
         return "tardigrade"
 
+    def parse_version(self, stdout):
+        # 'tardigrade -v' prints 'tardigrade <version>'
+        return stdout.split()[1]
+
     def setup(self):
         super().setup()
         self.set_exe("tardigrade", vswitch="-v")
-        # TODO(bring-up): once tardigrade is on PATH, pin a minimum version
-        #   self.add_version(">=<ver>")
-        # and, if 'tardigrade -v' is not '<name> <version> ...', override
-        # parse_version()
+        # TODO(bring-up): pin a minimum version once stable, e.g.
         self.add_regex("warnings", "Warning:")
         self.add_regex("errors", "^ERROR")
 
@@ -65,54 +65,64 @@ class Synthesis(TardigradeTask):
             "options", "[str]",
             "extra options passed through verbatim, each as a '--option <opt>' "
             "argument (fed by lb run --options)", [])
+        self.add_parameter(
+            "pdk", "str",
+            "PDK name passed to 'tardigrade --pdk', which auto-populates the "
+            "synth_asic mapping args (techmap/dont-use/tie cells) from "
+            "lambdapdk", "")
 
     def task(self):
         return "synthesis"
 
     def setup(self):
+        '''Task interface setup'''
         super().setup()
+        # Required RTL
         for lib, key in (self.get_fileset_file_keys("systemverilog")
                          + self.get_fileset_file_keys("verilog")):
             self.add_required_key(lib, *key)
-        # SDC drives timing-driven mapping; mark it required like the RTL so SC
-        # stages/tracks it (same access pattern OpenSTA's TimingTask uses).
+        # Required SDC
         for lib, key in self.get_fileset_file_keys("sdc"):
             self.add_required_key(lib, *key)
+        # TODO: cleanup outputs
         self.add_output_file(ext="vg")
+        self.add_output_file(ext="netlist.json")
 
     def pre_process(self):
-        '''Dynamic runtime pre-processing step.'''
+        '''Dynamic runtime pre-processing'''
         super().pre_process()
-        # Dump the resolved flat filelist (full dependency graph: sources,
-        # +incdir/+define) that tardigrade reads via -f.
+        # Export .f filelist for use by tool verilog parser
         fileset = self.project.get("option", "fileset")[0]
         self.project.design.write_fileset("cmd.f", fileset=fileset)
 
     def runtime_options(self):
+        '''Dynamic runtime options.'''
         opts = super().runtime_options()
         design = self.project.design
         fileset = self.project.get("option", "fileset")[0]
         top = design.get_topmodule(fileset)
         opts += ["-f", "cmd.f", "-t", top]
+        pdk = self.get("var", "pdk")
+        # PDK target
+        if pdk:
+            opts += ["--pdk", pdk]
+        # Liberty
         for lib in self.get("var", "liberty"):
             opts += ["-l", lib]
-        # timing-driven mapping: pass the SDC (the lbsdc wrapper OpenSTA also
-        # reads). tardigrade's -s is OpenSTA-compatible TCL, so the one file
-        # serves both the synthesis and timing nodes.
+        # SDC
         if design.has_fileset("lbsdc"):
             for sdc in design.get_file(fileset="lbsdc"):
                 opts += ["-s", sdc]
+        # Options
         opts += ["-o", f"outputs/{top}.vg", "--qor", "qor.json"]
-        # '=' form so a leading dash in the forwarded flag (e.g.
-        # -area_recovery) is not parsed as a new argument by tardigrade.
         for opt in self.get("var", "options"):
             opts += [f"--option={opt}"]
         return opts
 
     def post_process(self):
+        '''Dynamic post-processing'''
         super().post_process()
-        # tardigrade writes a QoR JSON (via --qor) whose keys are exactly SC
-        # schema metric names
+        # process tardigrade qor file
         qor = "qor.json"
         if not os.path.exists(qor):
             return
