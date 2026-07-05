@@ -7,8 +7,10 @@ A popular single file parametrized RV32I CPU design.
 
 ## Parameters
 
-- Default overrides recorded in picorv32.py
-- See https://github.com/YosysHQ/picorv32/blob/main/README.md for reference
+- Our RTL (rtl/picorv32.v) is a modified copy of upstream picorv32.v: the
+  parameter defaults are changed directly in the RTL, not passed from
+  picorv32.py. The changed defaults are listed under Modifications below.
+- Upstream reference: https://github.com/YosysHQ/picorv32/blob/main/picorv32.v
 
 ## Original Sources
 
@@ -25,12 +27,16 @@ A popular single file parametrized RV32I CPU design.
 - Added SDC design constraints
 - ENABLE_COUNTERS64 = 0
 - ENABLE_REGS_DUALPORT = 0
-- TWO_STAGE_SHIFT = 0
-- ENABLE_MUL = 0
-- ENABLE_FAST_MUL = 0
-- ENABLE_IRQ_TIMER = 0
-- ENABLE_IRQ_QREGS = 0
 - LATCHED_MEM_RDATA = 1
-- ENABLE_REGS_16_31 = 0
+- TWO_STAGE_SHIFT = 0
+- BARREL_SHIFTER = 1
+- COMPRESSED_ISA = 1
 - CATCH_MISALIGN = 0
 - CATCH_ILLINSN = 0
+- ENABLE_PCPI = 1
+- ENABLE_MUL = 1
+- ENABLE_FAST_MUL = 1
+- ENABLE_DIV = 1
+- ENABLE_IRQ = 1
+- ENABLE_IRQ_QREGS = 0
+- ENABLE_IRQ_TIMER = 0
