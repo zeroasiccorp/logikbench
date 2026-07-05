@@ -123,29 +123,37 @@ def _bench_sdc(design):
 
 
 def _single_corner(proj):
-    """Trim a demo target to one library and one STA corner.
+    """Trim a demo target to one library and the typical STA corner.
 
     Demo targets (e.g. asap7_demo) load several Vt libraries (RVT/LVT/SLVT) and
     several timing corners (slow/typical/fast); every STA-running node then reads
     each Vt x corner liberty (~45 .lib.gz for asap7) for every benchmark, which
     dominates runtime. LogikBench only needs cells/area/fmax from one consistent
     corner, so keep the main library (drop the extra Vt 'asiclib' variants) and
-    the single setup-check scenario (fmax/setupslack come from setup), dropping
-    the power/hold corners. Reduces asap7 liberty reads ~9x (45 -> 5)."""
+    a single scenario. We keep the TYPICAL (nominal) corner so sign-off matches
+    the synthesis corner; the demo typical scenario usually defines only 'power',
+    so give it setup+hold checks (fmax/setupslack come from setup). Reduces asap7
+    liberty reads ~9x (45 -> 5)."""
     # one library: keep the main lib, drop the extra Vt standard-cell libraries
     proj.set("asic", "asiclib", [])
-    # one corner: keep a single setup-check scenario, remove the rest
+    # one corner: keep the typical-libcorner scenario, remove the rest. Fall back
+    # to any setup scenario, then to the first, if no typical corner is defined.
     timing = proj.constraint.timing
     scenarios = list(proj.getkeys("constraint", "timing", "scenario"))
 
-    def checks(s):
-        return proj.get("constraint", "timing", "scenario", s, "check") or []
+    def field(s, key):
+        return proj.get("constraint", "timing", "scenario", s, key) or []
 
-    setup = [s for s in scenarios if "setup" in checks(s)]
-    keep = (setup or scenarios)[:1]
+    typical = [s for s in scenarios if "typical" in field(s, "libcorner")]
+    setup = [s for s in scenarios if "setup" in field(s, "check")]
+    keep = (typical or setup or scenarios)[:1]
     for s in scenarios:
         if s not in keep:
             timing.remove_scenario(s)
+    # Ensure the kept (typical) scenario runs setup/hold so QoR metrics exist.
+    for s in keep:
+        proj.set("constraint", "timing", "scenario", s, "check",
+                 ["setup", "hold"])
 
 
 def _write_sc_wrapper(builddir, name, target, clk_ns, bench_sdc):
