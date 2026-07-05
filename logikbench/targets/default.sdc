@@ -96,3 +96,12 @@ if {[llength $LB_OUTPUTS] > 0} {
     set_output_delay -clock $LB_IOCLK -min $LB_IO_HOLD  $LB_OUTPUTS
     set_load $LB_LOAD $LB_OUTPUTS
 }
+
+########################################
+# Re-entrancy (Temporary workaround)
+########################################
+# read_sdc may run several times in one persistent STA session that re-reads
+# the netlist and re-links between reads. The guarded
+# scalar knobs from tech.tcl are plain numbers and safely persist. A benchmark
+# SDC re-sets its own LB_CLK / LB_INPUTS / LB_OUTPUTS before sourcing this file.
+unset -nocomplain LB_CLK LB_INPUTS LB_OUTPUTS LB_IOCLK
