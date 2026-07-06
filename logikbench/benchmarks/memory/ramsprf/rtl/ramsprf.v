@@ -1,0 +1,33 @@
+//#############################################################################
+// Copyright: Zero ASIC. All rights Reserved.
+// Author: Andreas Olofsson
+// License:  MIT (see LICENSE file in LogikBench repository)
+//#############################################################################
+//
+// Single-port RAM, read-first read-during-write. On a write (en & we) the OLD
+// contents mem[addr] are driven on 'dout' (read before write); a plain read
+// (en & ~we) also returns mem[addr]. Behavioral so the tool infers the
+// read-first BRAM read-during-write mode.
+
+module ramsprf #(parameter DW = 16,
+                 parameter AW = 10
+                 )
+   (
+    input		clk,  // clock
+    input		en,   // memory enable
+    input		we,   // write enable
+    input [AW-1:0]	addr, // addr
+    input [DW-1:0]	din,  // data input
+    output reg [DW-1:0]	dout  // data output
+    );
+
+   reg [DW-1:0] mem [(2**AW)-1:0];
+
+   always @(posedge clk) begin
+      if (en) begin
+         if (we)
+           mem[addr] <= din;
+         dout <= mem[addr];
+      end
+   end
+endmodule

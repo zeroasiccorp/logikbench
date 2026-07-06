@@ -22,7 +22,7 @@ THE SOFTWARE.
 
 */
 
-module axil_ram #
+module axiram #
 (
     // Width of data bus in bits
     parameter DW = 32,

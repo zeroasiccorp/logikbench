@@ -10,9 +10,9 @@ import logikbench as lb
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
 from logikbench.runner import (
-    FPGA_METRICS, ASIC_METRICS, TARGETS, FPGA_TARGETS, LBFLOW_TARGETS, STEPS,
-    DEFAULT_CLK_NS, run_one, read_metrics, read_asic_metrics, read_tool_var,
-    is_complete, clean_build, benchmark_name,
+    FPGA_METRICS, ASIC_METRICS, TARGETS, FPGA_TARGETS, SC_TARGETS,
+    YOSYS_TARGETS, TARDIGRADE_TARGETS, STEPS, run_one,
+    read_metrics, read_asic_metrics, read_tool_var, is_complete, clean_build,
 )
 
 # benchmark groups available to both subcommands
@@ -40,13 +40,13 @@ class LbHelpFormatter(argparse.HelpFormatter):
 
 
 # --target help: a fixed format legend plus the (dynamic) list of valid choices,
-# grouped by kind and wrapped so each list lines up under the help column. The
-# three kinds partition TARGETS: FPGA targets, then SiliconCompiler built-in
-# targets, then LB bare-PDK targets (LBFLOW_TARGETS is FPGA + LB, so the LB set
-# is what remains after removing the FPGA targets, and SC is the rest).
+# grouped by kind and wrapped so each list lines up under the help column. Every
+# target is '<tool>_<part>': FPGA '<vendor>_<part>' targets, then the ASIC sets
+# by tool (sc asicflow, yosys lbflow, tardigrade lbflow).
 _FPGA_CHOICES = list(FPGA_TARGETS)
-_LB_CHOICES = [t for t in LBFLOW_TARGETS if t not in FPGA_TARGETS]
-_SC_CHOICES = [t for t in TARGETS if t not in LBFLOW_TARGETS]
+_ASIC_CHOICES = list(YOSYS_TARGETS)
+_TOOL_CHOICES = list(TARDIGRADE_TARGETS)
+_SC_CHOICES = list(SC_TARGETS)
 
 
 def _choices_block(label, choices):
@@ -56,13 +56,15 @@ def _choices_block(label, choices):
 
 _TARGET_HELP = (
     "Synthesis target(s). Pass several to sweep them in turn.\n"
-    "Format:\n"
+    "Format '<tool>_<part>':\n"
     "  - '<vendor>_<partname>' -> FPGA target (e.g., xilinx_virtex7)\n"
-    "  - '<sc-target>'         -> SiliconCompiler built-in target\n"
-    "  - '<lb-target>'         -> LB built-in target\n"
+    "  - 'sc_<pdk>'            -> SiliconCompiler asicflow (e.g., sc_asap7)\n"
+    "  - 'yosys_<pdk>'         -> yosys synth + STA (e.g., yosys_freepdk45)\n"
+    "  - 'tardigrade_<pdk>'    -> tardigrade synth + STA\n"
     + "\n" + _choices_block("FPGA: ", _FPGA_CHOICES)
     + "\n\n" + _choices_block("ASIC (SiliconCompiler): ", _SC_CHOICES)
-    + "\n\n" + _choices_block("ASIC (LB): ", _LB_CHOICES)
+    + "\n\n" + _choices_block("ASIC (yosys): ", _ASIC_CHOICES)
+    + "\n\n" + _choices_block("ASIC (tardigrade): ", _TOOL_CHOICES)
 )
 
 
@@ -93,19 +95,23 @@ def target_builddir(args, target):
 
 
 def make_worklist(args):
-    """(group, class-name, design-name) triples honoring the group/name filters.
+    """(group, design-class, design-name) triples honoring the group/name filters.
 
     Shared across targets (the benchmark set is the same for every target). The
-    design name is the SC name (e.g. 'epfl_arbiter'), which may differ from the
-    class name -- it is what keys build dirs, metrics, and the -n filter.
+    class is resolved here (the app owns benchmark discovery) and passed on to
+    run_one, so the runner never reflects over the package. The design name is
+    the SC name (e.g. 'epfl_arbiter'), which may differ from the class name --
+    it is what keys build dirs, metrics, and the -n filter.
     """
     namefilter = set(n.lower() for n in args.name) if args.name else None
     worklist = []
     for group in args.group:
-        for item in getattr(lb, group).__all__:
-            name = benchmark_name(group, item)
+        module = getattr(lb, group)
+        for item in module.__all__:
+            cls = getattr(module, item)
+            name = cls().name
             if namefilter is None or name in namefilter:
-                worklist.append((group, item, name))
+                worklist.append((group, cls, name))
     return worklist
 
 
@@ -134,11 +140,11 @@ def target_runlist(target, args, worklist):
         return list(worklist)
     builddir = target_builddir(args, target)
     runlist = []
-    for group, item, name in worklist:
+    for group, cls, name in worklist:
         if is_complete(name, builddir):
             print(f"Skipping {name} ({target}/{group}): already complete.")
         else:
-            runlist.append((group, item, name))
+            runlist.append((group, cls, name))
     return runlist
 
 
@@ -151,9 +157,9 @@ def run_sweep(args, targets, worklist):
     not read or written here (use 'collect' afterwards).
     """
     # flat task list over all targets and their (post-resume-filter) benchmarks
-    tasks = [(target, group, item, name)
+    tasks = [(target, group, cls, name)
              for target in targets
-             for group, item, name in target_runlist(target, args, worklist)]
+             for group, cls, name in target_runlist(target, args, worklist)]
 
     timeout = args.timeout or None   # --timeout 0 disables the cap
     quiet = not args.verbose
@@ -183,22 +189,23 @@ def run_sweep(args, targets, worklist):
     if args.jobs > 1:
         with ProcessPoolExecutor(max_workers=args.jobs) as pool:
             futures = {}
-            for target, group, item, name in tasks:
+            for target, group, cls, name in tasks:
                 builddir = target_builddir(args, target)
-                future = pool.submit(run_one, group, item, target,
+                future = pool.submit(run_one, cls, target,
                                      args.options, builddir, quiet,
-                                     args.start, args.stop, timeout, args.clk)
+                                     args.start, args.stop, timeout, args.clk,
+                                     args.lintonly)
                 futures[future] = (target, group, name)
             for future in as_completed(futures):
                 target, group, name = futures[future]
-                _, _, _, error = future.result()
+                _, error = future.result()
                 record(target, group, name, error)
     else:
-        for target, group, item, name in tasks:
+        for target, group, cls, name in tasks:
             builddir = target_builddir(args, target)
-            _, _, _, error = run_one(group, item, target, args.options,
-                                     builddir, quiet, args.start, args.stop,
-                                     timeout, args.clk)
+            _, error = run_one(cls, target, args.options,
+                               builddir, quiet, args.start, args.stop,
+                               timeout, args.clk, args.lintonly)
             record(target, group, name, error)
 
     return failures
@@ -223,7 +230,7 @@ def collect_target(target, args, worklist):
 
     metrics_out = {metric: {} for metric in metric_names}
     options = None
-    for group, item, name in worklist:
+    for group, cls, name in worklist:
         if mode == 'asic':
             metrics = read_asic_metrics(name, builddir=builddir)
         else:
@@ -320,8 +327,11 @@ LogikBench commandline runner.
     run_p.add_argument('--options',
                        default="",
                        metavar="OPTS",
-                       help="Extra options passed verbatim to the FPGA synth "
-                            "command. NOTE: Use the '=' form to prevent leading "
+                       help="Extra options passed verbatim to the synthesis "
+                            "tool: appended to the FPGA yosys synth command, or "
+                            "handed to tardigrade as '-option <opt>' on ASIC "
+                            "tardigrade targets (yosys/SC ASIC paths ignore "
+                            "them). NOTE: Use the '=' form to prevent leading "
                             "dashes from being parsed as flags (e.g., "
                             "--options=-abc9 or --options='-abc9 -nocarry')")
     # 'from' is a Python keyword, so keep the dest names start/stop
@@ -343,12 +353,18 @@ LogikBench commandline runner.
                             f"'floorplan.init' (default: to the end)")
     run_p.add_argument('--clk',
                        type=float,
-                       default=DEFAULT_CLK_NS,
+                       default=None,
                        metavar="PERIOD",
                        help='ASIC clock period in nanoseconds for the generic '
                             'SDC (create_clock); scaled into each PDK time '
-                            'unit. Ignored for FPGA targets (default: '
-                            f'{DEFAULT_CLK_NS})')
+                            'unit. Ignored for FPGA targets (default: each '
+                            "PDK's tech.tcl clock)")
+    run_p.add_argument('--lintonly',
+                       action='store_true',
+                       help='Elaborate the RTL (parse + hierarchy check) and '
+                            'stop before the heavy synthesis/optimization, then '
+                            'report success. Fast check that a target or '
+                            'benchmark builds without a full run.')
     run_p.add_argument('--resume',
                        action='store_true',
                        help='Skip benchmarks whose build already completed '

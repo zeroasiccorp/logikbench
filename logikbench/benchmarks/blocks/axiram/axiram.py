@@ -7,8 +7,8 @@ class Axiram(Design):
 
         name = 'axiram'
         root = f'{name}_root'
-        topmodule = 'axil_ram'
-        source = ['rtl/axil_ram.v']
+        topmodule = 'axiram'
+        source = ['rtl/axiram.v']
 
         # create a Design object
         super().__init__(name)
@@ -27,4 +27,4 @@ class Axiram(Design):
 
 if __name__ == "__main__":
     d = Axiram()
-    d.write_fileset(f"{d.name()}.f", fileset="rtl")
+    d.write_fileset(f"{d.name}.f", fileset="rtl")

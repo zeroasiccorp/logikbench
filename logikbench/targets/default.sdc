@@ -35,8 +35,8 @@ if {![info exists LB_OUTPUTS]} { set LB_OUTPUTS [all_outputs] }
 # External I/O delays. Input/output delays scale with the clock period;
 # hold is a fixed floor (not frequency dependent).
 
-set LB_IO_IDELAY [expr {0.50 * $LB_CLK_PERIOD}]
-set LB_IO_ODELAY [expr {0.50 * $LB_CLK_PERIOD}]
+set LB_IO_IDELAY [expr {0.0 * $LB_CLK_PERIOD}]
+set LB_IO_ODELAY [expr {0.0 * $LB_CLK_PERIOD}]
 set LB_IO_HOLD  0
 
 ########################################
@@ -96,3 +96,12 @@ if {[llength $LB_OUTPUTS] > 0} {
     set_output_delay -clock $LB_IOCLK -min $LB_IO_HOLD  $LB_OUTPUTS
     set_load $LB_LOAD $LB_OUTPUTS
 }
+
+########################################
+# Re-entrancy (Temporary workaround)
+########################################
+# read_sdc may run several times in one persistent STA session that re-reads
+# the netlist and re-links between reads. The guarded
+# scalar knobs from tech.tcl are plain numbers and safely persist. A benchmark
+# SDC re-sets its own LB_CLK / LB_INPUTS / LB_OUTPUTS before sourcing this file.
+unset -nocomplain LB_CLK LB_INPUTS LB_OUTPUTS LB_IOCLK

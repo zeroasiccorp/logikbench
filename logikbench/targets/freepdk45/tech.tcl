@@ -12,14 +12,11 @@
 ###############################################################################
 
 # Liberty time unit for this PDK, in nanoseconds (Nangate45 time = 1 ns).
-# Used to convert lb --clk (always nanoseconds) into the SDC command time unit.
 set LB_TIME_UNIT_NS 1.0
 
-# Clock period. lb --clk supplies the target period in nanoseconds via
-# LB_CLK_NS (the only external timing number); it is converted to this PDK's
-# SDC time unit here. Default 2.0 ns when the flow does not set LB_CLK_NS.
+# Default clock period.
 if {![info exists LB_CLK_NS]} {
-    set LB_CLK_NS 2.0
+    set LB_CLK_NS 0.5
 }
 set LB_CLK_PERIOD [expr {$LB_CLK_NS / $LB_TIME_UNIT_NS}]
 

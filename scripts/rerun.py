@@ -2,9 +2,9 @@
 """Re-run the full LogikBench dashboard pipeline end to end.
 
 Sweeps every benchmark across every target -- all FPGA targets and all ASIC
-targets (both the <pdk>_demo asicflow columns and the bare-PDK lbflow columns)
--- then collects metrics, rebuilds the databases, and regenerates the static
-sites plus the README ranking table.
+targets (both the 'sc_<pdk>' asicflow columns and the 'yosys_<pdk>' lbflow
+columns; tardigrade is excluded) -- then collects metrics, rebuilds the
+databases, and regenerates the static sites plus the README ranking table.
 
 The sweep is hardcoded: -j 16, config 'small'. Each benchmark's synthesis
 artifacts are deleted as it finishes so a full run cannot fill the disk -- only
@@ -27,8 +27,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from logikbench.runner import FPGA_TARGETS, LBFLOW_TARGETS
-from logikbench import asic
+from logikbench.runner import FPGA_TARGETS, SC_TARGETS, YOSYS_TARGETS
 
 REPO = Path(__file__).resolve().parent.parent
 
@@ -36,14 +35,15 @@ REPO = Path(__file__).resolve().parent.parent
 JOBS = 16
 CONFIG = "small"
 # earliest/cheapest asicflow node that yields all four ASIC metrics incl. fmax
-# (a pre-placement estimate); bare-PDK lbflow targets run to completion instead.
+# (a pre-placement estimate); yosys_<pdk> lbflow targets run to completion.
 ASIC_STOP = "floorplan.init"
 
-# target sets: all FPGA targets, all _demo asicflow columns, all bare-PDK lbflow
-# columns (LBFLOW_TARGETS is FPGA + bare-PDK, so subtract FPGA to get the PDKs).
+# target sets: all FPGA targets, all 'sc_<pdk>' asicflow columns, all
+# 'yosys_<pdk>' lbflow columns. Tardigrade is simply not referenced, so the
+# hardcoded sweep excludes it.
 FPGA = list(FPGA_TARGETS)
-ASIC_SC = list(asic.SC_TARGETS)
-ASIC_LB = [t for t in LBFLOW_TARGETS if t not in FPGA_TARGETS]
+ASIC_SC = list(SC_TARGETS)
+ASIC_LB = list(YOSYS_TARGETS)
 
 LB = [sys.executable, "-m", "logikbench.apps.lb"]
 
@@ -100,7 +100,7 @@ def main():
     # the ranking table is LUT-specific, so it is FPGA-only
     run([sys.executable, "scripts/ranking.py", "--config", CONFIG])
 
-    # ---- ASIC: demo (asicflow, stop at floorplan.init) + bare-PDK (lbflow) ----
+    # ---- ASIC: sc_<pdk> (asicflow, --to floorplan.init) + yosys_<pdk> (lbflow)
     asic_targets = ASIC_SC + ASIC_LB
     lb_run(ASIC_SC, args.resume, args.keep, extra=["--to", ASIC_STOP])
     lb_run(ASIC_LB, args.resume, args.keep)

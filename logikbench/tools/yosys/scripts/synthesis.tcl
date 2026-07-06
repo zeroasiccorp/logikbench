@@ -13,6 +13,7 @@ set sc_command [sc_cfg_tool_task_get var command]
 set sc_options [sc_cfg_tool_task_get var options]
 set sc_liberty [sc_cfg_tool_task_get var liberty]
 set sc_ignore_initial [sc_cfg_tool_task_get var ignore_initial]
+set sc_lintonly [sc_cfg_tool_task_get var lintonly]
 
 # The task's pre_process() dumps a resolved slang command file (sc_rtl.f) that
 # flattens the full dependency-fileset graph (+incdir+/+define+/sources). The
@@ -43,9 +44,13 @@ yosys hierarchy -check -top $sc_topmodule
 # Synthesis Logic
 ###############################
 
-# select the per-mode synthesis core: <refdir>/<mode>/synthesis_<mode>.tcl
-set script "$sc_refdir/$sc_mode/synthesis_$sc_mode.tcl"
-source $script
+# select the per-mode synthesis core: <refdir>/<mode>/synthesis_<mode>.tcl.
+# lint-only stops here (after elaborate + hierarchy check): the stats/outputs
+# below still emit the elaborated netlist so the run succeeds quickly.
+if { !$sc_lintonly } {
+    set script "$sc_refdir/$sc_mode/synthesis_$sc_mode.tcl"
+    source $script
+}
 
 ########################################################
 # Record Stats

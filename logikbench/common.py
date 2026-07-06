@@ -47,7 +47,11 @@ def _quiet(proj, quiet):
     proj.set("option", "nodashboard", True)
     if quiet:
         proj.set("option", "quiet", True)
-        proj.logger.setLevel(logging.ERROR)
+        # Silence SC's per-node log echo (it dumps the whole failing tool log
+        # at ERROR level). For mass runs we want exactly one greppable line per
+        # benchmark -- lb's own '[N/M] Error synthesizing ...' print -- so lift
+        # the SC logger above ERROR. Details remain in each job's job.log.
+        proj.logger.setLevel(logging.CRITICAL)
 
 
 def _base_project(design, builddir, metric_schema, quiet, timeout=None):
@@ -164,11 +168,3 @@ def clean_build(name, builddir="build", jobname="job0"):
             dpath = os.path.join(root, dname)
             if not os.listdir(dpath):
                 os.rmdir(dpath)
-
-
-def benchmark_name(group, item):
-    """SC design name for a benchmark class. May differ from item.lower()
-    (e.g. class EPFLArbiter -> design name 'epfl_arbiter'), so callers that key
-    builds/metrics by name must use this, not the class name."""
-    import logikbench
-    return getattr(getattr(logikbench, group), item)().name

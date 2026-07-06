@@ -14,19 +14,19 @@ module ramtdp #(parameter DW = 16,
                 )
    (
     // single clock
-    input               clk,
+    input	    clk,
     // Port A - Read/Write
-    input               en_a,
-    input               we_a,
-    input [AW-1:0]      addr_a,
-    input [DW-1:0]      din_a,
-    output [DW-1:0]     dout_a,
+    input	    en_a,
+    input	    we_a,
+    input [AW-1:0]  addr_a,
+    input [DW-1:0]  din_a,
+    output [DW-1:0] dout_a,
     // Port B - Read/Write
-    input               en_b,
-    input               we_b,
-    input [AW-1:0]      addr_b,
-    input [DW-1:0]      din_b,
-    output [DW-1:0]     dout_b
+    input	    en_b,
+    input	    we_b,
+    input [AW-1:0]  addr_b,
+    input [DW-1:0]  din_b,
+    output [DW-1:0] dout_b
     );
 
    la_tdpram #(.DW(DW), .AW(AW), .BYTEMODE(0)) memory
