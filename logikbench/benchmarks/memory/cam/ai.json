@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0",
+  "name": "cam",
+  "spec_ref": "README.md",
+  "authorship": "Zero ASIC Corporation; author Andreas Olofsson",
+  "generated_by": {
+    "model": "claude-opus-4-8",
+    "provider": "Anthropic",
+    "interface": "Claude Code",
+    "date": "2026-07-06"
+  },
+  "human_review": {
+    "reviewed": true,
+    "reviewer": "Andreas Olofsson",
+    "date": "2026-07-06",
+    "notes": "Architecture, parameters, and scope directed by the author; provenance (model and date) confirmed; self-checking testbench reviewed by the author."
+  },
+  "origin": {
+    "type": "original",
+    "notes": "Original implementation for LogikBench; follows the standard register-based exact-match CAM architecture (per-entry key registers + parallel comparators + priority encoder), not copied from any specific HDL source."
+  }
+}
