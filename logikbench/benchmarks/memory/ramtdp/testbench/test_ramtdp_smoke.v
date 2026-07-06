@@ -15,16 +15,18 @@
 module test_ramtdp_smoke;
    localparam DW = 8, AW = 4, N = (1 << AW), H = N/2;
 
-   reg	      clk = 0, en_a, we_a, en_b, we_b;
+   // two independent clocks (same period, in phase here for a simple check)
+   reg	      clk_a = 0, clk_b = 0, en_a, we_a, en_b, we_b;
    reg [AW-1:0]	addr_a, addr_b;
    reg [DW-1:0]	din_a, din_b;
    wire [DW-1:0] dout_a, dout_b;
-   always #5 clk = ~clk;
+   always #5 clk_a = ~clk_a;
+   always #5 clk_b = ~clk_b;
 
    ramtdp #(.DW(DW), .AW(AW)) dut
-     (.clk(clk), .en_a(en_a), .we_a(we_a), .addr_a(addr_a), .din_a(din_a),
-      .dout_a(dout_a), .en_b(en_b), .we_b(we_b), .addr_b(addr_b),
-      .din_b(din_b), .dout_b(dout_b));
+     (.clk_a(clk_a), .en_a(en_a), .we_a(we_a), .addr_a(addr_a), .din_a(din_a),
+      .dout_a(dout_a), .clk_b(clk_b), .en_b(en_b), .we_b(we_b),
+      .addr_b(addr_b), .din_b(din_b), .dout_b(dout_b));
 
    integer        k, errors;
    reg [DW-1:0]	  exp [0:N-1];
@@ -37,17 +39,17 @@ module test_ramtdp_smoke;
 
       // port A writes low half [0,H), port B writes high half [H,N)
       for (k = 0; k < H; k = k + 1) begin
-         @(posedge clk);
+         @(posedge clk_a);
          en_a <= 1; we_a <= 1; addr_a <= k[AW-1:0];        din_a <= exp[k];
          en_b <= 1; we_b <= 1; addr_b <= (H+k);            din_b <= exp[H+k];
       end
-      @(posedge clk); we_a <= 0; we_b <= 0;
+      @(posedge clk_a); we_a <= 0; we_b <= 0;
 
       // read low half via port B, high half via port A (opposite ports)
       for (k = 0; k < H; k = k + 1) begin
          en_b <= 1; we_b <= 0; addr_b <= k[AW-1:0];
          en_a <= 1; we_a <= 0; addr_a <= (H+k);
-         @(posedge clk); #1;
+         @(posedge clk_a); #1;
          if (dout_b !== exp[k]) begin
             errors = errors + 1;
             $display("FAIL portB addr %0d: got %h exp %h", k, dout_b, exp[k]);
