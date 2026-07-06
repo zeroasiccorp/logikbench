@@ -15,31 +15,20 @@ LogikBench is a high quality curated open source RTL benchmark suite that enable
 
 🏆 [Live results dashboard](https://zeroasiccorp.github.io/logikbench)
 
-| Problem | LogikBench Solution |
-|---------|---------------------|
-
 
 > "Sunlight is said to be the best of disinfectants." --Supreme Court Justice Louis Brandeis
 
+| Problem Address       | LogikBench Solution                      |
+|-----------------------|------------------------------------------|
+| No "ImageNet for EDA" | 171 standardized benchmark circuits      |
+| Lack of diversity     | Broad range of circuits and code origins |
+| Hard coded values     | Extensive per circuit parametrization    |
+| Lack of trust         | Documented source code provenanace       |
+| Reproducability       | 100% push button automation              |
+| Lack of portability   | Tech agnostic RTL+lambdalib benchmarks   |
+| License uncertainty   | 100% clear permissive license            |
+
 ----
-
-## The problem
-
-* **Limited standardization:** no "ImageNet/SpecInt/Dhrystone for EDA"
-* **Poor diversity:** too many CPUs, not representative of real designs
-* **No parameterization:** not representative of full range of performance targets
-* **Unclear provenance:** source code origin and intent often unknown
-* **No infrastructure:** no clear path to reproducibility
-
-## The Solution
-
-* **171 benchmark circuits:** spanning basic logic to complex subsystems
-* **Tech agnostic:** runs on FPGAs and any lambdapdk supported ASIC PDK
-* **Historical overlay:** includess epfl, isca85, isca89
-* **Standardized metrics:** documenting what is measured
-* **100% open source:** no license or membership fees
-* **Full provenance:** documented source code provenance
-* **10,000+ configurations:** through parameter sweeping
 
 ## Quick Start
 
