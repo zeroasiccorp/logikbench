@@ -1,5 +1,4 @@
 
-from .axiram.axiram import Axiram
 from .cache.cache import Cache
 from .fifoasync.fifoasync import Fifoasync
 from .fifosync.fifosync import Fifosync
@@ -14,7 +13,6 @@ from .regfile.regfile import Regfile
 from .rom.rom import Rom
 
 __all__ = [
-    "Axiram",
     "Cache",
     "Fifoasync",
     "Fifosync",
