@@ -10,15 +10,20 @@
 
 ## Why LogikBench
 
-LogikBench is a high quality curated open source RTL benchmark suite that enables reproducible evaluation of EDA tools, process technologies, and LLMs by combining open-source hardware, standardized build flows, and automated QoR measurement.
+LogikBench is a high quality curated open source RTL benchmark suite that enables reproducible evaluation of EDA tools, process technologies, architectures, and LLMs.
 
-🏆 [Live results dashboard](https://zeroasiccorp.github.io/logikbench/)
+
+🏆 [Live results dashboard](https://zeroasiccorp.github.io/logikbench)
+
+| Problem | LogikBench Solution |
+|---------|---------------------|
+
+
+> "Sunlight is said to be the best of disinfectants." --Supreme Court Justice Louis Brandeis
 
 ----
 
-## The Problem
-
-The semiconductor industry lacks a comprehensive, standardized benchmark suite for evaluating EDA tools, design flows, foundry processes, and FPGA devices. Existing RTL benchmark suites suffer from critical gaps.
+## The problem
 
 * **Limited standardization:** no "ImageNet/SpecInt/Dhrystone for EDA"
 * **Poor diversity:** too many CPUs, not representative of real designs
@@ -28,15 +33,13 @@ The semiconductor industry lacks a comprehensive, standardized benchmark suite f
 
 ## The Solution
 
-* **166 benchmark circuits:** spanning basic logic to complex subsystems
+* **171 benchmark circuits:** spanning basic logic to complex subsystems
+* **Tech agnostic:** runs on FPGAs and any lambdapdk supported ASIC PDK
 * **Historical overlay:** includess epfl, isca85, isca89
 * **Standardized metrics:** documenting what is measured
 * **100% open source:** no license or membership fees
 * **Full provenance:** documented source code provenance
-* **Synthesis ready:** easy to port
 * **10,000+ configurations:** through parameter sweeping
-
-> "Sunlight is said to be the best of disinfectants." --Supreme Court Justice Louis Brandeis
 
 ## Quick Start
 
@@ -447,31 +450,36 @@ lb run -g basic -t sc_asap7 --to synthesis
 | sub | Subtractor | [sub.v](logikbench/benchmarks/arithmetic/sub/rtl/sub.v) |
 | sum | Summation tree | [sum.v](logikbench/benchmarks/arithmetic/sum/rtl/sum.v) |
 
-### Memory (13 benchmarks)
+### Memory (17 benchmarks)
 
 | Benchmark | Description | Verilog |
 |-----------|-------------|---------|
-| axiram | AXI RAM interface | [axil_ram.v](logikbench/benchmarks/memory/axiram/rtl/axil_ram.v) |
 | cache | Cache memory | [cache.v](logikbench/benchmarks/memory/cache/rtl/cache.v) |
+| cam | Content-addressable memory | [cam.v](logikbench/benchmarks/memory/cam/rtl/cam.v) |
 | fifoasync | Asynchronous FIFO | [fifoasync.v](logikbench/benchmarks/memory/fifoasync/rtl/fifoasync.v) |
 | fifosync | Synchronous FIFO | [fifosync.v](logikbench/benchmarks/memory/fifosync/rtl/fifosync.v) |
 | ramasync | Asynchronous RAM | [ramasync.v](logikbench/benchmarks/memory/ramasync/rtl/ramasync.v) |
 | rambit | Bit-wide RAM | [rambit.v](logikbench/benchmarks/memory/rambit/rtl/rambit.v) |
 | rambyte | Byte-wide RAM | [rambyte.v](logikbench/benchmarks/memory/rambyte/rtl/rambyte.v) |
-| ramtdp | True dual-port RAM | [ramtdp.v](logikbench/benchmarks/memory/ramtdp/rtl/ramtdp.v) |
+| raminit | Initialized RAM | [raminit.v](logikbench/benchmarks/memory/raminit/rtl/raminit.v) |
+| ramtdp | True dual-port RAM (single clock) | [ramtdp.v](logikbench/benchmarks/memory/ramtdp/rtl/ramtdp.v) |
+| ramtdpdc | True dual-port RAM (dual clock) | [ramtdpdc.v](logikbench/benchmarks/memory/ramtdpdc/rtl/ramtdpdc.v) |
 | ramsdp | Simple dual-port RAM | [ramsdp.v](logikbench/benchmarks/memory/ramsdp/rtl/ramsdp.v) |
 | ramsp | Single-port RAM | [ramsp.v](logikbench/benchmarks/memory/ramsp/rtl/ramsp.v) |
 | ramspnc | Single-port RAM (no change) | [ramspnc.v](logikbench/benchmarks/memory/ramspnc/rtl/ramspnc.v) |
+| ramsprf | Single-port RAM (read-first) | [ramsprf.v](logikbench/benchmarks/memory/ramsprf/rtl/ramsprf.v) |
+| ramspwf | Single-port RAM (write-first) | [ramspwf.v](logikbench/benchmarks/memory/ramspwf/rtl/ramspwf.v) |
 | regfile | Register file | [regfile.v](logikbench/benchmarks/memory/regfile/rtl/regfile.v) |
 | rom | Read-only memory | [rom.v](logikbench/benchmarks/memory/rom/rtl/rom.v) |
 
-### Complex Blocks (41 benchmarks)
+### Complex Blocks (42 benchmarks)
 
 | Benchmark | Description | Verilog |
 |-----------|-------------|---------|
 | aes | AES encryption core | [aes.sv](logikbench/benchmarks/blocks/aes/rtl/aes.sv) |
 | apbregs | APB register file | [apbregs.v](logikbench/benchmarks/blocks/apbregs/rtl/apbregs.v) |
 | axicrossbar | AXI crossbar | [arbiter.v](logikbench/benchmarks/blocks/axicrossbar/rtl/arbiter.v) |
+| axiram | AXI RAM interface | [axiram.v](logikbench/benchmarks/blocks/axiram/rtl/axiram.v) |
 | blackparrot | BlackParrot RISC-V core | [blackparrot/](logikbench/benchmarks/blocks/blackparrot/) |
 | conv2d | Streaming 3x3 2D convolution | [conv2d.v](logikbench/benchmarks/blocks/conv2d/rtl/conv2d.v) |
 | coralnpu | CoralNPU neural accelerator | [coralnpu.sv](logikbench/benchmarks/blocks/coralnpu/rtl/coralnpu.sv) |
