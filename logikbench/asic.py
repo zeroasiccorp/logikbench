@@ -23,6 +23,7 @@ import pkgutil
 import siliconcompiler.targets as sc_targets
 from siliconcompiler import ASIC
 from siliconcompiler.flows import asicflow
+from siliconcompiler.tools.yosys.syn_asic import ASICSynthesis as _YosysSyn
 
 from logikbench.flows.synth import ASICSynthesis
 from logikbench.common import _set_range, _quiet
@@ -197,11 +198,17 @@ def _setup_asic_project(design, setup_target, builddir, quiet, timeout, clk_ns):
     if timeout is not None:
         proj.set("option", "timeout", timeout)
     _quiet(proj, quiet)
+    # Load the design (and its lambdalib memory deps, e.g. la_spram) BEFORE the
+    # PDK target: the target (e.g. asap7_demo) registers the PDK's lambdalib
+    # aliases (fakeram etc.), and alias() only binds memories already present.
+    proj.add_fileset("rtl")
     _sc_target(setup_target)(proj)
+    # Per-target design setup (scgallery-style), if the benchmark registered one.
+    if hasattr(design, "process_setups"):
+        design.process_setups(_pdk_of(setup_target), proj)
     # one library / one corner: avoid reading every Vt x corner liberty on each
     # STA node (see _single_corner); LogikBench needs only single-corner QoR.
     _single_corner(proj)
-    proj.add_fileset("rtl")
     # Always attach the generated SDC wrapper (in its own 'lbsdc' fileset): it
     # injects the LB_* vars and sources the benchmark SDC if present, else the
     # shared default.sdc. So every benchmark is constrained even with no own SDC.
@@ -257,6 +264,8 @@ def _run_scflow(design, target, builddir, quiet, start, stop, timeout,
     proj = _setup_asic_project(design, _SC_MODULE[pdk], builddir, quiet,
                                timeout, clk_ns)
     proj.set_flow(asicflow.ASICFlow())
+    # read RTL via slang in synthesis (read_verilog fails on package SV)
+    _YosysSyn.find_task(proj).set_yosys_useslang(True)
     # LogikBench designs are IO-dominated (wide buses, tiny logic), so the
     # demo's 40%-utilization die can't fit the pins on its perimeter. Grow the
     # die with a low utilization and halve the default 2-track pin spacing; the
