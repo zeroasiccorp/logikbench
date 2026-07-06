@@ -1,6 +1,7 @@
 from .aes.aes import Aes
 from .apbregs.apbregs import Apbregs
 from .axicrossbar.axicrossbar import Axicrossbar
+from .axiram.axiram import Axiram
 from .blackparrot.blackparrot import BlackParrot
 from .coralnpu.coralnpu import CoralNPU
 from .crc32.crc32 import Crc32
@@ -45,6 +46,7 @@ __all__ = [
     "Aes",
     "Apbregs",
     "Axicrossbar",
+    "Axiram",
     "BlackParrot",
     "CoralNPU",
     "Crc32",
