@@ -50,7 +50,8 @@ FPGA_TARGETS = {
 }
 
 
-def _run_fpga(design, target, options, builddir, quiet, start, stop, timeout):
+def _run_fpga(design, target, options, builddir, quiet, start, stop, timeout,
+              lintonly=False):
     """lbflow FPGA synthesis; the target name maps to a yosys synth command."""
     proj = _base_project(design, builddir, FPGAMetricsSchema(), quiet, timeout)
     proj.add_fileset("rtl")
@@ -61,6 +62,9 @@ def _run_fpga(design, target, options, builddir, quiet, start, stop, timeout):
     proj.set("tool", "yosys", "task", "synthesis", "var", "options", options)
     proj.set("tool", "yosys", "task", "synthesis", "var", "ignore_initial",
              bool(getattr(design, "ignore_initial", False)))
+    # lint-only: elaborate (read_slang) then stop before the FPGA synth core.
+    proj.set("tool", "yosys", "task", "synthesis", "var", "lintonly",
+             bool(lintonly))
     _set_range(proj, start, stop)
     proj.run()
     if not quiet:

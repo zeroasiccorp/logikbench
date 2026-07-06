@@ -193,7 +193,8 @@ def run_sweep(args, targets, worklist):
                 builddir = target_builddir(args, target)
                 future = pool.submit(run_one, cls, target,
                                      args.options, builddir, quiet,
-                                     args.start, args.stop, timeout, args.clk)
+                                     args.start, args.stop, timeout, args.clk,
+                                     args.lintonly)
                 futures[future] = (target, group, name)
             for future in as_completed(futures):
                 target, group, name = futures[future]
@@ -204,7 +205,7 @@ def run_sweep(args, targets, worklist):
             builddir = target_builddir(args, target)
             _, error = run_one(cls, target, args.options,
                                builddir, quiet, args.start, args.stop,
-                               timeout, args.clk)
+                               timeout, args.clk, args.lintonly)
             record(target, group, name, error)
 
     return failures
@@ -358,6 +359,12 @@ LogikBench commandline runner.
                             'SDC (create_clock); scaled into each PDK time '
                             'unit. Ignored for FPGA targets (default: each '
                             "PDK's tech.tcl clock)")
+    run_p.add_argument('--lintonly',
+                       action='store_true',
+                       help='Elaborate the RTL (parse + hierarchy check) and '
+                            'stop before the heavy synthesis/optimization, then '
+                            'report success. Fast check that a target or '
+                            'benchmark builds without a full run.')
     run_p.add_argument('--resume',
                        action='store_true',
                        help='Skip benchmarks whose build already completed '

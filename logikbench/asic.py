@@ -220,7 +220,7 @@ def _setup_asic_project(design, setup_target, builddir, quiet, timeout, clk_ns):
 
 
 def _run_lbflow(design, target, options, builddir, quiet, start, stop, timeout,
-                clk_ns=None):
+                clk_ns=None, lintonly=False):
     """ASIC flow: Synthesis + SC OpenSTA timing (synth + STA, no P&R).
 
     The target '<tool>_<pdk>' selects the mapper: 'yosys_<pdk>' runs yosys,
@@ -248,6 +248,12 @@ def _run_lbflow(design, target, options, builddir, quiet, start, stop, timeout,
         synvar("pdk", pdk)
     if options:
         synvar("options", options.split())
+    if lintonly:
+        # elaborate-only: the mapper parses the RTL then stops before synth;
+        # stop after the synthesis node so the timing node (no netlist) is
+        # skipped.
+        synvar("lintonly", True)
+        stop = "synthesis"
     _set_range(proj, start, stop)
     proj.run()
     if not quiet:
@@ -255,7 +261,7 @@ def _run_lbflow(design, target, options, builddir, quiet, start, stop, timeout,
 
 
 def _run_scflow(design, target, builddir, quiet, start, stop, timeout,
-                clk_ns=None):
+                clk_ns=None, lintonly=False):
     """SC built-in target (PDK + libs + scenarios) run through asicflow.
 
     'target' is 'sc_<pdk>'; the pdk->module lookup resolves it to the SC setup
@@ -273,6 +279,10 @@ def _run_scflow(design, target, builddir, quiet, start, stop, timeout,
     proj.constraint.area.set_density(10)
     proj.set("tool", "openroad", "task", "pin_placement", "var",
              "ppl_arguments", ["-min_distance", "1", "-min_distance_in_tracks"])
+    # lint-only: the asicflow has a dedicated slang 'elaborate' node, so stop
+    # after it (before synthesis) rather than via a tool var.
+    if lintonly:
+        stop = "elaborate"
     _set_range(proj, start, stop)
     proj.run()
     if not quiet:

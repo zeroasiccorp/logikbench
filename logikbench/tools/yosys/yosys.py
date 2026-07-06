@@ -77,6 +77,10 @@ class Synthesis(YosysTask):
             "ignore_initial", "bool",
             "pass slang --ignore-initial (drop initial blocks); opt-in for "
             "benchmarks whose initial blocks are simulation-only", False)
+        self.add_parameter(
+            "lintonly", "bool",
+            "elaborate (read_slang + hierarchy check) then stop before the "
+            "synthesis core; used by 'lb run --lintonly'", False)
 
     def task(self):
         return "synthesis"

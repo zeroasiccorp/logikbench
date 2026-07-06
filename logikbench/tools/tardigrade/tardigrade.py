@@ -70,6 +70,10 @@ class Synthesis(TardigradeTask):
             "PDK name passed to 'tardigrade --pdk', which auto-populates the "
             "synth_asic mapping args (techmap/dont-use/tie cells) from "
             "lambdapdk", "")
+        self.add_parameter(
+            "lintonly", "bool",
+            "elaborate then stop before synth_asic (passes 'tardigrade "
+            "--lintonly'); used by 'lb run --lintonly'", False)
 
     def task(self):
         return "synthesis"
@@ -115,6 +119,8 @@ class Synthesis(TardigradeTask):
                 opts += ["-s", sdc]
         # Options
         opts += ["-o", f"outputs/{top}.vg", "--qor", "qor.json"]
+        if self.get("var", "lintonly"):
+            opts += ["--lintonly"]
         for opt in self.get("var", "options"):
             opts += [f"--option={opt}"]
         return opts

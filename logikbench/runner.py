@@ -56,7 +56,7 @@ TARGETS = (list(fpga.FPGA_TARGETS) + SC_TARGETS + YOSYS_TARGETS
 
 
 def run_one(design_cls, target=None, options="", builddir="build", quiet=True,
-            start=None, stop=None, timeout=None, clk=None):
+            start=None, stop=None, timeout=None, clk=None, lintonly=False):
     """Run a single benchmark class; return (metrics, error).
 
     'design_cls' is the benchmark's Design subclass (resolved by the caller); it
@@ -83,16 +83,19 @@ def run_one(design_cls, target=None, options="", builddir="build", quiet=True,
         # then 'yosys_<pdk>'/'tardigrade_<pdk>' (lbflow, mapper from the name).
         if target in fpga.FPGA_TARGETS:
             fpga._run_fpga(design, target, options, builddir, quiet, start,
-                           stop, timeout)
-            metrics = read_metrics(name, FPGA_METRICS, builddir)
+                           stop, timeout, lintonly=lintonly)
+            metrics = {} if lintonly else read_metrics(name, FPGA_METRICS,
+                                                       builddir)
         elif target in asic.SC_TARGETS:
             asic._run_scflow(design, target, builddir, quiet, start, stop,
-                             timeout, clk)
-            metrics = read_metrics(name, ASIC_METRICS, builddir)
+                             timeout, clk, lintonly=lintonly)
+            metrics = {} if lintonly else read_metrics(name, ASIC_METRICS,
+                                                       builddir)
         elif target in asic.YOSYS_TARGETS or target in asic.TARDIGRADE_TARGETS:
             asic._run_lbflow(design, target, options, builddir, quiet, start,
-                             stop, timeout, clk)
-            metrics = read_metrics(name, ASIC_METRICS, builddir)
+                             stop, timeout, clk, lintonly=lintonly)
+            metrics = {} if lintonly else read_metrics(name, ASIC_METRICS,
+                                                       builddir)
         else:
             raise ValueError(
                 f"target '{target}' is not a known FPGA, SC, or LB target")
