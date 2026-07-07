@@ -20,7 +20,7 @@ LogikBench is a high quality curated open source RTL benchmark suite that enable
 
 | Problem Addressed     | LogikBench Solution                      |
 |-----------------------|------------------------------------------|
-| No "Spec CPU for RTL" | 209 standardized benchmark circuits      |
+| No "Spec CPU for RTL" | 211 standardized benchmark circuits      |
 | Lack of diversity     | Broad range of circuits and code origins |
 | Hard coded values     | Extensive per circuit parametrization    |
 | Lack of trust         | Documented source code provenance        |
@@ -428,7 +428,7 @@ lb run -g basic -t sc_asap7 --to synthesis
 | tff | Toggle flip-flop | [tff.v](logikbench/benchmarks/basic/tff/rtl/tff.v) |
 | tmr | Triple-modular-redundancy voter | [tmr.v](logikbench/benchmarks/basic/tmr/rtl/tmr.v) |
 
-### Arithmetic (66 benchmarks)
+### Arithmetic (68 benchmarks)
 
 | Benchmark | Description | Verilog |
 |-----------|-------------|---------|
@@ -436,7 +436,9 @@ lb run -g basic -t sc_asap7 --to synthesis
 | absdiff | Absolute difference | [absdiff.v](logikbench/benchmarks/arithmetic/absdiff/rtl/absdiff.v) |
 | absdiffs | Signed absolute difference | [absdiffs.v](logikbench/benchmarks/arithmetic/absdiffs/rtl/absdiffs.v) |
 | add | Adder | [add.v](logikbench/benchmarks/arithmetic/add/rtl/add.v) |
+| addmod | Wide modular adder (a+b) mod m | [addmod.v](logikbench/benchmarks/arithmetic/addmod/rtl/addmod.v) |
 | addsub | Adder-subtractor | [addsub.v](logikbench/benchmarks/arithmetic/addsub/rtl/addsub.v) |
+| addtree | Balanced adder-reduction tree | [addtree.v](logikbench/benchmarks/arithmetic/addtree/rtl/addtree.v) |
 | argmax | Index of max over N | [argmax.v](logikbench/benchmarks/arithmetic/argmax/rtl/argmax.v) |
 | argmin | Index of min over N | [argmin.v](logikbench/benchmarks/arithmetic/argmin/rtl/argmin.v) |
 | atan | Arctangent (CORDIC vectoring) | [atan.v](logikbench/benchmarks/arithmetic/atan/rtl/atan.v) |

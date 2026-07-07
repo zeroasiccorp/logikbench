@@ -3,7 +3,9 @@ from .abs.abs import Abs
 from .absdiff.absdiff import Absdiff
 from .absdiffs.absdiffs import Absdiffs
 from .add.add import Add
+from .addmod.addmod import Addmod
 from .addsub.addsub import Addsub
+from .addtree.addtree import Addtree
 from .argmax.argmax import Argmax
 from .argmin.argmin import Argmin
 from .atan.atan import Atan
@@ -71,7 +73,9 @@ __all__ = [
     "Absdiff",
     "Absdiffs",
     "Add",
+    "Addmod",
     "Addsub",
+    "Addtree",
     "Argmax",
     "Argmin",
     "Atan",
