@@ -23,6 +23,9 @@ from .div.div import Div
 from .divs.divs import Divs
 from .dotprod.dotprod import Dotprod
 from .exp.exp import Exp
+from .fmadd32.fmadd32 import Fmadd32
+from .fmadd16.fmadd16 import Fmadd16
+from .fmadd8.fmadd8 import Fmadd8
 from .gelu.gelu import Gelu
 from .hswish.hswish import Hswish
 from .inc.inc import Inc
@@ -93,6 +96,9 @@ __all__ = [
     "Divs",
     "Dotprod",
     "Exp",
+    "Fmadd32",
+    "Fmadd16",
+    "Fmadd8",
     "Gelu",
     "Hswish",
     "Inc",
