@@ -33,16 +33,18 @@ endmodule
 // format is IEEE-754-like with round-to-nearest-even, but simplified for a
 // synthesis benchmark: subnormals are flushed to zero (FTZ) on input and
 // output, and the sticky handling in far-apart subtraction is approximate
-// (accurate to ~1 ulp), so it is not a fully IEEE-754-compliant unit.
+// (accurate to ~1 ulp), so it is not a fully IEEE-754-compliant unit. The
+// datapath is fully combinational (continuous assigns; the leading-one
+// normalizer is a generated log-shifter).
 //#############################################################################
 module fmadd #(parameter EXP = 8, // exponent field width
                parameter MANT = 7 // mantissa (fraction) field width
                )
    (
-    input [EXP+MANT:0]	    a, // multiplicand   (format: 1|EXP|MANT)
-    input [EXP+MANT:0]	    b, // multiplier
-    input [EXP+MANT:0]	    c, // addend
-    output reg [EXP+MANT:0] r  // round(a*b + c), fused
+    input [EXP+MANT:0]	a, // multiplicand   (format: 1|EXP|MANT)
+    input [EXP+MANT:0]	b, // multiplier
+    input [EXP+MANT:0]	c, // addend
+    output [EXP+MANT:0]	r  // round(a*b + c), fused
     );
 
    // Local parameters
@@ -52,6 +54,8 @@ module fmadd #(parameter EXP = 8, // exponent field width
    localparam EXTRA = PW + 2;            // low guard bits kept on alignment
    localparam ACCW  = PW + EXTRA + 2;    // accumulator width (~2*PW)
    localparam BIAS  = (1 << (EXP-1)) - 1;
+   localparam EW    = 16;                // signed exponent working width
+   localparam NST   = $clog2(ACCW);      // normalizer stages
 
    // Field decode. Subnormals are flushed to zero (FTZ): exp==0 means zero.
    wire	      sa = a[W-1];
@@ -93,128 +97,101 @@ module fmadd #(parameter EXP = 8, // exponent field width
    wire		   res_inf = ~res_nan & (p_is_inf | c_inf);
    wire		   res_isign = p_is_inf ? sp : sc;
 
-   // Datapath variables
-   reg [PW-1:0]	   prod;              // A*B
-   reg [ACCW-1:0]  op_p, op_c, ssum, norm;
-   reg		   pst, cst, salign;   // alignment sticky bits
-   reg [MW-1:0]	   mant_full;
-   reg [MW:0]	   mrnd;
-   reg [MANT-1:0]  fracout;
-   reg [EXP-1:0]   ebreg;
-   reg		   roundb, stickyb, sbit;
-   reg [W-1:0]	   tmpres;
+   // product significand
+   wire [PW-1:0]   prod = siga * sigb;
 
-   integer	   p_lsb, c_lsb, maxlsb, common;
-   integer	   ps, cs, rs, msb, shl, k, eres, ebias;
+   // unbiased LSB (unit) exponents, and alignment to the larger of the two
+   wire signed [EW-1:0]	eaS = $signed({{(EW-EXP){1'b0}}, ea});
+   wire signed [EW-1:0]	ebS = $signed({{(EW-EXP){1'b0}}, eb});
+   wire signed [EW-1:0]	ecS = $signed({{(EW-EXP){1'b0}}, ec});
+   wire signed [EW-1:0]	p_lsb  = eaS + ebS - (2*BIAS) - (2*MANT);
+   wire signed [EW-1:0]	c_lsb  = ecS - BIAS - MANT;
+   wire signed [EW-1:0]	maxlsb = (p_lsb >= c_lsb) ? p_lsb : c_lsb;
+   wire signed [EW-1:0]	common = maxlsb - EXTRA;
+   wire signed [EW-1:0]	ps     = EXTRA - (maxlsb - p_lsb);
+   wire signed [EW-1:0]	cs     = EXTRA - (maxlsb - c_lsb);
 
-   always @(*) begin
-      prod = siga * sigb;
+   // align product term (left if ps>=0, else right with sticky)
+   wire			ps_left     = (ps >= 0);
+   wire [EW-1:0]	p_rs        = -ps;
+   wire [EW-1:0]	ps_amt      = ps_left ? ps[EW-1:0] : p_rs;
+   wire			p_allsticky = ~ps_left & (p_rs >= PW);
+   wire [ACCW-1:0]	prod_ext    = {{(ACCW-PW){1'b0}}, prod};
+   wire [ACCW-1:0]	op_p        = ps_left     ? (prod_ext << ps_amt) :
+                        p_allsticky ? {ACCW{1'b0}} :
+                        (prod_ext >> ps_amt);
+   wire			pst         = ps_left     ? 1'b0 :
+                        p_allsticky ? (|prod) :
+                        (|(prod & ~({PW{1'b1}} << ps_amt)));
 
-      // LSB (unit) exponent of each term, unbiased
-      p_lsb = ea + eb - 2*BIAS - 2*MANT;
-      c_lsb = ec - BIAS - MANT;
-      maxlsb = (p_lsb >= c_lsb) ? p_lsb : c_lsb;
-      common = maxlsb - EXTRA;
+   // align addend term
+   wire			cs_left     = (cs >= 0);
+   wire [EW-1:0]	c_rs        = -cs;
+   wire [EW-1:0]	cs_amt      = cs_left ? cs[EW-1:0] : c_rs;
+   wire			c_allsticky = ~cs_left & (c_rs >= MW);
+   wire [ACCW-1:0]	sigc_ext    = {{(ACCW-MW){1'b0}}, sigc};
+   wire [ACCW-1:0]	op_c        = cs_left     ? (sigc_ext << cs_amt) :
+                        c_allsticky ? {ACCW{1'b0}} :
+                        (sigc_ext >> cs_amt);
+   wire			cst         = cs_left     ? 1'b0 :
+                        c_allsticky ? (|sigc) :
+                        (|(sigc & ~({MW{1'b1}} << cs_amt)));
 
-      // net alignment shifts (>=0 shift left, <0 shift right with sticky)
-      ps = EXTRA - (maxlsb - p_lsb);
-      cs = EXTRA - (maxlsb - c_lsb);
+   // effective add/subtract (magnitude), pick result sign
+   wire			eff_sub = (sp != sc);
+   wire			p_ge_c  = (op_p >= op_c);
+   wire [ACCW-1:0]	ssum    = eff_sub ? (p_ge_c ? (op_p - op_c) : (op_c - op_p))
+                        : (op_p + op_c);
+   wire			sbit    = eff_sub ? (p_ge_c ? sp : sc) : sp;
+   wire			salign  = pst | cst;
 
-      // align product term
-      pst = 1'b0;
-      if (ps >= 0) begin
-         op_p = {{(ACCW-PW){1'b0}}, prod} << ps;
+   // leading-one normalizer: log-shifter left-justifies the leading 1 to the
+   // MSB and accumulates the shift count (= leading zeros).
+   wire [ACCW-1:0]	nstage [0:NST];
+   wire [NST:0]		shamt  [0:NST];
+   assign nstage[0] = ssum;
+   assign shamt[0]  = {(NST+1){1'b0}};
+
+   genvar s;
+   generate
+      for (s = 0; s < NST; s = s + 1) begin : g_norm
+         localparam integer STEP = (1 << (NST-1-s));
+         wire		    top_zero = ~(|nstage[s][ACCW-1 -: STEP]);
+         assign nstage[s+1] = top_zero ? (nstage[s] << STEP) : nstage[s];
+         assign shamt[s+1]  = top_zero ? (shamt[s] + STEP)   : shamt[s];
       end
-      else begin
-         rs = -ps;
-         if (rs >= PW) begin
-            op_p = {ACCW{1'b0}};
-            pst  = |prod;
-         end
-         else begin
-            op_p = {{(ACCW-PW){1'b0}}, prod} >> rs;
-            pst  = |(prod & ~({PW{1'b1}} << rs));
-         end
-      end
+   endgenerate
 
-      // align addend term
-      cst = 1'b0;
-      if (cs >= 0) begin
-         op_c = {{(ACCW-MW){1'b0}}, sigc} << cs;
-      end
-      else begin
-         rs = -cs;
-         if (rs >= MW) begin
-            op_c = {ACCW{1'b0}};
-            cst  = |sigc;
-         end
-         else begin
-            op_c = {{(ACCW-MW){1'b0}}, sigc} >> rs;
-            cst  = |(sigc & ~({MW{1'b1}} << rs));
-         end
-      end
+   wire [ACCW-1:0] norm = nstage[NST];
+   wire [NST:0]	   lz   = shamt[NST];
 
-      salign = pst | cst;
+   // extract significand + guard/round/sticky, round to nearest even
+   wire [MW-1:0]   mant_full = norm[ACCW-1 -: MW];
+   wire		   roundb    = norm[ACCW-1-MW];
+   wire		   stickyb   = (|norm[ACCW-1-MW-1 : 0]) | salign;
+   wire [MW:0]	   mrnd      = {1'b0, mant_full} +
+                   (roundb & (stickyb | mant_full[0]));
+   wire		   mant_of   = mrnd[MW];             // significand -> 2.0
+   wire [MANT-1:0] fracout  = mant_of ? mrnd[MANT:1] : mrnd[MANT-1:0];
 
-      // effective add or subtract (magnitude), pick result sign
-      if (sp == sc) begin
-         ssum = op_p + op_c;
-         sbit = sp;
-      end
-      else if (op_p >= op_c) begin
-         ssum = op_p - op_c;
-         sbit = sp;
-      end
-      else begin
-         ssum = op_c - op_p;
-         sbit = sc;
-      end
+   // result exponent (unbiased): msb = (ACCW-1) - lz, plus round carry
+   wire signed [EW-1:0]	eres  = common + (ACCW-1)
+                        - $signed({1'b0, lz}) + $signed({1'b0, mant_of});
+   wire signed [EW-1:0]	ebias = eres + BIAS;
 
-      // normalize + round
-      if (ssum == {ACCW{1'b0}}) begin
-         tmpres = {W{1'b0}};   // exact zero -> +0
-      end
-      else begin
-         msb = 0;
-         for (k = 0; k < ACCW; k = k + 1)
-           if (ssum[k]) msb = k;
-         eres = msb + common;
+   wire			zero_res = (ssum == {ACCW{1'b0}});
+   wire			ovf      = (ebias >= ((1 << EXP) - 1));
+   wire			udf      = (ebias <= 0);
+   wire [EXP-1:0]	ebfield  = ebias[EXP-1:0];
 
-         shl  = (ACCW-1) - msb;
-         norm = ssum << shl;              // leading 1 now at bit ACCW-1
+   wire [W-1:0]		tmpres = zero_res ? {W{1'b0}} :
+                        ovf      ? {sbit, {EXP{1'b1}}, {MANT{1'b0}}} :
+                        udf      ? {sbit, {(W-1){1'b0}}} :
+                        {sbit, ebfield, fracout};
 
-         mant_full = norm[ACCW-1 -: MW];
-         roundb    = norm[ACCW-1-MW];
-         stickyb   = (|norm[ACCW-1-MW-1 : 0]) | salign;
+   wire [W-1:0]		nanval = {1'b0, {EXP{1'b1}}, 1'b1, {(MANT-1){1'b0}}};
+   wire [W-1:0]		infval = {res_isign, {EXP{1'b1}}, {MANT{1'b0}}};
 
-         // round to nearest even
-         mrnd = {1'b0, mant_full} + (roundb & (stickyb | mant_full[0]));
-         if (mrnd[MW]) begin              // significand overflow -> 2.0
-            eres    = eres + 1;
-            fracout = mrnd[MANT:1];
-         end
-         else begin
-            fracout = mrnd[MANT-1:0];
-         end
-
-         ebias = eres + BIAS;
-         if (ebias >= ((1 << EXP) - 1))
-           tmpres = {sbit, {EXP{1'b1}}, {MANT{1'b0}}};   // overflow -> Inf
-         else if (ebias <= 0)
-           tmpres = {sbit, {(W-1){1'b0}}};               // underflow -> FTZ 0
-         else begin
-            ebreg  = ebias[EXP-1:0];
-            tmpres = {sbit, ebreg, fracout};
-         end
-      end
-
-      // final special-value selection
-      if (res_nan)
-        r = {1'b0, {EXP{1'b1}}, 1'b1, {(MANT-1){1'b0}}};
-      else if (res_inf)
-        r = {res_isign, {EXP{1'b1}}, {MANT{1'b0}}};
-      else
-        r = tmpres;
-   end
+   assign r = res_nan ? nanval : res_inf ? infval : tmpres;
 
 endmodule

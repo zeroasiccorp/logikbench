@@ -12,6 +12,7 @@ from .fft.fft import Fft
 from .firfix.firfix import Firfix
 from .firprog.firprog import Firprog
 from .hamming.hamming import Hamming
+from .hft.hft import Hft
 from .huffman.huffman import Huffman
 from .fpu64.fpu64 import Fpu64
 from .ialu.ialu import Ialu
@@ -57,6 +58,7 @@ __all__ = [
     "Firfix",
     "Firprog",
     "Hamming",
+    "Hft",
     "Huffman",
     "Fpu64",
     "Ialu",
