@@ -18,13 +18,13 @@ LogikBench is a high quality curated open source RTL benchmark suite that enable
 
 > "Sunlight is said to be the best of disinfectants." --Supreme Court Justice Louis Brandeis
 
-| Problem Address       | LogikBench Solution                      |
+| Problem Addressed     | LogikBench Solution                      |
 |-----------------------|------------------------------------------|
-| No "ImageNet for EDA" | 171 standardized benchmark circuits      |
+| No "Spec CPU for RTL" | 209 standardized benchmark circuits      |
 | Lack of diversity     | Broad range of circuits and code origins |
 | Hard coded values     | Extensive per circuit parametrization    |
-| Lack of trust         | Documented source code provenanace       |
-| Reproducability       | 100% push button automation              |
+| Lack of trust         | Documented source code provenance        |
+| Reproducibility       | 100% push button automation              |
 | Lack of portability   | Tech agnostic RTL+lambdalib benchmarks   |
 | License uncertainty   | 100% clear permissive license            |
 
@@ -33,12 +33,25 @@ LogikBench is a high quality curated open source RTL benchmark suite that enable
 ## Quick Start
 
 ```bash
-pip install logikbench               # install logikbench
-lb -h                                # help
-lb run --target zeroasic_z1015 -j 4  # run benchmarks on z1015
+# 1. Install LogikBench (pure Python, from PyPI)
+pip install logikbench
+
+# 2. Install the EDA tools it drives (Yosys + FPGA synthesis plugins)
+sc-install -group fpga
+
+# 3. Synthesize your first benchmark on an FPGA target
+lb run -n mux -t xilinx_virtex7
+
+# 4. Run a whole group, then collect its metrics into one JSON
+lb run -g basic -t xilinx_virtex7
+lb collect -g basic -t xilinx_virtex7
 ```
 
-See [Tool Installation](#tool-installation) for EDA tool pre-requisites and customization. To quickly install OpenROAD and Yosys, just enter `sc-install -group asic fpga` after pip installing logikbench.
+`lb -h`, `lb run -h`, and `lb collect -h` list every option. Picking a
+benchmark is optional: with neither `-g` nor `-n`, `lb run` sweeps all groups.
+For ASIC area/FMAX metrics, install `sc-install -group asic` and use an ASIC
+target such as `yosys_freepdk45`. See [Tool Installation](#tool-installation)
+for the full tool prerequisites.
 
 ----
 
@@ -48,7 +61,7 @@ Each LogikBench benchmark circuit consists of:
 * **Tech-agnostic RTL Verilog files** for broad tool compatibility
 * **SiliconCompiler Design object** with metadata and configuration
 
-The SiliconCompiler Design object captures benchmark data as files, parameters, topmodule name, and other settings grouped as a `fileset`. Every circuit in the LogikBench suite has a Python class that inherits from SiliconCompiler's Design class, as shown in this [`mux`](logikbench/benchmarks/basic/mux/rtl/mux.v) example:
+The SiliconCompiler Design object captures benchmark data as files, parameters, topmodule name, and other settings grouped as a `fileset`. Every circuit in the LogikBench suite has a Python class that inherits from SiliconCompiler's Design class, as shown in this [`mux`](logikbench/benchmarks/basic/mux/mux.py) example:
 
 ```python
 from os.path import dirname, abspath
@@ -140,7 +153,7 @@ The LUT count is the synthesized logic-fabric usage, read from Yosys' `stat` per
 
 2. **Dedicated mux-fabric cells** — the hardwired wide multiplexers that live in the same logic block as the LUTs and implement muxing a LUT-only fabric would otherwise spend LUTs on: `MUXF7/MUXF8` (xilinx), `mux4x0/mux8x0` (quicklogic), `MUX2_LUT5..8` (gowin), `LUTMUX7/8` (adi), `L6MUX21/PFUMX` (lattice ECP5), `CC_MX4/CC_MX8` (gatemate), `MX4` (microchip).
 
-3. **Hard DSP / multiply / MAC blocks** — dedicated multiplier and multiply-accumulate cells: `DSP48E1` (xilinx), `MULT18X18D` (lattice ECP5), `CC_MULT` (gatemate), `MACC_PA` (microchip) `RBBDSP` (adi), `efpga_mult*` (Zero ASIC). A fabric without them builds multipliers out of LUTs, so a target that uses a hard block would otherwise read as artificially LUT-light. (Carry/ALU cells such as `CARRY4`, `ALU`, `CCU2C`, `ARI1` are *not* DSPs and are not counted.)
+3. **Hard DSP / multiply / MAC blocks** — dedicated multiplier and multiply-accumulate cells: `DSP48E1` (xilinx), `MULT18X18D` (lattice ECP5), `CC_MULT` (gatemate), `MACC_PA` (microchip), `RBBDSP` (adi), `efpga_mult*` (Zero ASIC). A fabric without them builds multipliers out of LUTs, so a target that uses a hard block would otherwise read as artificially LUT-light. (Carry/ALU cells such as `CARRY4`, `ALU`, `CCU2C`, `ARI1` are *not* DSPs and are not counted.)
 
 Including mux cells keeps the comparison fair: ice40 has no dedicated mux, so its read/select logic is built entirely from LUTs and is fully counted; fabrics like QuickLogic or GateMate offload that same logic to mux cells, which would otherwise make their LUT count read artificially low (e.g. `regfile` on QuickLogic is mostly `mux8x0` cells, not LUTs).
 
@@ -198,7 +211,8 @@ each benchmark is a SiliconCompiler `Design`, and `lb` has two subcommands:
 - `lb run` synthesizes the selected benchmarks for one or more targets.
 - `lb collect` harvests metrics from existing build results (no synthesis).
 
-Both take `-g/--group` and the required `-t/--target`. Run `lb run -h` or
+Both take the required `-t/--target` plus an optional benchmark selector
+(`-g/--group` or `-n/--name`; default: all groups). Run `lb run -h` or
 `lb collect -h` for the full option list.
 
 ### FPGA Targets
@@ -307,8 +321,8 @@ Shared by both subcommands:
 
 | Flag | Description |
 |------|-------------|
-| `-g`, `--group` | Benchmark group(s): `basic`, `memory`, `arithmetic`, `epfl`, `blocks`, `iscas85`, `iscas89` (required) |
-| `-n`, `--name` | Only act on benchmark(s) with these name(s), matched against the selected group(s) (default: all of them) |
+| `-g`, `--group` | Benchmark group(s): `basic`, `memory`, `arithmetic`, `epfl`, `blocks`, `iscas85`, `iscas89` (default: all groups; mutually exclusive with `-n`) |
+| `-n`, `--name` | Act only on benchmark(s) with these name(s), searched across all groups (names are globally unique; mutually exclusive with `-g`) |
 | `-t`, `--target` | Synthesis target(s) to sweep (required); see the Targets table above |
 | `-b` | Build directory root; per-benchmark work goes in `<builddir>/<target>/<name>` (default: `build`) |
 
@@ -375,24 +389,27 @@ lb run -g basic -t sc_asap7 --to synthesis
 
 ## Benchmark Inventory
 
-### Basic Logic (22 benchmarks)
+### Basic Logic (26 benchmarks)
 
 | Benchmark | Description | Verilog |
 |-----------|-------------|---------|
 | arbiter | Fixed-priority arbiter | [arbiter.v](logikbench/benchmarks/basic/arbiter/rtl/arbiter.v) |
-| band | Bitwise AND | [band.v](logikbench/benchmarks/basic/band/rtl/band.v) |
+| band | AND reduction | [band.v](logikbench/benchmarks/basic/band/rtl/band.v) |
 | bin2gray | Binary to Gray code converter | [bin2gray.v](logikbench/benchmarks/basic/bin2gray/rtl/bin2gray.v) |
 | bin2prio | Binary to priority encoder | [bin2prio.v](logikbench/benchmarks/basic/bin2prio/rtl/bin2prio.v) |
 | binv | Bitwise inverter | [binv.v](logikbench/benchmarks/basic/binv/rtl/binv.v) |
-| bnand | Bitwise NAND | [bnand.v](logikbench/benchmarks/basic/bnand/rtl/bnand.v) |
-| bnor | Bitwise NOR | [bnor.v](logikbench/benchmarks/basic/bnor/rtl/bnor.v) |
-| bor | Bitwise OR | [bor.v](logikbench/benchmarks/basic/bor/rtl/bor.v) |
-| bxnor | Bitwise XNOR | [bxnor.v](logikbench/benchmarks/basic/bxnor/rtl/bxnor.v) |
-| bxor | Bitwise XOR | [bxor.v](logikbench/benchmarks/basic/bxor/rtl/bxor.v) |
+| bnand | NAND reduction | [bnand.v](logikbench/benchmarks/basic/bnand/rtl/bnand.v) |
+| bnor | NOR reduction | [bnor.v](logikbench/benchmarks/basic/bnor/rtl/bnor.v) |
+| bor | OR reduction | [bor.v](logikbench/benchmarks/basic/bor/rtl/bor.v) |
+| bxnor | XNOR reduction | [bxnor.v](logikbench/benchmarks/basic/bxnor/rtl/bxnor.v) |
+| bxor | XOR reduction (parity) | [bxor.v](logikbench/benchmarks/basic/bxor/rtl/bxor.v) |
 | crossbar | Crossbar switch | [crossbar.v](logikbench/benchmarks/basic/crossbar/rtl/crossbar.v) |
 | dffasync | Asynchronous reset flip-flop | [dffasync.v](logikbench/benchmarks/basic/dffasync/rtl/dffasync.v) |
 | dffsync | Synchronous reset flip-flop | [dffsync.v](logikbench/benchmarks/basic/dffsync/rtl/dffsync.v) |
+| fsm | Parametrized FSM with pseudo-random transitions | [fsm.v](logikbench/benchmarks/basic/fsm/rtl/fsm.v) |
 | gray2bin | Gray to binary code converter | [gray2bin.v](logikbench/benchmarks/basic/gray2bin/rtl/gray2bin.v) |
+| icg | Gated-clock register | [icg.v](logikbench/benchmarks/basic/icg/rtl/icg.v) |
+| latch | Transparent D latch | [latch.v](logikbench/benchmarks/basic/latch/rtl/latch.v) |
 | mux | Multiplexer | [mux.v](logikbench/benchmarks/basic/mux/rtl/mux.v) |
 | muxcase | Case-based multiplexer | [muxcase.v](logikbench/benchmarks/basic/muxcase/rtl/muxcase.v) |
 | muxhot | One-hot multiplexer | [muxhot.v](logikbench/benchmarks/basic/muxhot/rtl/muxhot.v) |
@@ -400,8 +417,10 @@ lb run -g basic -t sc_asap7 --to synthesis
 | onehot | One-hot encoder | [onehot.v](logikbench/benchmarks/basic/onehot/rtl/onehot.v) |
 | pipeline | Pipeline register | [pipeline.v](logikbench/benchmarks/basic/pipeline/rtl/pipeline.v) |
 | shiftreg | Shift register | [shiftreg.v](logikbench/benchmarks/basic/shiftreg/rtl/shiftreg.v) |
+| tff | Toggle flip-flop | [tff.v](logikbench/benchmarks/basic/tff/rtl/tff.v) |
+| tmr | Triple-modular-redundancy voter | [tmr.v](logikbench/benchmarks/basic/tmr/rtl/tmr.v) |
 
-### Arithmetic (33 benchmarks)
+### Arithmetic (66 benchmarks)
 
 | Benchmark | Description | Verilog |
 |-----------|-------------|---------|
@@ -410,34 +429,67 @@ lb run -g basic -t sc_asap7 --to synthesis
 | absdiffs | Signed absolute difference | [absdiffs.v](logikbench/benchmarks/arithmetic/absdiffs/rtl/absdiffs.v) |
 | add | Adder | [add.v](logikbench/benchmarks/arithmetic/add/rtl/add.v) |
 | addsub | Adder-subtractor | [addsub.v](logikbench/benchmarks/arithmetic/addsub/rtl/addsub.v) |
+| argmax | Index of max over N | [argmax.v](logikbench/benchmarks/arithmetic/argmax/rtl/argmax.v) |
+| argmin | Index of min over N | [argmin.v](logikbench/benchmarks/arithmetic/argmin/rtl/argmin.v) |
+| atan | Arctangent (CORDIC vectoring) | [atan.v](logikbench/benchmarks/arithmetic/atan/rtl/atan.v) |
+| avgn | Average over N (avg pool) | [avgn.v](logikbench/benchmarks/arithmetic/avgn/rtl/avgn.v) |
+| clamp | Saturate/clip to [lo,hi] | [clamp.v](logikbench/benchmarks/arithmetic/clamp/rtl/clamp.v) |
+| clz | Count leading zeros | [clz.v](logikbench/benchmarks/arithmetic/clz/rtl/clz.v) |
 | cmp | Comparator | [cmp.v](logikbench/benchmarks/arithmetic/cmp/rtl/cmp.v) |
+| cos | Cosine (CORDIC rotation) | [cos.v](logikbench/benchmarks/arithmetic/cos/rtl/cos.v) |
 | counter | Counter | [counter.v](logikbench/benchmarks/arithmetic/counter/rtl/counter.v) |
 | csa32 | 3:2 carry-save adder | [csa32.v](logikbench/benchmarks/arithmetic/csa32/rtl/csa32.v) |
 | csa42 | 4:2 carry-save adder | [csa42.v](logikbench/benchmarks/arithmetic/csa42/rtl/csa42.v) |
+| ctz | Count trailing zeros | [ctz.v](logikbench/benchmarks/arithmetic/ctz/rtl/ctz.v) |
 | dec | Decrementer | [dec.v](logikbench/benchmarks/arithmetic/dec/rtl/dec.v) |
+| div | Unsigned integer divide (sequential) | [div.v](logikbench/benchmarks/arithmetic/div/rtl/div.v) |
+| divs | Signed integer divide (sequential) | [divs.v](logikbench/benchmarks/arithmetic/divs/rtl/divs.v) |
 | dotprod | Dot product | [dotprod.v](logikbench/benchmarks/arithmetic/dotprod/rtl/dotprod.v) |
+| exp | Exponential (range-reduce + poly) | [exp.v](logikbench/benchmarks/arithmetic/exp/rtl/exp.v) |
+| gelu | GELU activation (sigmoid approx) | [gelu.v](logikbench/benchmarks/arithmetic/gelu/rtl/gelu.v) |
+| hswish | Hard-swish activation | [hswish.v](logikbench/benchmarks/arithmetic/hswish/rtl/hswish.v) |
 | inc | Incrementer | [inc.v](logikbench/benchmarks/arithmetic/inc/rtl/inc.v) |
+| ln | Natural logarithm (normalize + poly) | [ln.v](logikbench/benchmarks/arithmetic/ln/rtl/ln.v) |
 | log2 | Log base 2 | [log2.v](logikbench/benchmarks/arithmetic/log2/rtl/log2.v) |
+| lrelu | Leaky ReLU activation | [lrelu.v](logikbench/benchmarks/arithmetic/lrelu/rtl/lrelu.v) |
 | mac | Multiply-accumulate | [mac.v](logikbench/benchmarks/arithmetic/mac/rtl/mac.v) |
+| macc | Complex multiply-accumulate | [macc.v](logikbench/benchmarks/arithmetic/macc/rtl/macc.v) |
+| macs | Signed multiply-accumulate | [macs.v](logikbench/benchmarks/arithmetic/macs/rtl/macs.v) |
 | max | Maximum | [max.v](logikbench/benchmarks/arithmetic/max/rtl/max.v) |
+| maxn | Max over N (max pool) | [maxn.v](logikbench/benchmarks/arithmetic/maxn/rtl/maxn.v) |
 | min | Minimum | [min.v](logikbench/benchmarks/arithmetic/min/rtl/min.v) |
+| mod | Unsigned modulo (sequential) | [mod.v](logikbench/benchmarks/arithmetic/mod/rtl/mod.v) |
+| msub | Multiply-subtract | [msub.v](logikbench/benchmarks/arithmetic/msub/rtl/msub.v) |
 | mul | Multiplier | [mul.v](logikbench/benchmarks/arithmetic/mul/rtl/mul.v) |
 | muladd | Multiply-add | [muladd.v](logikbench/benchmarks/arithmetic/muladd/rtl/muladd.v) |
-| muladdc | Multiply-add with carry | [muladdc.v](logikbench/benchmarks/arithmetic/muladdc/rtl/muladdc.v) |
-| mulc | Constant multiplier | [mulc.v](logikbench/benchmarks/arithmetic/mulc/rtl/mulc.v) |
+| muladdc | Complex multiply-add | [muladdc.v](logikbench/benchmarks/arithmetic/muladdc/rtl/muladdc.v) |
+| muladds | Signed multiply-add | [muladds.v](logikbench/benchmarks/arithmetic/muladds/rtl/muladds.v) |
+| mulc | Complex multiply | [mulc.v](logikbench/benchmarks/arithmetic/mulc/rtl/mulc.v) |
 | mulreg | Registered multiplier | [mulreg.v](logikbench/benchmarks/arithmetic/mulreg/rtl/mulreg.v) |
 | muls | Signed multiplier | [muls.v](logikbench/benchmarks/arithmetic/muls/rtl/muls.v) |
+| mulsu | Signed x unsigned multiplier | [mulsu.v](logikbench/benchmarks/arithmetic/mulsu/rtl/mulsu.v) |
+| multconst | Constant-coefficient multiplier | [multconst.v](logikbench/benchmarks/arithmetic/multconst/rtl/multconst.v) |
+| popcount | Population count (set bits) | [popcount.v](logikbench/benchmarks/arithmetic/popcount/rtl/popcount.v) |
+| premul | Pre-adder multiply (a+d)*b | [premul.v](logikbench/benchmarks/arithmetic/premul/rtl/premul.v) |
+| recip | Fixed-point reciprocal 1/x (sequential) | [recip.v](logikbench/benchmarks/arithmetic/recip/rtl/recip.v) |
 | relu | ReLU activation function | [relu.v](logikbench/benchmarks/arithmetic/relu/rtl/relu.v) |
+| requant | Requantize (mul-shift-round-saturate) | [requant.v](logikbench/benchmarks/arithmetic/requant/rtl/requant.v) |
+| rotl | Rotate left (barrel) | [rotl.v](logikbench/benchmarks/arithmetic/rotl/rtl/rotl.v) |
+| rotr | Rotate right (barrel) | [rotr.v](logikbench/benchmarks/arithmetic/rotr/rtl/rotr.v) |
 | round | Rounder | [round.v](logikbench/benchmarks/arithmetic/round/rtl/round.v) |
+| rsqrt | Fixed-point inverse sqrt (sequential) | [rsqrt.v](logikbench/benchmarks/arithmetic/rsqrt/rtl/rsqrt.v) |
 | shiftar | Arithmetic right shift | [shiftar.v](logikbench/benchmarks/arithmetic/shiftar/rtl/shiftar.v) |
 | shiftb | Barrel shifter | [shiftb.v](logikbench/benchmarks/arithmetic/shiftb/rtl/shiftb.v) |
 | shiftl | Left shift | [shiftl.v](logikbench/benchmarks/arithmetic/shiftl/rtl/shiftl.v) |
 | shiftr | Right shift | [shiftr.v](logikbench/benchmarks/arithmetic/shiftr/rtl/shiftr.v) |
+| sigmoid | Sigmoid activation (PLAN PWL) | [sigmoid.v](logikbench/benchmarks/arithmetic/sigmoid/rtl/sigmoid.v) |
+| simdmul | Packed SIMD multiply | [simdmul.v](logikbench/benchmarks/arithmetic/simdmul/rtl/simdmul.v) |
 | sine | Sine function | [sine.v](logikbench/benchmarks/arithmetic/sine/rtl/sine.v) |
 | sqdiff | Squared difference | [sqdiff.v](logikbench/benchmarks/arithmetic/sqdiff/rtl/sqdiff.v) |
 | sqrt | Square root | [sqrt.v](logikbench/benchmarks/arithmetic/sqrt/rtl/sqrt.v) |
 | sub | Subtractor | [sub.v](logikbench/benchmarks/arithmetic/sub/rtl/sub.v) |
 | sum | Summation tree | [sum.v](logikbench/benchmarks/arithmetic/sum/rtl/sum.v) |
+| tanh | Tanh activation (PLAN PWL) | [tanh.v](logikbench/benchmarks/arithmetic/tanh/rtl/tanh.v) |
 
 ### Memory (17 benchmarks)
 
@@ -467,7 +519,7 @@ lb run -g basic -t sc_asap7 --to synthesis
 |-----------|-------------|---------|
 | aes | AES encryption core | [aes.sv](logikbench/benchmarks/blocks/aes/rtl/aes.sv) |
 | apbregs | APB register file | [apbregs.v](logikbench/benchmarks/blocks/apbregs/rtl/apbregs.v) |
-| axicrossbar | AXI crossbar | [arbiter.v](logikbench/benchmarks/blocks/axicrossbar/rtl/arbiter.v) |
+| axicrossbar | AXI crossbar | [axi_crossbar.v](logikbench/benchmarks/blocks/axicrossbar/rtl/axi_crossbar.v) |
 | axiram | AXI RAM interface | [axiram.v](logikbench/benchmarks/blocks/axiram/rtl/axiram.v) |
 | blackparrot | BlackParrot RISC-V core | [blackparrot/](logikbench/benchmarks/blocks/blackparrot/) |
 | conv2d | Streaming 3x3 2D convolution | [conv2d.v](logikbench/benchmarks/blocks/conv2d/rtl/conv2d.v) |

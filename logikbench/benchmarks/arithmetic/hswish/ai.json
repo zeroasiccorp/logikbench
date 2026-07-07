@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0",
+  "name": "hswish",
+  "spec_ref": "README.md",
+  "authorship": "Zero ASIC Corporation; author Andreas Olofsson",
+  "generated_by": {
+    "model": "claude-opus-4-8",
+    "provider": "Anthropic",
+    "interface": "Claude Code",
+    "date": "2026-07-07"
+  },
+  "human_review": {
+    "reviewed": true,
+    "reviewer": "Andreas Olofsson",
+    "date": "2026-07-07",
+    "notes": "Architecture, parameters, and scope directed by the author; provenance (model and date) confirmed; self-checking testbench reviewed by the author."
+  },
+  "origin": {
+    "type": "original",
+    "notes": "Original implementation for LogikBench; region-split fixed-point evaluation of the MobileNetV3 hard-swish definition, not copied from any specific HDL source."
+  }
+}

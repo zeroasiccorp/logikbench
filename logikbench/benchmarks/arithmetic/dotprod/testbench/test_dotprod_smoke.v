@@ -9,7 +9,7 @@
 //#############################################################################
 `timescale 1ns/1ps
 module test_dotprod_smoke;
-   localparam N=4, DW=4, OW=DW+$clog2(N);
+   localparam N=4, DW=4, OW=2*DW+$clog2(N);
    reg	      clk=0; reg [N*DW-1:0] a,b; wire [OW-1:0] out;
    always #5 clk=~clk;
    dotprod #(.N(N),.DW(DW)) dut (.a(a),.b(b),.out(out));

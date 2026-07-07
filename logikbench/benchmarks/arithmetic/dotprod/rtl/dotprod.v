@@ -8,14 +8,15 @@ module dotprod #(parameter N = 8,
                  parameter DW = 16
                  )
    (
-    input [N*DW-1:0]             a,  // concatenated input vector a
-    input [N*DW-1:0]             b,  // concatenated input vector b
-    output [DW + $clog2(N) -1:0] out // Sum of products
+    input [N*DW-1:0]               a,  // concatenated input vector a
+    input [N*DW-1:0]               b,  // concatenated input vector b
+    output [2*DW + $clog2(N) -1:0] out // Sum of products (full precision)
     );
 
    // Internal variables
    integer i;
-   reg [DW + $clog2(N) -1:0] sum;
+   // 2*DW holds each DWxDW product without truncation; +clog2(N) for the sum
+   reg [2*DW + $clog2(N) -1:0] sum;
 
    // Unpack elements and compute dot product
    always @(*) begin
