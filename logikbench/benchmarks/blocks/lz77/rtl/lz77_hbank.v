@@ -45,16 +45,7 @@ module lz77_hbank
    wire [WAW-1:0] ea  = evf ? wrd[WAW:1] : (wrd[WAW:1] + {{(WAW-1){1'b0}}, 1'b1});
    wire [WAW-1:0] oa  = wrd[WAW:1];
 
-   // per-byte -> per-lane write mask (la_spram BYTEMODE replicates bit i*8)
-   wire [WW*8-1:0] wm_ev, wm_od;
-   genvar          i;
-   generate
-      for (i = 0; i < WW; i = i + 1) begin : g_wm
-         assign wm_ev[i*8 +: 8] = {8{wbe_ev[i]}};
-         assign wm_od[i*8 +: 8] = {8{wbe_od[i]}};
-      end
-   endgenerate
-
+   // la_spram byte mode takes a per-byte (DW/8-wide) write mask directly
    // read and write never collide (read in scan cycles, write at commit)
    wire [WAW-1:0]  addr_ev = we_ev ? wa_ev : ea;
    wire [WAW-1:0]  addr_od = we_od ? wa_od : oa;
@@ -62,12 +53,12 @@ module lz77_hbank
    wire            ce_od = re | we_od;
    wire [WW*8-1:0] q_ev, q_od;
 
-   la_spram #(.DW(WW*8), .AW(WAW), .BYTEMODE(1)) m_ev
-     (.clk(clk), .ce(ce_ev), .we(we_ev), .wmask(wm_ev), .addr(addr_ev),
+   la_spram #(.DW(WW*8), .AW(WAW), .BYTEMASK(1)) m_ev
+     (.clk(clk), .ce(ce_ev), .we(we_ev), .wmask(wbe_ev), .addr(addr_ev),
       .din(wd_ev), .dout(q_ev), .selctrl(1'b0), .ctrl('b0), .status());
 
-   la_spram #(.DW(WW*8), .AW(WAW), .BYTEMODE(1)) m_od
-     (.clk(clk), .ce(ce_od), .we(we_od), .wmask(wm_od), .addr(addr_od),
+   la_spram #(.DW(WW*8), .AW(WAW), .BYTEMASK(1)) m_od
+     (.clk(clk), .ce(ce_od), .we(we_od), .wmask(wbe_od), .addr(addr_od),
       .din(wd_od), .dout(q_od), .selctrl(1'b0), .ctrl('b0), .status());
 
    reg evf_d;

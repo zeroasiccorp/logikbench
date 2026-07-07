@@ -18,7 +18,7 @@ module ramsp #(parameter DW = 16,
     output [DW-1:0]     dout  // data output
     );
 
-   la_spram #(.DW(DW), .AW(AW), .BYTEMODE(0)) memory
+   la_spram #(.DW(DW), .AW(AW), .BYTEMASK(0)) memory
      (.clk     (clk),
       .ce      (1'b1),
       .we      (we),

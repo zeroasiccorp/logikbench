@@ -5,7 +5,7 @@
 //#############################################################################
 //
 // Per-byte write-mask single-port RAM. Implemented on lambdalib la_spram in
-// byte mask mode (BYTEMODE=1) so memory mapping is technology agnostic (FPGA
+// byte mask mode (BYTEMASK=1) so memory mapping is technology agnostic (FPGA
 // byte-wide BRAM / ASIC macro) and handled by lambdalib.
 
 module rambyte #(parameter DW = 16,
@@ -19,21 +19,13 @@ module rambyte #(parameter DW = 16,
     output [DW-1:0]     dout  // read output data
     );
 
-   // Expand the per-byte mask to a byte-aligned per-bit mask; la_spram in
-   // byte mode consumes wmask[i*8] for each 8-bit lane.
-   wire [DW-1:0] wmask;
-   genvar gi;
-   generate
-      for (gi = 0; gi < DW/8; gi = gi + 1) begin : g_lane
-         assign wmask[gi*8+:8] = {8{we[gi]}};
-      end
-   endgenerate
-
-   la_spram #(.DW(DW), .AW(AW), .BYTEMODE(1)) memory
+   // la_spram in byte mode takes a DW/8-wide per-byte write mask, so the
+   // per-byte enable drives wmask directly.
+   la_spram #(.DW(DW), .AW(AW), .BYTEMASK(1)) memory
      (.clk     (clk),
       .ce      (ce),
       .we      (1'b1),
-      .wmask   (wmask),
+      .wmask   (we),
       .addr    (addr),
       .din     (din),
       .dout    (dout),
