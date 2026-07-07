@@ -28,6 +28,14 @@ LogikBench is a high quality curated open source RTL benchmark suite that enable
 | Lack of portability   | Tech agnostic RTL+lambdalib benchmarks   |
 | License uncertainty   | 100% clear permissive license            |
 
+LogikBench includes the following benchmark types:
+
+| Benchmark type               | Groups (-g)               |
+|------------------------------|---------------------------|
+| Micro-benchmarks             | basic, arithmetic         |
+| Legacy synthetic bencharmks  | epfl, isca85, isca89      |
+| Very large and real circuits | blocks                    |
+
 ----
 
 ## Quick Start
