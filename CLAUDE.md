@@ -35,6 +35,21 @@
   required (source, commit, license), even though no hardware-implementation
   citation applies.
 
+### Reference integrity (enforced)
+- REAL: every reference must be verified to exist -- exact author, title,
+  venue, year must resolve to a real source (web-check at authoring time). If
+  you cannot verify it, DO NOT cite it; state the block is an original
+  implementation instead. Never emit an unverified/plausible citation.
+- USED: every reference must map to a specific algorithm or hardware decision
+  in the block. No decorative/background citations -- if you can't tie a
+  reference to something concrete in the design, delete it.
+- ALLOWED sources: peer-reviewed papers, textbooks, recognized standards, and
+  open-source projects. NOT allowed: vendor app notes, datasheets, user
+  guides, white papers, product briefs, or any vendor-specific architecture
+  name (stay vendor-neutral).
+- Keep the algorithm vs hardware-implementation split, and state provenance
+  honestly (original vs vendored).
+
 ## Verilog Directives
 
 - Only ever edit `*.v` and `*.vh` files, ignore files listed in `.gitignore`.
