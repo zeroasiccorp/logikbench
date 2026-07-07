@@ -63,6 +63,7 @@ lb = "logikbench.apps.lb:main"
 
 [tool.pytest.ini_options]
 testpaths = "tests"
+addopts = "-n auto"
 timeout = "60"
 markers = [
     "eda: test requires external EDA tools (yosys, iverilog) on PATH",
