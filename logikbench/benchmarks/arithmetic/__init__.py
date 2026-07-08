@@ -3,7 +3,9 @@ from .abs.abs import Abs
 from .absdiff.absdiff import Absdiff
 from .absdiffs.absdiffs import Absdiffs
 from .add.add import Add
+from .addmod.addmod import Addmod
 from .addsub.addsub import Addsub
+from .addtree.addtree import Addtree
 from .argmax.argmax import Argmax
 from .argmin.argmin import Argmin
 from .atan.atan import Atan
@@ -21,6 +23,9 @@ from .div.div import Div
 from .divs.divs import Divs
 from .dotprod.dotprod import Dotprod
 from .exp.exp import Exp
+from .fmadd32.fmadd32 import Fmadd32
+from .fmadd16.fmadd16 import Fmadd16
+from .fmadd8.fmadd8 import Fmadd8
 from .gelu.gelu import Gelu
 from .hswish.hswish import Hswish
 from .inc.inc import Inc
@@ -71,7 +76,9 @@ __all__ = [
     "Absdiff",
     "Absdiffs",
     "Add",
+    "Addmod",
     "Addsub",
+    "Addtree",
     "Argmax",
     "Argmin",
     "Atan",
@@ -89,6 +96,9 @@ __all__ = [
     "Divs",
     "Dotprod",
     "Exp",
+    "Fmadd32",
+    "Fmadd16",
+    "Fmadd8",
     "Gelu",
     "Hswish",
     "Inc",

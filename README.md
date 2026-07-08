@@ -20,20 +20,21 @@ LogikBench is a high quality curated open source RTL benchmark suite that enable
 
 | Problem Addressed     | LogikBench Solution                      |
 |-----------------------|------------------------------------------|
-| No "Spec CPU for RTL" | 209 standardized benchmark circuits      |
+| No "Spec CPU for RTL" | 220 standardized benchmark circuits      |
 | Lack of diversity     | Broad range of circuits and code origins |
 | Hard coded values     | Extensive per circuit parametrization    |
 | Lack of trust         | Documented source code provenance        |
 | Reproducibility       | 100% push button automation              |
 | Lack of portability   | Tech agnostic RTL+lambdalib benchmarks   |
 | License uncertainty   | 100% clear permissive license            |
+| Lack of quality       | Testbenches and conservative curation    |
 
 LogikBench includes the following benchmark types:
 
 | Benchmark type               | Groups (-g)               |
 |------------------------------|---------------------------|
 | Micro-benchmarks             | basic, arithmetic         |
-| Legacy synthetic bencharmks  | epfl, isca85, isca89      |
+| Legacy synthetic benchmarks  | epfl, isca85, isca89      |
 | Very large and real circuits | blocks                    |
 
 ----
@@ -428,7 +429,7 @@ lb run -g basic -t sc_asap7 --to synthesis
 | tff | Toggle flip-flop | [tff.v](logikbench/benchmarks/basic/tff/rtl/tff.v) |
 | tmr | Triple-modular-redundancy voter | [tmr.v](logikbench/benchmarks/basic/tmr/rtl/tmr.v) |
 
-### Arithmetic (66 benchmarks)
+### Arithmetic (71 benchmarks)
 
 | Benchmark | Description | Verilog |
 |-----------|-------------|---------|
@@ -436,7 +437,9 @@ lb run -g basic -t sc_asap7 --to synthesis
 | absdiff | Absolute difference | [absdiff.v](logikbench/benchmarks/arithmetic/absdiff/rtl/absdiff.v) |
 | absdiffs | Signed absolute difference | [absdiffs.v](logikbench/benchmarks/arithmetic/absdiffs/rtl/absdiffs.v) |
 | add | Adder | [add.v](logikbench/benchmarks/arithmetic/add/rtl/add.v) |
+| addmod | Wide modular adder (a+b) mod m | [addmod.v](logikbench/benchmarks/arithmetic/addmod/rtl/addmod.v) |
 | addsub | Adder-subtractor | [addsub.v](logikbench/benchmarks/arithmetic/addsub/rtl/addsub.v) |
+| addtree | Balanced adder-reduction tree | [addtree.v](logikbench/benchmarks/arithmetic/addtree/rtl/addtree.v) |
 | argmax | Index of max over N | [argmax.v](logikbench/benchmarks/arithmetic/argmax/rtl/argmax.v) |
 | argmin | Index of min over N | [argmin.v](logikbench/benchmarks/arithmetic/argmin/rtl/argmin.v) |
 | atan | Arctangent (CORDIC vectoring) | [atan.v](logikbench/benchmarks/arithmetic/atan/rtl/atan.v) |
@@ -454,6 +457,9 @@ lb run -g basic -t sc_asap7 --to synthesis
 | divs | Signed integer divide (sequential) | [divs.v](logikbench/benchmarks/arithmetic/divs/rtl/divs.v) |
 | dotprod | Dot product | [dotprod.v](logikbench/benchmarks/arithmetic/dotprod/rtl/dotprod.v) |
 | exp | Exponential (range-reduce + poly) | [exp.v](logikbench/benchmarks/arithmetic/exp/rtl/exp.v) |
+| fmadd8 | Fused multiply-add, E4M3 fp8 | [fmadd8.v](logikbench/benchmarks/arithmetic/fmadd8/rtl/fmadd8.v) |
+| fmadd16 | Fused multiply-add, bf16 | [fmadd16.v](logikbench/benchmarks/arithmetic/fmadd16/rtl/fmadd16.v) |
+| fmadd32 | Fused multiply-add, fp32 | [fmadd32.v](logikbench/benchmarks/arithmetic/fmadd32/rtl/fmadd32.v) |
 | gelu | GELU activation (sigmoid approx) | [gelu.v](logikbench/benchmarks/arithmetic/gelu/rtl/gelu.v) |
 | hswish | Hard-swish activation | [hswish.v](logikbench/benchmarks/arithmetic/hswish/rtl/hswish.v) |
 | inc | Incrementer | [inc.v](logikbench/benchmarks/arithmetic/inc/rtl/inc.v) |
@@ -521,7 +527,7 @@ lb run -g basic -t sc_asap7 --to synthesis
 | regfile | Register file | [regfile.v](logikbench/benchmarks/memory/regfile/rtl/regfile.v) |
 | rom | Read-only memory | [rom.v](logikbench/benchmarks/memory/rom/rtl/rom.v) |
 
-### Complex Blocks (42 benchmarks)
+### Complex Blocks (48 benchmarks)
 
 | Benchmark | Description | Verilog |
 |-----------|-------------|---------|
@@ -533,6 +539,7 @@ lb run -g basic -t sc_asap7 --to synthesis
 | conv2d | Streaming 3x3 2D convolution | [conv2d.v](logikbench/benchmarks/blocks/conv2d/rtl/conv2d.v) |
 | coralnpu | CoralNPU neural accelerator | [coralnpu.sv](logikbench/benchmarks/blocks/coralnpu/rtl/coralnpu.sv) |
 | crc32 | CRC-32 generator | [crc32.v](logikbench/benchmarks/blocks/crc32/rtl/crc32.v) |
+| codec8b10b | 8b/10b line encoder/decoder | [codec8b10b.v](logikbench/benchmarks/blocks/codec8b10b/rtl/codec8b10b.v) |
 | cva6 | CVA6 (Ariane) RISC-V core | [cva6.sv](logikbench/benchmarks/blocks/cva6/rtl/cva6.sv) |
 | ddc | Digital down-converter (NCO/mixer/CIC/FIR) | [ddc.v](logikbench/benchmarks/blocks/ddc/rtl/ddc.v) |
 | ethmac | Ethernet MAC | [ethmac.v](logikbench/benchmarks/blocks/ethmac/rtl/ethmac.v) |
@@ -540,12 +547,16 @@ lb run -g basic -t sc_asap7 --to synthesis
 | firfix | Fixed-coefficient FIR filter | [firfix.v](logikbench/benchmarks/blocks/firfix/rtl/firfix.v) |
 | firprog | Programmable FIR filter | [firprog.v](logikbench/benchmarks/blocks/firprog/rtl/firprog.v) |
 | fpu64 | 64-bit floating-point unit | [fpu64/](logikbench/benchmarks/blocks/fpu64/) |
+| gearbox66 | 64b/66b scrambler + gearbox | [gearbox66.v](logikbench/benchmarks/blocks/gearbox66/rtl/gearbox66.v) |
 | hamming | Hamming ECC encoder/decoder | [hamming.v](logikbench/benchmarks/blocks/hamming/rtl/hamming.v) |
+| hft | Tick-to-trade HFT pipeline | [hft.v](logikbench/benchmarks/blocks/hft/rtl/hft.v) |
 | hmac | HMAC-SHA hashing | [hmac.sv](logikbench/benchmarks/blocks/hmac/rtl/hmac.sv) |
 | huffman | Canonical Huffman encoder/decoder | [huffman.v](logikbench/benchmarks/blocks/huffman/rtl/huffman.v) |
 | i2c | I2C controller | [i2c.sv](logikbench/benchmarks/blocks/i2c/rtl/i2c.sv) |
 | ialu | Integer ALU | [ialu.v](logikbench/benchmarks/blocks/ialu/rtl/ialu.v) |
+| jesd204b | JESD204B full-duplex link interface | [jesd204b.v](logikbench/benchmarks/blocks/jesd204b/rtl/jesd204b.v) |
 | lfsr | Linear feedback shift register | [lfsr.v](logikbench/benchmarks/blocks/lfsr/rtl/lfsr.v) |
+| linkmap | JESD204-style transport framer/deframer | [linkmap.v](logikbench/benchmarks/blocks/linkmap/rtl/linkmap.v) |
 | lpddr5 | LPDDR5 memory controller (UMI + DFI, ECC) | [lpddr5_umi.v](logikbench/benchmarks/blocks/lpddr5/rtl/lpddr5_umi.v) |
 | lz77 | LZ77 (LZSS) compressor/decompressor | [lz77.v](logikbench/benchmarks/blocks/lz77/rtl/lz77.v) |
 | median3x3 | Streaming 3x3 median filter | [median3x3.v](logikbench/benchmarks/blocks/median3x3/rtl/median3x3.v) |
@@ -567,6 +578,7 @@ lb run -g basic -t sc_asap7 --to synthesis
 | viterbi | Viterbi decoder | [viterbi.v](logikbench/benchmarks/blocks/viterbi/rtl/viterbi.v) |
 | vortex | Vortex GPU core | [vortex/](logikbench/benchmarks/blocks/vortex/) |
 | wally | CVW-Wally RISC-V core | [wally/](logikbench/benchmarks/blocks/wally/) |
+| wordalign | Comma detect + bitslip aligner | [wordalign.v](logikbench/benchmarks/blocks/wordalign/rtl/wordalign.v) |
 
 ### EPFL Benchmarks (19 benchmarks)
 
@@ -655,25 +667,6 @@ Sequential gate-level circuits (clock port `CK`). See [iscas89/README.md](logikb
 
 Targets ranked by total LUTs over all benchmarks (config: `small`), lowest first. A benchmark with no result for a target is charged the highest LUT count any target reached on it.
 Comparing different FPGA architectures is by definition an apples to oranges exercise. Ranking by no means implies quality or goodness, it's just a neat way to compress and order data.
-
-<!-- RANKING:START -->
-| Rank | Target | Arch | Total LUTs | Missing |
-|-----:|--------|------|-----------:|--------:|
-| 1 | zeroasic_z1060 | LUT6 | 622,544 | 5 |
-| 2 | gatemate_cologne | LUT8 | 657,965 | 6 |
-| 3 | adi_flex16ffc | LUT6 | 712,670 | 4 |
-| 4 | xilinx_virtex7 | LUT6 | 727,599 | 11 |
-| 5 | zeroasic_z1015 | LUT4 | 783,697 | 5 |
-| 6 | microchip_polarfire | LUT4 | 806,090 | 14 |
-| 7 | lattice_ice40 | LUT4 | 955,767 | 8 |
-| 8 | efinix_trion | LUT4 | 972,448 | 9 |
-| 9 | lattice_ecp5 | LUT4 | 1,099,864 | 11 |
-| 10 | quicklogic_polarpro | LUT4/MUX | 1,152,443 | 14 |
-| 11 | fabulous_generic | LUT4 | 1,276,650 | 17 |
-| 12 | gowin_gw5a | LUT4 | 1,543,462 | 11 |
-| 13 | achronix_speedster | LUT6 | 1,552,803 | 25 |
-| 14 | zeroasic_z1015opt | LUT4 | 1,628,976 | 57 |
-<!-- RANKING:END -->
 
 ### ASIC Synthesis
 
