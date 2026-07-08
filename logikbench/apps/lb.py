@@ -13,8 +13,12 @@ from concurrent.futures import ProcessPoolExecutor, as_completed
 from logikbench.runner import (
     FPGA_METRICS, ASIC_METRICS, TARGETS, FPGA_TARGETS, SC_TARGETS,
     YOSYS_TARGETS, TARDIGRADE_TARGETS, STEPS, run_one,
-    read_metrics, read_asic_metrics, read_tool_var, is_complete, clean_build,
+    read_metrics, read_asic_metrics, read_tool_var, read_flow_tools,
+    is_complete, clean_build,
 )
+
+# results file layout version (bump when the JSON structure changes)
+SCHEMA_VERSION = 1
 
 # benchmark groups available to both subcommands
 ALL_GROUPS = ['basic', 'memory', 'arithmetic', 'epfl', 'blocks',
@@ -264,20 +268,37 @@ def save_target(target, args, worklist):
     # incremental read-modify-write: update only the benchmarks in this run and
     # preserve metrics already recorded for others (so a subset run/publish does
     # not clobber the rest of the target's results).
-    payload = {"target": target, "options": options, "metrics": {}}
+    payload = {}
     if os.path.isfile(output):
         try:
             with open(output) as f:
                 payload = json.load(f)
         except (ValueError, OSError):
-            payload = {"target": target, "options": options, "metrics": {}}
-    payload["target"] = target
-    if options is not None:
-        payload["options"] = options
-    payload.setdefault("metrics", {})
+            payload = {}
+    metrics = payload.get("metrics", {})
     for metric, col in metrics_out.items():
-        payload["metrics"].setdefault(metric, {}).update(col)
+        metrics.setdefault(metric, {}).update(col)
 
+    # provenance: what produced these numbers (git versions the rest). Tools are
+    # discovered from the flow the target ran; refreshed each run.
+    tools, scversion = {}, None
+    for _, _, nm in worklist:
+        tools, scversion = read_flow_tools(nm, builddir=target_builddir(args,
+                                                                        target))
+        if tools or scversion:
+            break
+    meta = payload.get("meta", {})
+    meta["schema_version"] = SCHEMA_VERSION
+    meta["target"] = target
+    if options is not None:
+        meta["options"] = options
+    meta["logikbench"] = getattr(lb, "__version__", None)
+    if scversion is not None:
+        meta["siliconcompiler"] = scversion
+    if tools:
+        meta["tools"] = tools
+
+    payload = {"meta": meta, "metrics": metrics}
     with open(output, "w") as f:
         json.dump(payload, f, indent=2, sort_keys=True)
     print(f"Wrote {collected}/{len(worklist)} benchmark(s) -> {output}")
@@ -292,7 +313,8 @@ def _load_metrics_file(path):
         sys.exit(2)
     with open(path) as f:
         data = json.load(f)
-    label = data.get("target") or os.path.splitext(os.path.basename(path))[0]
+    label = (data.get("meta", {}).get("target")
+             or os.path.splitext(os.path.basename(path))[0])
     return label, data.get("metrics", {})
 
 
