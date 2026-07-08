@@ -27,6 +27,7 @@ set LB_HOLD_MARGIN  0.20
 # External output load / max capacitance (pf): FO4 = 4 x inv_1 Cin (0.006997)
 set LB_LOAD 0.027988
 
-# Input transition / slew (ns): chosen ~0.5 ns (no default_max_transition in
-# the gf180 liberty header for this process)
-set LB_SLEW 0.50
+# Input driver cell + its output pin for set_driving_cell (models input drive
+# with a real library buffer; the same driver_cell abc maps against).
+set LB_DRIVER gf180mcu_fd_sc_mcu9t5v0__buf_4
+set LB_DRIVER_PIN Z
