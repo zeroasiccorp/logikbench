@@ -250,28 +250,14 @@ def gather_target_metrics(target, args, worklist):
     return metrics_out, options, len(collected)
 
 
-def results_root():
-    """Repo root when running from an editable/dev checkout (identified by a
-    top-level results/ directory), else None. --publish requires this."""
-    root = os.path.dirname(os.path.dirname(os.path.abspath(lb.__file__)))
-    return root if os.path.isdir(os.path.join(root, "results")) else None
-
-
 def save_target(target, args, worklist):
-    """Write one target's metrics as <dir>/<target>.json and print the path.
-
-    Default <dir> is the build directory; with --publish it is the committed
-    results/ tree, flat: results/<target>.json (dev/editable checkout only).
+    """Write one target's metrics as <output>/<target>.json (default
+    build/results) and print the path. To publish into the committed results
+    tree, run with -o results.
     """
     metrics_out, options, collected = gather_target_metrics(target, args,
                                                             worklist)
-    if getattr(args, "publish", False):
-        outdir = os.path.join(results_root(), "results")
-        verb = "Published"
-    else:
-        outdir = args.builddir
-        verb = "Wrote"
-
+    outdir = args.output
     os.makedirs(outdir, exist_ok=True)
     output = os.path.join(outdir, f"{target}.json")
 
@@ -294,65 +280,65 @@ def save_target(target, args, worklist):
 
     with open(output, "w") as f:
         json.dump(payload, f, indent=2, sort_keys=True)
-    print(f"{verb} {collected}/{len(worklist)} benchmark(s) -> {output}")
+    print(f"Wrote {collected}/{len(worklist)} benchmark(s) -> {output}")
     return collected
 
 
-def compare_targets(targets, args, worklist):
-    """Compare two same-mode targets and write a CSV with, per benchmark, each
-    metric for both targets and the percent change from the first to the second.
-    Default output is the build directory (override with -o); the path is
-    printed.
-    """
-    a, b = targets
-    if target_mode(a) != target_mode(b):
-        print("error: compare targets must be the same mode "
-              "(both FPGA or both ASIC)", file=sys.stderr)
+def _load_metrics_file(path):
+    """Load a <target>.json metrics file, returning (label, {metric: {bench:
+    value}}). label is the file's recorded target (or the filename stem)."""
+    if not os.path.isfile(path):
+        print(f"error: no such metrics file: {path}", file=sys.stderr)
         sys.exit(2)
+    with open(path) as f:
+        data = json.load(f)
+    label = data.get("target") or os.path.splitext(os.path.basename(path))[0]
+    return label, data.get("metrics", {})
 
-    if args.input:
-        # read the aggregated <target>.json files (e.g. from results/)
-        ma, mb = {}, {}
-        for tgt, dst in ((a, "ma"), (b, "mb")):
-            path = os.path.join(args.input, f"{tgt}.json")
-            if not os.path.isfile(path):
-                print(f"error: no metrics file {path}", file=sys.stderr)
-                sys.exit(2)
-            with open(path) as f:
-                metrics = json.load(f).get("metrics", {})
-            if dst == "ma":
-                ma = metrics
-            else:
-                mb = metrics
+
+def compare_files(paths, args):
+    """Tabulate one metric across two or more metrics files into a CSV: rows are
+    benchmarks, one column per file (labeled by its target). No deltas. The
+    output path (-o, default ./compare_<metric>.csv) is printed.
+    """
+    if len(paths) < 2:
+        print("error: compare needs at least two files", file=sys.stderr)
+        sys.exit(2)
+    metric = args.metric
+
+    loaded = [_load_metrics_file(p) for p in paths]     # [(label, metrics), ...]
+    labels = [label for label, _ in loaded]
+    if len(set(labels)) != len(labels):
+        labels = list(paths)     # disambiguate duplicate target names by path
+
+    benches = set()
+    for _, metrics in loaded:
+        benches.update(metrics.get(metric, {}))
+
+    output = args.output or f"compare_{metric}.csv"
+    parent = os.path.dirname(output)
+    if parent:
+        os.makedirs(parent, exist_ok=True)
+
+    rows = sorted(benches)
+    if output.lower().endswith(".json"):
+        # machine-readable: {metric, targets, data:{bench:{target:value}}}
+        data = {}
+        for name in rows:
+            data[name] = {lab: metrics.get(metric, {}).get(name)
+                          for lab, (_, metrics) in zip(labels, loaded)}
+        payload = {"metric": metric, "targets": labels, "data": data}
+        with open(output, "w") as f:
+            json.dump(payload, f, indent=2, sort_keys=True)
     else:
-        # scan each target's build tree
-        ma, _, _ = gather_target_metrics(a, args, worklist)
-        mb, _, _ = gather_target_metrics(b, args, worklist)
-    metric_names = FLOW_METRICS[target_mode(a)]
-
-    outdir = args.output or args.builddir
-    os.makedirs(outdir, exist_ok=True)
-    output = os.path.join(outdir, f"compare_{a}_vs_{b}.csv")
-
-    header = ["benchmark"]
-    for m in metric_names:
-        header += [f"{m}:{a}", f"{m}:{b}", f"{m}:delta%"]
-
-    with open(output, "w", newline="") as f:
-        w = csv.writer(f)
-        w.writerow(header)
-        for group, cls, name in worklist:
-            row = [name]
-            for m in metric_names:
-                va = ma.get(m, {}).get(name)
-                vb = mb.get(m, {}).get(name)
-                row += [va, vb]
-                if (va is not None) and (vb is not None) and (va != 0):
-                    row.append(round((vb - va) / va * 100.0, 2))
-                else:
-                    row.append("")
-            w.writerow(row)
-    print(f"Wrote comparison ({a} vs {b}) -> {output}")
+        with open(output, "w", newline="") as f:
+            w = csv.writer(f)
+            w.writerow(["benchmark"] + labels)
+            for name in rows:
+                row = [name] + [metrics.get(metric, {}).get(name)
+                                for _, metrics in loaded]
+                w.writerow(row)
+    print(f"Wrote {metric} comparison of {len(paths)} files -> {output}")
 
 
 def add_common_args(parser):
@@ -480,52 +466,52 @@ LogikBench commandline runner.
                        action='store_true',
                        help='Show full SiliconCompiler tool/scheduler logs '
                             '(quieted by default)')
-    run_p.add_argument('--publish',
-                       action='store_true',
-                       help='After building, write each target metrics file '
-                            'into the committed results/ tree as '
-                            'results/<target>.json instead of the build dir. '
-                            'Requires a dev/editable checkout (pip install -e).')
+    run_p.add_argument('-o', '--output',
+                       default='build/results',
+                       metavar="DIR",
+                       help='Directory for the per-target metrics file '
+                            '<DIR>/<target>.json (default: build/results). '
+                            'Use -o results to publish into the committed '
+                            'results tree.')
 
-    # ---- compare: write a CSV comparing two targets' metrics ----
+    # ---- compare: write a CSV diffing two explicit metrics files ----
     compare_p = sub.add_parser("compare",
-                               help="Compare two targets and write a CSV")
-    add_common_args(compare_p)
+                               help="Compare two metrics files (CSV)")
+    compare_p.add_argument('files', nargs='+', metavar="FILE",
+                           help="two or more <target>.json metrics files to "
+                                "compare (e.g. build/results/xilinx_virtex7.json "
+                                "results/lattice_ice40.json)")
+    compare_p.add_argument('-m', '--metric',
+                           required=True,
+                           metavar="METRIC",
+                           help="metric to tabulate, one column per file "
+                                "(e.g. luts, logicdepth, cellarea, fmax, cells, "
+                                "tasktime)")
     compare_p.add_argument('-o', '--output',
                            default=None,
-                           metavar="DIR",
-                           help='Directory for the comparison CSV '
-                                '(default: build dir, -b)')
-    compare_p.add_argument('-i', '--input',
-                           default=None,
-                           metavar="DIR",
-                           help='Read each target metrics from '
-                                '<DIR>/<target>.json (e.g. -i results) instead '
-                                'of scanning the build tree')
+                           metavar="FILE",
+                           help='output file; format is chosen by extension '
+                                '(.json -> JSON, else CSV) '
+                                '(default: ./compare_<metric>.csv)')
 
     args = parser.parse_args()
-
-    #################################################
-    # Setup
-    #################################################
-
-    # targets to sweep (--target is required)
-    targets = args.target
-
-    worklist = make_worklist(args)
-    check_worklist(args, worklist)
 
     #################################################
     # Dispatch
     #################################################
 
+    if args.command == "compare":
+        compare_files(args.files, args)
+        return 0
+
+    # run: build the target x benchmark matrix, then write/publish metrics
+    targets = args.target
+    worklist = make_worklist(args)
+    check_worklist(args, worklist)
+
     if args.command == "run":
-        if args.publish and results_root() is None:
-            print("error: --publish requires a dev/editable checkout "
-                  "(no results/ directory found)", file=sys.stderr)
-            return 2
         failures = run_sweep(args, targets, worklist)
-        # write (or --publish) each target's metrics; lint-only has no metrics
+        # write each target's metrics to -o; lint-only has no metrics
         if not args.lintonly:
             for target in targets:
                 save_target(target, args, worklist)
@@ -535,13 +521,6 @@ LogikBench commandline runner.
                   f"{', '.join(failures)}")
             return 1
         return 0
-
-    # compare: exactly two targets -> one CSV
-    if len(targets) != 2:
-        print("error: compare needs exactly two targets (-t A B)",
-              file=sys.stderr)
-        return 2
-    compare_targets(targets, args, worklist)
     return 0
 
 
