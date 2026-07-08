@@ -1,5 +1,7 @@
 ## What it is
 
+**Source:** [rtl/addmod.v](rtl/addmod.v)
+
 `addmod` implements modular addition by the textbook "add, then conditionally
 subtract the modulus" method. It forms `sum = a + b` and `diff = sum - m` in
 `DW+1`-bit arithmetic, then selects `diff` when `sum >= m` (no borrow) and

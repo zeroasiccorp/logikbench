@@ -1,5 +1,7 @@
 # divs
 
+**Source:** [rtl/divs.v](rtl/divs.v)
+
 Signed integer division: `quotient` and `remainder` of two `DW`-bit signed
 operands, with truncation toward zero (the signed companion of `div`).
 

@@ -1,5 +1,7 @@
 # Summary
 
+**Source:** [rtl/coralnpu.sv](rtl/coralnpu.sv)
+
 Coral NPU Chisel subsystem (`CoralNPUChiselSubsystem`), a machine-learning
 accelerator core from Google's Coral NPU project.
 

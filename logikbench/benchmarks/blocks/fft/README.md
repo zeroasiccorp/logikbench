@@ -1,5 +1,7 @@
 # fft (streaming FFT accelerator)
 
+**Source:** [rtl/fft.v](rtl/fft.v)
+
 ## What it is
 
 A synthesizable, parameterizable streaming **Fast Fourier Transform** accelerator.

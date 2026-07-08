@@ -1,5 +1,7 @@
 # viterbi (convolutional decoder)
 
+**Source:** [rtl/viterbi.v](rtl/viterbi.v)
+
 ## What it is
 
 A soft-decision **Viterbi decoder** for the **K=7, rate-1/2** convolutional code

@@ -1,5 +1,7 @@
 # conv2d (streaming programmable 3x3 convolution)
 
+**Source:** [rtl/conv2d.v](rtl/conv2d.v)
+
 ## What it is
 A streaming **programmable 3x3 2D convolution**. Nine runtime signed
 coefficients (packed `coeff`, Q1.(CW-1)) multiply the 3x3 window -- one

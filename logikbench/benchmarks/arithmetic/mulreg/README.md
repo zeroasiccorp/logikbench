@@ -3,6 +3,8 @@ Pipelined Integer Multiplier
 
 ## Description
 
+**Source:** [rtl/mulreg.v](rtl/mulreg.v)
+
 Parametrized integer multiplier that takes two unsigned N-bit wide inputs and returns a M-bit wide result.
 
 ## Parameters

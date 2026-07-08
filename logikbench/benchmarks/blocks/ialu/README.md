@@ -3,6 +3,8 @@ Integer ALU
 
 ## Description
 
+**Source:** [rtl/ialu.v](rtl/ialu.v)
+
 Parametrized general purpose IALU compatible with the RISC-V ISA.
 
 ## Parameters

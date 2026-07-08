@@ -1,5 +1,7 @@
 # gelu
 
+**Source:** [rtl/gelu.v](rtl/gelu.v)
+
 Gaussian Error Linear Unit `GELU(x) = x * Phi(x)`, implemented with the
 sigmoid approximation `GELU(x) ~= x * sigmoid(1.702 x)`. GELU is the default
 activation in transformer models (BERT, GPT).

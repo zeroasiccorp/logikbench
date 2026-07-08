@@ -1,5 +1,7 @@
 # tanh
 
+**Source:** [rtl/tanh.v](rtl/tanh.v)
+
 Hyperbolic-tangent activation `tanh(x)`, implemented as a multiplier-free
 piecewise-linear approximation via the identity `tanh(x) = 2*sigmoid(2x) - 1`.
 tanh is a common RNN/LSTM activation and the classic squashing nonlinearity.

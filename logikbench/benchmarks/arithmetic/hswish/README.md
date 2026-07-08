@@ -1,5 +1,7 @@
 # hswish
 
+**Source:** [rtl/hswish.v](rtl/hswish.v)
+
 Hard-swish activation: `out = x * relu6(x + 3) / 6`. A piecewise-polynomial,
 multiplier-cheap approximation of swish (`x * sigmoid(x)`), introduced for
 MobileNetV3 to get swish-like accuracy without an exponential.

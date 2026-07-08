@@ -1,5 +1,7 @@
 # cos
 
+**Source:** [rtl/cos.v](rtl/cos.v)
+
 Cosine `cos(z)` via a CORDIC rotation-mode core. A multiplier-free,
 table-free transcendental: pure shift-add rotations, complementary to the
 existing LUT-based `sine`.

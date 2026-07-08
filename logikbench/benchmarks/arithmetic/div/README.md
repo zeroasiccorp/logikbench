@@ -1,5 +1,7 @@
 # div
 
+**Source:** [rtl/div.v](rtl/div.v)
+
 Unsigned integer division: `quotient = floor(dividend / divisor)` plus the
 `remainder`, using a sequential digit-recurrence divider.
 

@@ -1,5 +1,7 @@
 # rsqrt
 
+**Source:** [rtl/rsqrt.v](rtl/rsqrt.v)
+
 Fixed-point inverse square root `1/sqrt(x)`, computed in two sequential
 digit-recurrence phases (no multiplier). The reciprocal-sqrt used by vector
 normalization and RMS/layer-norm.

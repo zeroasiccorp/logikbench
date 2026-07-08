@@ -1,5 +1,7 @@
 # linkmap
 
+**Source:** [rtl/linkmap.v](rtl/linkmap.v)
+
 Transport-layer framer and deframer for a serial data-converter link. It maps
 converter samples to octets and distributes the octets across lanes (framer),
 and reverses the mapping (deframer). This is the deterministic sample<->lane

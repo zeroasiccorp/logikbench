@@ -1,5 +1,7 @@
 # fmadd8
 
+**Source:** [rtl/fmadd8.v](rtl/fmadd8.v)
+
 8-bit (E4M3 fp8) fused multiply-add: `r = round(a*b + c)`, one fused rounding
 step. It reuses the `fmadd32` datapath, overriding its parameters to the E4M3
 field layout (1 sign / 4 exponent / 3 mantissa bits, bias 7).

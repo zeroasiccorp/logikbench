@@ -1,5 +1,7 @@
 # openpiton (NoC router)
 
+**Source:** [rtl/openpiton.v](rtl/openpiton.v)
+
 ## What this benchmark is
 
 OpenPiton is Princeton University's open-source, manycore research processor.

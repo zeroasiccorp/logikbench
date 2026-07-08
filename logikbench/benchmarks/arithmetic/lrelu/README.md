@@ -1,5 +1,7 @@
 # lrelu
 
+**Source:** [rtl/lrelu.v](rtl/lrelu.v)
+
 Leaky ReLU activation: `out = (in >= 0) ? in : slope * in`, with a
 hardware-friendly power-of-two leak slope `slope = 2^-ASHIFT`. The
 non-saturating alternative to `relu` that keeps a small gradient for negative

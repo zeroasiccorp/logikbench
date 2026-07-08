@@ -3,6 +3,8 @@ Nvidia Deep Learning Accelerator (NVDLA)
 
 ## Description
 
+**Source:** [rtl/](rtl/)
+
 The NVIDIA Deep Learning Accelerator (NVDLA) is a free and open architecture
 that promotes a standard way to design deep learning inference accelerators.
 With its modular architecture, NVDLA is scalable, highly configurable, and

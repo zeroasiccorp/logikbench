@@ -1,5 +1,7 @@
 # fsm
 
+**Source:** [rtl/fsm.v](rtl/fsm.v)
+
 Syntheticfinite state machine with pseudo-random ("chaotic") state
 transitions, sized by `STATES`. Module: `parametric_fsm_benchmark`.
 

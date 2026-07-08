@@ -1,5 +1,7 @@
 # recip
 
+**Source:** [rtl/recip.v](rtl/recip.v)
+
 Fixed-point reciprocal `1/x`, computed as a sequential fixed-numerator
 division. The multiplicative inverse used by normalization, division-by-
 multiply, and rsqrt-style datapaths.

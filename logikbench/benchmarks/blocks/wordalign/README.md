@@ -1,5 +1,7 @@
 # wordalign
 
+**Source:** [rtl/wordalign.v](rtl/wordalign.v)
+
 Comma / sync-pattern detector and barrel bitslip aligner -- the code-group
 synchronization (CGS) function of a serial data-converter link. It finds a known
 alignment pattern at an arbitrary bit offset in the deserialized stream and

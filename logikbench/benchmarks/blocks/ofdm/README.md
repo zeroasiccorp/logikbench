@@ -1,5 +1,7 @@
 # ofdm (OFDM loopback modem)
 
+**Source:** [rtl/ofdm.v](rtl/ofdm.v)
+
 ## What it is
 
 An **OFDM modem** (802.11a/g style) with a complete transmit + receive chain in

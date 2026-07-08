@@ -1,5 +1,7 @@
 # gearbox66
 
+**Source:** [rtl/gearbox66.v](rtl/gearbox66.v)
+
 64b/66b link encode/decode datapath -- the line-coding scheme used on high-rate
 serial data-converter and Ethernet links. It scrambles a 64-bit payload, tags a
 2-bit sync header, and repacks the 66-bit blocks to a 64-bit stream with a

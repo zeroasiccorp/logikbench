@@ -1,5 +1,7 @@
 # dotprod
 
+**Source:** [rtl/dotprod.v](rtl/dotprod.v)
+
 Unsigned dot product (sum of element-wise products) of two length-`N`
 vectors -- the fundamental multiply-accumulate reduction at the core of FIR
 filters, matrix multiply, and neural-network layers.
