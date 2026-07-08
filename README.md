@@ -10,24 +10,20 @@
 
 ## Why LogikBench
 
-LogikBench is a high quality curated open source RTL benchmark suite that enables reproducible evaluation of EDA tools, process technologies, architectures, and LLMs.
-
-
-🏆 [Live results dashboard](https://zeroasiccorp.github.io/logikbench)
-
+LogikBench is a curated open source RTL benchmark suite that enables reproducible evaluation of EDA tools, process technologies, architectures, and LLMs.
 
 > "Sunlight is said to be the best of disinfectants." --Supreme Court Justice Louis Brandeis
 
-| Problem Addressed     | LogikBench Solution                      |
-|-----------------------|------------------------------------------|
-| No "Spec CPU for RTL" | 220 standardized benchmark circuits      |
-| Lack of diversity     | Broad range of circuits and code origins |
-| Hard coded values     | Extensive per circuit parametrization    |
-| Lack of trust         | Documented source code provenance        |
-| Reproducibility       | 100% push button automation              |
-| Lack of portability   | Tech agnostic RTL+lambdalib benchmarks   |
-| License uncertainty   | 100% clear permissive license            |
-| Lack of quality       | Testbenches and conservative curation    |
+| Challenge              | LogikBench Solution                                     |
+|------------------------|---------------------------------------------------------|
+| No "Spec CPU for RTL"  | 220 standardized RTL benchmark circuits                 |
+| Circuit diversity      | Broad mix of circuit types, sizes, and source origins   |
+| Size diversity         | Per-circuit parameterization across multiple scales     |
+| Trust                  | Documented source code provenance and curation criteria |
+| Reproducibility        | Fully automated, push-button benchmark flows            |
+| Portability            | Technology-agnostic RTL and lambdalib-based benchmarks  |
+| Licensing              | Clear, permissive licensing for all included sources    |
+| Quality                | Self-checking testbenches and conservative curation     |
 
 LogikBench includes the following benchmark types:
 
@@ -36,6 +32,8 @@ LogikBench includes the following benchmark types:
 | Micro-benchmarks             | basic, arithmetic         |
 | Legacy synthetic benchmarks  | epfl, isca85, isca89      |
 | Very large and real circuits | blocks                    |
+
+🏆 [Results dashboard](https://zeroasiccorp.github.io/logikbench)
 
 ----
 
@@ -53,7 +51,7 @@ lb run -n mux -t xilinx_virtex7
 
 # 4. Run a whole group; metrics go to build/results/<target>.json
 lb run -g basic -t xilinx_virtex7
-lb run -g basic -t lattice_ice40
+lb run -g basic -t yosys_asap7
 
 # 5. Compare a metric across the two runs (writes a CSV)
 lb compare -m luts build/results/xilinx_virtex7.json build/results/lattice_ice40.json
