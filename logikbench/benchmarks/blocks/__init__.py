@@ -39,6 +39,11 @@ from .vortex.vortex import Vortex
 from .wally.wally import Wally
 
 from .conv2d.conv2d import Conv2d
+from .codec8b10b.codec8b10b import Codec8b10b
+from .gearbox66.gearbox66 import Gearbox66
+from .wordalign.wordalign import Wordalign
+from .linkmap.linkmap import Linkmap
+from .jesd204b.jesd204b import Jesd204b
 from .median3x3.median3x3 import Median3x3
 from .sad8x8.sad8x8 import Sad8x8
 from .sobel3x3.sobel3x3 import Sobel3x3
@@ -84,6 +89,11 @@ __all__ = [
     "Vortex",
     "Wally",
     "Conv2d",
+    "Codec8b10b",
+    "Gearbox66",
+    "Wordalign",
+    "Linkmap",
+    "Jesd204b",
     "Median3x3",
     "Sad8x8",
     "Sobel3x3",
