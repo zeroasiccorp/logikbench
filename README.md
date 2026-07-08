@@ -33,7 +33,7 @@ LogikBench includes the following benchmark types:
 | Benchmark type               | Groups (-g)               |
 |------------------------------|---------------------------|
 | Micro-benchmarks             | basic, arithmetic         |
-| Legacy synthetic bencharmks  | epfl, isca85, isca89      |
+| Legacy synthetic benchmarks  | epfl, isca85, isca89      |
 | Very large and real circuits | blocks                    |
 
 ----
