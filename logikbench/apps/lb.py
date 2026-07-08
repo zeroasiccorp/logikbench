@@ -268,19 +268,16 @@ def save_target(target, args, worklist):
     # incremental read-modify-write: update only the benchmarks in this run and
     # preserve metrics already recorded for others (so a subset run/publish does
     # not clobber the rest of the target's results).
-    payload = {"target": target, "options": options, "metrics": {}}
+    payload = {}
     if os.path.isfile(output):
         try:
             with open(output) as f:
                 payload = json.load(f)
         except (ValueError, OSError):
-            payload = {"target": target, "options": options, "metrics": {}}
-    payload["target"] = target
-    if options is not None:
-        payload["options"] = options
-    payload.setdefault("metrics", {})
+            payload = {}
+    metrics = payload.get("metrics", {})
     for metric, col in metrics_out.items():
-        payload["metrics"].setdefault(metric, {}).update(col)
+        metrics.setdefault(metric, {}).update(col)
 
     # provenance: what produced these numbers (git versions the rest). Tools are
     # discovered from the flow the target ran; refreshed each run.
@@ -290,14 +287,18 @@ def save_target(target, args, worklist):
                                                                         target))
         if tools or scversion:
             break
-    meta = {"logikbench": getattr(lb, "__version__", None)}
+    meta = payload.get("meta", {})
+    meta["schema_version"] = SCHEMA_VERSION
+    meta["target"] = target
+    if options is not None:
+        meta["options"] = options
+    meta["logikbench"] = getattr(lb, "__version__", None)
     if scversion is not None:
         meta["siliconcompiler"] = scversion
     if tools:
         meta["tools"] = tools
-    payload["schema_version"] = SCHEMA_VERSION
-    payload["meta"] = meta
 
+    payload = {"meta": meta, "metrics": metrics}
     with open(output, "w") as f:
         json.dump(payload, f, indent=2, sort_keys=True)
     print(f"Wrote {collected}/{len(worklist)} benchmark(s) -> {output}")
@@ -312,7 +313,8 @@ def _load_metrics_file(path):
         sys.exit(2)
     with open(path) as f:
         data = json.load(f)
-    label = data.get("target") or os.path.splitext(os.path.basename(path))[0]
+    label = (data.get("meta", {}).get("target")
+             or os.path.splitext(os.path.basename(path))[0])
     return label, data.get("metrics", {})
 
 
