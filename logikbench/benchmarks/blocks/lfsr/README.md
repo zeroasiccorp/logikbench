@@ -3,6 +3,8 @@ Combinatorial linera feedback shift register
 
 ## Description
 
+**Source:** [rtl/lfsr.v](rtl/lfsr.v)
+
 Parametrizable combinatorial parallel LFSR module written in standard Verilog. Can be used for CRC computation, descramblers, prbs.
 
 ## Parameters

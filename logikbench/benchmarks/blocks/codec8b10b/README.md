@@ -1,5 +1,7 @@
 # codec8b10b
 
+**Source:** [rtl/codec8b10b.v](rtl/codec8b10b.v)
+
 8b/10b line-coding encoder and decoder -- the DC-balanced, run-length-limited
 line code used on high-speed serial data-converter links (e.g. JESD204B). The
 block instantiates an independent encoder and decoder so both directions are

@@ -1,5 +1,7 @@
 # exp
 
+**Source:** [rtl/exp.v](rtl/exp.v)
+
 Exponential `e^x` via range reduction plus a polynomial. The standard
 hardware / math-library method for exp: split off a power-of-two factor (a
 shift) and approximate the small remaining fraction with a polynomial.

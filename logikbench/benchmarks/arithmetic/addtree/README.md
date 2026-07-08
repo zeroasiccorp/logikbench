@@ -1,5 +1,7 @@
 ## What it is
 
+**Source:** [rtl/addtree.v](rtl/addtree.v)
+
 `addtree` reduces a packed vector of `N` operands to their sum through a
 balanced binary tree of two-input adders (`N-1` adders, depth `clog2(N)`). It is
 built with nested `generate` (one adder per tree node) rather than a procedural

@@ -1,5 +1,7 @@
 # ln
 
+**Source:** [rtl/ln.v](rtl/ln.v)
+
 Natural logarithm `ln(x)` via mantissa/exponent normalization plus a
 polynomial. The standard hardware / math-library method for log: split the
 input into a power-of-two exponent and a mantissa in `[1,2)`, approximate

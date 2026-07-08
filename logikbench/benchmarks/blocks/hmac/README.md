@@ -1,5 +1,7 @@
 # Summary
 
+**Source:** [rtl/hmac.sv](rtl/hmac.sv)
+
 HMAC/SHA-2 accelerator. OpenTitan comportable IP (`hmac`), pickled into a single
 self-contained Verilog file with generic technology primitives.
 

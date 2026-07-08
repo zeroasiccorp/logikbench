@@ -1,5 +1,7 @@
 # mod
 
+**Source:** [rtl/mod.v](rtl/mod.v)
+
 Unsigned integer modulo: `remainder = dividend mod divisor`, using a
 sequential digit-recurrence divider.
 

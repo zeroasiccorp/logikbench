@@ -1,5 +1,7 @@
 # crc32 (10GbE frame check sequence)
 
+**Source:** [rtl/crc32.v](rtl/crc32.v)
+
 ## What it is
 
 A parallel **CRC-32** generator implementing the IEEE 802.3 / Ethernet frame

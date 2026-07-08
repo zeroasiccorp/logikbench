@@ -3,6 +3,8 @@ Register file
 
 ## Description
 
+**Source:** [rtl/regfile.v](rtl/regfile.v)
+
 Parametrized register file with WP write ports and RP read ports.
 
 ## Parameters

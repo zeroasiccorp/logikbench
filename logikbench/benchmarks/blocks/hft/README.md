@@ -1,5 +1,7 @@
 # hft
 
+**Source:** [rtl/hft.v](rtl/hft.v)
+
 Tick-to-trade high-frequency-trading pipeline: a 512-bit market-data word
 streams in and, six registered stages later, a 512-bit order packet streams
 out. Modeled after an FPGA low-latency trading datapath (parse -> book ->

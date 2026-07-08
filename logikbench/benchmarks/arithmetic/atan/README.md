@@ -1,5 +1,7 @@
 # atan
 
+**Source:** [rtl/atan.v](rtl/atan.v)
+
 Arctangent `atan(t)` via a CORDIC vectoring-mode core. A multiplier-free,
 table-free inverse-trig function: pure shift-add rotations.
 

@@ -1,5 +1,7 @@
 # sqrt
 
+**Source:** [rtl/sqrt.v](rtl/sqrt.v)
+
 Unsigned integer square root.
 
 ## What it is

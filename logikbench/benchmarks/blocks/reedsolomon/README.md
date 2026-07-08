@@ -1,5 +1,7 @@
 # reedsolomon (RS(544,514) KP4 FEC codec)
 
+**Source:** [rtl/reedsolomon.v](rtl/reedsolomon.v)
+
 ## What it is
 
 A full **Reed-Solomon RS(544,514)** codec over **GF(2^10)** -- the KP4 forward

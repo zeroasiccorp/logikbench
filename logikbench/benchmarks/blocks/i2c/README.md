@@ -1,5 +1,7 @@
 # Summary
 
+**Source:** [rtl/i2c.sv](rtl/i2c.sv)
+
 I2C controller/target. OpenTitan comportable IP (`i2c`), pickled into a single
 self-contained Verilog file with generic technology primitives.
 

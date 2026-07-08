@@ -3,6 +3,8 @@ PicoRV32 - A Size-Optimized RISC-V CPU
 
 ## Description
 
+**Source:** [rtl/picorv32.v](rtl/picorv32.v)
+
 A popular single file parametrized RV32I CPU design.
 
 ## Parameters

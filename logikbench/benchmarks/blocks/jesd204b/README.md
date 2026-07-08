@@ -1,5 +1,7 @@
 # jesd204b
 
+**Source:** [rtl/jesd204b.v](rtl/jesd204b.v)
+
 Full-duplex JESD204B link interface, integrated from the LogikBench serial-link
 modules. It brings a converter link up (code-group synchronization), then
 frames, scrambles, and 8b/10b-encodes samples on transmit, and aligns, decodes,

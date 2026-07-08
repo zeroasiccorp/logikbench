@@ -1,5 +1,7 @@
 # sigmoid
 
+**Source:** [rtl/sigmoid.v](rtl/sigmoid.v)
+
 Logistic sigmoid activation `sigmoid(x) = 1 / (1 + e^-x)`, implemented as a
 multiplier-free piecewise-linear (PLAN) approximation. Sigmoids appear as
 gates in LSTMs/GRUs and as the final activation in binary classifiers.

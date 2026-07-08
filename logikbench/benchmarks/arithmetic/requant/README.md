@@ -1,5 +1,7 @@
 # requant
 
+**Source:** [rtl/requant.v](rtl/requant.v)
+
 Requantization: scale a wide accumulator down to a narrow, saturated output --
 `out = saturate( round( (acc * scale) >> shift ) )`. This is the output stage
 of every quantized neural-network layer, converting an `int32` MAC result back

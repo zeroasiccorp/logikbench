@@ -1,5 +1,7 @@
 # fmadd32
 
+**Source:** [rtl/fmadd32.v](rtl/fmadd32.v)
+
 Single-precision (fp32) fused multiply-add: `r = round(a*b + c)`, computed as a
 single fused operation with one rounding step. This is the base block; the
 reduced-precision tops `fmadd16` (bf16) and `fmadd8` (E4M3) instantiate the

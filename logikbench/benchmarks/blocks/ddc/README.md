@@ -1,5 +1,7 @@
 # ddc (digital down converter)
 
+**Source:** [rtl/ddc.v](rtl/ddc.v)
+
 ## What it is
 
 A synthesizable, parameterizable **Digital Down Converter (DDC)**. It takes a

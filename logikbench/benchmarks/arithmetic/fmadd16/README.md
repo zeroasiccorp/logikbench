@@ -1,5 +1,7 @@
 # fmadd16
 
+**Source:** [rtl/fmadd16.v](rtl/fmadd16.v)
+
 bfloat16 (bf16) fused multiply-add: `r = round(a*b + c)`, one fused rounding
 step. It reuses the `fmadd32` datapath, overriding its parameters to the bf16
 field layout (1 sign / 8 exponent / 7 mantissa bits, bias 127).

@@ -3,6 +3,8 @@ AXI crossbar
 
 ## Description
 
+**Source:** [rtl/axi_crossbar.v](rtl/axi_crossbar.v)
+
 Parametrizable axi crossbar module written in standard Verilog.
 
 ## Parameters

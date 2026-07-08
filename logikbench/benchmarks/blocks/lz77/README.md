@@ -1,5 +1,7 @@
 # lz77 (hash-based LZSS compressor codec)
 
+**Source:** [rtl/lz77.v](rtl/lz77.v)
+
 ## What it is
 
 A hardware **LZ77/LZSS compressor** (encoder) plus a matching **decompressor**
