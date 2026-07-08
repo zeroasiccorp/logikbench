@@ -46,7 +46,7 @@ module lz77_dec
    reg [7:0]      din;
    wire [7:0]     dout;
 
-   la_spram #(.DW(8), .AW(AW), .BYTEMODE(0)) u_obuf
+   la_spram #(.DW(8), .AW(AW), .BYTEMASK(0)) u_obuf
      (.clk(clk), .ce(ce), .we(we), .wmask(8'hFF), .addr(addr), .din(din),
       .dout(dout), .selctrl(1'b0), .ctrl('b0), .status());
 

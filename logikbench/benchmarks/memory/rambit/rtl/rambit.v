@@ -5,7 +5,7 @@
 //#############################################################################
 //
 // Per-bit write-mask single-port RAM. Implemented on lambdalib la_spram in
-// per-bit mask mode (BYTEMODE=0) so memory mapping is technology agnostic
+// per-bit mask mode (BYTEMASK=0) so memory mapping is technology agnostic
 // (FPGA BRAM / ASIC macro) and handled by lambdalib.
 
 module rambit #(parameter DW = 16,
@@ -19,7 +19,7 @@ module rambit #(parameter DW = 16,
     output [DW-1:0]     dout  // read output data
     );
 
-   la_spram #(.DW(DW), .AW(AW), .BYTEMODE(0)) memory
+   la_spram #(.DW(DW), .AW(AW), .BYTEMASK(0)) memory
      (.clk     (clk),
       .ce      (ce),
       .we      (1'b1),

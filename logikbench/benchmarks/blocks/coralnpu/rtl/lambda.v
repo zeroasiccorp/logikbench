@@ -1,28 +1,8 @@
 // SRAM black boxes referenced by coralnpu.sv (Chisel emits the module names
 // Sram_512x128 / Sram_2048x128 but leaves the implementation to the target
 // technology library). These map coralnpu's 16-bit byte mask onto lambdalib
-// la_spram running in byte mode (BYTEMODE=1), which writes per 8-bit lane and
-// maps to byte-wide FPGA BRAM. lambda_expand places each byte-mask bit at the
-// lane-aligned position wmask[i*8] that la_spram (byte mode) consumes.
-
-module lambda_expand #(
-    parameter IDW = 16,  // Input data width
-    parameter GDW = 8    // Group width
-) (
-    input [IDW-1:0] din,
-    output [IDW*GDW-1:0] dout
-);
-
-  genvar i;
-  genvar j;
-  for (i = 0; i < IDW; i = i + 1) begin : INPUTDATA
-    for (j = 0; j < GDW; j = j + 1) begin : GROUPDATA
-      assign dout[i * GDW + j] = din[i];
-    end
-  end
-
-endmodule
-
+// la_spram running in byte mode (BYTEMASK=1), which takes a DW/8-wide
+// per-byte write mask and maps to byte-wide FPGA BRAM.
 
 module Sram_512x128(
   input          clock,
@@ -34,17 +14,11 @@ module Sram_512x128(
   output [127:0] rdata
 );
 
-  wire [127:0] wmask_bits;
-  lambda_expand #(.IDW(16), .GDW(8)) expand (
-    .din(wmask),
-    .dout(wmask_bits)
-  );
-
-  la_spram #(.DW(128), .AW(9), .BYTEMODE(1)) memory (
+  la_spram #(.DW(128), .AW(9), .BYTEMASK(1)) memory (
     .clk(clock),
     .ce(enable),
     .we(write),
-    .wmask(wmask_bits),
+    .wmask(wmask),
     .addr(addr),
     .din(wdata),
     .dout(rdata),
@@ -65,17 +39,11 @@ module Sram_2048x128(
   output [127:0] rdata
 );
 
-  wire [127:0] wmask_bits;
-  lambda_expand #(.IDW(16), .GDW(8)) expand (
-    .din(wmask),
-    .dout(wmask_bits)
-  );
-
-  la_spram #(.DW(128), .AW(11), .BYTEMODE(1)) memory (
+  la_spram #(.DW(128), .AW(11), .BYTEMASK(1)) memory (
     .clk(clock),
     .ce(enable),
     .we(write),
-    .wmask(wmask_bits),
+    .wmask(wmask),
     .addr(addr),
     .din(wdata),
     .dout(rdata),

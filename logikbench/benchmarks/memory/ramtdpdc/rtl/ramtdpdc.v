@@ -31,7 +31,7 @@ module ramtdpdc #(parameter DW = 16,
     output [DW-1:0] dout_b
     );
 
-   la_tdpram #(.DW(DW), .AW(AW), .BYTEMODE(0)) memory
+   la_tdpram #(.DW(DW), .AW(AW), .BYTEMASK(0)) memory
      (.clk_a   (clk_a),
       .ce_a    (en_a),
       .we_a    (we_a),

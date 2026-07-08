@@ -24,7 +24,7 @@ module ramsdp #(parameter DW = 16,
     output [DW-1:0]     dout_b
     );
 
-   la_dpram #(.DW(DW), .AW(AW), .BYTEMODE(0)) memory
+   la_dpram #(.DW(DW), .AW(AW), .BYTEMASK(0)) memory
      (.wr_clk   (clk),
       .wr_ce    (en_a),
       .wr_we    (we_a),

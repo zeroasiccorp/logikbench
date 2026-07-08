@@ -74,7 +74,7 @@ module lz77_enc
    wire          ht_we = (state == S_BUCKET);
    wire [HASHBITS-1:0] ht_addr = (state == S_BUCKET) ? hreg : hval;
    wire [EW-1:0] ht_din = {hbk[EW-PW-1:0], pos};
-   la_spram #(.DW(EW), .AW(HASHBITS), .BYTEMODE(0)) u_htab
+   la_spram #(.DW(EW), .AW(HASHBITS), .BYTEMASK(0)) u_htab
      (.clk(clk), .ce(ht_ce), .we(ht_we), .wmask({EW{1'b1}}), .addr(ht_addr),
       .din(ht_din), .dout(hbk), .selctrl(1'b0), .ctrl('b0), .status());
 

@@ -51,7 +51,7 @@ lb run -n mux -t xilinx_virtex7
 
 # 4. Run a whole group; metrics go to build/results/<target>.json
 lb run -g basic -t xilinx_virtex7
-lb run -g basic -t yosys_asap7
+lb run -g basic -t sc_asap7
 
 # 5. Compare a metric across the two runs (writes a CSV)
 lb compare -m luts build/results/xilinx_virtex7.json build/results/lattice_ice40.json

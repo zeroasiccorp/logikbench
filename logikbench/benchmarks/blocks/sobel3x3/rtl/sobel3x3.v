@@ -62,10 +62,10 @@ module sobel3x3
    reg [DW-1:0]	       midq;            // mid row aligned (lb1 read delayed)
    wire [DW-1:0]       lb1q, lb2q;
 
-   la_spram #(.DW(DW), .AW(AW), .BYTEMODE(0)) u_lb1
+   la_spram #(.DW(DW), .AW(AW), .BYTEMASK(0)) u_lb1
      (.clk(clk), .ce(adv),   .we(adv),   .wmask({DW{1'b1}}), .addr(caddr),
       .din(botin), .dout(lb1q), .selctrl(1'b0), .ctrl('b0), .status());
-   la_spram #(.DW(DW), .AW(AW), .BYTEMODE(0)) u_lb2
+   la_spram #(.DW(DW), .AW(AW), .BYTEMASK(0)) u_lb2
      (.clk(clk), .ce(adv_d), .we(adv_d), .wmask({DW{1'b1}}), .addr(caddr_q),
       .din(lb1q),  .dout(lb2q), .selctrl(1'b0), .ctrl('b0), .status());
 
