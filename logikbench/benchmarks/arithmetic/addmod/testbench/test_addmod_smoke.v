@@ -22,7 +22,7 @@ module test_addmod_smoke;
 
    always #5 clk=~clk;
 
-   addmod #(.WIDTH(WIDTH)) dut (.a(a), .b(b), .m(m), .result(result));
+   addmod #(.DW(WIDTH)) dut (.a(a), .b(b), .m(m), .result(result));
 
    task check;
       input [WIDTH-1:0] mv, av, bv;
