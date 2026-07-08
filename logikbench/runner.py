@@ -27,7 +27,7 @@ import shutil
 from logikbench import asic, fpga
 from logikbench.common import (
     FPGA_METRICS, ASIC_METRICS, STEPS, read_metrics, read_asic_metrics,
-    read_tool_var, is_complete, clean_build,
+    read_tool_var, read_flow_tools, is_complete, clean_build,
 )
 from logikbench.fpga import FPGA_TARGETS
 
@@ -37,7 +37,7 @@ __all__ = [
     "FPGA_TARGETS", "SC_TARGETS", "YOSYS_TARGETS", "TARDIGRADE_TARGETS",
     "TARGETS",
     "run_one", "read_metrics", "read_asic_metrics", "read_tool_var",
-    "is_complete", "clean_build",
+    "read_flow_tools", "is_complete", "clean_build",
 ]
 
 # ASIC target sets by tool, all '<tool>_<pdk>' (defined in logikbench.asic):

@@ -13,8 +13,12 @@ from concurrent.futures import ProcessPoolExecutor, as_completed
 from logikbench.runner import (
     FPGA_METRICS, ASIC_METRICS, TARGETS, FPGA_TARGETS, SC_TARGETS,
     YOSYS_TARGETS, TARDIGRADE_TARGETS, STEPS, run_one,
-    read_metrics, read_asic_metrics, read_tool_var, is_complete, clean_build,
+    read_metrics, read_asic_metrics, read_tool_var, read_flow_tools,
+    is_complete, clean_build,
 )
+
+# results file layout version (bump when the JSON structure changes)
+SCHEMA_VERSION = 1
 
 # benchmark groups available to both subcommands
 ALL_GROUPS = ['basic', 'memory', 'arithmetic', 'epfl', 'blocks',
@@ -277,6 +281,22 @@ def save_target(target, args, worklist):
     payload.setdefault("metrics", {})
     for metric, col in metrics_out.items():
         payload["metrics"].setdefault(metric, {}).update(col)
+
+    # provenance: what produced these numbers (git versions the rest). Tools are
+    # discovered from the flow the target ran; refreshed each run.
+    tools, scversion = {}, None
+    for _, _, nm in worklist:
+        tools, scversion = read_flow_tools(nm, builddir=target_builddir(args,
+                                                                        target))
+        if tools or scversion:
+            break
+    meta = {"logikbench": getattr(lb, "__version__", None)}
+    if scversion is not None:
+        meta["siliconcompiler"] = scversion
+    if tools:
+        meta["tools"] = tools
+    payload["schema_version"] = SCHEMA_VERSION
+    payload["meta"] = meta
 
     with open(output, "w") as f:
         json.dump(payload, f, indent=2, sort_keys=True)
