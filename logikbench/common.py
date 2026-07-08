@@ -125,6 +125,52 @@ def read_tool_var(name, tool, task, var, builddir="build", jobname="job0"):
     return None
 
 
+def _first_node_value(nodes):
+    """First non-None 'value' in a pernode dict {step: {index: {'value':...}}}."""
+    for idxs in nodes.values():
+        if not isinstance(idxs, dict):
+            continue
+        for rec in idxs.values():
+            if isinstance(rec, dict) and rec.get("value") is not None:
+                return rec["value"]
+    return None
+
+
+def read_flow_tools(name, builddir="build", jobname="job0"):
+    """Return ({tool: version}, scversion) for the tools the flow actually ran,
+    recovered from a benchmark's manifest. Only the steps that ran (recorded
+    tool versions) are considered, and each step's tool name is looked up in the
+    flow that ran -- so the result lists exactly the tools this target used, with
+    no hard-coded tool list. Returns ({}, None) if the manifest is absent.
+    """
+    manifest = os.path.join(builddir, name, jobname, f"{name}.pkg.json")
+    if not os.path.isfile(manifest):
+        return {}, None
+    with open(manifest) as f:
+        data = json.load(f)
+
+    flow = _first_node_value(data.get("option", {}).get("flow", {}).get("node", {}))
+    fg = data.get("flowgraph", {}).get(flow, {})
+    rec = data.get("record", {})
+
+    tools = {}
+    for step, idxs in rec.get("toolversion", {}).get("node", {}).items():
+        if step == "default":
+            continue
+        for idx, r in idxs.items():
+            ver = r.get("value")
+            if ver is None:
+                continue
+            toolnode = (fg.get(step, {}).get(idx, {})
+                        .get("tool", {}).get("node", {}))
+            tool = _first_node_value(toolnode)
+            if tool:
+                tools[tool] = ver
+
+    scversion = _first_node_value(rec.get("scversion", {}).get("node", {}))
+    return tools, scversion
+
+
 def is_complete(name, builddir="build", jobname="job0"):
     """True if a prior run finished with every node in 'success' status."""
     manifest = os.path.join(builddir, name, jobname, f"{name}.pkg.json")
