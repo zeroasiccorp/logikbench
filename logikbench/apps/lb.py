@@ -4,6 +4,7 @@ import argparse
 import os
 import sys
 import json
+import csv
 import textwrap
 
 import logikbench as lb
@@ -211,22 +212,14 @@ def run_sweep(args, targets, worklist):
     return failures
 
 
-def collect_target(target, args, worklist):
-    """Read metrics for the specified benchmarks from a single target's build
-    tree and write a self-describing <output_dir>/<target>.json. No synthesis.
-
-    The payload records the target, the synthesis 'options' the run was driven
-    with (recovered from the manifest, since lb fed them in at run time), and
-    the {metric: {benchmark: value}} matrix. Returns the count collected.
+def gather_target_metrics(target, args, worklist):
+    """Read the {metric: {benchmark: value}} matrix for one target from its build
+    tree, plus the synthesis 'options' the run used. Returns (metrics_out,
+    options, collected_count). No files are written.
     """
     mode = target_mode(target)
     builddir = target_builddir(args, target)
     metric_names = FLOW_METRICS[mode]
-    # --output names a directory; one aggregated <target>.json lands in it.
-    # Point -o at a per-config dir (e.g. results/fpga/small) to keep configs
-    # apart; build_db treats each such directory as one dashboard page.
-    outdir = args.output or args.builddir
-    output = os.path.join(outdir, f"{target}.json")
 
     metrics_out = {metric: {} for metric in metric_names}
     options = None
@@ -251,18 +244,115 @@ def collect_target(target, args, worklist):
             options = read_tool_var(name, "yosys", "synthesis", "options",
                                     builddir=builddir)
 
-    payload = {"target": target, "options": options, "metrics": metrics_out}
-    os.makedirs(outdir, exist_ok=True)
-    with open(output, "w") as f:
-        json.dump(payload, f, indent=2, sort_keys=True)
-
-    # coverage summary (count, not a line per missing benchmark)
     collected = set()
     for col in metrics_out.values():
         collected.update(col.keys())
-    print(f"Collected {len(collected)}/{len(worklist)} benchmark(s) "
-          f"for {target}.")
-    return len(collected)
+    return metrics_out, options, len(collected)
+
+
+def results_root():
+    """Repo root when running from an editable/dev checkout (identified by a
+    top-level results/ directory), else None. --publish requires this."""
+    root = os.path.dirname(os.path.dirname(os.path.abspath(lb.__file__)))
+    return root if os.path.isdir(os.path.join(root, "results")) else None
+
+
+def save_target(target, args, worklist):
+    """Write one target's metrics as <dir>/<target>.json and print the path.
+
+    Default <dir> is the build directory; with --publish it is the committed
+    results/ tree, flat: results/<target>.json (dev/editable checkout only).
+    """
+    metrics_out, options, collected = gather_target_metrics(target, args,
+                                                            worklist)
+    if getattr(args, "publish", False):
+        outdir = os.path.join(results_root(), "results")
+        verb = "Published"
+    else:
+        outdir = args.builddir
+        verb = "Wrote"
+
+    os.makedirs(outdir, exist_ok=True)
+    output = os.path.join(outdir, f"{target}.json")
+
+    # incremental read-modify-write: update only the benchmarks in this run and
+    # preserve metrics already recorded for others (so a subset run/publish does
+    # not clobber the rest of the target's results).
+    payload = {"target": target, "options": options, "metrics": {}}
+    if os.path.isfile(output):
+        try:
+            with open(output) as f:
+                payload = json.load(f)
+        except (ValueError, OSError):
+            payload = {"target": target, "options": options, "metrics": {}}
+    payload["target"] = target
+    if options is not None:
+        payload["options"] = options
+    payload.setdefault("metrics", {})
+    for metric, col in metrics_out.items():
+        payload["metrics"].setdefault(metric, {}).update(col)
+
+    with open(output, "w") as f:
+        json.dump(payload, f, indent=2, sort_keys=True)
+    print(f"{verb} {collected}/{len(worklist)} benchmark(s) -> {output}")
+    return collected
+
+
+def compare_targets(targets, args, worklist):
+    """Compare two same-mode targets and write a CSV with, per benchmark, each
+    metric for both targets and the percent change from the first to the second.
+    Default output is the build directory (override with -o); the path is
+    printed.
+    """
+    a, b = targets
+    if target_mode(a) != target_mode(b):
+        print("error: compare targets must be the same mode "
+              "(both FPGA or both ASIC)", file=sys.stderr)
+        sys.exit(2)
+
+    if args.input:
+        # read the aggregated <target>.json files (e.g. from results/)
+        ma, mb = {}, {}
+        for tgt, dst in ((a, "ma"), (b, "mb")):
+            path = os.path.join(args.input, f"{tgt}.json")
+            if not os.path.isfile(path):
+                print(f"error: no metrics file {path}", file=sys.stderr)
+                sys.exit(2)
+            with open(path) as f:
+                metrics = json.load(f).get("metrics", {})
+            if dst == "ma":
+                ma = metrics
+            else:
+                mb = metrics
+    else:
+        # scan each target's build tree
+        ma, _, _ = gather_target_metrics(a, args, worklist)
+        mb, _, _ = gather_target_metrics(b, args, worklist)
+    metric_names = FLOW_METRICS[target_mode(a)]
+
+    outdir = args.output or args.builddir
+    os.makedirs(outdir, exist_ok=True)
+    output = os.path.join(outdir, f"compare_{a}_vs_{b}.csv")
+
+    header = ["benchmark"]
+    for m in metric_names:
+        header += [f"{m}:{a}", f"{m}:{b}", f"{m}:delta%"]
+
+    with open(output, "w", newline="") as f:
+        w = csv.writer(f)
+        w.writerow(header)
+        for group, cls, name in worklist:
+            row = [name]
+            for m in metric_names:
+                va = ma.get(m, {}).get(name)
+                vb = mb.get(m, {}).get(name)
+                row += [va, vb]
+                if (va is not None) and (vb is not None) and (va != 0):
+                    row.append(round((vb - va) / va * 100.0, 2))
+                else:
+                    row.append("")
+            w.writerow(row)
+    print(f"Wrote comparison ({a} vs {b}) -> {output}")
 
 
 def add_common_args(parser):
@@ -311,7 +401,7 @@ LogikBench commandline runner.
 """, formatter_class=argparse.RawDescriptionHelpFormatter)
 
     sub = parser.add_subparsers(dest="command", required=True,
-                                metavar="{run,collect}")
+                                metavar="{run,compare}")
 
     # ---- run: synthesize benchmarks (no metric collection) ----
     run_p = sub.add_parser("run", help="Synthesize benchmarks",
@@ -390,18 +480,28 @@ LogikBench commandline runner.
                        action='store_true',
                        help='Show full SiliconCompiler tool/scheduler logs '
                             '(quieted by default)')
+    run_p.add_argument('--publish',
+                       action='store_true',
+                       help='After building, write each target metrics file '
+                            'into the committed results/ tree as '
+                            'results/<target>.json instead of the build dir. '
+                            'Requires a dev/editable checkout (pip install -e).')
 
-    # ---- collect: harvest metrics from existing build results ----
-    collect_p = sub.add_parser("collect",
-                               help="Collect metrics from build results")
-    add_common_args(collect_p)
-    collect_p.add_argument('-o', '--output',
+    # ---- compare: write a CSV comparing two targets' metrics ----
+    compare_p = sub.add_parser("compare",
+                               help="Compare two targets and write a CSV")
+    add_common_args(compare_p)
+    compare_p.add_argument('-o', '--output',
                            default=None,
                            metavar="DIR",
-                           help='Output directory; collect writes one '
-                                'aggregated <target>.json per target into it. '
-                                'Use a per-config dir (e.g. results/fpga/small) '
-                                'to keep configs apart (default: build dir, -b)')
+                           help='Directory for the comparison CSV '
+                                '(default: build dir, -b)')
+    compare_p.add_argument('-i', '--input',
+                           default=None,
+                           metavar="DIR",
+                           help='Read each target metrics from '
+                                '<DIR>/<target>.json (e.g. -i results) instead '
+                                'of scanning the build tree')
 
     args = parser.parse_args()
 
@@ -420,7 +520,15 @@ LogikBench commandline runner.
     #################################################
 
     if args.command == "run":
+        if args.publish and results_root() is None:
+            print("error: --publish requires a dev/editable checkout "
+                  "(no results/ directory found)", file=sys.stderr)
+            return 2
         failures = run_sweep(args, targets, worklist)
+        # write (or --publish) each target's metrics; lint-only has no metrics
+        if not args.lintonly:
+            for target in targets:
+                save_target(target, args, worklist)
         # signal failure to the caller (e.g. CI) without losing partial results
         if failures:
             print(f"\n{len(failures)} benchmark(s) failed: "
@@ -428,11 +536,12 @@ LogikBench commandline runner.
             return 1
         return 0
 
-    # collect: each target writes its own <output_dir>/<target>.json
-    for target in targets:
-        if len(targets) > 1:
-            print(f"=== target: {target} ===")
-        collect_target(target, args, worklist)
+    # compare: exactly two targets -> one CSV
+    if len(targets) != 2:
+        print("error: compare needs exactly two targets (-t A B)",
+              file=sys.stderr)
+        return 2
+    compare_targets(targets, args, worklist)
     return 0
 
 
