@@ -27,6 +27,7 @@ LogikBench is a high quality curated open source RTL benchmark suite that enable
 | Reproducibility       | 100% push button automation              |
 | Lack of portability   | Tech agnostic RTL+lambdalib benchmarks   |
 | License uncertainty   | 100% clear permissive license            |
+| Lack of quality       | Testbenches and conservative curation    |
 
 LogikBench includes the following benchmark types:
 
