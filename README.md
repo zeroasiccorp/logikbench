@@ -667,25 +667,6 @@ Sequential gate-level circuits (clock port `CK`). See [iscas89/README.md](logikb
 Targets ranked by total LUTs over all benchmarks (config: `small`), lowest first. A benchmark with no result for a target is charged the highest LUT count any target reached on it.
 Comparing different FPGA architectures is by definition an apples to oranges exercise. Ranking by no means implies quality or goodness, it's just a neat way to compress and order data.
 
-<!-- RANKING:START -->
-| Rank | Target | Arch | Total LUTs | Missing |
-|-----:|--------|------|-----------:|--------:|
-| 1 | zeroasic_z1060 | LUT6 | 622,544 | 5 |
-| 2 | gatemate_cologne | LUT8 | 657,965 | 6 |
-| 3 | adi_flex16ffc | LUT6 | 712,670 | 4 |
-| 4 | xilinx_virtex7 | LUT6 | 727,599 | 11 |
-| 5 | zeroasic_z1015 | LUT4 | 783,697 | 5 |
-| 6 | microchip_polarfire | LUT4 | 806,090 | 14 |
-| 7 | lattice_ice40 | LUT4 | 955,767 | 8 |
-| 8 | efinix_trion | LUT4 | 972,448 | 9 |
-| 9 | lattice_ecp5 | LUT4 | 1,099,864 | 11 |
-| 10 | quicklogic_polarpro | LUT4/MUX | 1,152,443 | 14 |
-| 11 | fabulous_generic | LUT4 | 1,276,650 | 17 |
-| 12 | gowin_gw5a | LUT4 | 1,543,462 | 11 |
-| 13 | achronix_speedster | LUT6 | 1,552,803 | 25 |
-| 14 | zeroasic_z1015opt | LUT4 | 1,628,976 | 57 |
-<!-- RANKING:END -->
-
 ### ASIC Synthesis
 
 ASIC leaderboard tables (cell area and FMAX, starting with `freepdk45`) are
