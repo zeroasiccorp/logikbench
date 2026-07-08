@@ -51,12 +51,15 @@ sc-install -group fpga
 # 3. Synthesize your first benchmark on an FPGA target
 lb run -n mux -t xilinx_virtex7
 
-# 4. Run a whole group, then collect its metrics into one JSON
+# 4. Run a whole group; metrics are written to build/<target>.json
 lb run -g basic -t xilinx_virtex7
-lb collect -g basic -t xilinx_virtex7
+
+# 5. Compare two targets (writes a CSV)
+lb run -g basic -t lattice_ice40
+lb compare -g basic -t xilinx_virtex7 lattice_ice40
 ```
 
-`lb -h`, `lb run -h`, and `lb collect -h` list every option. Picking a
+`lb -h`, `lb run -h`, and `lb compare -h` list every option. Picking a
 benchmark is optional: with neither `-g` nor `-n`, `lb run` sweeps all groups.
 For ASIC area/FMAX metrics, install `sc-install -group asic` and use an ASIC
 target such as `yosys_freepdk45`. See [Tool Installation](#tool-installation)
@@ -217,12 +220,17 @@ Runtime is the wall-clock time of the synthesis step, reported to 0.01 s.
 LogikBench includes the `lb` command-line tool for batch processing benchmarks. It drives synthesis through [SiliconCompiler](https://github.com/siliconcompiler/siliconcompiler):
 each benchmark is a SiliconCompiler `Design`, and `lb` has two subcommands:
 
-- `lb run` synthesizes the selected benchmarks for one or more targets.
-- `lb collect` harvests metrics from existing build results (no synthesis).
+- `lb run` synthesizes the selected benchmarks for one or more targets and
+  writes a per-target metrics file `<builddir>/<target>.json` (printing its
+  path). The write is incremental (read-modify-write), so running a subset
+  updates only those benchmarks and preserves the rest. `--publish` writes into
+  the committed `results/<target>.json` instead (dev/editable checkout only).
+- `lb compare` reads two already-built targets and writes a CSV comparing their
+  metrics per benchmark (with percent change), to `<builddir>/` by default.
 
 Both take the required `-t/--target` plus an optional benchmark selector
 (`-g/--group` or `-n/--name`; default: all groups). Run `lb run -h` or
-`lb collect -h` for the full option list.
+`lb compare -h` for the full option list.
 
 ### FPGA Targets
 
@@ -347,33 +355,35 @@ Shared by both subcommands:
 | `--resume` | Skip benchmarks whose build already completed successfully; only synthesize the rest |
 | `--timeout` | Per-step wall-clock cap in seconds; a step that exceeds it is killed and marked failed (default: none) |
 | `-v`, `--verbose` | Show full SiliconCompiler tool/scheduler logs (quieted by default) |
+| `--publish` | Write the metrics into the committed `results/<target>.json` instead of the build dir (dev/editable checkout only) |
 
-`lb collect` only:
+`lb compare` only (pass exactly two `-t` targets):
 
 | Flag | Description |
 |------|-------------|
-| `-o`, `--output` | Output directory; one aggregated `<target><suffix>.json` is written per target (default: the build dir root, `-b`) |
-| `--suffix` | Append to each output filename (`<target><suffix>.json`), so collecting the same target under different configs does not overwrite (e.g. `--suffix _abc9`) |
+| `-o`, `--output` | Directory for the comparison CSV `compare_<A>_vs_<B>.csv` (default: the build dir root, `-b`) |
+| `-i`, `--input` | Read each target's metrics from `<DIR>/<target>.json` (e.g. `-i results` to compare published results) instead of scanning the build tree |
 
 `lb run` wipes each benchmark's build directory before synthesizing, so runs are
 always fresh (no SiliconCompiler build reuse); use `--resume` to skip completed
-benchmarks. `lb collect` then writes one JSON file per target.
+benchmarks. After building, `lb run` writes `<builddir>/<target>.json`
+incrementally (read-modify-write), so a subset run updates only those
+benchmarks and preserves the rest.
 
 ----
 
 ## Examples
 
-Synthesize an FPGA target for a whole group, then collect its metrics:
+Synthesize an FPGA target for a whole group (metrics -> `build/<target>.json`):
 
 ```bash
 lb run -g arithmetic -t xilinx_virtex7
-lb collect -g arithmetic -t xilinx_virtex7 -o results
 ```
 
 Synthesize a single benchmark for a Zero ASIC part (needs the wildebeest plugin):
 
 ```bash
-lb run -g basic -n mux -t zeroasic_z1015
+lb run -n mux -t zeroasic_z1015
 ```
 
 Sweep several FPGA targets at once, 8 benchmarks in parallel:
@@ -382,11 +392,29 @@ Sweep several FPGA targets at once, 8 benchmarks in parallel:
 lb run -g basic -t xilinx_virtex7 lattice_ice40 gowin_gw5a -j 8
 ```
 
-Run ASIC synthesis + timing (`lbflow`) on the freepdk45 PDK, then collect:
+Build two targets, then compare them (writes a CSV to the build dir):
+
+```bash
+lb run -g arithmetic -t xilinx_virtex7 lattice_ice40 -j 8
+lb compare -g arithmetic -t xilinx_virtex7 lattice_ice40
+```
+
+Compare two already-published targets straight from `results/`:
+
+```bash
+lb compare -g basic -t xilinx_virtex7 lattice_ice40 -i results
+```
+
+Publish a run's metrics into the committed `results/` tree (dev checkout):
+
+```bash
+lb run -g basic -t xilinx_virtex7 --publish
+```
+
+Run ASIC synthesis + timing (`lbflow`) on the freepdk45 PDK:
 
 ```bash
 lb run -g basic -t yosys_freepdk45
-lb collect -g basic -t yosys_freepdk45 -o results
 ```
 
 Run the asap7 SC asicflow target, synthesis only:
