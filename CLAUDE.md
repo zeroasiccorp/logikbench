@@ -35,6 +35,21 @@
   required (source, commit, license), even though no hardware-implementation
   citation applies.
 
+### Reference integrity (enforced)
+- REAL: every reference must be verified to exist -- exact author, title,
+  venue, year must resolve to a real source (web-check at authoring time). If
+  you cannot verify it, DO NOT cite it; state the block is an original
+  implementation instead. Never emit an unverified/plausible citation.
+- USED: every reference must map to a specific algorithm or hardware decision
+  in the block. No decorative/background citations -- if you can't tie a
+  reference to something concrete in the design, delete it.
+- ALLOWED sources: peer-reviewed papers, textbooks, recognized standards, and
+  open-source projects. NOT allowed: vendor app notes, datasheets, user
+  guides, white papers, product briefs, or any vendor-specific architecture
+  name (stay vendor-neutral).
+- Keep the algorithm vs hardware-implementation split, and state provenance
+  honestly (original vs vendored).
+
 ## Verilog Directives
 
 - Only ever edit `*.v` and `*.vh` files, ignore files listed in `.gitignore`.
@@ -51,6 +66,7 @@
 - Never make changes in instance connections below the /*AUTOINST*/ line. These must be updated by verilog template mode. To update, run emacs --batch your_file.v   -l verilog-mode   -f verilog-auto -f save-buffer
 - don't use functions in rtl code
 - Model replicated/parallel hardware with `generate` (one combinational unit per element) plus an explicit reduction -- do NOT write a single large procedural `for` loop (e.g. WIN x LOOK comparisons, or a 2^N table sweep) that the tool has to unroll. Hitting the slang/yosys "unroll limit" is a SMELL that you coded combinational hardware as a sequential algorithm. Fix it by restructuring into per-element generated hardware (and keep any per-element loop small and bounded); NEVER fix it by raising `--unroll-limit` or by shrinking a design parameter just to squeeze under the default limit. Constant tables (ROMs) belong in a `case` inside a combinational `always` (or BRAM), not an unrolled compute loop and not a function.
+- Don't use always @* for non sequential code, use assign statements.
 
 ## Debugging
 - When a verilog test fails and the design and the test disagree on what should happen,  ALWAYS ASK WHO IS RIGHT before changing either one. Do not silently "fix" the test to match the design's current behavior, and do not silently "fix" the design to match what the test assumes. If you cannot prove correctness by reading the design (RTL/spec/comments) and tying it back to a stated requirement, surface the discrepancy to the user and let them adjudicate.  Patching one side to make the other pass hides the real bug.

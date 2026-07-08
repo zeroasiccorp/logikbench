@@ -3,6 +3,8 @@ Content-Addressable Memory (CAM)
 
 ## Description
 
+**Source:** [rtl/cam.v](rtl/cam.v)
+
 Parametrized binary exact-match CAM with `2**AW` entries of `DW`-bit keys.
 A write port loads entry `waddr` with key `wdata` and a valid bit `wvalid`.
 The search port compares `sdata` against every valid entry in parallel and

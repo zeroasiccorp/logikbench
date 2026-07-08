@@ -3,6 +3,8 @@ Bit-serial RISC-V core
 
 ## Description
 
+**Source:** [rtl/](rtl/)
+
 Bit-serial RISC-V core written in standard Verilog. The core does not natively include a register file or memory.
 
 ## Parameters

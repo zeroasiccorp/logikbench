@@ -3,6 +3,8 @@ Unsigned Integer Multiplier
 
 ## Description
 
+**Source:** [rtl/mul.v](rtl/mul.v)
+
 Parametrized integer multiplier that takes two unsigned N-bit wide inputs and returns a M-bit wide result.
 
 ## Parameters

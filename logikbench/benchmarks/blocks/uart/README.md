@@ -1,5 +1,7 @@
 # Summary
 
+**Source:** [rtl/uart.sv](rtl/uart.sv)
+
 UART. OpenTitan comportable IP (`uart`), pickled into a single self-contained
 Verilog file with generic technology primitives.
 

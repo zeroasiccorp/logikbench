@@ -1,5 +1,7 @@
 # median3x3 (streaming 3x3 median filter)
 
+**Source:** [rtl/median3x3.v](rtl/median3x3.v)
+
 ## What it is
 A streaming 3x3 **median** filter (salt-and-pepper denoise). The 3x3 window
 feeds an odd-even transposition sorting network (36 compare-swaps) and the

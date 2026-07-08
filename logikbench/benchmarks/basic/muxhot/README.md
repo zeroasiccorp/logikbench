@@ -3,6 +3,8 @@ Mux
 
 ## Description
 
+**Source:** [rtl/muxhot.v](rtl/muxhot.v)
+
 Muxes together M vectors of width N to produce a single vector of width N.
 
 

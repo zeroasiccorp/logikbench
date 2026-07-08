@@ -1,5 +1,7 @@
 # Summary
 
+**Source:** [rtl/](rtl/)
+
 A single core of the Vortex RISC-V GPGPU (`VX_core`), configured as RV32IMF
 with 4 warps and 4 threads (Vortex's default config; no graphics, tensor, or
 vector extensions, FPU_TYPE=STD). The top module `vortex_core_wrap` is a thin

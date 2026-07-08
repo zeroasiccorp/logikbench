@@ -1,5 +1,7 @@
 # huffman (static canonical Huffman codec)
 
+**Source:** [rtl/huffman.v](rtl/huffman.v)
+
 ## What it is
 
 A **static canonical Huffman codec** for 8-bit symbols: an encoder that maps

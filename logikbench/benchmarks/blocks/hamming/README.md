@@ -1,5 +1,7 @@
 # hamming (Hsiao SEC-DED codec)
 
+**Source:** [rtl/hamming.v](rtl/hamming.v)
+
 ## What it is
 
 A parameterizable **Hsiao single-error-correcting, double-error-detecting

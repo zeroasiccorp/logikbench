@@ -1,5 +1,7 @@
 # Summary
 
+**Source:** [rtl/cva6.sv](rtl/cva6.sv)
+
 CORE-V CVA6 application-class RISC-V core, configured as `cv64a6_imafdc_sv39`
 (RV64IMAFDC, sv39 MMU, write-through cache), pickled into a single
 self-contained Verilog file with FPU (cvfpu) and generic tech cells.

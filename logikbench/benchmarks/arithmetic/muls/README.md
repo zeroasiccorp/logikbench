@@ -3,6 +3,8 @@ Signed Integer Multiplier
 
 ## Description
 
+**Source:** [rtl/muls.v](rtl/muls.v)
+
 Parametrized integer multiplier that takes two signed N-bit wide inputs and returns a M-bit wide result.
 
 ## Parameters

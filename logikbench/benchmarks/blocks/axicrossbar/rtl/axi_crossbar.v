@@ -34,9 +34,9 @@ THE SOFTWARE.
 module axi_crossbar #
 (
     // Number of AXI inputs (slave interfaces)
-    parameter NS = 8,
+    parameter NS = 16,
     // Number of AXI outputs (master interfaces)
-    parameter NM = 8,
+    parameter NM = 16,
     // Width of data bus in bits
     parameter DW = 32,
     // Width of address bus in bits

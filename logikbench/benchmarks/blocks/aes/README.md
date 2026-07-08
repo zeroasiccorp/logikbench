@@ -1,5 +1,7 @@
 # Summary
 
+**Source:** [rtl/aes.sv](rtl/aes.sv)
+
 AES (DOM-masked default config). OpenTitan comportable IP (`aes`), pickled into a single
 self-contained Verilog file with generic technology primitives.
 

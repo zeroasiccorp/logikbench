@@ -1,5 +1,7 @@
 # lpddr5 (LPDDR5 memory controller, UMI front-end + DFI PHY port)
 
+**Source:** [rtl/lpddr5_umi.v](rtl/lpddr5_umi.v)
+
 ## What it is
 
 A synthesizable, technology-agnostic **LPDDR5 memory controller** (JESD209-5

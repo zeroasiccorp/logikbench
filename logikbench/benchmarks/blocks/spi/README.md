@@ -1,5 +1,7 @@
 # Summary
 
+**Source:** [rtl/spi.sv](rtl/spi.sv)
+
 SPI host. OpenTitan comportable IP (`spi_host`), pickled into a single
 self-contained Verilog file with generic technology primitives.
 

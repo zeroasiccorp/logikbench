@@ -5,7 +5,7 @@
 //#############################################################################
 module muls #(parameter	DW = 16,
               parameter	OW = 32
-	      )
+              )
    (
     //Inputs
     input signed [DW-1:0]  a, // a input (multiplier)
@@ -14,6 +14,6 @@ module muls #(parameter	DW = 16,
     output signed [OW-1:0] c  // a * b final product
     );
 
-   assign c[OW-1:0] = $signed(a) * $signed(b);
+   assign c[OW-1:0] = a * b;
 
 endmodule

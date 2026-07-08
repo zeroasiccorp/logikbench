@@ -3,6 +3,8 @@ Unsigned Integer Multiply and Add
 
 ## Description
 
+**Source:** [rtl/muladd.v](rtl/muladd.v)
+
 Parametrized integer multiply-and-add that takes two unsigned N-bit wide inputs and adds it to a third M bit wide input to returns an M-bit wide result.
 
 ## Parameters

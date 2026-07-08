@@ -1,5 +1,7 @@
 # sobel3x3 (streaming Sobel edge detector)
 
+**Source:** [rtl/sobel3x3.v](rtl/sobel3x3.v)
+
 ## What it is
 A streaming 3x3 **Sobel** edge detector. The constant +-1/+-2 kernels compute
 Gx and Gy with shifts/adds (no multiplier), and the output is the saturated L1

@@ -1,5 +1,7 @@
 # sad8x8 (8x8 block sum-of-absolute-differences)
 
+**Source:** [rtl/sad8x8.v](rtl/sad8x8.v)
+
 ## What it is
 An **8x8 SAD** block matcher for motion estimation. Two NxN blocks are presented
 as packed buses; all 64 absolute differences `|a-b|` are computed in parallel

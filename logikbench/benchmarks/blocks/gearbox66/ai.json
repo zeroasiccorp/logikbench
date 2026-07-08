@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0",
+  "name": "gearbox66",
+  "spec_ref": "README.md",
+  "authorship": "Zero ASIC Corporation; author Andreas Olofsson",
+  "generated_by": {
+    "model": "claude-opus-4-8",
+    "provider": "Anthropic",
+    "interface": "Claude Code",
+    "date": "2026-07-07"
+  },
+  "human_review": {
+    "reviewed": true,
+    "reviewer": "Andreas Olofsson",
+    "date": "2026-07-07",
+    "notes": "Architecture, scope, and verification were directed and reviewed by the author; RTL generated with Claude."
+  },
+  "origin": {
+    "type": "original",
+    "notes": "Original clean-room implementation written for LogikBench; follows the cited open standards, not copied from any specific HDL source."
+  }
+}

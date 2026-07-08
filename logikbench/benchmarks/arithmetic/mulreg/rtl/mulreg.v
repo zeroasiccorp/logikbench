@@ -5,7 +5,7 @@
 //#############################################################################
 module mulreg #(parameter DW = 16,
                 parameter OW = 32
-	        )
+                )
    (
     //Inputs
     input		       clk, // clock
@@ -27,7 +27,7 @@ module mulreg #(parameter DW = 16,
      end
 
    // multiplier
-   assign prod[OW-1:0] = $signed(areg) * $signed(breg);
+   assign prod[OW-1:0] = areg * breg;
 
    // register output
    always @ (posedge clk)

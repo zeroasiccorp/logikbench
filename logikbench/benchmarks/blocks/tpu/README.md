@@ -1,5 +1,7 @@
 # tpu
 
+**Source:** [rtl/tpu.v](rtl/tpu.v)
+
 Weight-stationary systolic matrix-multiply tile, in the style of the Google
 TPU matrix-multiply unit (MXU).
 
