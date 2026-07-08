@@ -20,7 +20,7 @@ LogikBench is a high quality curated open source RTL benchmark suite that enable
 
 | Problem Addressed     | LogikBench Solution                      |
 |-----------------------|------------------------------------------|
-| No "Spec CPU for RTL" | 211 standardized benchmark circuits      |
+| No "Spec CPU for RTL" | 220 standardized benchmark circuits      |
 | Lack of diversity     | Broad range of circuits and code origins |
 | Hard coded values     | Extensive per circuit parametrization    |
 | Lack of trust         | Documented source code provenance        |
@@ -428,7 +428,7 @@ lb run -g basic -t sc_asap7 --to synthesis
 | tff | Toggle flip-flop | [tff.v](logikbench/benchmarks/basic/tff/rtl/tff.v) |
 | tmr | Triple-modular-redundancy voter | [tmr.v](logikbench/benchmarks/basic/tmr/rtl/tmr.v) |
 
-### Arithmetic (68 benchmarks)
+### Arithmetic (71 benchmarks)
 
 | Benchmark | Description | Verilog |
 |-----------|-------------|---------|
@@ -456,6 +456,9 @@ lb run -g basic -t sc_asap7 --to synthesis
 | divs | Signed integer divide (sequential) | [divs.v](logikbench/benchmarks/arithmetic/divs/rtl/divs.v) |
 | dotprod | Dot product | [dotprod.v](logikbench/benchmarks/arithmetic/dotprod/rtl/dotprod.v) |
 | exp | Exponential (range-reduce + poly) | [exp.v](logikbench/benchmarks/arithmetic/exp/rtl/exp.v) |
+| fmadd8 | Fused multiply-add, E4M3 fp8 | [fmadd8.v](logikbench/benchmarks/arithmetic/fmadd8/rtl/fmadd8.v) |
+| fmadd16 | Fused multiply-add, bf16 | [fmadd16.v](logikbench/benchmarks/arithmetic/fmadd16/rtl/fmadd16.v) |
+| fmadd32 | Fused multiply-add, fp32 | [fmadd32.v](logikbench/benchmarks/arithmetic/fmadd32/rtl/fmadd32.v) |
 | gelu | GELU activation (sigmoid approx) | [gelu.v](logikbench/benchmarks/arithmetic/gelu/rtl/gelu.v) |
 | hswish | Hard-swish activation | [hswish.v](logikbench/benchmarks/arithmetic/hswish/rtl/hswish.v) |
 | inc | Incrementer | [inc.v](logikbench/benchmarks/arithmetic/inc/rtl/inc.v) |
@@ -523,7 +526,7 @@ lb run -g basic -t sc_asap7 --to synthesis
 | regfile | Register file | [regfile.v](logikbench/benchmarks/memory/regfile/rtl/regfile.v) |
 | rom | Read-only memory | [rom.v](logikbench/benchmarks/memory/rom/rtl/rom.v) |
 
-### Complex Blocks (42 benchmarks)
+### Complex Blocks (48 benchmarks)
 
 | Benchmark | Description | Verilog |
 |-----------|-------------|---------|
@@ -535,6 +538,7 @@ lb run -g basic -t sc_asap7 --to synthesis
 | conv2d | Streaming 3x3 2D convolution | [conv2d.v](logikbench/benchmarks/blocks/conv2d/rtl/conv2d.v) |
 | coralnpu | CoralNPU neural accelerator | [coralnpu.sv](logikbench/benchmarks/blocks/coralnpu/rtl/coralnpu.sv) |
 | crc32 | CRC-32 generator | [crc32.v](logikbench/benchmarks/blocks/crc32/rtl/crc32.v) |
+| codec8b10b | 8b/10b line encoder/decoder | [codec8b10b.v](logikbench/benchmarks/blocks/codec8b10b/rtl/codec8b10b.v) |
 | cva6 | CVA6 (Ariane) RISC-V core | [cva6.sv](logikbench/benchmarks/blocks/cva6/rtl/cva6.sv) |
 | ddc | Digital down-converter (NCO/mixer/CIC/FIR) | [ddc.v](logikbench/benchmarks/blocks/ddc/rtl/ddc.v) |
 | ethmac | Ethernet MAC | [ethmac.v](logikbench/benchmarks/blocks/ethmac/rtl/ethmac.v) |
@@ -542,12 +546,16 @@ lb run -g basic -t sc_asap7 --to synthesis
 | firfix | Fixed-coefficient FIR filter | [firfix.v](logikbench/benchmarks/blocks/firfix/rtl/firfix.v) |
 | firprog | Programmable FIR filter | [firprog.v](logikbench/benchmarks/blocks/firprog/rtl/firprog.v) |
 | fpu64 | 64-bit floating-point unit | [fpu64/](logikbench/benchmarks/blocks/fpu64/) |
+| gearbox66 | 64b/66b scrambler + gearbox | [gearbox66.v](logikbench/benchmarks/blocks/gearbox66/rtl/gearbox66.v) |
 | hamming | Hamming ECC encoder/decoder | [hamming.v](logikbench/benchmarks/blocks/hamming/rtl/hamming.v) |
+| hft | Tick-to-trade HFT pipeline | [hft.v](logikbench/benchmarks/blocks/hft/rtl/hft.v) |
 | hmac | HMAC-SHA hashing | [hmac.sv](logikbench/benchmarks/blocks/hmac/rtl/hmac.sv) |
 | huffman | Canonical Huffman encoder/decoder | [huffman.v](logikbench/benchmarks/blocks/huffman/rtl/huffman.v) |
 | i2c | I2C controller | [i2c.sv](logikbench/benchmarks/blocks/i2c/rtl/i2c.sv) |
 | ialu | Integer ALU | [ialu.v](logikbench/benchmarks/blocks/ialu/rtl/ialu.v) |
+| jesd204b | JESD204B full-duplex link interface | [jesd204b.v](logikbench/benchmarks/blocks/jesd204b/rtl/jesd204b.v) |
 | lfsr | Linear feedback shift register | [lfsr.v](logikbench/benchmarks/blocks/lfsr/rtl/lfsr.v) |
+| linkmap | JESD204-style transport framer/deframer | [linkmap.v](logikbench/benchmarks/blocks/linkmap/rtl/linkmap.v) |
 | lpddr5 | LPDDR5 memory controller (UMI + DFI, ECC) | [lpddr5_umi.v](logikbench/benchmarks/blocks/lpddr5/rtl/lpddr5_umi.v) |
 | lz77 | LZ77 (LZSS) compressor/decompressor | [lz77.v](logikbench/benchmarks/blocks/lz77/rtl/lz77.v) |
 | median3x3 | Streaming 3x3 median filter | [median3x3.v](logikbench/benchmarks/blocks/median3x3/rtl/median3x3.v) |
@@ -569,6 +577,7 @@ lb run -g basic -t sc_asap7 --to synthesis
 | viterbi | Viterbi decoder | [viterbi.v](logikbench/benchmarks/blocks/viterbi/rtl/viterbi.v) |
 | vortex | Vortex GPU core | [vortex/](logikbench/benchmarks/blocks/vortex/) |
 | wally | CVW-Wally RISC-V core | [wally/](logikbench/benchmarks/blocks/wally/) |
+| wordalign | Comma detect + bitslip aligner | [wordalign.v](logikbench/benchmarks/blocks/wordalign/rtl/wordalign.v) |
 
 ### EPFL Benchmarks (19 benchmarks)
 
