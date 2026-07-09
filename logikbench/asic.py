@@ -24,6 +24,7 @@ import siliconcompiler.targets as sc_targets
 from siliconcompiler import ASIC
 from siliconcompiler.flows import asicflow
 from siliconcompiler.tools.yosys.syn_asic import ASICSynthesis as _YosysSyn
+from lambdalib.ramlib import RAMTechLib
 
 from logikbench.flows.synth import ASICSynthesis
 from logikbench.common import _set_range, _quiet
@@ -87,28 +88,89 @@ def _sc_target(name):
     return getattr(module, name, None)
 
 
-def _mainlib_liberties(proj):
-    """Typical-corner timing liberties of the project's main std-cell library.
+def _setup_libcorners(proj):
+    """Libcorners of the scenario STA checks setup on.
 
-    Feeds the yosys ASIC synthesis 'liberty' var on the lbflow path. The mainlib
-    is registered by the SC target setup; we grab its object back and gather its
-    nominal-corner NLDM liberty files. Most PDKs have one file in a single
-    'models.timing.nldm' (nangate45) or 'models.timing.typical.nldm' fileset;
-    some (e.g. asap7) split the library by cell group into several files, so we
-    return all of them and yosys maps against each (dfflibmap/abc take repeated
-    -liberty flags).
+    These are the corners yosys should map against so lbflow synthesis matches
+    sign-off (mirrors SC's ASICSynthesis._determine_synthesis_corner on the
+    asicflow path). Prefer a scenario whose 'check' includes 'setup'; fall back
+    to the first scenario that names a libcorner. Empty if no scenario defines a
+    libcorner (unconstrained run)."""
+    scenarios = proj.getkeys("constraint", "timing", "scenario")
+
+    def libcorner(s):
+        return proj.get("constraint", "timing", "scenario", s, "libcorner") or []
+
+    for s in scenarios:
+        checks = proj.get("constraint", "timing", "scenario", s, "check") or []
+        if "setup" in checks and libcorner(s):
+            return list(libcorner(s))
+    for s in scenarios:
+        if libcorner(s):
+            return list(libcorner(s))
+    return []
+
+
+def _mapping_liberties(proj):
+    """Setup-corner timing liberties of the full standard-cell library set.
+
+    Feeds the yosys ASIC synthesis 'liberty' var on the lbflow path: the mainlib
+    PLUS the extra Vt std-cell asiclib variants (RVT/LVT/SLVT for asap7), so the
+    mapper can pick cells across all Vt flavors, matching the SC asicflow. Macro
+    libraries (RAMTechLib, e.g. SRAM) are NOT mapping targets -- they are read
+    as blackboxes instead (see _macro_liberties) -- so they are skipped here.
+
+    yosys maps against the corner(s) the setup scenario names (see
+    _setup_libcorners), the same corner SC's own synthesis uses, so lbflow
+    synthesis tracks the corner STA signs off setup/fmax on and the two stay
+    correlated. asap7 also splits each library by cell group into several files,
+    so we return all of them and yosys maps against each (dfflibmap/abc take
+    repeated -liberty flags).
     """
-    mainlib = proj.get("asic", "mainlib")
-    lib = proj.get("library", mainlib, field="schema")
+    delaymodel = proj.get("asic", "delaymodel")
+    corners = _setup_libcorners(proj)
+    names = [proj.get("asic", "mainlib")] + list(proj.get("asic", "asiclib"))
     libs = []
-    for fs in lib.getkeys("fileset"):
-        if "timing" not in fs:
+    for name in names:
+        lib = proj.get("library", name, field="schema")
+        if isinstance(lib, RAMTechLib):
             continue
-        if fs == "models.timing.nldm" or "typical" in fs:
-            for f in (lib.get_file(fileset=fs) or []):
-                s = str(f)
-                if s.endswith((".lib", ".lib.gz")):
-                    libs.append(s)
+        for corner in corners:
+            if not lib.valid("asic", "libcornerfileset", corner, delaymodel):
+                continue
+            for fs in lib.get("asic", "libcornerfileset", corner, delaymodel):
+                for f in (lib.get_file(fileset=fs) or []):
+                    s = str(f)
+                    if s.endswith((".lib", ".lib.gz")):
+                        libs.append(s)
+    return sorted(set(libs))
+
+
+def _macro_liberties(proj):
+    """Setup-corner NLDM liberties of the ASIC macro libraries (e.g. SRAM).
+
+    A hard macro (like the SRAM the lambdalib memory alias binds) ships as a
+    liberty + LEF blackbox, no synthesizable RTL. The lbflow yosys synth reads
+    these as '-lib' blackboxes BEFORE the design so an instantiated macro stays
+    a blackbox instead of being synthesized to flip-flops (matching the SC
+    asicflow). Only RAMTechLib libraries are macros; the extra Vt std-cell
+    asiclibs are mapping cells, not macros, so they are skipped.
+    """
+    delaymodel = proj.get("asic", "delaymodel")
+    corners = _setup_libcorners(proj)
+    libs = []
+    for name in proj.get("asic", "asiclib"):
+        lib = proj.get("library", name, field="schema")
+        if not isinstance(lib, RAMTechLib):
+            continue
+        for corner in corners:
+            if not lib.valid("asic", "libcornerfileset", corner, delaymodel):
+                continue
+            for fs in lib.get("asic", "libcornerfileset", corner, delaymodel):
+                for f in (lib.get_file(fileset=fs) or []):
+                    s = str(f)
+                    if s.endswith((".lib", ".lib.gz")):
+                        libs.append(s)
     return sorted(set(libs))
 
 
@@ -122,40 +184,6 @@ def _bench_sdc(design):
         return ""
     files = design.get_file(fileset="sdc")
     return files[0] if files else ""
-
-
-def _single_corner(proj):
-    """Trim a demo target to one library and the typical STA corner.
-
-    Demo targets (e.g. asap7_demo) load several Vt libraries (RVT/LVT/SLVT) and
-    several timing corners (slow/typical/fast); every STA-running node then reads
-    each Vt x corner liberty (~45 .lib.gz for asap7) for every benchmark, which
-    dominates runtime. LogikBench only needs cells/area/fmax from one consistent
-    corner, so keep the main library (drop the extra Vt 'asiclib' variants) and
-    a single scenario. We keep the TYPICAL (nominal) corner so sign-off matches
-    the synthesis corner; the demo typical scenario usually defines only 'power',
-    so give it setup+hold checks (fmax/setupslack come from setup). Reduces asap7
-    liberty reads ~9x (45 -> 5)."""
-    # one library: keep the main lib, drop the extra Vt standard-cell libraries
-    proj.set("asic", "asiclib", [])
-    # one corner: keep the typical-libcorner scenario, remove the rest. Fall back
-    # to any setup scenario, then to the first, if no typical corner is defined.
-    timing = proj.constraint.timing
-    scenarios = list(proj.getkeys("constraint", "timing", "scenario"))
-
-    def field(s, key):
-        return proj.get("constraint", "timing", "scenario", s, key) or []
-
-    typical = [s for s in scenarios if "typical" in field(s, "libcorner")]
-    setup = [s for s in scenarios if "setup" in field(s, "check")]
-    keep = (typical or setup or scenarios)[:1]
-    for s in scenarios:
-        if s not in keep:
-            timing.remove_scenario(s)
-    # Ensure the kept (typical) scenario runs setup/hold so QoR metrics exist.
-    for s in keep:
-        proj.set("constraint", "timing", "scenario", s, "check",
-                 ["setup", "hold"])
 
 
 def _write_sc_wrapper(builddir, name, target, clk_ns, bench_sdc):
@@ -189,9 +217,9 @@ def _setup_asic_project(design, setup_target, builddir, quiet, timeout, clk_ns):
     """Build the ASIC project shared by both ASIC paths (caller sets the flow).
 
     Configures the PDK, standard-cell library, and timing scenarios via the SC
-    built-in target 'setup_target', trims to a single corner, and attaches the
-    benchmark SDC (through the LB_* wrapper) to a dedicated 'lbsdc' fileset so
-    SC's STA reads it. A benchmark with no SDC runs unconstrained.
+    built-in target 'setup_target', and attaches the benchmark SDC (through the
+    LB_* wrapper) to a dedicated 'lbsdc' fileset so SC's STA reads it. A
+    benchmark with no SDC runs unconstrained.
     """
     proj = ASIC(design)
     proj.set("option", "builddir", builddir)
@@ -206,9 +234,6 @@ def _setup_asic_project(design, setup_target, builddir, quiet, timeout, clk_ns):
     # Per-target design setup (scgallery-style), if the benchmark registered one.
     if hasattr(design, "process_setups"):
         design.process_setups(_pdk_of(setup_target), proj)
-    # one library / one corner: avoid reading every Vt x corner liberty on each
-    # STA node (see _single_corner); LogikBench needs only single-corner QoR.
-    _single_corner(proj)
     # Always attach the generated SDC wrapper (in its own 'lbsdc' fileset): it
     # injects the LB_* vars and sources the benchmark SDC if present, else the
     # shared default.sdc. So every benchmark is constrained even with no own SDC.
@@ -239,11 +264,14 @@ def _run_lbflow(design, target, options, builddir, quiet, start, stop, timeout,
     def synvar(key, value):
         proj.set("tool", tool, "task", "synthesis", "var", key, value)
 
-    synvar("liberty", _mainlib_liberties(proj))
+    synvar("liberty", _mapping_liberties(proj))
     if tool == "yosys":
         synvar("mode", "asic")
         synvar("ignore_initial",
                bool(getattr(design, "ignore_initial", False)))
+        # hard-macro liberties read as blackboxes so an instantiated SRAM (via
+        # the lambdalib memory alias) stays a macro instead of mapping to flops.
+        synvar("macrolib", _macro_liberties(proj))
     elif tool == "tardigrade":
         synvar("pdk", pdk)
     if options:

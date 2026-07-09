@@ -5,13 +5,14 @@
 source ./sc_manifest.tcl
 yosys echo on
 
+# interface
 set sc_refdir [sc_cfg_tool_task_get refdir]
 set fileset [lindex [sc_cfg_get option fileset] 0]
-
 set sc_mode [sc_cfg_tool_task_get var mode]
 set sc_command [sc_cfg_tool_task_get var command]
 set sc_options [sc_cfg_tool_task_get var options]
 set sc_liberty [sc_cfg_tool_task_get var liberty]
+set sc_macrolib [sc_cfg_tool_task_get var macrolib]
 set sc_ignore_initial [sc_cfg_tool_task_get var ignore_initial]
 set sc_lintonly [sc_cfg_tool_task_get var lintonly]
 
@@ -35,6 +36,14 @@ if { $sc_ignore_initial } {
 ###############################
 # Read in Design using Slang
 ################################
+
+# Read hard-macro liberties as blackboxes FIRST so slang links an instantiated
+# macro (e.g. the SRAM the lambdalib memory alias binds) to a blackbox module
+# instead of erroring on an unknown module or synthesizing it to flops. Empty
+# for FPGA and macro-free ASIC designs.
+foreach macro_lib $sc_macrolib {
+    yosys read_liberty -lib $macro_lib
+}
 
 yosys plugin -i slang
 yosys read_slang --top $sc_topmodule {*}$sc_slang_args -F sc_rtl.f
