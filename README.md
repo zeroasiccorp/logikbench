@@ -39,21 +39,43 @@ LogikBench includes the following benchmark types:
 
 ## Quick Start
 
-```bash
-# 1. Install LogikBench (pure Python, from PyPI)
-pip install logikbench
+### 1. Install LogikBench (Python 3.10+)
 
-# 2. Install the EDA tools it drives (Yosys + FPGA synthesis plugins)
+LogikBench is under active development. We **recommend the developer install**
+(from source, editable) so you track the latest benchmarks and fixes and can
+contribute changes back. The PyPI package is fine for a quick, read-only try.
+
+**Developer install (recommended):**
+
+```bash
+git clone https://github.com/zeroasiccorp/logikbench.git
+cd logikbench
+python3 -m venv venv && source venv/bin/activate   # recommended
+pip install -e '.[test]'                           # editable + test/dev deps
+```
+
+**Pip install (from PyPI):**
+
+```bash
+pip install logikbench
+```
+
+### 2. Install tools and run a benchmark
+
+The steps below are the same for either install path:
+
+```bash
+# Install the EDA tools it drives (Yosys + FPGA synthesis plugins)
 sc-install -group fpga
 
-# 3. Synthesize your first benchmark on an FPGA target
+# Synthesize your first benchmark on an FPGA target
 lb run -n mux -t xilinx_virtex7
 
-# 4. Run a whole group; metrics go to build/results/<target>.json
+# Run a whole group; metrics go to build/results/<target>.json
 lb run -g basic -t xilinx_virtex7
 lb run -g basic -t sc_asap7
 
-# 5. Compare a metric across the two runs (writes a CSV)
+# Compare a metric across the two runs (writes a CSV)
 lb compare -m luts build/results/xilinx_virtex7.json build/results/lattice_ice40.json
 ```
 
@@ -202,7 +224,7 @@ still constrained). The period defaults to 1 ns and is set with `lb run --clk
 <ns>`; it is given in nanoseconds and scaled into each PDK's SDC time unit
 (`create_clock -period` is read in the unit OpenROAD derives from the liberty --
 1 ns for most PDKs, 1 ps for ASAP7 -- so the same `--clk` is the same real
-frequency on every target). For the `yosys_<pdk>`/`tardigrade_<pdk>` lbflow path
+frequency on every target). For the `yosys_<pdk>`/`tg_<pdk>` lbflow path
 the period is only a starting reference (FMAX is the minimum achievable period);
 for the `sc_<pdk>` asicflow path it is the real optimization target that
 place-and-route works to.
@@ -263,29 +285,29 @@ architecture config vendored under `logikbench/targets/zeroasic/`.
 
 ASIC targets follow the same `<tool>_<part>` scheme as FPGA targets
 (`<vendor>_<partname>`): the tool comes first, the PDK second. Three flavors --
-`yosys_<pdk>` and `tardigrade_<pdk>` run the lightweight `lbflow` path (synthesis
+`yosys_<pdk>` and `tg_<pdk>` run the lightweight `lbflow` path (synthesis
 + OpenSTA timing, no place-and-route), and `sc_<pdk>` runs the full
 SiliconCompiler `asicflow`:
 
 | Target | PDK / library | Flow |
 |--------|---------------|------|
 | `yosys_freepdk45` | FreePDK45 / Nangate45 (lambdapdk) | `lbflow`: Yosys synthesis + OpenSTA timing (no place-and-route) |
-| `tardigrade_freepdk45` | FreePDK45 | `lbflow` with tardigrade as the synthesis mapper |
+| `tg_freepdk45` | FreePDK45 | `lbflow` with tardigrade as the synthesis mapper |
 | `sc_freepdk45` | FreePDK45 | SiliconCompiler `asicflow` (synth -> floorplan -> place -> cts -> route) |
 | `sc_asap7` | ASAP7 7nm | SiliconCompiler `asicflow` |
-| `sc_skywater130` | SkyWater 130 | SiliconCompiler `asicflow` |
+| `sc_sky130` | SkyWater 130 | SiliconCompiler `asicflow` |
 | `sc_gf180` | GlobalFoundries 180 | SiliconCompiler `asicflow` |
 | `sc_ihp130` | IHP SG13G2 130 | SiliconCompiler `asicflow` |
 
-The `yosys_<pdk>` / `tardigrade_<pdk>` targets run the lightweight `lbflow` path
+The `yosys_<pdk>` / `tg_<pdk>` targets run the lightweight `lbflow` path
 used for the QoR metrics above: the mapper maps to the standard-cell library and
 OpenSTA reports FMAX, with no place-and-route. The `sc_<pdk>` targets run the
 official SiliconCompiler `asicflow` but, like the lbflow paths, stop at
 `synthesis.timing` by default (no place-and-route) so their synthesis-stage
 metrics are comparable; they are also trimmed to a single library and a single
 setup corner so each benchmark stays fast. Pass `--to route` to run the full
-asicflow through place-and-route. (`yosys_<pdk>`/`tardigrade_<pdk>`
-cover the lambdapdk std-cell PDKs; `sc_<pdk>` additionally offers `sc_interposer`.)
+asicflow through place-and-route. (`yosys_<pdk>`/`tg_<pdk>` and `sc_<pdk>`
+cover the same lambdapdk std-cell PDKs.)
 
 ### ASIC Timing Constraints (SDC)
 
@@ -396,7 +418,7 @@ Tabulate a metric across the published results (no build needed):
 
 ```bash
 lb compare -m cellarea results/yosys_asap7.json \
-                       results/yosys_skywater130.json \
+                       results/yosys_sky130.json \
                        results/yosys_freepdk45.json
 ```
 
@@ -701,9 +723,17 @@ work in progress and will be published here once results are collected.
 
 ## Tool Installation
 
-LogikBench itself is pure Python and installs from PyPI:
+LogikBench itself is pure Python. Because the project is under active
+development, the **developer install (from source, editable) is recommended**;
+the released PyPI package is available for a quick, read-only try:
 
 ```bash
+# Developer install (recommended): editable, with test/dev deps
+git clone https://github.com/zeroasiccorp/logikbench.git
+cd logikbench
+pip install -e '.[test]'
+
+# Or install the released package from PyPI
 pip install logikbench
 ```
 Running benchmarks additionally needs the EDA tools that SiliconCompiler drives.

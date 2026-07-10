@@ -65,7 +65,7 @@ _TARGET_HELP = (
     "  - '<vendor>_<partname>' -> FPGA target (e.g., xilinx_virtex7)\n"
     "  - 'sc_<pdk>'            -> SiliconCompiler asicflow (e.g., sc_asap7)\n"
     "  - 'yosys_<pdk>'         -> yosys synth + STA (e.g., yosys_freepdk45)\n"
-    "  - 'tardigrade_<pdk>'    -> tardigrade synth + STA\n"
+    "  - 'tg_<pdk>'            -> tardigrade synth + STA\n"
     + "\n" + _choices_block("FPGA: ", _FPGA_CHOICES)
     + "\n\n" + _choices_block("ASIC (SiliconCompiler): ", _SC_CHOICES)
     + "\n\n" + _choices_block("ASIC (yosys): ", _ASIC_CHOICES)

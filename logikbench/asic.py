@@ -47,33 +47,51 @@ def _tech_tcl(pdk):
     return os.path.join(_TARGETS_DIR, pdk, "tech.tcl")
 
 
+# lb-facing renames: a few internal names get shorter target tokens. The SC
+# target module (e.g. 'skywater130_demo') and the mapper Task ('tardigrade')
+# keep their names; only the token shown in lb targets changes.
+_PDK_RENAME = {"skywater130": "sky130"}       # SC pdk stem -> lb pdk token
+_TOOL_RENAME = {"tardigrade": "tg"}           # mapper name -> lb tool token
+_TOOL_UNRENAME = {v: k for k, v in _TOOL_RENAME.items()}
+
+
 def _pdk_of(module):
-    """PDK name for an SC target module ('asap7_demo' -> 'asap7')."""
-    return module[:-len("_demo")] if module.endswith("_demo") else module
+    """lb-facing PDK name for an SC target module ('asap7_demo' -> 'asap7').
+    A few are shortened for lb targets (e.g. 'skywater130_demo' -> 'sky130');
+    this same name is used for the target token and the targets/<pdk> tech dir."""
+    pdk = module[:-len("_demo")] if module.endswith("_demo") else module
+    return _PDK_RENAME.get(pdk, pdk)
 
 
 # Raw SC built-in target module names (e.g. 'asap7_demo'), discovered from
 # siliconcompiler.targets so we track SC's set rather than mirroring it. These
 # are the names passed to the SC setup function; lb exposes them as 'sc_<pdk>'.
-_SC_MODULES = sorted(m.name for m in pkgutil.iter_modules(sc_targets.__path__))
+# Real PDK targets are SC's '<pdk>_demo' modules; skip helper modules that are
+# not standard-cell PDKs (e.g. '_utils', the 'dvflow_cocotb' DV flow), which
+# would otherwise show up as bogus targets like 'sc__utils'. 'interposer' is a
+# demo module but has no standard cells, so it is not a benchmark target either.
+_SC_MODULES = sorted(m.name for m in pkgutil.iter_modules(sc_targets.__path__)
+                     if m.name.endswith("_demo")
+                     and m.name != "interposer_demo")
 
 # pdk -> SC target module ('asap7' -> 'asap7_demo'): the name lookup that maps
 # an lb ASIC target's pdk back to the SC setup module (SC names them '_demo').
 _SC_MODULE = {_pdk_of(m): m for m in _SC_MODULES}
 
-# All SC PDKs, and the std-cell subset used by the lbflow paths (yosys /
-# tardigrade). Interposer has no standard cells, so it has no lbflow variant.
+# All std-cell PDKs. Both the SC asicflow and the lbflow paths (yosys /
+# tardigrade) run on the full set.
 _SC_PDKS = sorted(_SC_MODULE)
-_LBFLOW_PDKS = sorted(set(_SC_PDKS) - {"interposer"})
+_LBFLOW_PDKS = list(_SC_PDKS)
 
 # lb-facing ASIC target names, all '<tool>_<pdk>' to match the FPGA
 # '<vendor>_<part>' scheme (tool/company first, part/pdk second):
-#   sc_<pdk>          -> SC 'asicflow' (PDK + libs + scenarios, through P&R)
-#   yosys_<pdk>       -> lbflow: yosys synthesis + OpenSTA timing (no P&R)
-#   tardigrade_<pdk>  -> lbflow with tardigrade as the synthesis mapper
+#   sc_<pdk>     -> SC 'asicflow' (PDK + libs + scenarios, through P&R)
+#   yosys_<pdk>  -> lbflow: yosys synthesis + OpenSTA timing (no P&R)
+#   tg_<pdk>     -> lbflow with tardigrade as the synthesis mapper
 SC_TARGETS = [f"sc_{pdk}" for pdk in _SC_PDKS]
 YOSYS_TARGETS = [f"yosys_{pdk}" for pdk in _LBFLOW_PDKS]
-TARDIGRADE_TARGETS = [f"tardigrade_{pdk}" for pdk in _LBFLOW_PDKS]
+TARDIGRADE_TARGETS = [f"{_TOOL_RENAME['tardigrade']}_{pdk}"
+                      for pdk in _LBFLOW_PDKS]
 
 
 def _sc_target(name):
@@ -257,6 +275,7 @@ def _run_lbflow(design, target, options, builddir, quiet, start, stop, timeout,
     through to the active mapper verbatim.
     """
     tool, pdk = target.split("_", 1)
+    tool = _TOOL_UNRENAME.get(tool, tool)   # lb token 'tg' -> mapper 'tardigrade'
     proj = _setup_asic_project(design, _SC_MODULE[pdk], builddir, quiet,
                                timeout, clk_ns)
     proj.set_flow(ASICSynthesis(tool=tool))

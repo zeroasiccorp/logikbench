@@ -33,6 +33,16 @@
   .tabs button.on { background: var(--accent); border-color: var(--accent); color: #08101f; }
   .tabs button .dir { font-weight: 500; opacity: .7; font-size: 12px; }
   .note { margin: 0 0 14px; color: var(--txt-dim); font-size: 12.5px; line-height: 1.5; max-width: 980px; }
+  /* tool/PDK column-filter buttons, below the table */
+  .facets { margin: 0 0 16px; display: flex; flex-direction: column; gap: 8px; }
+  .facet-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .facet-row .lab { color: var(--txt-dim); font-size: 12px; font-weight: 600; width: 42px; }
+  .facet-row button {
+    appearance: none; border: 1px solid var(--line); background: var(--panel); color: var(--txt-dim);
+    font: inherit; font-weight: 600; padding: 6px 12px; border-radius: 8px; cursor: pointer; transition: .12s;
+  }
+  .facet-row button:hover { color: var(--txt); border-color: #343b4d; }
+  .facet-row button.on { background: var(--accent); border-color: var(--accent); color: #08101f; }
   .card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
   .scroll { overflow: auto; max-height: 72vh; }
   table { border-collapse: separate; border-spacing: 0; width: 100%; }
@@ -82,6 +92,10 @@
     </div>
   </header>
 
+{% if facets %}
+  <div class="facets" id="facets"></div>
+{% endif %}
+
   <div class="tabs" id="tabs"></div>
   <p class="note" id="note"></p>
 
@@ -99,6 +113,43 @@
 const SECTION = {{ section_json }};
 let metricKey = SECTION.metrics[0].key;
 function metric(){ return SECTION.metrics.find(m => m.key === metricKey); }
+
+// ---- tool/PDK column filter (one pivot active at a time) ----
+// Target names are "<tool>_<pdk>". Two useful views: all nodes on one tool, or
+// all tools on one node. So exactly one selection is active -- a tool (show its
+// columns across every node) or a pdk (show every tool's column for that node).
+function splitCol(t){ const i = t.indexOf("_"); return i < 0 ? [t, ""] : [t.slice(0, i), t.slice(i + 1)]; }
+function toolOf(t){ return splitCol(t)[0]; }
+function pdkOf(t){ return splitCol(t)[1]; }
+const TOOL_LABEL = { tardigrade: "tg" };   // button display alias
+const uniq = a => [...new Set(a)];
+const ALL_TOOLS = uniq(SECTION.targets.map(toolOf));
+const ALL_PDKS = uniq(SECTION.targets.map(pdkOf).filter(Boolean));
+const FACETS = !!document.getElementById("facets");
+// default pivot: the first tool (all nodes for it)
+let pivot = ALL_TOOLS.length ? { dim: "tool", key: ALL_TOOLS[0] }
+                             : { dim: "pdk", key: ALL_PDKS[0] };
+
+// columns to show: all targets when facets are off, else those matching the
+// active pivot (one tool across all nodes, or one node across all tools).
+function visibleTargets(){
+  if (!FACETS) return SECTION.targets;
+  return SECTION.targets.filter(t =>
+    pivot.dim === "tool" ? toolOf(t) === pivot.key : pdkOf(t) === pivot.key);
+}
+
+function renderFacets(){
+  if (!FACETS) return;
+  const row = (label, dim, keys) =>
+    `<div class="facet-row"><span class="lab">${label}</span>` +
+    keys.map(k =>
+      `<button class="${pivot.dim === dim && pivot.key === k ? "on" : ""}" ` +
+      `data-dim="${dim}" data-key="${k}">` +
+      `${dim === "tool" ? (TOOL_LABEL[k] || k) : k}</button>`).join("") +
+    `</div>`;
+  document.getElementById("facets").innerHTML =
+    row("Tool", "tool", ALL_TOOLS) + row("PDK", "pdk", ALL_PDKS);
+}
 
 // Column sort state. sortCol null = grouped default order; otherwise BENCH_COL
 // or a target name. Click cycles a column asc -> desc -> default.
@@ -191,8 +242,8 @@ function sortArrow(col){
 
 // one benchmark row (<tr>); colors are per-row across targets, independent of
 // row order, so the same row renders identically grouped or sorted.
-function renderRow(bench){
-  const targets = SECTION.targets, m = metric();
+function renderRow(bench, targets){
+  const m = metric();
   const row = SECTION.data[bench] || {};
   const vals = targets.map(t => (row[t] ? row[t][m.key] : null));
   const present = vals.filter(v => v !== null && v !== undefined);
@@ -212,7 +263,8 @@ function renderRow(bench){
 
 function render(){
   renderTabs();
-  const targets = SECTION.targets;
+  renderFacets();
+  const targets = visibleTargets();
   const settings = SECTION.settings || {};
   const labels = SECTION.labels || {};
   const thead = document.getElementById("thead");
@@ -250,13 +302,13 @@ function render(){
   if (sortCol){
     // flat global sort: one ranked list, no group headers
     const all = SECTION.groups.flatMap(g => g.benchmarks);
-    sortedBenches(all).forEach(bench => tb.appendChild(renderRow(bench)));
+    sortedBenches(all).forEach(bench => tb.appendChild(renderRow(bench, targets)));
   } else {
     // default: grouped sections in definition order
     SECTION.groups.forEach(group => {
       const gr = document.createElement("tr"); gr.className = "grp";
       gr.innerHTML = `<th colspan="${targets.length + 1}">${group.name}</th>`; tb.appendChild(gr);
-      group.benchmarks.forEach(bench => tb.appendChild(renderRow(bench)));
+      group.benchmarks.forEach(bench => tb.appendChild(renderRow(bench, targets)));
     });
   }
 }
@@ -265,6 +317,19 @@ function render(){
 document.getElementById("thead").addEventListener("click", e => {
   const th = e.target.closest("[data-col]"); if (th) cycleSort(th.dataset.col);
 });
+
+// facet buttons: switch the active pivot (one tool, or one node). If the
+// column being sorted by is filtered out, drop back to the default order.
+if (FACETS){
+  document.getElementById("facets").addEventListener("click", e => {
+    const b = e.target.closest("[data-dim]"); if (!b) return;
+    pivot = { dim: b.dataset.dim, key: b.dataset.key };
+    if (sortCol && sortCol !== BENCH_COL && !visibleTargets().includes(sortCol)){
+      sortCol = null; sortDir = null;
+    }
+    render();
+  });
+}
 render();
 </script>
 </body>
