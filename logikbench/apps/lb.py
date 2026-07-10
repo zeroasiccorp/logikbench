@@ -64,12 +64,12 @@ _TARGET_HELP = (
     "Format '<tool>_<part>':\n"
     "  - '<vendor>_<partname>' -> FPGA target (e.g., xilinx_virtex7)\n"
     "  - 'sc_<pdk>'            -> SiliconCompiler asicflow (e.g., sc_asap7)\n"
-    "  - 'yosys_<pdk>'         -> yosys synth + STA (e.g., yosys_freepdk45)\n"
-    "  - 'tg_<pdk>'            -> tardigrade synth + STA\n"
-    + "\n" + _choices_block("FPGA: ", _FPGA_CHOICES)
-    + "\n\n" + _choices_block("ASIC (SiliconCompiler): ", _SC_CHOICES)
-    + "\n\n" + _choices_block("ASIC (yosys): ", _ASIC_CHOICES)
-    + "\n\n" + _choices_block("ASIC (tardigrade): ", _TOOL_CHOICES)
+    "  - 'yosys_<pdk>'         -> Yosys synth + STA (e.g., yosys_freepdk45)\n"
+    "  - 'tg_<pdk>'            -> Tardigrade synth + STA\n"
+    + "\n" + _choices_block("Yosys FPGA Synthesis: ", _FPGA_CHOICES)
+    + "\n\n" + _choices_block("Tardigrade ASIC Synthesis: ", _TOOL_CHOICES)
+    + "\n\n" + _choices_block("Yosys ASIC Synthesis: ", _ASIC_CHOICES)
+    + "\n\n" + _choices_block("SiliconCompiler (RTL2GDS): ", _SC_CHOICES)
 )
 
 
@@ -529,7 +529,7 @@ LogikBench commandline runner.
     run_p.add_argument('--resume',
                        action='store_true',
                        help='Skip benchmarks whose build already completed '
-                            'successfully; only synthesize the rest')
+                            'successfully.')
     run_p.add_argument('--keep',
                        action='store_true',
                        help='Keep the full synthesis artifacts (logs, netlists, '
@@ -549,8 +549,7 @@ LogikBench commandline runner.
                             'prevent stalls (default: 3600; 0 to disable)')
     run_p.add_argument('-v', '--verbose',
                        action='store_true',
-                       help='Show full SiliconCompiler tool/scheduler logs '
-                            '(quieted by default)')
+                       help='Show full tool logs (quieted by default)')
     run_p.add_argument('--publish',
                        action='store_true',
                        help='After the run, copy this run\'s metrics from the '
