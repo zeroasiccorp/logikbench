@@ -29,5 +29,7 @@ set LB_HOLD_MARGIN  10.0
 # External output load/max capacitance (fF): FO4 = 4 x INVx1 input cap (0.68 fF)
 set LB_LOAD 2.7
 
-# Input transition / slew (ps): ~25% of default_max_transition (320 ps)
-set LB_SLEW 80.0
+# Input driver cell + its output pin for set_driving_cell (models input drive
+# with a real library buffer; the same driver_cell abc maps against).
+set LB_DRIVER BUFx2_ASAP7_75t_R
+set LB_DRIVER_PIN Y

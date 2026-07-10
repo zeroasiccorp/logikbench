@@ -28,5 +28,7 @@ set LB_HOLD_MARGIN  0.10
 # External output load / max capacitance (pf): FO4 = 4 x inv_1 Cin (0.0028674)
 set LB_LOAD 0.011470
 
-# Input transition / slew (ns): ~25% of default_max_transition (2.5074 ns)
-set LB_SLEW 0.627
+# Input driver cell + its output pin for set_driving_cell (models input drive
+# with a real library buffer; the same driver_cell abc maps against).
+set LB_DRIVER sg13g2_buf_4
+set LB_DRIVER_PIN X

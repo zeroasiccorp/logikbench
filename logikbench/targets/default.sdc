@@ -14,7 +14,7 @@
 #
 # Injected by the flow wrapper: LB_CLK_NS (lb --clk, in ns), LB_TECH_FILE (the
 # per-PDK tech.tcl providing LB_CLK_PERIOD + LB_SETUP_MARGIN / LB_HOLD_MARGIN /
-# LB_LOAD / LB_SLEW), and LB_DEFAULT_SDC (this file).
+# LB_LOAD + LB_DRIVER / LB_DRIVER_PIN), and LB_DEFAULT_SDC (this file).
 #
 ###############################################################################
 
@@ -82,8 +82,13 @@ if {[llength $LB_INPUTS] > 0} {
     # how long after clock edge data arrives at input
     set_input_delay -clock $LB_IOCLK -max $LB_IO_IDELAY $LB_INPUTS
     set_input_delay -clock $LB_IOCLK -min $LB_IO_HOLD  $LB_INPUTS
-    set_input_transition $LB_SLEW $LB_INPUTS
-    set_max_capacitance  $LB_LOAD $LB_INPUTS
+    # Model input drive with a real library driver cell (the same buffer the
+    # abc synthesis constraint uses), so the input slew is physical rather than
+    # a fixed guess. Guarded: a PDK that defines no LB_DRIVER leaves inputs
+    # without an explicit drive model.
+    if {[info exists LB_DRIVER]} {
+        set_driving_cell -lib_cell $LB_DRIVER -pin $LB_DRIVER_PIN $LB_INPUTS
+    }
 }
 
 ########################################

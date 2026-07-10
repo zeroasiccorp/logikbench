@@ -74,6 +74,12 @@ class Synthesis(YosysTask):
             "standard-cell liberty file(s) for ASIC mapping; several when the "
             "PDK splits its library by cell group (empty for FPGA)", [])
         self.add_parameter(
+            "macrolib", "[str]",
+            "hard-macro liberty file(s) (e.g. SRAM) read as '-lib' blackboxes "
+            "before the design so instantiated macros stay blackboxes instead "
+            "of synthesizing to flops (empty for FPGA / macro-free designs)",
+            [])
+        self.add_parameter(
             "ignore_initial", "bool",
             "pass slang --ignore-initial (drop initial blocks); opt-in for "
             "benchmarks whose initial blocks are simulation-only", False)
@@ -109,8 +115,20 @@ class Synthesis(YosysTask):
         # graph (e.g. lambdalib la_spram, umi sub-blocks). synthesis.tcl reads
         # it via 'read_slang -F'. Slang options are passed as flags there, and
         # there are no command-file filesets, so the dump is clean.
-        fileset = self.project.get("option", "fileset")[0]
-        self.project.design.write_fileset("sc_rtl.f", fileset=fileset)
+        #
+        # Apply the project's fileset aliases so a lambdalib memory (la_spram,
+        # ...) resolves to the PDK's macro wrapper -- the same swap the SC
+        # asicflow does -- instead of the generic behavioral model. The wrapper
+        # instantiates the hard macro, which 'macrolib' blackboxes. For FPGA and
+        # macro-free ASIC designs get_alias() is empty, so this is a no-op.
+        proj = self.project
+        fileset = proj.get("option", "fileset")[0]
+        depalias = {}
+        for dep, depfs, alib, afs in proj.option.get_alias():
+            lib = proj.get("library", alib, field="schema")
+            depalias[(dep, depfs)] = (lib, afs)
+        proj.design.write_fileset("sc_rtl.f", fileset=fileset,
+                                  depalias=depalias)
 
     def post_process(self):
         super().post_process()
