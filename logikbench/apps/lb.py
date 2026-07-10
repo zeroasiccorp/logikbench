@@ -147,7 +147,8 @@ def target_runlist(target, args, worklist):
     runlist = []
     for group, cls, name in worklist:
         if is_complete(name, builddir):
-            print(f"Skipping {name} ({target}/{group}): already complete.")
+            loc = os.path.join(".", builddir, name)
+            print(f"Skipping {name} ({loc}): already complete.")
         else:
             runlist.append((group, cls, name))
     return runlist
@@ -178,12 +179,15 @@ def run_sweep(args, targets, worklist):
         nonlocal done
         done += 1
         prefix = f"[{done}/{total}]"
+        # show the per-benchmark build directory (e.g. ./build/sc_gf180/muxcase)
+        # so the message points at where the artifacts live
+        loc = os.path.join(".", target_builddir(args, target), name)
         if error is not None:
-            print(f"{prefix} Error synthesizing {name} ({target}/{group}): "
+            print(f"{prefix} Error synthesizing {name} ({loc}): "
                   f"{error}", file=sys.stderr)
             failures.append(f"{target}/{group}/{name}")
         else:
-            print(f"{prefix} Finished {name} benchmark ({target}/{group}).")
+            print(f"{prefix} Finished {name} benchmark ({loc}).")
         # By default reclaim disk as we go (pass or fail), keeping only the
         # manifest 'lb collect'/--resume need; --keep retains everything. Runs
         # in the parent for both the sequential and -j parallel paths, so
@@ -254,14 +258,73 @@ def gather_target_metrics(target, args, worklist):
     return metrics_out, options, len(collected)
 
 
+def results_builddir(args):
+    """Directory the run writes per-target metrics into: <builddir>/results."""
+    return os.path.join(args.builddir, "results")
+
+
+def find_results_tree():
+    """Locate the committed 'results' tree by searching up from the CWD for a
+    git checkout that contains it. Returns the path, or None when not run from a
+    clone (e.g. a PyPI install), where that tree does not exist."""
+    here = os.path.abspath(os.getcwd())
+    while True:
+        if (os.path.isdir(os.path.join(here, ".git"))
+                and os.path.isdir(os.path.join(here, "results"))):
+            return os.path.join(here, "results")
+        parent = os.path.dirname(here)
+        if parent == here:
+            return None
+        here = parent
+
+
+def _merge_metrics_into(src_path, dst_path):
+    """Incrementally merge one <target>.json into another: benchmark values in
+    src update dst per metric; benchmarks/metrics only in dst are preserved.
+    Meta/provenance is refreshed from src."""
+    with open(src_path) as f:
+        src = json.load(f)
+    dst = {}
+    if os.path.isfile(dst_path):
+        try:
+            with open(dst_path) as f:
+                dst = json.load(f)
+        except (ValueError, OSError):
+            dst = {}
+    metrics = dst.get("metrics", {})
+    for metric, col in src.get("metrics", {}).items():
+        metrics.setdefault(metric, {}).update(col)
+    payload = {"meta": src.get("meta", dst.get("meta", {})), "metrics": metrics}
+    with open(dst_path, "w") as f:
+        json.dump(payload, f, indent=2, sort_keys=True)
+
+
+def publish_results(targets, args):
+    """Copy this run's per-target metrics from the build dir into the committed
+    ./results tree, merging incrementally. Dev-only: requires a git clone."""
+    tree = find_results_tree()
+    if tree is None:
+        sys.exit("--publish requires a git clone of the logikbench repo "
+                 "(the committed 'results' tree only exists there).")
+    src_dir = results_builddir(args)
+    for target in targets:
+        src = os.path.join(src_dir, f"{target}.json")
+        if not os.path.isfile(src):
+            print(f"--publish: no build metrics for '{target}' at {src}, "
+                  f"skipping", file=sys.stderr)
+            continue
+        dst = os.path.join(tree, f"{target}.json")
+        _merge_metrics_into(src, dst)
+        print(f"Published {target} -> {dst}")
+
+
 def save_target(target, args, worklist):
-    """Write one target's metrics as <output>/<target>.json (default
-    build/results) and print the path. To publish into the committed results
-    tree, run with -o results.
-    """
+    """Write one target's metrics as <builddir>/results/<target>.json and print
+    the path. Metrics always land in the build directory; use 'run --publish' to
+    promote them into the committed results tree."""
     metrics_out, options, collected = gather_target_metrics(target, args,
                                                             worklist)
-    outdir = args.output
+    outdir = results_builddir(args)
     os.makedirs(outdir, exist_ok=True)
     output = os.path.join(outdir, f"{target}.json")
 
@@ -301,7 +364,7 @@ def save_target(target, args, worklist):
     payload = {"meta": meta, "metrics": metrics}
     with open(output, "w") as f:
         json.dump(payload, f, indent=2, sort_keys=True)
-    print(f"Wrote {collected}/{len(worklist)} benchmark(s) -> {output}")
+    print(f"Collected {collected}/{len(worklist)} benchmark(s) -> {output}")
     return collected
 
 
@@ -448,7 +511,7 @@ LogikBench commandline runner.
                        metavar="STEP",
                        help=f"Last flow step to run. Can be a stage name "
                             f"{STEPS} or a raw SC node 'step.task' like "
-                            f"'floorplan.init' (default: to the end)")
+                            f"'floorplan.init'")
     run_p.add_argument('--clk',
                        type=float,
                        default=None,
@@ -488,13 +551,14 @@ LogikBench commandline runner.
                        action='store_true',
                        help='Show full SiliconCompiler tool/scheduler logs '
                             '(quieted by default)')
-    run_p.add_argument('-o', '--output',
-                       default='build/results',
-                       metavar="DIR",
-                       help='Directory for the per-target metrics file '
-                            '<DIR>/<target>.json (default: build/results). '
-                            'Use -o results to publish into the committed '
-                            'results tree.')
+    run_p.add_argument('--publish',
+                       action='store_true',
+                       help='After the run, copy this run\'s metrics from the '
+                            'build directory into the committed ./results tree, '
+                            'merging incrementally (benchmarks and targets not '
+                            'in this run are preserved). Only works from a git '
+                            'clone of the repo, where the results/ tree exists; '
+                            'errors otherwise.')
 
     # ---- compare: write a CSV diffing two explicit metrics files ----
     compare_p = sub.add_parser("compare",
@@ -533,10 +597,16 @@ LogikBench commandline runner.
 
     if args.command == "run":
         failures = run_sweep(args, targets, worklist)
-        # write each target's metrics to -o; lint-only has no metrics
+        # metrics always land in <builddir>/results; lint-only produces none
         if not args.lintonly:
             for target in targets:
                 save_target(target, args, worklist)
+            # --publish promotes them into the committed ./results tree
+            if args.publish:
+                publish_results(targets, args)
+        elif args.publish:
+            print("--publish ignored: lint-only runs produce no metrics",
+                  file=sys.stderr)
         # signal failure to the caller (e.g. CI) without losing partial results
         if failures:
             print(f"\n{len(failures)} benchmark(s) failed: "

@@ -311,6 +311,12 @@ def _run_scflow(design, target, builddir, quiet, start, stop, timeout,
     # after it (before synthesis) rather than via a tool var.
     if lintonly:
         stop = "elaborate"
+    elif stop is None:
+        # Default to ending at synthesis timing (no P&R), matching the lbflow
+        # (yosys/tardigrade) paths so every ASIC flow reports comparable
+        # synthesis-stage metrics by default. Pass --to explicitly (e.g.
+        # --to route) to run the full asicflow through place-and-route.
+        stop = "synthesis.timing"
     _set_range(proj, start, stop)
     proj.run()
     if not quiet:
