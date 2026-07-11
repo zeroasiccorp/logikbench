@@ -209,7 +209,8 @@ Documented here so the omission is explicit rather than silent:
 ## Modifications
 
 Changes LogikBench made to the upstream Koios files, documented for provenance.
-The RTL *content* is byte-verbatim, including the upstream top-module names.
+Except for the three lint fixes noted below, RTL content is byte-verbatim,
+including the upstream top-module names.
 
 1. **RTL file renamed** to the bare design name with dots turned into
    underscores (e.g. `tpu_like.small.ws.v` becomes `tpu_like_small_ws.v`); the
@@ -220,6 +221,18 @@ The RTL *content* is byte-verbatim, including the upstream top-module names.
    blocks on; LogikBench leaves both macros undefined (pure RTL), so these files
    are not copied. If a design were to `` `include `` one directly, an empty stub
    is shipped so the macro stays undefined.
+3. **Lint fixes (three designs).** Koios RTL is Verilog-2005 (VTR compiles it
+   single-file with a lenient front-end); a few files are not clean under
+   LogikBench's strict SystemVerilog lint (slang), so they were patched
+   minimally, logic unchanged:
+   - `attention_layer`: the `softmax` instance named `soft` was renamed to
+     `soft_u` (`soft` is a reserved SV keyword, invalid as an instance name).
+   - `conv_layer_hls`: a `` `timescale 1 ns / 1 ps `` directive was added at the
+     top so the `dpram` module has a timescale like the others (slang errors on
+     a design with mixed timescale coverage).
+   - `dnnweaver`: a stale `$readmemh(INIT, mem, ...)` FIFO-init line was
+     commented out -- its `mem` array is already commented out upstream, so the
+     line referenced an undeclared signal.
 
 ## How to Cite
 

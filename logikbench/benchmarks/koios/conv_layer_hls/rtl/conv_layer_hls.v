@@ -1,3 +1,4 @@
+`timescale 1 ns / 1 ps
 //////////////////////////////////////////////////////////////////////////////
 // HLS generated design for a convolution layer. The layer is one of the layers
 // from Tiny Darknet network. Here are some properties of the design:

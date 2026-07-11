@@ -158,7 +158,7 @@ module fifo
 // ******************************************************************
   initial begin
     if (INITIALIZE_FIFO == "yes") begin
-      $readmemh(INIT, mem, 0, RAM_DEPTH-1);
+      // $readmemh(INIT, mem, 0, RAM_DEPTH-1);  // 'mem' array is commented out upstream; stale init dropped for lint (see README)
     end
   end
 
