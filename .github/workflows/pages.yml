@@ -5,8 +5,8 @@ name: Dashboard
 # into static HTML (Jinja2 only -- no synthesis, no SiliconCompiler). The FPGA
 # site lands under /fpga/ and the ASIC site under /asic/; the root is a static
 # landing page (dashboard/landing.html) that links to both. Refresh the data
-# offline with 'lb run' + 'lb collect' + 'python dashboard/build_db.py', then
-# commit the <config>.json databases.
+# offline with 'lb syn'/'lb pnr' (+ the dashboard rebuild step), then commit the
+# <config>.json databases.
 on:
   push:
     branches: [main]

@@ -1,0 +1,1 @@
+Fault-simulation / ATPG results (`lb fault`), ASIC-only (no FPGA gate-level ATPG): one `<target>.json` per target (fault coverage, pattern count); published from a git clone with `lb fault --publish`.

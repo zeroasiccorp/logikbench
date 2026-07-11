@@ -8,7 +8,7 @@ import os
 
 from siliconcompiler.metrics import FPGAMetricsSchema
 
-from logikbench.flows.synth import FPGASynthesis
+from logikbench.flows.syn import FPGASynthesis
 from logikbench.common import _base_project, _set_range
 
 # Vendored zeroasic FPGA architecture files (one subdir per part), fetched from

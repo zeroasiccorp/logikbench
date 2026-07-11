@@ -4,17 +4,15 @@ import argparse
 import os
 import sys
 import json
-import csv
-import textwrap
 
 import logikbench as lb
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
 from logikbench.runner import (
-    FPGA_METRICS, ASIC_METRICS, TARGETS, FPGA_TARGETS, SC_TARGETS,
-    YOSYS_TARGETS, TARDIGRADE_TARGETS, STEPS, run_one,
+    FPGA_METRICS, ASIC_METRICS, FPGA_TARGETS,
+    YOSYS_TARGETS, STEPS, run_one, run_task,
     read_metrics, read_asic_metrics, read_tool_var, read_flow_tools,
-    is_complete, clean_build,
+    is_complete, clean_build, write_netlist_cache,
 )
 
 # results file layout version (bump when the JSON structure changes)
@@ -26,6 +24,11 @@ ALL_GROUPS = ['basic', 'memory', 'arithmetic', 'epfl', 'blocks',
 
 # metrics tracked are determined by the run mode (fpga vs asic synthesis)
 FLOW_METRICS = {'fpga': FPGA_METRICS, 'asic': ASIC_METRICS}
+
+# `lb syn --target`: PDK stems (ASIC lbflow) + FPGA parts. --tool picks the ASIC
+# mapper; the runner token is '<tool>_<pdk>' (FPGA parts run as-is, yosys only).
+_SYN_PDKS = sorted({t.split('_', 1)[1] for t in YOSYS_TARGETS})
+_SYN_TOOL_PREFIX = {'yosys': 'yosys', 'tardigrade': 'tg'}
 
 
 class LbHelpFormatter(argparse.HelpFormatter):
@@ -42,35 +45,6 @@ class LbHelpFormatter(argparse.HelpFormatter):
 
     def _format_action(self, action):
         return super()._format_action(action) + "\n"
-
-
-# --target help: a fixed format legend plus the (dynamic) list of valid choices,
-# grouped by kind and wrapped so each list lines up under the help column. Every
-# target is '<tool>_<part>': FPGA '<vendor>_<part>' targets, then the ASIC sets
-# by tool (sc asicflow, yosys lbflow, tardigrade lbflow).
-_FPGA_CHOICES = list(FPGA_TARGETS)
-_ASIC_CHOICES = list(YOSYS_TARGETS)
-_TOOL_CHOICES = list(TARDIGRADE_TARGETS)
-_SC_CHOICES = list(SC_TARGETS)
-
-
-def _choices_block(label, choices):
-    return textwrap.fill(", ".join(choices), width=54,
-                         initial_indent=label, subsequent_indent="")
-
-
-_TARGET_HELP = (
-    "Synthesis target(s). Pass several to sweep them in turn.\n"
-    "Format '<tool>_<part>':\n"
-    "  - '<vendor>_<partname>' -> FPGA target (e.g., xilinx_virtex7)\n"
-    "  - 'sc_<pdk>'            -> SiliconCompiler asicflow (e.g., sc_asap7)\n"
-    "  - 'yosys_<pdk>'         -> yosys synth + STA (e.g., yosys_freepdk45)\n"
-    "  - 'tardigrade_<pdk>'    -> tardigrade synth + STA\n"
-    + "\n" + _choices_block("FPGA: ", _FPGA_CHOICES)
-    + "\n\n" + _choices_block("ASIC (SiliconCompiler): ", _SC_CHOICES)
-    + "\n\n" + _choices_block("ASIC (yosys): ", _ASIC_CHOICES)
-    + "\n\n" + _choices_block("ASIC (tardigrade): ", _TOOL_CHOICES)
-)
 
 
 def flow_step(value):
@@ -154,7 +128,7 @@ def target_runlist(target, args, worklist):
     return runlist
 
 
-def run_sweep(args, targets, worklist):
+def run_sweep(args, targets, worklist, netlist_cache=False):
     """Synthesize the whole target x benchmark matrix; return the failures.
 
     Each (target, benchmark) is an independent SC run, so -j fans them out over
@@ -169,9 +143,16 @@ def run_sweep(args, targets, worklist):
 
     timeout = args.timeout or None   # --timeout 0 disables the cap
     quiet = not args.verbose
+    # --from/--to only exist on subcommands that expose them (run, and later
+    # pnr); other target tasks (syn) omit them and run the whole flow.
+    start = getattr(args, "start", None)
+    stop = getattr(args, "stop", None)
+    lintonly = getattr(args, "lintonly", False)  # syn has it; pnr does not
+    options = getattr(args, "options", "")       # syn has it; pnr does not
     failures = []
     total = len(tasks)
     done = 0  # completed-job counter; printed as [done/total] progress
+    cls_by_name = {name: cls for _, _, cls, name in tasks}
 
     # Same completion message for every job, regardless of target (FPGA or
     # ASIC) or scheduling (-j sequential vs parallel).
@@ -188,8 +169,16 @@ def run_sweep(args, targets, worklist):
             failures.append(f"{target}/{group}/{name}")
         else:
             print(f"{prefix} Finished {name} benchmark ({loc}).")
+            # cache the mapped netlist (ASIC syn only) so the back-end verbs
+            # (pnr/sta/lec) start from it instead of re-synthesizing
+            if netlist_cache and target_mode(target) == "asic":
+                src = os.path.join(target_builddir(args, target), name, "job0",
+                                   "synthesis", "0", "outputs", f"{name}.vg")
+                if os.path.isfile(src):
+                    write_netlist_cache(args.builddir, target, name, src,
+                                        cls_by_name[name]())
         # By default reclaim disk as we go (pass or fail), keeping only the
-        # manifest 'lb collect'/--resume need; --keep retains everything. Runs
+        # manifest --resume needs; --keep retains everything. Runs
         # in the parent for both the sequential and -j parallel paths, so
         # benchmarks never race on it.
         if not args.keep:
@@ -201,9 +190,9 @@ def run_sweep(args, targets, worklist):
             for target, group, cls, name in tasks:
                 builddir = target_builddir(args, target)
                 future = pool.submit(run_one, cls, target,
-                                     args.options, builddir, quiet,
-                                     args.start, args.stop, timeout, args.clk,
-                                     args.lintonly)
+                                     options, builddir, quiet,
+                                     start, stop, timeout, args.clk,
+                                     lintonly)
                 futures[future] = (target, group, name)
             for future in as_completed(futures):
                 target, group, name = futures[future]
@@ -212,9 +201,9 @@ def run_sweep(args, targets, worklist):
     else:
         for target, group, cls, name in tasks:
             builddir = target_builddir(args, target)
-            _, error = run_one(cls, target, args.options,
-                               builddir, quiet, args.start, args.stop,
-                               timeout, args.clk, args.lintonly)
+            _, error = run_one(cls, target, options,
+                               builddir, quiet, start, stop,
+                               timeout, args.clk, lintonly)
             record(target, group, name, error)
 
     return failures
@@ -299,25 +288,6 @@ def _merge_metrics_into(src_path, dst_path):
         json.dump(payload, f, indent=2, sort_keys=True)
 
 
-def publish_results(targets, args):
-    """Copy this run's per-target metrics from the build dir into the committed
-    ./results tree, merging incrementally. Dev-only: requires a git clone."""
-    tree = find_results_tree()
-    if tree is None:
-        sys.exit("--publish requires a git clone of the logikbench repo "
-                 "(the committed 'results' tree only exists there).")
-    src_dir = results_builddir(args)
-    for target in targets:
-        src = os.path.join(src_dir, f"{target}.json")
-        if not os.path.isfile(src):
-            print(f"--publish: no build metrics for '{target}' at {src}, "
-                  f"skipping", file=sys.stderr)
-            continue
-        dst = os.path.join(tree, f"{target}.json")
-        _merge_metrics_into(src, dst)
-        print(f"Published {target} -> {dst}")
-
-
 def save_target(target, args, worklist):
     """Write one target's metrics as <builddir>/results/<target>.json and print
     the path. Metrics always land in the build directory; use 'run --publish' to
@@ -368,97 +338,239 @@ def save_target(target, args, worklist):
     return collected
 
 
-def _load_metrics_file(path):
-    """Load a <target>.json metrics file, returning (label, {metric: {bench:
-    value}}). label is the file's recorded target (or the filename stem)."""
-    if not os.path.isfile(path):
-        print(f"error: no such metrics file: {path}", file=sys.stderr)
-        sys.exit(2)
-    with open(path) as f:
-        data = json.load(f)
-    label = (data.get("meta", {}).get("target")
-             or os.path.splitext(os.path.basename(path))[0])
-    return label, data.get("metrics", {})
-
-
-def compare_files(paths, args):
-    """Tabulate one metric across two or more metrics files into a CSV: rows are
-    benchmarks, one column per file (labeled by its target). No deltas. The
-    output path (-o, default ./compare_<metric>.csv) is printed.
-    """
-    if len(paths) < 2:
-        print("error: compare needs at least two files", file=sys.stderr)
-        sys.exit(2)
-    metric = args.metric
-
-    loaded = [_load_metrics_file(p) for p in paths]     # [(label, metrics), ...]
-    labels = [label for label, _ in loaded]
-    if len(set(labels)) != len(labels):
-        labels = list(paths)     # disambiguate duplicate target names by path
-
-    benches = set()
-    for _, metrics in loaded:
-        benches.update(metrics.get(metric, {}))
-
-    output = args.output or f"compare_{metric}.csv"
-    parent = os.path.dirname(output)
-    if parent:
-        os.makedirs(parent, exist_ok=True)
-
-    rows = sorted(benches)
-    if output.lower().endswith(".json"):
-        # machine-readable: {metric, targets, data:{bench:{target:value}}}
-        data = {}
-        for name in rows:
-            data[name] = {lab: metrics.get(metric, {}).get(name)
-                          for lab, (_, metrics) in zip(labels, loaded)}
-        payload = {"metric": metric, "targets": labels, "data": data}
-        with open(output, "w") as f:
-            json.dump(payload, f, indent=2, sort_keys=True)
-    else:
-        with open(output, "w", newline="") as f:
-            w = csv.writer(f)
-            w.writerow(["benchmark"] + labels)
-            for name in rows:
-                row = [name] + [metrics.get(metric, {}).get(name)
-                                for _, metrics in loaded]
-                w.writerow(row)
-    print(f"Wrote {metric} comparison of {len(paths)} files -> {output}")
-
-
-def add_common_args(parser):
-    """Arguments shared by the 'run' and 'collect' subcommands."""
-    parser.add_argument('-t', '--target',
-                        nargs='+',
-                        choices=TARGETS,
-                        required=True,
-                        metavar="TARGET",
-                        help=_TARGET_HELP)
-
-    # -g and -n are two ways to pick benchmarks and are mutually exclusive:
-    # -g runs whole group(s); -n names specific benchmarks. Benchmark names are
-    # globally unique, so -n needs no group and searches all of them.
+def add_selection_args(parser):
+    """Benchmark selection + build plumbing shared by every task subcommand.
+    No --target: RTL-only tasks (sim/lint) take none; target tasks add it."""
     select = parser.add_mutually_exclusive_group()
-    select.add_argument("-g", "--group",
-                        nargs='+',
-                        choices=ALL_GROUPS,
-                        default=ALL_GROUPS,
-                        metavar="GROUP",
-                        help=f"Benchmark group(s) to run (choices: {ALL_GROUPS}; "
-                             f"default: all). Mutually exclusive with -n")
+    select.add_argument("-g", "--group", nargs='+', choices=ALL_GROUPS,
+                        default=ALL_GROUPS, metavar="GROUP",
+                        help=f"Benchmark group(s) (default: all: {ALL_GROUPS}). "
+                             "Mutually exclusive with -n")
+    select.add_argument("-n", "--name", nargs='+',
+                        help="Specific benchmark(s) by name, searched across all "
+                             "groups (globally unique). Mutually exclusive with -g")
+    parser.add_argument('-b', dest='builddir', default="build", metavar="DIR",
+                        help="Build directory root (default: build)")
+    parser.add_argument('-j', dest='jobs', type=int, default=1, metavar="N",
+                        help="Benchmarks to run in parallel (default: 1)")
+    parser.add_argument('--timeout', type=float, default=3600, metavar="SEC",
+                        help="Per-step wall-clock cap in seconds "
+                             "(default: 3600; 0 disables)")
+    parser.add_argument('--publish', action='store_true',
+                        help="Merge results into the committed ./results tree "
+                             "(git clone only; errors otherwise)")
+    parser.add_argument('-v', '--verbose', action='store_true',
+                        help="Show full tool logs (quieted by default)")
+    parser.add_argument('--resume', action='store_true',
+                        help="Skip benchmarks whose build already completed")
+    parser.add_argument('--keep', action='store_true',
+                        help="Keep full per-benchmark artifacts (default: "
+                             "reclaim as each finishes)")
 
-    select.add_argument("-n", "--name",
-                        nargs='+',
-                        help="Run specific benchmark(s) by name, searched across "
-                             "all groups (names are globally unique). Mutually "
-                             "exclusive with -g")
 
-    parser.add_argument('-b',
-                        dest='builddir',
-                        default="build",
-                        metavar="DIR",
-                        help='Build directory root. Per-benchmark artifacts go '
-                             'to: <builddir>/<target>/<name> (default: build)')
+def save_task(task, args, results):
+    """Write an RTL-only task's results to <builddir>/results/<task>.json as a
+    per-benchmark record {name: metrics}, incrementally (a subset run updates
+    only those benchmarks and preserves the rest). Prints the path."""
+    outdir = results_builddir(args)
+    os.makedirs(outdir, exist_ok=True)
+    out = os.path.join(outdir, f"{task}.json")
+    payload = {}
+    if os.path.isfile(out):
+        try:
+            with open(out) as f:
+                payload = json.load(f)
+        except (ValueError, OSError):
+            payload = {}
+    bench = payload.get("benchmarks", {})
+    bench.update(results)
+    payload = {"meta": {"task": task, "schema_version": SCHEMA_VERSION,
+                        "logikbench": getattr(lb, "__version__", None)},
+               "benchmarks": bench}
+    with open(out, "w") as f:
+        json.dump(payload, f, indent=2, sort_keys=True)
+    print(f"Wrote {len(results)} benchmark(s) -> {out}")
+
+
+def publish_task(task, args):
+    """Merge an RTL-only task's build results into the committed
+    results/<task>/<task>.json, incrementally. Dev-only: requires a git clone."""
+    tree = find_results_tree()
+    if tree is None:
+        sys.exit("--publish requires a git clone of the logikbench repo "
+                 "(the committed 'results' tree only exists there).")
+    src = os.path.join(results_builddir(args), f"{task}.json")
+    if not os.path.isfile(src):
+        print(f"--publish: no build results at {src}", file=sys.stderr)
+        return
+    dstdir = os.path.join(tree, task)
+    os.makedirs(dstdir, exist_ok=True)
+    dst = os.path.join(dstdir, f"{task}.json")
+    with open(src) as f:
+        src_data = json.load(f)
+    dst_data = {}
+    if os.path.isfile(dst):
+        try:
+            with open(dst) as f:
+                dst_data = json.load(f)
+        except (ValueError, OSError):
+            dst_data = {}
+    bench = dst_data.get("benchmarks", {})
+    bench.update(src_data.get("benchmarks", {}))
+    payload = {"meta": src_data.get("meta", dst_data.get("meta", {})),
+               "benchmarks": bench}
+    with open(dst, "w") as f:
+        json.dump(payload, f, indent=2, sort_keys=True)
+    print(f"Published {task} -> {dst}")
+
+
+def run_rtl_task(args):
+    """Dispatch for the RTL-only task subcommands (sim, lint): run each selected
+    benchmark through run_task, write results, optionally publish. Returns an
+    exit code (nonzero if any benchmark failed)."""
+    task = args.command
+    worklist = make_worklist(args)
+    check_worklist(args, worklist)
+    timeout = args.timeout or None
+    quiet = not args.verbose
+    tasks = []
+    for _, cls, name in worklist:
+        if args.resume and is_complete(name, args.builddir):
+            loc = os.path.join(".", args.builddir, name)
+            print(f"Skipping {name} ({loc}): already complete.")
+            continue
+        tasks.append((cls, name))
+    total = len(tasks)
+    done = 0
+    results = {}
+    failures = []
+
+    def record(name, metrics, error):
+        nonlocal done
+        done += 1
+        prefix = f"[{done}/{total}]"
+        loc = os.path.join(".", args.builddir, name)
+        if error is not None:
+            print(f"{prefix} Error ({task}) {name} ({loc}): {error}",
+                  file=sys.stderr)
+            failures.append(name)
+        else:
+            results[name] = metrics
+            status = (metrics or {}).get("status")
+            tag = f" [{status}]" if status else ""
+            print(f"{prefix} Finished ({task}) {name} ({loc}){tag}.")
+
+    if args.jobs and args.jobs > 1:
+        with ProcessPoolExecutor(max_workers=args.jobs) as pool:
+            futs = {pool.submit(run_task, task, cls, args.tool, args.builddir,
+                                quiet, timeout): name for cls, name in tasks}
+            for fut in as_completed(futs):
+                m, e = fut.result()
+                record(futs[fut], m, e)
+    else:
+        for cls, name in tasks:
+            m, e = run_task(task, cls, args.tool, args.builddir, quiet, timeout)
+            record(name, m, e)
+
+    save_task(task, args, results)
+    if args.publish:
+        publish_task(task, args)
+    if failures:
+        print(f"\n{len(failures)} benchmark(s) failed: {', '.join(failures)}")
+        return 1
+    return 0
+
+
+def resolve_syn_tokens(args):
+    """Map `lb syn --target <t> [--tool]` to the runner's '<tool>_<part>' tokens.
+    FPGA parts run yosys synth_fpga (tool must be yosys); PDK stems run the ASIC
+    lbflow with the chosen mapper (yosys|tardigrade). Exits on an invalid combo.
+    """
+    fpga_parts = list(FPGA_TARGETS)
+    tokens = []
+    for t in args.target:
+        if t in fpga_parts:
+            if args.tool != "yosys":
+                sys.exit(f"error: --tool {args.tool} is ASIC-only; FPGA target "
+                         f"'{t}' uses yosys")
+            tokens.append(t)
+        elif t in _SYN_PDKS:
+            tokens.append(f"{_SYN_TOOL_PREFIX[args.tool]}_{t}")
+        else:
+            sys.exit(f"error: unknown --target '{t}' (PDKs: {_SYN_PDKS}; "
+                     f"FPGA parts: {fpga_parts})")
+    return tokens
+
+
+def publish_target_task(task, tokens, args):
+    """Publish a target task's metrics into results/<task>/<class>/<token>.json,
+    incrementally. Dev-only: requires a git clone."""
+    tree = find_results_tree()
+    if tree is None:
+        sys.exit("--publish requires a git clone of the logikbench repo "
+                 "(the committed 'results' tree only exists there).")
+    src_dir = results_builddir(args)
+    for tok in tokens:
+        src = os.path.join(src_dir, f"{tok}.json")
+        if not os.path.isfile(src):
+            print(f"--publish: no build metrics for '{tok}' at {src}, skipping",
+                  file=sys.stderr)
+            continue
+        dstdir = os.path.join(tree, task, target_mode(tok))
+        os.makedirs(dstdir, exist_ok=True)
+        dst = os.path.join(dstdir, f"{tok}.json")
+        _merge_metrics_into(src, dst)
+        print(f"Published {tok} -> {dst}")
+
+
+def run_target_task(task, tokens, args):
+    """Shared dispatch for target task subcommands (syn, pnr): sweep the given
+    runner tokens x benchmarks, write per-token metrics, optionally publish.
+    Returns an exit code."""
+    worklist = make_worklist(args)
+    check_worklist(args, worklist)
+    failures = run_sweep(args, tokens, worklist, netlist_cache=(task == "syn"))
+    if not getattr(args, "lintonly", False):
+        for tok in tokens:
+            save_target(tok, args, worklist)
+        if args.publish:
+            publish_target_task(task, tokens, args)
+    elif args.publish:
+        print("--publish ignored: lint-only runs produce no metrics",
+              file=sys.stderr)
+    if failures:
+        print(f"\n{len(failures)} benchmark(s) failed: {', '.join(failures)}")
+        return 1
+    return 0
+
+
+def resolve_pnr_tokens(args):
+    """Map `lb pnr --target <t>` to runner tokens. ASIC PDK stems run the SC
+    asicflow (token 'sc_<pdk>', through route). FPGA place-and-route (Logik) is
+    not wired yet -- it needs the optional 'logik'/'logiklib' packages."""
+    fpga_parts = list(FPGA_TARGETS)
+    tokens = []
+    for t in args.target:
+        if t in _SYN_PDKS:
+            tokens.append(f"sc_{t}")
+        elif t in fpga_parts:
+            sys.exit(f"error: FPGA place-and-route for '{t}' is not wired yet "
+                     "(needs the Logik flow: pip install logik logiklib)")
+        else:
+            sys.exit(f"error: unknown --target '{t}' (PDKs: {_SYN_PDKS})")
+    return tokens
+
+
+def resolve_sta_tokens(args):
+    """Map `lb sta --target <pdk>` to 'sta_<pdk>' tokens (ASIC PDK stems only).
+    STA runs OpenSTA on `lb syn`'s cached netlist."""
+    tokens = []
+    for t in args.target:
+        if t in _SYN_PDKS:
+            tokens.append(f"sta_{t}")
+        else:
+            sys.exit(f"error: unknown --target '{t}' (PDKs: {_SYN_PDKS})")
+    return tokens
 
 
 def main():
@@ -471,114 +583,84 @@ def main():
 LogikBench commandline runner.
 """, formatter_class=argparse.RawDescriptionHelpFormatter)
 
-    sub = parser.add_subparsers(dest="command", required=True,
-                                metavar="{run,compare}")
+    sub = parser.add_subparsers(dest="command", required=False,
+                                metavar="{lint,sim,syn,pnr,sta}")
 
-    # ---- run: synthesize benchmarks (no metric collection) ----
-    run_p = sub.add_parser("run", help="Synthesize benchmarks",
+    # ---- lint: static-analyze benchmark RTL, RTL-only ----
+    lint_p = sub.add_parser("lint", help="Lint benchmarks",
+                            formatter_class=LbHelpFormatter)
+    add_selection_args(lint_p)
+    lint_p.add_argument('--tool', default="slang",
+                        choices=["slang", "verilator"],
+                        help="Linter (default: slang)")
+
+    # ---- sim: simulate benchmarks (self-checking testbench), RTL-only ----
+    sim_p = sub.add_parser("sim", help="Simulate benchmarks",
                            formatter_class=LbHelpFormatter)
-    add_common_args(run_p)
-    run_p.add_argument('-j',
-                       dest='jobs',
-                       type=int,
-                       default=1,
-                       metavar="N",
-                       help='Number of benchmarks to synthesize in parallel '
-                            '(default: 1)')
-    run_p.add_argument('--options',
-                       default="",
-                       metavar="OPTS",
-                       help="Extra options passed verbatim to the synthesis "
-                            "tool: appended to the FPGA yosys synth command, or "
-                            "handed to tardigrade as '-option <opt>' on ASIC "
-                            "tardigrade targets (yosys/SC ASIC paths ignore "
-                            "them). NOTE: Use the '=' form to prevent leading "
-                            "dashes from being parsed as flags (e.g., "
-                            "--options=-abc9 or --options='-abc9 -nocarry')")
-    # 'from' is a Python keyword, so keep the dest names start/stop
-    run_p.add_argument('--from',
-                       dest='start',
-                       type=flow_step,
-                       default=None,
-                       metavar="STEP",
-                       help=f"First flow step to run. Can be a stage name "
-                            f"{STEPS} or a raw SC node 'step.task' "
-                            f"(default: from the start)")
-    run_p.add_argument('--to',
-                       dest='stop',
-                       type=flow_step,
-                       default=None,
-                       metavar="STEP",
-                       help=f"Last flow step to run. Can be a stage name "
-                            f"{STEPS} or a raw SC node 'step.task' like "
-                            f"'floorplan.init'")
-    run_p.add_argument('--clk',
-                       type=float,
-                       default=None,
-                       metavar="PERIOD",
-                       help='ASIC clock period in nanoseconds for the generic '
-                            'SDC (create_clock); scaled into each PDK time '
-                            'unit. Ignored for FPGA targets (default: each '
-                            "PDK's tech.tcl clock)")
-    run_p.add_argument('--lintonly',
-                       action='store_true',
-                       help='Elaborate the RTL (parse + hierarchy check) and '
-                            'stop before the heavy synthesis/optimization, then '
-                            'report success. Fast check that a target or '
-                            'benchmark builds without a full run.')
-    run_p.add_argument('--resume',
-                       action='store_true',
-                       help='Skip benchmarks whose build already completed '
-                            'successfully; only synthesize the rest')
-    run_p.add_argument('--keep',
-                       action='store_true',
-                       help='Keep the full synthesis artifacts (logs, netlists, '
-                            'reports) for each benchmark. By default they are '
-                            'deleted as each benchmark finishes, leaving only '
-                            'the manifest that collect and --resume need, so '
-                            'peak disk stays bounded by the in-flight jobs '
-                            'instead of the whole sweep. Use --keep to retain '
-                            'everything (needed for a later --from mid-flow '
-                            'resume, at the cost of disk)')
-    run_p.add_argument('--timeout',
-                       type=float,
-                       default=3600,
-                       metavar="SEC",
-                       help='Per-step wall-clock cap in seconds. Steps '
-                            'exceeding this are killed and marked failed to '
-                            'prevent stalls (default: 3600; 0 to disable)')
-    run_p.add_argument('-v', '--verbose',
-                       action='store_true',
-                       help='Show full SiliconCompiler tool/scheduler logs '
-                            '(quieted by default)')
-    run_p.add_argument('--publish',
-                       action='store_true',
-                       help='After the run, copy this run\'s metrics from the '
-                            'build directory into the committed ./results tree, '
-                            'merging incrementally (benchmarks and targets not '
-                            'in this run are preserved). Only works from a git '
-                            'clone of the repo, where the results/ tree exists; '
-                            'errors otherwise.')
+    add_selection_args(sim_p)
+    sim_p.add_argument('--tool', default="icarus",
+                       choices=["icarus", "verilator"],
+                       help="Simulator (default: icarus)")
 
-    # ---- compare: write a CSV diffing two explicit metrics files ----
-    compare_p = sub.add_parser("compare",
-                               help="Compare two metrics files (CSV)")
-    compare_p.add_argument('files', nargs='+', metavar="FILE",
-                           help="two or more <target>.json metrics files to "
-                                "compare (e.g. build/results/xilinx_virtex7.json "
-                                "results/lattice_ice40.json)")
-    compare_p.add_argument('-m', '--metric',
-                           required=True,
-                           metavar="METRIC",
-                           help="metric to tabulate, one column per file "
-                                "(e.g. luts, logicdepth, cellarea, fmax, cells, "
-                                "tasktime)")
-    compare_p.add_argument('-o', '--output',
-                           default=None,
-                           metavar="FILE",
-                           help='output file; format is chosen by extension '
-                                '(.json -> JSON, else CSV) '
-                                '(default: ./compare_<metric>.csv)')
+    # ---- syn: synthesize benchmarks (target task) ----
+    syn_p = sub.add_parser("syn", help="Synthesize benchmarks",
+                           formatter_class=LbHelpFormatter)
+    syn_p.add_argument('-t', '--target', nargs='+', required=True,
+                       metavar="TARGET",
+                       help=f"PDK stem for ASIC ({_SYN_PDKS}) or an FPGA part "
+                            "(e.g. xilinx_virtex7). Sweeps several in turn.")
+    add_selection_args(syn_p)
+    syn_p.add_argument('--tool', default="yosys",
+                       choices=["yosys", "tardigrade"],
+                       help="ASIC synthesis mapper (default: yosys; FPGA parts "
+                            "always use yosys)")
+    syn_p.add_argument('--clk', type=float, default=None, metavar="PERIOD",
+                       help="ASIC clock period in ns (FPGA ignores it; default: "
+                            "each PDK's tech.tcl clock)")
+    syn_p.add_argument('--options', default="", metavar="OPTS",
+                       help="Extra options passed verbatim to the mapper (use "
+                            "the =form so leading dashes parse: --options=-abc9)")
+    syn_p.add_argument('--lintonly', action='store_true',
+                       help="Elaborate (parse + hierarchy check) then stop "
+                            "before synthesis")
+
+    # ---- pnr: place-and-route benchmarks (target task) ----
+    pnr_p = sub.add_parser("pnr", help="Place-and-route benchmarks",
+                           formatter_class=LbHelpFormatter)
+    pnr_p.add_argument('-t', '--target', nargs='+', required=True,
+                       metavar="TARGET",
+                       help=f"ASIC PDK stem ({_SYN_PDKS}). Place-and-routes the "
+                            "netlist from `lb syn --target <pdk>` (run that "
+                            "first). FPGA P&R (Logik) is not wired yet.")
+    add_selection_args(pnr_p)
+    pnr_p.add_argument('--tool', default="openroad", choices=["openroad"],
+                       help="Place-and-route engine (default: openroad)")
+    pnr_p.add_argument('--clk', type=float, default=None, metavar="PERIOD",
+                       help="Clock period in ns for P&R timing (default: each "
+                            "PDK's tech.tcl)")
+    # --from/--to are pnr-only: the P&R backend is the one multi-stage flow
+    # where a step range is meaningful (e.g. --to place to skip cts/route).
+    pnr_p.add_argument('--from', dest='start', type=flow_step, default=None,
+                       metavar="STEP",
+                       help="First P&R step: floorplan, place, cts, route "
+                            "(default: floorplan)")
+    pnr_p.add_argument('--to', dest='stop', type=flow_step, default=None,
+                       metavar="STEP",
+                       help="Last P&R step: floorplan, place, cts, route "
+                            "(default: route -- through detailed route)")
+
+    # ---- sta: static timing analysis on a cached netlist (target task) ----
+    sta_p = sub.add_parser("sta", help="STA benchmarks",
+                           formatter_class=LbHelpFormatter)
+    sta_p.add_argument('-t', '--target', nargs='+', required=True,
+                       metavar="TARGET",
+                       help=f"ASIC PDK stem ({_SYN_PDKS}). Runs OpenSTA on the "
+                            "netlist from `lb syn --target <pdk>` (run first).")
+    add_selection_args(sta_p)
+    sta_p.add_argument('--tool', default="opensta", choices=["opensta"],
+                       help="STA engine being benchmarked (default: opensta)")
+    sta_p.add_argument('--clk', type=float, default=None, metavar="PERIOD",
+                       help="Clock period in ns (default: each PDK's tech.tcl)")
 
     args = parser.parse_args()
 
@@ -586,33 +668,23 @@ LogikBench commandline runner.
     # Dispatch
     #################################################
 
-    if args.command == "compare":
-        compare_files(args.files, args)
-        return 0
+    # bare `lb` (no subcommand): print help, like pip/git
+    if args.command is None:
+        parser.print_help()
+        return 1
 
-    # run: build the target x benchmark matrix, then write/publish metrics
-    targets = args.target
-    worklist = make_worklist(args)
-    check_worklist(args, worklist)
+    # RTL-only task subcommands (no target): sim, lint
+    if args.command in ("sim", "lint"):
+        return run_rtl_task(args)
 
-    if args.command == "run":
-        failures = run_sweep(args, targets, worklist)
-        # metrics always land in <builddir>/results; lint-only produces none
-        if not args.lintonly:
-            for target in targets:
-                save_target(target, args, worklist)
-            # --publish promotes them into the committed ./results tree
-            if args.publish:
-                publish_results(targets, args)
-        elif args.publish:
-            print("--publish ignored: lint-only runs produce no metrics",
-                  file=sys.stderr)
-        # signal failure to the caller (e.g. CI) without losing partial results
-        if failures:
-            print(f"\n{len(failures)} benchmark(s) failed: "
-                  f"{', '.join(failures)}")
-            return 1
-        return 0
+    # target task subcommands: map --target/--tool to runner tokens, then sweep
+    if args.command == "syn":
+        return run_target_task("syn", resolve_syn_tokens(args), args)
+    if args.command == "pnr":
+        return run_target_task("pnr", resolve_pnr_tokens(args), args)
+    if args.command == "sta":
+        return run_target_task("sta", resolve_sta_tokens(args), args)
+
     return 0
 
 

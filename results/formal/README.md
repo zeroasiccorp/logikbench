@@ -1,0 +1,1 @@
+Formal property-checking results (`lb formal`): RTL-only, so there is no per-target split -- a single `formal.json` holds per-benchmark proof results for benchmarks that ship a `formal` (SVA/bind) fileset; published from a git clone with `lb formal --publish`.

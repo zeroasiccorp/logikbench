@@ -10,14 +10,14 @@ The sweep is hardcoded: -j 16, config 'small'. Each benchmark's synthesis
 artifacts are deleted as it finishes so a full run cannot fill the disk -- only
 the manifests collect needs survive. The two knobs are --resume (skip
 benchmarks whose build already completed) and --keep (retain the full
-artifacts); both are passed through to 'lb run'.
+artifacts); both are passed through to the sweep.
 
     python scripts/rerun.py            # full sweep from scratch
     python scripts/rerun.py --resume   # continue an interrupted sweep
     python scripts/rerun.py --keep     # retain artifacts (uses more disk)
 
 Run from anywhere -- paths resolve relative to the repo root. Synthesis is the
-slow part; each command is echoed. 'lb run' is allowed to return nonzero (a few
+slow part; each command is echoed. the sweep is allowed to return nonzero (a few
 benchmark/target pairs always fail) so the pipeline still collects and
 publishes the results that did complete.
 """
@@ -41,9 +41,11 @@ ASIC_STOP = "floorplan.init"
 # target sets: all FPGA targets, all 'sc_<pdk>' asicflow columns, all
 # 'yosys_<pdk>' lbflow columns. Tardigrade is simply not referenced, so the
 # hardcoded sweep excludes it.
-FPGA = list(FPGA_TARGETS)
-ASIC_SC = list(SC_TARGETS)
-ASIC_LB = list(YOSYS_TARGETS)
+# Targets as new-CLI --target values (PDK stems / FPGA parts), not the old
+# '<tool>_<pdk>' tokens: 'lb syn'/'lb pnr' take --target + --tool.
+FPGA = list(FPGA_TARGETS)                             # FPGA parts (lb syn)
+ASIC_SC = [t.split("_", 1)[1] for t in SC_TARGETS]    # PDK stems (lb pnr)
+ASIC_LB = [t.split("_", 1)[1] for t in YOSYS_TARGETS]  # PDK stems (lb syn)
 
 LB = [sys.executable, "-m", "logikbench.apps.lb"]
 
@@ -54,9 +56,13 @@ def run(cmd, check=True):
     return subprocess.run(cmd, cwd=REPO, check=check)
 
 
-def lb_run(targets, resume, keep, extra=None):
-    """One 'lb run' sweep (partial failures are OK -- collect handles them)."""
-    cmd = LB + ["run", "-t", *targets, "-j", str(JOBS)]
+def lb_run(verb, targets, resume, keep, tool=None, extra=None):
+    """One 'lb <verb>' sweep (partial failures are OK). 'verb' is a task
+    subcommand (syn|pnr); 'targets' are --target values (PDK stems / FPGA
+    parts)."""
+    cmd = LB + [verb, "-t", *targets, "-j", str(JOBS)]
+    if tool:
+        cmd += ["--tool", tool]
     if resume:
         cmd += ["--resume"]
     if keep:
@@ -65,8 +71,8 @@ def lb_run(targets, resume, keep, extra=None):
         cmd += extra
     result = run(cmd, check=False)
     if result.returncode != 0:
-        print("\n(note: some benchmark/target pairs failed; collecting the "
-              "rest)\n", file=sys.stderr)
+        print("\n(note: some benchmark/target pairs failed; continuing)\n",
+              file=sys.stderr)
 
 
 def refresh(flow, targets, sitedir, title):
@@ -85,25 +91,31 @@ def main():
         description=__doc__,
         formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--resume", action="store_true",
-                    help="pass --resume to 'lb run': skip benchmarks whose "
+                    help="pass --resume to the sweep: skip benchmarks whose "
                          "build already completed successfully")
     ap.add_argument("--keep", action="store_true",
-                    help="pass --keep to 'lb run': retain the full synthesis "
+                    help="pass --keep to the sweep: retain the full synthesis "
                          "artifacts instead of deleting them per benchmark "
                          "(uses much more disk)")
     args = ap.parse_args()
 
-    # ---- FPGA: all FPGA targets ----
+    # NOTE: the refresh() steps below (metric collection + dashboard rebuild)
+    # predate the task-verb redesign. `lb collect` was removed and results now
+    # live in results/<task>/<class>/<token>.json (written by `lb <verb>
+    # --publish`), so build_db/generate need updating to the new layout. The
+    # synthesis sweeps themselves use the current commands.
+
+    # ---- FPGA: all FPGA parts (lb syn, yosys) ----
     print(f"Refreshing FPGA over {len(FPGA)} target(s)\n")
-    lb_run(FPGA, args.resume, args.keep)
+    lb_run("syn", FPGA, args.resume, args.keep)
     refresh("fpga", FPGA, "site", "FPGA Synthesis")
     # the ranking table is LUT-specific, so it is FPGA-only
     run([sys.executable, "scripts/ranking.py", "--config", CONFIG])
 
-    # ---- ASIC: sc_<pdk> (asicflow, --to floorplan.init) + yosys_<pdk> (lbflow)
+    # ---- ASIC: PDKs through pnr (asicflow, --to floorplan.init) + syn (lbflow)
     asic_targets = ASIC_SC + ASIC_LB
-    lb_run(ASIC_SC, args.resume, args.keep, extra=["--to", ASIC_STOP])
-    lb_run(ASIC_LB, args.resume, args.keep)
+    lb_run("pnr", ASIC_SC, args.resume, args.keep, extra=["--to", ASIC_STOP])
+    lb_run("syn", ASIC_LB, args.resume, args.keep, tool="yosys")
     refresh("asic", asic_targets, "site/asic", "ASIC Synthesis")
 
     print(f"\nDone. Open site/{CONFIG}.html and site/asic/{CONFIG}.html")

@@ -53,6 +53,9 @@ def main():
     ap.add_argument("--title", default="FPGA Synthesis", metavar="STR",
                     help="page heading/title (default: 'FPGA Synthesis'; use "
                          "e.g. 'ASIC Synthesis (ASAP7)' for the asic site)")
+    ap.add_argument("--facets", action="store_true",
+                    help="show the tool/PDK column-filter buttons below the table "
+                         "(target names must be '<tool>_<pdk>', e.g. the ASIC site)")
     args = ap.parse_args()
 
     configs = load_configs(args.db)
@@ -67,7 +70,7 @@ def main():
     for name, section in configs:
         n = len(section["data"])
         html = template.render(section_json=json.dumps(section),
-                               title=args.title)
+                               title=args.title, facets=args.facets)
         path = os.path.join(args.out, f"{name}.html")
         with open(path, "w") as fh:
             fh.write(html)

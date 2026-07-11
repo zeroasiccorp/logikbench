@@ -21,7 +21,7 @@ import json
 import os
 
 import logikbench as lb
-from logikbench.runner import FPGA_METRICS, ASIC_METRICS
+from logikbench.runner import FPGA_METRICS, ASIC_METRICS, FPGA_TARGETS
 
 # benchmark groups, in display order
 GROUPS = ['basic', 'memory', 'arithmetic', 'epfl', 'blocks']
@@ -75,9 +75,12 @@ def benchmark_order():
 
 
 def _is_payload(data):
-    """A 'lb collect' payload: {"target", "options", "metrics": {...}}."""
-    return (isinstance(data, dict) and "target" in data
-            and isinstance(data.get("metrics"), dict))
+    """A per-target metrics file written by 'lb run --publish':
+    {"meta": {"target", "options", ...}, "metrics": {metric: {bench: val}}}."""
+    return (isinstance(data, dict)
+            and isinstance(data.get("metrics"), dict)
+            and isinstance(data.get("meta"), dict)
+            and "target" in data["meta"])
 
 
 def load_configs(results_dir):
@@ -104,6 +107,28 @@ def load_configs(results_dir):
     return configs
 
 
+def load_flat(results_dir):
+    """{mode: {stem: payload}} from the flat <target>.json collect files directly
+    under results_dir (no config subdirs).
+
+    Each file is classified 'fpga' if its embedded target is an FPGA target, else
+    'asic' (sc/yosys/tardigrade). Columns are keyed by file stem so target
+    variants stay distinct. Non-payload files are skipped.
+    """
+    modes = {"fpga": {}, "asic": {}}
+    for path in sorted(glob.glob(os.path.join(results_dir, "*.json"))):
+        if not os.path.isfile(path):
+            continue   # a "*.json" glob can match directories; skip them
+        with open(path) as f:
+            data = json.load(f)
+        if not _is_payload(data):
+            continue
+        stem = os.path.splitext(os.path.basename(path))[0]
+        mode = "fpga" if data["meta"]["target"] in FPGA_TARGETS else "asic"
+        modes[mode][stem] = data
+    return {m: c for m, c in modes.items() if c}
+
+
 def build_section(targets, metric_names, collected):
     """Assemble one config's dashboard section: column order, display labels,
     per-target settings, metric metadata, group layout, and the
@@ -128,7 +153,8 @@ def build_section(targets, metric_names, collected):
         "targets": targets,
         # synthesis settings each column was produced with (shown under the
         # column name); empty string means defaults.
-        "settings": {t: (collected.get(t, {}).get("options") or "")
+        "settings": {t: (collected.get(t, {}).get("meta", {}).get("options")
+                         or "")
                      for t in targets},
         "metrics": [{"key": m, **METRIC_INFO[m]} for m in metric_names],
         "groups": [{"name": g, "benchmarks": by_group[g]}
@@ -148,8 +174,38 @@ def main():
     ap.add_argument("--metrics", choices=list(METRICS_BY_MODE), default="fpga",
                     help="metric set to tabulate: 'fpga' (luts/logicdepth/"
                          "tasktime) or 'asic' (cells/cellarea/fmax/tasktime) "
-                         "(default: fpga)")
+                         "(default: fpga); ignored with --flat (derived per mode)")
+    ap.add_argument("--flat", action="store_true",
+                    help="read flat <target>.json collect files directly from "
+                         "--results (no config subdirs), split them into fpga/asic "
+                         "by target, and write one section per mode to "
+                         "--out/<mode>/<config>.json")
+    ap.add_argument("--out", metavar="DIR",
+                    help="output directory for the section databases (default: "
+                         "same as --results)")
+    ap.add_argument("--config", default="default", metavar="NAME",
+                    help="config/page name for the flat-mode section "
+                         "(default: default)")
     args = ap.parse_args()
+
+    out_dir = args.out if args.out else args.results
+
+    if args.flat:
+        modes = load_flat(args.results)
+        if not modes:
+            ap.error(f"no <target>.json collect files under {args.results}")
+        for mode, collected in sorted(modes.items()):
+            metric_names = METRICS_BY_MODE[mode]
+            targets = sorted(collected, reverse=True)
+            section = build_section(targets, metric_names, collected)
+            subdir = os.path.join(out_dir, mode)
+            os.makedirs(subdir, exist_ok=True)
+            output = os.path.join(subdir, f"{args.config}.json")
+            with open(output, "w") as f:
+                json.dump(section, f, indent=2, sort_keys=True)
+            print(f"{mode}/{args.config}: {len(section['data'])} benchmark(s) x "
+                  f"{len(targets)} target(s) -> {output}")
+        return
 
     metric_names = METRICS_BY_MODE[args.metrics]
     configs = load_configs(args.results)

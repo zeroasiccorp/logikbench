@@ -3,7 +3,7 @@
     "logikbench": "0.1.1.dev363+gd5a961957",
     "schema_version": 1,
     "siliconcompiler": "0.38.0",
-    "target": "sc_skywater130",
+    "target": "sc_sky130",
     "tools": {
       "opensta": "3.1.0",
       "yosys": "0.63"

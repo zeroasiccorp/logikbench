@@ -9,6 +9,9 @@ class Bxnor(Design):
         super().__init__(name)
         self.add_file(f"{root}/rtl/{name}.v", 'rtl')
         self.set_topmodule(name, 'rtl')
+        # self-checking testbench (`lb sim`)
+        self.add_file(f"{root}/testbench/test_{name}_smoke.v", 'testbench')
+        self.set_topmodule(f"test_{name}_smoke", 'testbench')
 
 
 if __name__ == "__main__":

@@ -1,0 +1,1 @@
+Static-timing-analysis results (`lb sta`) for ASIC targets: one `<target>.json` per target (OpenSTA fmax/slacks on `lb syn`'s cached netlist -- no synthesis, no P&R); published from a git clone with `lb sta --publish`.

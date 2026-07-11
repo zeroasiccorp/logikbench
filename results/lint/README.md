@@ -1,0 +1,1 @@
+Lint / static-analysis results (`lb lint`): RTL-only, so there is no per-target split -- a single `lint.json` holds per-benchmark warning/error counts; published from a git clone with `lb lint --publish`.
