@@ -627,25 +627,25 @@ lb lint -g basic
 
 | Benchmark | Description | Source |
 |-----------|-------------|--------|
-| epfl_adder | EPFL adder benchmark | [epfl_adder.v](logikbench/benchmarks/epfl/epfl_adder/rtl/epfl_adder.v) |
-| epfl_arbiter | EPFL arbiter benchmark | [epfl_arbiter.v](logikbench/benchmarks/epfl/epfl_arbiter/rtl/epfl_arbiter.v) |
-| epfl_bar | Barrel shifter | [epfl_bar.v](logikbench/benchmarks/epfl/epfl_bar/rtl/epfl_bar.v) |
-| epfl_cavlc | CAVLC encoder | [epfl_cavlc.v](logikbench/benchmarks/epfl/epfl_cavlc/rtl/epfl_cavlc.v) |
-| epfl_dec | Decoder | [epfl_dec.v](logikbench/benchmarks/epfl/epfl_dec/rtl/epfl_dec.v) |
-| epfl_div | Divider | [epfl_div.v](logikbench/benchmarks/epfl/epfl_div/rtl/epfl_div.v) |
-| epfl_hyp | Hypotenuse calculator | [epfl_hyp.v](logikbench/benchmarks/epfl/epfl_hyp/rtl/epfl_hyp.v) |
-| epfl_i2c | I2C controller | [epfl_i2c.v](logikbench/benchmarks/epfl/epfl_i2c/rtl/epfl_i2c.v) |
-| epfl_int2float | Integer to float converter | [epfl_int2float.v](logikbench/benchmarks/epfl/epfl_int2float/rtl/epfl_int2float.v) |
-| epfl_log2 | Log base 2 | [epfl_log2.v](logikbench/benchmarks/epfl/epfl_log2/rtl/epfl_log2.v) |
-| epfl_max | Maximum | [epfl_max.v](logikbench/benchmarks/epfl/epfl_max/rtl/epfl_max.v) |
-| epfl_memctrl | Memory controller | [epfl_memctrl.v](logikbench/benchmarks/epfl/epfl_memctrl/rtl/epfl_memctrl.v) |
-| epfl_multiplier | Multiplier | [epfl_multiplier.v](logikbench/benchmarks/epfl/epfl_multiplier/rtl/epfl_multiplier.v) |
-| epfl_priority | Priority encoder | [epfl_priority.v](logikbench/benchmarks/epfl/epfl_priority/rtl/epfl_priority.v) |
-| epfl_router | Router | [epfl_router.v](logikbench/benchmarks/epfl/epfl_router/rtl/epfl_router.v) |
-| epfl_sin | Sine function | [epfl_sin.v](logikbench/benchmarks/epfl/epfl_sin/rtl/epfl_sin.v) |
-| epfl_sqrt | Square root | [epfl_sqrt.v](logikbench/benchmarks/epfl/epfl_sqrt/rtl/epfl_sqrt.v) |
-| epfl_square | Square function | [epfl_square.v](logikbench/benchmarks/epfl/epfl_square/rtl/epfl_square.v) |
-| epfl_voter | Voter circuit | [epfl_voter.v](logikbench/benchmarks/epfl/epfl_voter/rtl/epfl_voter.v) |
+| adder | EPFL adder benchmark | [adder.v](logikbench/benchmarks/epfl/adder/rtl/adder.v) |
+| arbiter | EPFL arbiter benchmark | [arbiter.v](logikbench/benchmarks/epfl/arbiter/rtl/arbiter.v) |
+| bar | Barrel shifter | [bar.v](logikbench/benchmarks/epfl/bar/rtl/bar.v) |
+| cavlc | CAVLC encoder | [cavlc.v](logikbench/benchmarks/epfl/cavlc/rtl/cavlc.v) |
+| dec | Decoder | [dec.v](logikbench/benchmarks/epfl/dec/rtl/dec.v) |
+| div | Divider | [div.v](logikbench/benchmarks/epfl/div/rtl/div.v) |
+| hyp | Hypotenuse calculator | [hyp.v](logikbench/benchmarks/epfl/hyp/rtl/hyp.v) |
+| i2c | I2C controller | [i2c.v](logikbench/benchmarks/epfl/i2c/rtl/i2c.v) |
+| int2float | Integer to float converter | [int2float.v](logikbench/benchmarks/epfl/int2float/rtl/int2float.v) |
+| log2 | Log base 2 | [log2.v](logikbench/benchmarks/epfl/log2/rtl/log2.v) |
+| max | Maximum | [max.v](logikbench/benchmarks/epfl/max/rtl/max.v) |
+| memctrl | Memory controller | [memctrl.v](logikbench/benchmarks/epfl/memctrl/rtl/memctrl.v) |
+| multiplier | Multiplier | [multiplier.v](logikbench/benchmarks/epfl/multiplier/rtl/multiplier.v) |
+| priority | Priority encoder | [priority.v](logikbench/benchmarks/epfl/priority/rtl/priority.v) |
+| router | Router | [router.v](logikbench/benchmarks/epfl/router/rtl/router.v) |
+| sin | Sine function | [sin.v](logikbench/benchmarks/epfl/sin/rtl/sin.v) |
+| sqrt | Square root | [sqrt.v](logikbench/benchmarks/epfl/sqrt/rtl/sqrt.v) |
+| square | Square function | [square.v](logikbench/benchmarks/epfl/square/rtl/square.v) |
+| voter | Voter circuit | [voter.v](logikbench/benchmarks/epfl/voter/rtl/voter.v) |
 
 ### ISCAS85 Benchmarks (11 benchmarks)
 
@@ -699,6 +699,32 @@ Sequential gate-level circuits (clock port `CK`). See [iscas89/README.md](logikb
 | s35932 | Sequential benchmark circuit | [s35932.v](logikbench/benchmarks/iscas89/s35932/rtl/s35932.v) |
 | s38417 | Sequential benchmark circuit | [s38417.v](logikbench/benchmarks/iscas89/s38417/rtl/s38417.v) |
 | s38584 | Sequential benchmark circuit | [s38584.v](logikbench/benchmarks/iscas89/s38584/rtl/s38584.v) |
+
+### Koios Benchmarks (19 benchmarks)
+
+Deep-learning accelerator and layer designs (pure RTL, hard blocks disabled). See [koios/README.md](logikbench/benchmarks/koios/README.md).
+
+| Benchmark | Description | Source |
+|-----------|-------------|--------|
+| attention_layer | Transformer self-attention layer | [attention_layer.v](logikbench/benchmarks/koios/attention_layer/rtl/attention_layer.v) |
+| conv_layer | GEMM-based convolution layer | [conv_layer.v](logikbench/benchmarks/koios/conv_layer/rtl/conv_layer.v) |
+| conv_layer_hls | Sliding-window convolution (HLS style) | [conv_layer_hls.v](logikbench/benchmarks/koios/conv_layer_hls/rtl/conv_layer_hls.v) |
+| eltwise_layer | Matrix elementwise add / sub / mult | [eltwise_layer.v](logikbench/benchmarks/koios/eltwise_layer/rtl/eltwise_layer.v) |
+| reduction_layer | Add / max / min reduction tree | [reduction_layer.v](logikbench/benchmarks/koios/reduction_layer/rtl/reduction_layer.v) |
+| gemm_layer | 20x20 matrix-multiplication engine | [gemm_layer.v](logikbench/benchmarks/koios/gemm_layer/rtl/gemm_layer.v) |
+| softmax | Softmax classification layer | [softmax.v](logikbench/benchmarks/koios/softmax/rtl/softmax.v) |
+| spmv | Sparse matrix-vector multiplication | [spmv.v](logikbench/benchmarks/koios/spmv/rtl/spmv.v) |
+| lstm | LSTM engine | [lstm.v](logikbench/benchmarks/koios/lstm/rtl/lstm.v) |
+| robot_rl | Reinforcement-learning robot / maze application | [robot_rl.v](logikbench/benchmarks/koios/robot_rl/rtl/robot_rl.v) |
+| dnnweaver | DNNWeaver-like accelerator | [dnnweaver.v](logikbench/benchmarks/koios/dnnweaver/rtl/dnnweaver.v) |
+| tpu_like_small_os | Google-TPU-v1-like accelerator (small, output-stationary) | [tpu_like_small_os.v](logikbench/benchmarks/koios/tpu_like_small_os/rtl/tpu_like_small_os.v) |
+| tpu_like_small_ws | Google-TPU-v1-like accelerator (small, weight-stationary) | [tpu_like_small_ws.v](logikbench/benchmarks/koios/tpu_like_small_ws/rtl/tpu_like_small_ws.v) |
+| clstm_like_small | CLSTM-like accelerator (small) | [clstm_like_small.v](logikbench/benchmarks/koios/clstm_like_small/rtl/clstm_like_small.v) |
+| clstm_like_medium | CLSTM-like accelerator (medium) | [clstm_like_medium.v](logikbench/benchmarks/koios/clstm_like_medium/rtl/clstm_like_medium.v) |
+| dla_like_small | Intel-DLA-like accelerator (small) | [dla_like_small.v](logikbench/benchmarks/koios/dla_like_small/rtl/dla_like_small.v) |
+| dla_like_medium | Intel-DLA-like accelerator (medium) | [dla_like_medium.v](logikbench/benchmarks/koios/dla_like_medium/rtl/dla_like_medium.v) |
+| bwave_like_fixed_small | Microsoft-Brainwave-like NPU (fixed-point, small) | [bwave_like_fixed_small.v](logikbench/benchmarks/koios/bwave_like_fixed_small/rtl/bwave_like_fixed_small.v) |
+| bwave_like_float_small | Microsoft-Brainwave-like NPU (floating-point, small) | [bwave_like_float_small.v](logikbench/benchmarks/koios/bwave_like_float_small/rtl/bwave_like_float_small.v) |
 
 ----
 
