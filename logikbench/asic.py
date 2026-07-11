@@ -214,10 +214,10 @@ def _write_sc_wrapper(builddir, name, target, clk_ns, bench_sdc):
     own SDC when it ships one (bench_sdc), otherwise the shared default.sdc
     (which guardbands sensible defaults). LB_CLK_NS is injected only when 'lb
     --clk' (clk_ns) is given; otherwise the PDK's tech.tcl supplies its default.
-    Written to the build-dir root with an absolute path so SC resolves it
-    regardless of design dataroot.
+    Written inside the benchmark's run dir (<builddir>/<name>/<name>.sdc) with an
+    absolute path so SC resolves it regardless of design dataroot.
     """
-    path = os.path.abspath(os.path.join(builddir, f"{name}_lbsdc.sdc"))
+    path = os.path.abspath(os.path.join(builddir, name, f"{name}.sdc"))
     os.makedirs(os.path.dirname(path), exist_ok=True)
     src = bench_sdc if bench_sdc else _DEFAULT_SDC
     clk_line = f"set LB_CLK_NS {clk_ns}\n" if clk_ns is not None else ""
