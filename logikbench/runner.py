@@ -10,7 +10,7 @@ implementations live in sibling modules and are kept apart by run mode:
     manifest readers) shared by both.
 
 Targets (--target) are named '<tool>_<part>' and select what runs:
-  * an FPGA target (e.g. 'xilinx_virtex7') -> logikbench.fpga;
+  * an FPGA part (e.g. 'virtex7') -> logikbench.fpga;
   * 'yosys_<pdk>' / 'tardigrade_<pdk>' (e.g. 'yosys_freepdk45') ->
     logikbench.asic lbflow path (mapper chosen by the tool prefix);
   * 'sc_<pdk>' (e.g. 'sc_asap7') -> logikbench.asic SC asicflow path (a
