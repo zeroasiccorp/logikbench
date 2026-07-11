@@ -7,7 +7,7 @@ class S1196(Design):
 
         name = 's1196'
         root = f'{name}_root'
-        source = [f'rtl/{name}.v']
+        source = ['rtl/s1196.v']
 
         # create a Design object
         super().__init__(name)
@@ -21,10 +21,10 @@ class S1196(Design):
             self.add_file(item, fileset, dataroot=root)
 
         # top module
-        self.set_topmodule(name, fileset)
+        self.set_topmodule('s1196', fileset)
 
-        # timing constraints (clock port is 'CK'; see sdc/<name>.sdc)
-        self.add_file(f'sdc/{name}.sdc', 'sdc', dataroot=root)
+        # timing constraints (clock port is 'CK'; see sdc/s1196.sdc)
+        self.add_file('sdc/s1196.sdc', 'sdc', dataroot=root)
 
 
 if __name__ == "__main__":

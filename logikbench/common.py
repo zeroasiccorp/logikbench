@@ -27,15 +27,16 @@ LINT_METRICS = ["errors", "warnings"]
 # --- Netlist cache ---------------------------------------------------------
 # `lb syn` produces a mapped gate netlist; the back-end verbs (pnr, sta, lec,
 # power) start from it rather than re-synthesizing. The netlist is cached under
-# <builddir>/netlists/<token>/<name>.vg (the token, e.g. 'yosys_freepdk45',
-# encodes tool+PDK so yosys/tardigrade netlists never collide), with a
-# '<name>.key' sidecar hashing the RTL contents so a stale netlist (RTL edited
-# since synthesis) is detected. Cache miss/stale -> the consumer errors with a
-# 'run lb syn first' hint (no hidden re-synthesis).
+# <builddir>/netlists/<token>/<group>/<name>.vg (the token, e.g.
+# 'yosys_freepdk45', encodes tool+PDK so yosys/tardigrade netlists never
+# collide; <group> namespaces the benchmark name, which is only unique within
+# its group), with a '<name>.key' sidecar hashing the RTL contents so a stale
+# netlist (RTL edited since synthesis) is detected. Cache miss/stale -> the
+# consumer errors with a 'run lb syn first' hint (no hidden re-synthesis).
 
-def netlist_cache_path(builddir, token, name):
+def netlist_cache_path(builddir, token, group, name):
     """Cache path for a benchmark's synthesized netlist under a synth token."""
-    return os.path.join(builddir, "netlists", token, f"{name}.vg")
+    return os.path.join(builddir, "netlists", token, group, f"{name}.vg")
 
 
 def netlist_key(design):
@@ -52,9 +53,9 @@ def netlist_key(design):
     return h.hexdigest()
 
 
-def write_netlist_cache(builddir, token, name, src_vg, design):
+def write_netlist_cache(builddir, token, group, name, src_vg, design):
     """Copy a freshly synthesized netlist into the cache and write its key."""
-    dst = netlist_cache_path(builddir, token, name)
+    dst = netlist_cache_path(builddir, token, group, name)
     os.makedirs(os.path.dirname(dst), exist_ok=True)
     shutil.copyfile(src_vg, dst)
     with open(dst[:-len(".vg")] + ".key", "w") as f:
@@ -62,10 +63,10 @@ def write_netlist_cache(builddir, token, name, src_vg, design):
     return dst
 
 
-def read_netlist_cache(builddir, token, name, design):
+def read_netlist_cache(builddir, token, group, name, design):
     """Return the cached netlist path if present and current, else None (a miss
     or a stale netlist whose RTL changed since synthesis)."""
-    vg = netlist_cache_path(builddir, token, name)
+    vg = netlist_cache_path(builddir, token, group, name)
     keyf = vg[:-len(".vg")] + ".key"
     if not (os.path.isfile(vg) and os.path.isfile(keyf)):
         return None

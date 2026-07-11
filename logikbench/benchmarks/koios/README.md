@@ -62,10 +62,10 @@ and weight-stationary dataflows of the TPU-like accelerator.
 
 ## Naming
 
-Every benchmark is prefixed with `koios_`, mirroring the `epfl_` convention.
-Dots in the upstream filenames become underscores so the names are valid Python
-module and class identifiers (e.g. `tpu_like.small.ws.v` becomes benchmark
-`koios_tpu_like_small_ws`, class `KoiosTpuLikeSmallWs`).
+Each benchmark uses the bare upstream design name (the `koios` group already
+namespaces it). Dots in the upstream filename become underscores so the name is
+a valid Python module and class identifier (e.g. `tpu_like.small.ws.v` becomes
+benchmark `tpu_like_small_ws`, class `TpuLikeSmallWs`).
 
 ## Pure-RTL (hard blocks disabled)
 
@@ -100,8 +100,8 @@ designs synthesize standalone.
 Because the designs do not `` `include `` the toggle files, those three files
 are not vendored. Should any vendored design turn out to `` `include `` a toggle
 file directly, an **empty stub** of that file is shipped in the design's `rtl/`
-directory so the macro stays undefined (the chosen "verbatim design files, empty
-toggles" policy). DSP/BRAM inference is thus left entirely to the target synth
+directory so the macro stays undefined (the empty-toggle policy; see
+Modifications). DSP/BRAM inference is thus left entirely to the target synth
 flow (yosys ASIC/FPGA), consistent with the rest of LogikBench.
 
 ## Timing constraints (SDC)
@@ -120,53 +120,53 @@ designs are fully constrained and no per-benchmark SDC is required. Resets
 
 | Benchmark                      | Upstream file                 | Description                                             |
 |--------------------------------|-------------------------------|---------------------------------------------------------|
-| `koios_attention_layer`        | `attention_layer.v`           | Transformer self-attention layer                        |
-| `koios_conv_layer`             | `conv_layer.v`                | GEMM-based convolution layer                            |
-| `koios_conv_layer_hls`         | `conv_layer_hls.v`            | Sliding-window convolution (HLS style)                  |
-| `koios_eltwise_layer`          | `eltwise_layer.v`             | Matrix elementwise add / sub / mult                     |
-| `koios_reduction_layer`        | `reduction_layer.v`           | Add / max / min reduction tree                          |
-| `koios_gemm_layer`             | `gemm_layer.v`                | 20x20 matrix-multiplication engine                      |
-| `koios_softmax`                | `softmax.v`                   | Softmax classification layer                            |
-| `koios_spmv`                   | `spmv.v`                      | Sparse matrix-vector multiplication                     |
-| `koios_lstm`                   | `lstm.v`                      | LSTM engine                                             |
-| `koios_robot_rl`               | `robot_rl.v`                  | Reinforcement-learning robot / maze application         |
-| `koios_dnnweaver`              | `dnnweaver.v`                 | DNNWeaver-like accelerator                              |
-| `koios_tpu_like_small_os`      | `tpu_like.small.os.v`         | Google-TPU-v1-like accelerator (small, output-stationary) |
-| `koios_tpu_like_small_ws`      | `tpu_like.small.ws.v`         | Google-TPU-v1-like accelerator (small, weight-stationary) |
-| `koios_clstm_like_small`       | `clstm_like.small.v`          | CLSTM-like accelerator (small)                          |
-| `koios_clstm_like_medium`      | `clstm_like.medium.v`         | CLSTM-like accelerator (medium)                         |
-| `koios_dla_like_small`         | `dla_like.small.v`            | Intel-DLA-like accelerator (small)                      |
-| `koios_dla_like_medium`        | `dla_like.medium.v`           | Intel-DLA-like accelerator (medium)                     |
-| `koios_bwave_like_fixed_small` | `bwave_like.fixed.small.v`    | Microsoft-Brainwave-like NPU (fixed-point, small)       |
-| `koios_bwave_like_float_small` | `bwave_like.float.small.v`    | Microsoft-Brainwave-like NPU (floating-point, small)    |
+| `attention_layer`        | `attention_layer.v`           | Transformer self-attention layer                        |
+| `conv_layer`             | `conv_layer.v`                | GEMM-based convolution layer                            |
+| `conv_layer_hls`         | `conv_layer_hls.v`            | Sliding-window convolution (HLS style)                  |
+| `eltwise_layer`          | `eltwise_layer.v`             | Matrix elementwise add / sub / mult                     |
+| `reduction_layer`        | `reduction_layer.v`           | Add / max / min reduction tree                          |
+| `gemm_layer`             | `gemm_layer.v`                | 20x20 matrix-multiplication engine                      |
+| `softmax`                | `softmax.v`                   | Softmax classification layer                            |
+| `spmv`                   | `spmv.v`                      | Sparse matrix-vector multiplication                     |
+| `lstm`                   | `lstm.v`                      | LSTM engine                                             |
+| `robot_rl`               | `robot_rl.v`                  | Reinforcement-learning robot / maze application         |
+| `dnnweaver`              | `dnnweaver.v`                 | DNNWeaver-like accelerator                              |
+| `tpu_like_small_os`      | `tpu_like.small.os.v`         | Google-TPU-v1-like accelerator (small, output-stationary) |
+| `tpu_like_small_ws`      | `tpu_like.small.ws.v`         | Google-TPU-v1-like accelerator (small, weight-stationary) |
+| `clstm_like_small`       | `clstm_like.small.v`          | CLSTM-like accelerator (small)                          |
+| `clstm_like_medium`      | `clstm_like.medium.v`         | CLSTM-like accelerator (medium)                         |
+| `dla_like_small`         | `dla_like.small.v`            | Intel-DLA-like accelerator (small)                      |
+| `dla_like_medium`        | `dla_like.medium.v`           | Intel-DLA-like accelerator (medium)                     |
+| `bwave_like_fixed_small` | `bwave_like.fixed.small.v`    | Microsoft-Brainwave-like NPU (fixed-point, small)       |
+| `bwave_like_float_small` | `bwave_like.float.small.v`    | Microsoft-Brainwave-like NPU (floating-point, small)    |
 
 ## Top modules
 
-The synthesizable top module inside each file is named after the upstream design
-and does **not** match the `koios_`-prefixed benchmark name -- and for the
-dataflow/size variants it does not match the file name either (several collapse
-to a generic `top`). Each Design class therefore sets the top explicitly; the
-mapping was recovered by finding, in each file, the one declared module that is
-never instantiated:
+The RTL is byte-verbatim, so each design keeps its upstream top-module name,
+which differs from the bare design name for the generically-named designs --
+`top` is the top module of four designs, and `NPU`, `DLA`, and `C_LSTM_datapath`
+are each shared by two (harmless: the `koios` group namespaces the benchmarks,
+and they are never elaborated together). Each Design sets its top explicitly,
+recovered by finding in each file the one declared module never instantiated:
 
-| Benchmark                          | Top module        |
-|------------------------------------|-------------------|
-| `koios_attention_layer`            | `attention_layer` |
-| `koios_bwave_like_fixed_small`     | `NPU`             |
-| `koios_bwave_like_float_small`     | `NPU`             |
-| `koios_clstm_like_small` / `_medium` | `C_LSTM_datapath` |
-| `koios_conv_layer`                 | `conv_layer`      |
-| `koios_conv_layer_hls`             | `top`             |
-| `koios_dla_like_small` / `_medium` | `DLA`             |
-| `koios_dnnweaver`                  | `cl_wrapper`      |
-| `koios_eltwise_layer`              | `eltwise_layer`   |
-| `koios_gemm_layer`                 | `gemm_layer`      |
-| `koios_lstm`                       | `top`             |
-| `koios_reduction_layer`            | `reduction_layer` |
-| `koios_robot_rl`                   | `robot_maze`      |
-| `koios_softmax`                    | `softmax`         |
-| `koios_spmv`                       | `spmv`            |
-| `koios_tpu_like_small_os` / `_ws`  | `top`             |
+| Benchmark                          | Top module (upstream)        |
+|------------------------------------|------------------------------|
+| `attention_layer`            | `attention_layer` |
+| `bwave_like_fixed_small`     | `NPU`             |
+| `bwave_like_float_small`     | `NPU`             |
+| `clstm_like_small` / `_medium` | `C_LSTM_datapath` |
+| `conv_layer`                 | `conv_layer`      |
+| `conv_layer_hls`             | `top`             |
+| `dla_like_small` / `_medium` | `DLA`             |
+| `dnnweaver`                  | `cl_wrapper`      |
+| `eltwise_layer`              | `eltwise_layer`   |
+| `gemm_layer`                 | `gemm_layer`      |
+| `lstm`                       | `top`             |
+| `reduction_layer`            | `reduction_layer` |
+| `robot_rl`                   | `robot_maze`      |
+| `softmax`                    | `softmax`         |
+| `spmv`                       | `spmv`            |
+| `tpu_like_small_os` / `_ws`  | `top`             |
 
 ## Pure-RTL synthesizability (verified)
 
@@ -205,6 +205,21 @@ Documented here so the omission is explicit rather than silent:
 | `tpu_like.large.ws.v`          | 1.4 MB  | `*.large` variant (small kept)      |
 | `koios_proxy/proxy.1-8.v`      | ~17 MB  | Synthetic proxy set (all large)     |
 | DeepFreeze (SystemVerilog x3)  | n/a     | Not present in the pinned `master`  |
+
+## Modifications
+
+Changes LogikBench made to the upstream Koios files, documented for provenance.
+The RTL *content* is byte-verbatim, including the upstream top-module names.
+
+1. **RTL file renamed** to the bare design name with dots turned into
+   underscores (e.g. `tpu_like.small.ws.v` becomes `tpu_like_small_ws.v`); the
+   file contents, including the top-module name, are unchanged. The upstream
+   file name is retained in the Benchmark Listing table above.
+2. **Macro toggle files not vendored.** `complex_dsp_include.v`,
+   `hard_mem_include.v`, and `hard_block_include.v` only serve to turn hard
+   blocks on; LogikBench leaves both macros undefined (pure RTL), so these files
+   are not copied. If a design were to `` `include `` one directly, an empty stub
+   is shipped so the macro stays undefined.
 
 ## How to Cite
 

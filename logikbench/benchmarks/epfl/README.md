@@ -9,27 +9,34 @@ The EPFL benchmarks were copied over to LogikBench to simplify dependency manage
 
 ## Benchmark Listing
 
-| Circuit       | Params | Description             |
-|---------------|--------|-------------------------|
-| adder         | n/a    | 128b adder
-| arbiter       | n/a    |
-| bar           | n/a    |
-| cavlc         | n/a    |
-| dec           | n/a    |
-| div           | n/a    |
-| hyp           | n/a    |
-| i2c           | n/a    |
-| int2float     | n/a    |
-| log2          | n/a    |
-| max           | n/a    |
-| mem_ctrl      | n/a    |
-| multiplier    | n/a    |
-| priority      | n/a    |
-| router        | n/a    |
-| sin           | n/a    |
-| sqrt          | n/a    |
-| square        | n/a    |
-| voter         | n/a    |
+| Benchmark         | Upstream | Description                 |
+|-------------------|----------|-----------------------------|
+| adder        | adder    | 128-bit adder               |
+| arbiter      | arbiter  | Arbiter                     |
+| bar          | bar      | Barrel shifter              |
+| cavlc        | cavlc    | CAVLC encoder               |
+| dec          | dec      | Decoder                     |
+| div          | div      | Divider                     |
+| hyp          | hyp      | Hypotenuse calculator       |
+| i2c          | i2c      | I2C controller              |
+| int2float    | int2float | Integer-to-float converter |
+| log2         | log2     | Log base 2                  |
+| max          | max      | Maximum                     |
+| memctrl      | mem_ctrl | Memory controller           |
+| multiplier   | multiplier | Multiplier                |
+| priority     | priority | Priority encoder            |
+| router       | router   | Router                      |
+| sin          | sin      | Sine function               |
+| sqrt         | sqrt     | Square root                 |
+| square       | square   | Square function             |
+| voter        | voter    | Voter circuit               |
+
+## Modifications
+
+The RTL is the upstream file with logic unchanged. Each circuit keeps its
+upstream file and top-module name (e.g. `adder.v` / `module adder`). The only
+change is a name normalization for `mem_ctrl`, vendored as `memctrl` (folder,
+file, and top module) so the identifier is a single token.
 
 ## How to Cite
 

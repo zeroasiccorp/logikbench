@@ -1,42 +1,41 @@
-
-from .koios_attention_layer.koios_attention_layer import KoiosAttentionLayer
-from .koios_bwave_like_fixed_small.koios_bwave_like_fixed_small import KoiosBwaveLikeFixedSmall
-from .koios_bwave_like_float_small.koios_bwave_like_float_small import KoiosBwaveLikeFloatSmall
-from .koios_clstm_like_medium.koios_clstm_like_medium import KoiosClstmLikeMedium
-from .koios_clstm_like_small.koios_clstm_like_small import KoiosClstmLikeSmall
-from .koios_conv_layer.koios_conv_layer import KoiosConvLayer
-from .koios_conv_layer_hls.koios_conv_layer_hls import KoiosConvLayerHls
-from .koios_dla_like_medium.koios_dla_like_medium import KoiosDlaLikeMedium
-from .koios_dla_like_small.koios_dla_like_small import KoiosDlaLikeSmall
-from .koios_dnnweaver.koios_dnnweaver import KoiosDnnweaver
-from .koios_eltwise_layer.koios_eltwise_layer import KoiosEltwiseLayer
-from .koios_gemm_layer.koios_gemm_layer import KoiosGemmLayer
-from .koios_lstm.koios_lstm import KoiosLstm
-from .koios_reduction_layer.koios_reduction_layer import KoiosReductionLayer
-from .koios_robot_rl.koios_robot_rl import KoiosRobotRl
-from .koios_softmax.koios_softmax import KoiosSoftmax
-from .koios_spmv.koios_spmv import KoiosSpmv
-from .koios_tpu_like_small_os.koios_tpu_like_small_os import KoiosTpuLikeSmallOs
-from .koios_tpu_like_small_ws.koios_tpu_like_small_ws import KoiosTpuLikeSmallWs
+from .attention_layer.attention_layer import AttentionLayer
+from .bwave_like_fixed_small.bwave_like_fixed_small import BwaveLikeFixedSmall
+from .bwave_like_float_small.bwave_like_float_small import BwaveLikeFloatSmall
+from .clstm_like_medium.clstm_like_medium import ClstmLikeMedium
+from .clstm_like_small.clstm_like_small import ClstmLikeSmall
+from .conv_layer.conv_layer import ConvLayer
+from .conv_layer_hls.conv_layer_hls import ConvLayerHls
+from .dla_like_medium.dla_like_medium import DlaLikeMedium
+from .dla_like_small.dla_like_small import DlaLikeSmall
+from .dnnweaver.dnnweaver import Dnnweaver
+from .eltwise_layer.eltwise_layer import EltwiseLayer
+from .gemm_layer.gemm_layer import GemmLayer
+from .lstm.lstm import Lstm
+from .reduction_layer.reduction_layer import ReductionLayer
+from .robot_rl.robot_rl import RobotRl
+from .softmax.softmax import Softmax
+from .spmv.spmv import Spmv
+from .tpu_like_small_os.tpu_like_small_os import TpuLikeSmallOs
+from .tpu_like_small_ws.tpu_like_small_ws import TpuLikeSmallWs
 
 __all__ = [
-    "KoiosAttentionLayer",
-    "KoiosBwaveLikeFixedSmall",
-    "KoiosBwaveLikeFloatSmall",
-    "KoiosClstmLikeMedium",
-    "KoiosClstmLikeSmall",
-    "KoiosConvLayer",
-    "KoiosConvLayerHls",
-    "KoiosDlaLikeMedium",
-    "KoiosDlaLikeSmall",
-    "KoiosDnnweaver",
-    "KoiosEltwiseLayer",
-    "KoiosGemmLayer",
-    "KoiosLstm",
-    "KoiosReductionLayer",
-    "KoiosRobotRl",
-    "KoiosSoftmax",
-    "KoiosSpmv",
-    "KoiosTpuLikeSmallOs",
-    "KoiosTpuLikeSmallWs",
+    "AttentionLayer",
+    "BwaveLikeFixedSmall",
+    "BwaveLikeFloatSmall",
+    "ClstmLikeMedium",
+    "ClstmLikeSmall",
+    "ConvLayer",
+    "ConvLayerHls",
+    "DlaLikeMedium",
+    "DlaLikeSmall",
+    "Dnnweaver",
+    "EltwiseLayer",
+    "GemmLayer",
+    "Lstm",
+    "ReductionLayer",
+    "RobotRl",
+    "Softmax",
+    "Spmv",
+    "TpuLikeSmallOs",
+    "TpuLikeSmallWs",
 ]

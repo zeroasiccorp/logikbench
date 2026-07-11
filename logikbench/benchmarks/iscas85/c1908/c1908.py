@@ -7,7 +7,7 @@ class C1908(Design):
 
         name = 'c1908'
         root = f'{name}_root'
-        source = [f'rtl/{name}.v']
+        source = ['rtl/c1908.v']
 
         # create a Design object
         super().__init__(name)
@@ -21,7 +21,7 @@ class C1908(Design):
             self.add_file(item, fileset, dataroot=root)
 
         # top module
-        self.set_topmodule(name, fileset)
+        self.set_topmodule('c1908', fileset)
 
 
 if __name__ == "__main__":
