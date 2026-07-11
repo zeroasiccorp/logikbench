@@ -23,6 +23,12 @@ class Mux(Design):
         # top module
         self.set_topmodule(name, fileset)
 
+        # self-checking testbench (its own fileset; top instantiates the DUT
+        # and prints PASSED/FAILED). Used by `lb sim`.
+        tb = 'testbench'
+        self.add_file(f'testbench/test_{name}_smoke.v', tb, dataroot=root)
+        self.set_topmodule(f'test_{name}_smoke', tb)
+
 
 if __name__ == "__main__":
     d = Mux()

@@ -23,6 +23,10 @@ class Fsm(Design):
         # top module (RTL module name differs from the block/dir name)
         self.set_topmodule('parametric_fsm_benchmark', fileset)
 
+        # self-checking testbench (`lb sim`)
+        self.add_file(f'testbench/test_{name}_smoke.v', 'testbench', dataroot=root)
+        self.set_topmodule(f'test_{name}_smoke', 'testbench')
+
 
 if __name__ == "__main__":
     d = Fsm()

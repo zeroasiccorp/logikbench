@@ -34,6 +34,10 @@ class Jesd204b(Design):
         # top module
         self.set_topmodule(name, fileset)
 
+        # self-checking testbench (`lb sim`)
+        self.add_file(f'testbench/test_{name}_smoke.v', 'testbench', dataroot=root)
+        self.set_topmodule(f'test_{name}_smoke', 'testbench')
+
 
 if __name__ == "__main__":
     d = Jesd204b()

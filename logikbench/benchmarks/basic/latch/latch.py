@@ -24,6 +24,10 @@ class Latch(Design):
         # top module
         self.set_topmodule(name, fileset)
 
+        # self-checking testbench (`lb sim`)
+        self.add_file(f'testbench/test_{name}_smoke.v', 'testbench', dataroot=root)
+        self.set_topmodule(f'test_{name}_smoke', 'testbench')
+
         # lambdalib transparent-latch primitive (la_vlatq)
         with self.active_fileset(fileset):
             self.add_depfileset(Vlatq(), "rtl")

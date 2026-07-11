@@ -22,11 +22,11 @@ import pkgutil
 
 import siliconcompiler.targets as sc_targets
 from siliconcompiler import ASIC
-from siliconcompiler.flows import asicflow
+from logikbench.flows.pnr.asic import ASICPnR
 from siliconcompiler.tools.yosys.syn_asic import ASICSynthesis as _YosysSyn
 from lambdalib.ramlib import RAMTechLib
 
-from logikbench.flows.synth import ASICSynthesis
+from logikbench.flows.syn import ASICSynthesis
 from logikbench.common import _set_range, _quiet
 
 # The default clock period is NOT overridden here: when 'lb --clk' is not given
@@ -316,7 +316,7 @@ def _run_scflow(design, target, builddir, quiet, start, stop, timeout,
     pdk = target.split("_", 1)[1]
     proj = _setup_asic_project(design, _SC_MODULE[pdk], builddir, quiet,
                                timeout, clk_ns)
-    proj.set_flow(asicflow.ASICFlow())
+    proj.set_flow(ASICPnR())
     # read RTL via slang in synthesis (read_verilog fails on package SV)
     _YosysSyn.find_task(proj).set_yosys_useslang(True)
     # LogikBench designs are IO-dominated (wide buses, tiny logic), so the

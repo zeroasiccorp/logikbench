@@ -15,6 +15,9 @@ from siliconcompiler.schema import EditableSchema
 # SC-standard metric names tracked per run mode.
 FPGA_METRICS = ["luts", "logicdepth", "tasktime"]
 ASIC_METRICS = ["cells", "cellarea", "fmax", "tasktime"]
+# sim (`lb sim`): pass/fail status + SC's 'tasktime' recorded at each of the
+# two nodes (compile, simulate)
+SIM_METRICS = ["status", "tasktime"]
 
 # Friendly stage names -> SC node names. A stage spans several SC nodes, so
 # --start maps to its first node and --stop to its last.
@@ -101,6 +104,61 @@ def read_metrics(name, metrics=ASIC_METRICS, builddir="build", jobname="job0"):
 def read_asic_metrics(name, builddir="build", jobname="job0"):
     """Read ASIC metrics from a prior run's manifest (no synthesis)."""
     return read_metrics(name, ASIC_METRICS, builddir, jobname)
+
+
+def read_sim_metrics(name, builddir="build", jobname="job0"):
+    """Read `lb sim` metrics from a completed job (no re-simulation).
+
+    'status' is the self-checking testbench verdict, scraped from each simulate
+    node's log (the testbench prints PASSED/FAILED): 'fail' if any replica
+    failed, 'unknown' if any printed no verdict, else 'pass'. 'tasktime' is SC's
+    per-node runtime, reported for both the 'compile' and 'simulate' nodes.
+    Returns {"status": ..., "tasktime": {node: seconds}} or None if the job did
+    not run.
+    """
+    jobdir = os.path.join(builddir, name, jobname)
+    manifest = os.path.join(jobdir, f"{name}.pkg.json")
+    if not os.path.isfile(manifest):
+        return None
+    with open(manifest) as f:
+        data = json.load(f)
+
+    def node_tasktime(step):
+        recs = data.get("metric", {}).get("tasktime", {}).get(
+            "node", {}).get(step, {})
+        for rec in recs.values():
+            if rec.get("value") is not None:
+                return rec.get("value")
+        return None
+
+    # status: scan each simulate replica's log for the testbench verdict
+    verdicts = []
+    simdir = os.path.join(jobdir, "simulate")
+    if os.path.isdir(simdir):
+        for idx in sorted(os.listdir(simdir)):
+            log = os.path.join(simdir, idx, "simulate.log")
+            if not os.path.isfile(log):
+                continue
+            with open(log, errors="replace") as f:
+                text = f.read()
+            if "FAILED" in text:
+                verdicts.append("fail")
+            elif "PASSED" in text:
+                verdicts.append("pass")
+            else:
+                verdicts.append("unknown")
+    if not verdicts:
+        status = None
+    elif "fail" in verdicts:
+        status = "fail"
+    elif "unknown" in verdicts:
+        status = "unknown"
+    else:
+        status = "pass"
+
+    return {"status": status,
+            "tasktime": {"compile": node_tasktime("compile"),
+                         "simulate": node_tasktime("simulate")}}
 
 
 def read_tool_var(name, tool, task, var, builddir="build", jobname="job0"):
