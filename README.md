@@ -755,6 +755,44 @@ jobs on memory-constrained machines.
 | ASIC area / FMAX metrics | Yosys, OpenROAD, OpenSTA | `asic` |
 | RTL simulation (testbenches) | Icarus Verilog, Verilator | `digital-simulation` |
 
+## Extending LogikBench with your own tools
+
+LogikBench runs on SiliconCompiler's tool set, but the **flows are defined
+locally** (`logikbench/flows/<task>/`, one per `lb` command) and you can plug in
+**tools SC does not ship** -- including proprietary/commercial EDA tools (Design
+Compiler, Genus, Vivado, Innovus, PrimeTime, VCS, JasperGold, ...). That is what
+`logikbench/tools/` is for, and it is exactly how the built-in `tardigrade`
+mapper is integrated.
+
+A tool is just a SiliconCompiler `Task` subclass placed under
+`logikbench/tools/<tool>/` -- SC's `Task` API is subclassable, so no SC fork is
+needed. The reference implementation is
+[`tools/tardigrade/tardigrade.py`](logikbench/tools/tardigrade/tardigrade.py): a
+base task declares the executable, version switch, and log regexes; a concrete
+task per role adds its parameters, required filesets, command line, and metric
+scraping.
+
+To make it selectable, add one line to the relevant flow's tool dict:
+
+```python
+# logikbench/flows/syn/asic.py
+from logikbench.tools.design_compiler.design_compiler import Synthesis as DCSynthesis
+
+class ASICSynthesis(Flowgraph):
+    _SYNTH = {
+        "yosys": YosysSynthesis,
+        "tardigrade": TardigradeSynthesis,
+        "design_compiler": DCSynthesis,   # <-- your tool, one line
+    }
+```
+
+Then `lb syn --tool design_compiler ...` uses it. SiliconCompiler handles
+executable and license detection at run time, so a tool you do not have
+installed simply is not selectable -- it never breaks the other flows. The full
+guide (including monolithic vendor flows that do several stages at once, and
+customized variants of SC's own tools) is in
+[`logikbench/tools/README.md`](logikbench/tools/README.md).
+
 ## License
 
 The LogikBench project is licensed under the [MIT](LICENSE) license unless specified otherwise inside the individual benchmark folders.
