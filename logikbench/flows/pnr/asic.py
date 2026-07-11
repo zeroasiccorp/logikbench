@@ -1,19 +1,65 @@
-"""ASIC place-and-route flow (`lb pnr`, ASIC targets).
+"""ASIC place-and-route flow (`lb pnr`, ASIC targets) -- local composition.
 
-Wraps SiliconCompiler's asicflow (synthesis -> floorplan -> place -> cts ->
-route), reused as-is (SC-first -- LB does not redefine it). LB run configuration
-(slang RTL read, low utilization + tight pin spacing for IO-dominated designs)
-and the PDK/library/scenario setup are applied on the project by the runner; run
-through 'route' for full place-and-route.
+Reuses SiliconCompiler's asicflow *backend* subgraphs (floorplan -> place -> cts
+-> route) but starts from a cached synthesized netlist instead of running
+synthesis: an ImportFilesTask entry node brings in `lb syn`'s netlist and feeds
+the OpenROAD P&R subgraphs. This mirrors how siliconcompiler.flows.asicflow
+composes those same subgraphs, minus the SynthesisFlow front end.
 
-Adding a P&R engine (e.g. a proprietary tool such as Innovus) follows the
-tools/ pattern; see logikbench/tools/README.md.
+Stops at detailed route -- no metal fill, no GDS export. The netlist path is
+supplied by the runner on the project as the import task's 'file' var
+(tool 'builtin', task 'importfiles').
 """
 
-from siliconcompiler.flows import asicflow
+from siliconcompiler import Flowgraph
+from siliconcompiler.tools.builtin.importfiles import ImportFilesTask
+from siliconcompiler.flows.asicflow import (
+    FloorplanningFlow,
+    PlacementFlow,
+    ClockTreeSynthesisFlow,
+    FillerCellFlow,
+    RoutingFlow,
+)
 
 
-def ASICPnR(tool="openroad", name="asic_pnr"):
-    """SC asicflow used for `lb pnr` on ASIC targets. `tool` is reserved for
-    future P&R-engine selection; the SC asicflow currently uses OpenROAD."""
-    return asicflow.ASICFlow()
+class ASICPnR(Flowgraph):
+    """Import a cached netlist, then run the asicflow backend through detailed
+    route (floorplan -> place -> cts -> fillcell -> route). No metal fill/GDS.
+
+    asicflow's post-synthesis synth_cleanup (OpenROAD buffer/dead-logic removal
+    on the yosys netlist) is intentionally omitted: floorplan reads the imported
+    netlist directly, so it is not required. Re-add a cleanup node here if P&R
+    QoR ever needs it."""
+
+    def __init__(self, tool="openroad", name="asic_pnr", floorplan_np=1,
+                 place_np=1, cts_np=1, route_np=1):
+        super().__init__()
+        self.set_name(name)
+
+        # Only OpenROAD has a hard-coded SC-task backend here. A different P&R
+        # engine (e.g. a proprietary tool) would supply its own flow via tools/
+        # (see logikbench/tools/README.md) -- so guard on the engine selection.
+        if tool != "openroad":
+            raise ValueError(
+                f"pnr --tool '{tool}' has no flow; only 'openroad' is wired.")
+
+        # entry: import the cached synthesized netlist (<top>.vg) as this node's
+        # output, so the floorplan node reads it like any prior-node netlist.
+        self.node("import", ImportFilesTask())
+        prev = "import"
+
+        # reuse SC's asicflow backend subgraphs, chained as asicflow does
+        # (FillerCellFlow shares the 'cts' prefix, per asicflow). Ends at route.
+        for prefix, graph in [
+                ("floorplan", FloorplanningFlow(np=floorplan_np)),
+                ("place", PlacementFlow(np=place_np)),
+                ("cts", ClockTreeSynthesisFlow(np=cts_np)),
+                ("cts", FillerCellFlow(np=1)),
+                ("route", RoutingFlow(np=route_np))]:
+            self.graph(graph, name=prefix)
+            for node in graph.get_entry_nodes():
+                self.edge(prev, f"{prefix}.{node[0]}", head_index=node[1])
+            exits = graph.get_exit_nodes()
+            if len(exits) != 1:
+                raise ValueError(f"{graph.name} must have exactly one exit node")
+            prev = f"{prefix}.{exits[0][0]}"

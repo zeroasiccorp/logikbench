@@ -23,11 +23,11 @@ import pkgutil
 import siliconcompiler.targets as sc_targets
 from siliconcompiler import ASIC
 from logikbench.flows.pnr.asic import ASICPnR
-from siliconcompiler.tools.yosys.syn_asic import ASICSynthesis as _YosysSyn
+from logikbench.flows.sta.asic import ASICSta
 from lambdalib.ramlib import RAMTechLib
 
 from logikbench.flows.syn import ASICSynthesis
-from logikbench.common import _set_range, _quiet
+from logikbench.common import _set_range, _quiet, read_netlist_cache
 
 # The default clock period is NOT overridden here: when 'lb --clk' is not given
 # each PDK's tech.tcl provides LB_CLK_NS (and the ns->unit scaling), so the
@@ -92,6 +92,8 @@ SC_TARGETS = [f"sc_{pdk}" for pdk in _SC_PDKS]
 YOSYS_TARGETS = [f"yosys_{pdk}" for pdk in _LBFLOW_PDKS]
 TARDIGRADE_TARGETS = [f"{_TOOL_RENAME['tardigrade']}_{pdk}"
                       for pdk in _LBFLOW_PDKS]
+# sta_<pdk> -> OpenSTA on lb syn's cached netlist (no synth/P&R)
+STA_TARGETS = [f"sta_{pdk}" for pdk in _SC_PDKS]
 
 
 def _sc_target(name):
@@ -309,16 +311,26 @@ def _run_lbflow(design, target, options, builddir, quiet, start, stop, timeout,
 
 def _run_scflow(design, target, builddir, quiet, start, stop, timeout,
                 clk_ns=None, lintonly=False):
-    """SC built-in target (PDK + libs + scenarios) run through asicflow.
-
-    'target' is 'sc_<pdk>'; the pdk->module lookup resolves it to the SC setup
-    module ('sc_asap7' -> 'asap7_demo')."""
+    """`lb pnr` ASIC path: place-and-route a *cached* synthesized netlist through
+    OpenROAD (asicflow backend, floorplan -> detailed route). No synthesis: the
+    netlist comes from `lb syn` (default: the yosys netlist). 'target' is
+    'sc_<pdk>'; the cache lives at <root>/netlists/yosys_<pdk>/<name>.vg."""
     pdk = target.split("_", 1)[1]
+    # consume lb syn's cached netlist (yosys by default); miss -> tell the user
+    root = os.path.dirname(builddir)
+    syn_token = f"yosys_{pdk}"
+    netlist = read_netlist_cache(root, syn_token, design.name, design)
+    if netlist is None:
+        raise ValueError(
+            f"{design.name}: no cached netlist for '{syn_token}'. Run "
+            f"'lb syn --target {pdk}' first (pnr starts from the netlist).")
+
     proj = _setup_asic_project(design, _SC_MODULE[pdk], builddir, quiet,
                                timeout, clk_ns)
     proj.set_flow(ASICPnR())
-    # read RTL via slang in synthesis (read_verilog fails on package SV)
-    _YosysSyn.find_task(proj).set_yosys_useslang(True)
+    # feed the cached netlist to the import entry node (ImportFilesTask)
+    proj.set("tool", "builtin", "task", "importfiles", "var", "file",
+             os.path.abspath(netlist))
     # LogikBench designs are IO-dominated (wide buses, tiny logic), so the
     # demo's 40%-utilization die can't fit the pins on its perimeter. Grow the
     # die with a low utilization and halve the default 2-track pin spacing; the
@@ -326,16 +338,31 @@ def _run_scflow(design, target, builddir, quiet, start, stop, timeout,
     proj.constraint.area.set_density(10)
     proj.set("tool", "openroad", "task", "pin_placement", "var",
              "ppl_arguments", ["-min_distance", "1", "-min_distance_in_tracks"])
-    # lint-only: the asicflow has a dedicated slang 'elaborate' node, so stop
-    # after it (before synthesis) rather than via a tool var.
-    if lintonly:
-        stop = "elaborate"
-    elif stop is None:
-        # Default to ending at synthesis timing (no P&R), matching the lbflow
-        # (yosys/tardigrade) paths so every ASIC flow reports comparable
-        # synthesis-stage metrics by default. Pass --to explicitly (e.g.
-        # --to route) to run the full asicflow through place-and-route.
-        stop = "synthesis.timing"
+    _set_range(proj, start, stop)
+    proj.run()
+    if not quiet:
+        proj.summary()
+
+
+def _run_sta(design, target, builddir, quiet, start, stop, timeout,
+             clk_ns=None, lintonly=False):
+    """`lb sta` ASIC path: OpenSTA on a *cached* synthesized netlist (fmax,
+    slacks) -- no synthesis, no P&R. 'target' is 'sta_<pdk>'; the cache lives at
+    <root>/netlists/yosys_<pdk>/<name>.vg."""
+    pdk = target.split("_", 1)[1]
+    root = os.path.dirname(builddir)
+    syn_token = f"yosys_{pdk}"
+    netlist = read_netlist_cache(root, syn_token, design.name, design)
+    if netlist is None:
+        raise ValueError(
+            f"{design.name}: no cached netlist for '{syn_token}'. Run "
+            f"'lb syn --target {pdk}' first (sta starts from the netlist).")
+
+    proj = _setup_asic_project(design, _SC_MODULE[pdk], builddir, quiet,
+                               timeout, clk_ns)
+    proj.set_flow(ASICSta())
+    proj.set("tool", "builtin", "task", "importfiles", "var", "file",
+             os.path.abspath(netlist))
     _set_range(proj, start, stop)
     proj.run()
     if not quiet:

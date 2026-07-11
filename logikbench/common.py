@@ -5,9 +5,11 @@ lists, the friendly stage-name -> SC-node maps, project setup, and the
 manifest readers that recover metrics/settings from a completed job.
 """
 
+import hashlib
 import json
 import logging
 import os
+import shutil
 
 from siliconcompiler import Project
 from siliconcompiler.schema import EditableSchema
@@ -18,6 +20,60 @@ ASIC_METRICS = ["cells", "cellarea", "fmax", "tasktime"]
 # sim (`lb sim`): pass/fail status + SC's 'tasktime' recorded at each of the
 # two nodes (compile, simulate)
 SIM_METRICS = ["status", "tasktime"]
+# lint (`lb lint`): static-analysis error/warning counts
+LINT_METRICS = ["errors", "warnings"]
+
+
+# --- Netlist cache ---------------------------------------------------------
+# `lb syn` produces a mapped gate netlist; the back-end verbs (pnr, sta, lec,
+# power) start from it rather than re-synthesizing. The netlist is cached under
+# <builddir>/netlists/<token>/<name>.vg (the token, e.g. 'yosys_freepdk45',
+# encodes tool+PDK so yosys/tardigrade netlists never collide), with a
+# '<name>.key' sidecar hashing the RTL contents so a stale netlist (RTL edited
+# since synthesis) is detected. Cache miss/stale -> the consumer errors with a
+# 'run lb syn first' hint (no hidden re-synthesis).
+
+def netlist_cache_path(builddir, token, name):
+    """Cache path for a benchmark's synthesized netlist under a synth token."""
+    return os.path.join(builddir, "netlists", token, f"{name}.vg")
+
+
+def netlist_key(design):
+    """Content hash identifying a benchmark's RTL (its 'rtl' fileset file
+    contents), used to detect a cached netlist gone stale after an RTL edit."""
+    h = hashlib.sha256()
+    for f in sorted(str(x) for x in (design.get_file(fileset="rtl") or [])):
+        h.update(b"\n" + os.path.basename(f).encode() + b"\n")
+        try:
+            with open(f, "rb") as fh:
+                h.update(fh.read())
+        except OSError:
+            pass
+    return h.hexdigest()
+
+
+def write_netlist_cache(builddir, token, name, src_vg, design):
+    """Copy a freshly synthesized netlist into the cache and write its key."""
+    dst = netlist_cache_path(builddir, token, name)
+    os.makedirs(os.path.dirname(dst), exist_ok=True)
+    shutil.copyfile(src_vg, dst)
+    with open(dst[:-len(".vg")] + ".key", "w") as f:
+        f.write(netlist_key(design))
+    return dst
+
+
+def read_netlist_cache(builddir, token, name, design):
+    """Return the cached netlist path if present and current, else None (a miss
+    or a stale netlist whose RTL changed since synthesis)."""
+    vg = netlist_cache_path(builddir, token, name)
+    keyf = vg[:-len(".vg")] + ".key"
+    if not (os.path.isfile(vg) and os.path.isfile(keyf)):
+        return None
+    with open(keyf) as f:
+        if f.read().strip() != netlist_key(design):
+            return None
+    return vg
+
 
 # Friendly stage names -> SC node names. A stage spans several SC nodes, so
 # --start maps to its first node and --stop to its last.
@@ -161,6 +217,12 @@ def read_sim_metrics(name, builddir="build", jobname="job0"):
                          "simulate": node_tasktime("simulate")}}
 
 
+def read_lint_metrics(name, builddir="build", jobname="job0"):
+    """Read `lb lint` metrics (static-analysis error/warning counts) from a
+    completed job's manifest. Returns {metric: value} or None."""
+    return read_metrics(name, LINT_METRICS, builddir, jobname)
+
+
 def read_tool_var(name, tool, task, var, builddir="build", jobname="job0"):
     """Read a tool/task variable value recorded in a benchmark's manifest.
 
@@ -246,7 +308,7 @@ def is_complete(name, builddir="build", jobname="job0"):
 def clean_build(name, builddir="build", jobname="job0"):
     """Delete a benchmark's synthesis artifacts, keeping only the manifest.
 
-    'lb collect' and --resume read a single file per benchmark -- the job
+    --resume and the metric readers read a single file per benchmark -- the job
     manifest '<builddir>/<name>/<jobname>/<name>.pkg.json'. Everything else in
     the build tree (synthesis logs, netlists, reports, tool working dirs) is
     disposable and is what fills the disk (multi-GB logs on large designs). This

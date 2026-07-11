@@ -64,7 +64,7 @@ class Synthesis(TardigradeTask):
         self.add_parameter(
             "options", "[str]",
             "extra options passed through verbatim, each as a '--option <opt>' "
-            "argument (fed by lb run --options)", [])
+            "argument (fed by lb syn --options)", [])
         self.add_parameter(
             "pdk", "str",
             "PDK name passed to 'tardigrade --pdk', which auto-populates the "
@@ -73,7 +73,7 @@ class Synthesis(TardigradeTask):
         self.add_parameter(
             "lintonly", "bool",
             "elaborate then stop before synth_asic (passes 'tardigrade "
-            "--lintonly'); used by 'lb run --lintonly'", False)
+            "--lintonly'); used by 'lb syn --lintonly'", False)
 
     def task(self):
         return "synthesis"

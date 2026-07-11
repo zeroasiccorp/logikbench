@@ -28,6 +28,7 @@ from logikbench import asic, fpga
 from logikbench.common import (
     FPGA_METRICS, ASIC_METRICS, STEPS, read_metrics, read_asic_metrics,
     read_tool_var, read_flow_tools, is_complete, clean_build,
+    write_netlist_cache, read_netlist_cache, netlist_cache_path,
 )
 from logikbench.fpga import FPGA_TARGETS
 
@@ -35,9 +36,10 @@ from logikbench.fpga import FPGA_TARGETS
 __all__ = [
     "FPGA_METRICS", "ASIC_METRICS", "STEPS",
     "FPGA_TARGETS", "SC_TARGETS", "YOSYS_TARGETS", "TARDIGRADE_TARGETS",
-    "TARGETS",
-    "run_one", "read_metrics", "read_asic_metrics", "read_tool_var",
-    "read_flow_tools", "is_complete", "clean_build",
+    "STA_TARGETS", "TARGETS",
+    "run_one", "run_task", "read_metrics", "read_asic_metrics",
+    "read_tool_var", "read_flow_tools", "is_complete", "clean_build",
+    "write_netlist_cache", "read_netlist_cache", "netlist_cache_path",
 ]
 
 # ASIC target sets by tool, all '<tool>_<pdk>' (defined in logikbench.asic):
@@ -48,11 +50,12 @@ __all__ = [
 SC_TARGETS = list(asic.SC_TARGETS)
 YOSYS_TARGETS = list(asic.YOSYS_TARGETS)
 TARDIGRADE_TARGETS = list(asic.TARDIGRADE_TARGETS)
+STA_TARGETS = list(asic.STA_TARGETS)  # 'sta_<pdk>' -> OpenSTA on cached netlist
 
 # all valid --target values, all '<tool>_<part>': FPGA '<vendor>_<part>', then
-# the ASIC sets (sc asicflow, yosys lbflow, tardigrade lbflow).
+# the ASIC sets (sc asicflow, yosys lbflow, tardigrade lbflow, sta).
 TARGETS = (list(fpga.FPGA_TARGETS) + SC_TARGETS + YOSYS_TARGETS
-           + TARDIGRADE_TARGETS)
+           + TARDIGRADE_TARGETS + STA_TARGETS)
 
 
 def run_one(design_cls, target=None, options="", builddir="build", quiet=True,
@@ -91,6 +94,10 @@ def run_one(design_cls, target=None, options="", builddir="build", quiet=True,
                              timeout, clk, lintonly=lintonly)
             metrics = {} if lintonly else read_metrics(name, ASIC_METRICS,
                                                        builddir)
+        elif target in asic.STA_TARGETS:
+            asic._run_sta(design, target, builddir, quiet, start, stop,
+                          timeout, clk, lintonly=lintonly)
+            metrics = read_metrics(name, ASIC_METRICS, builddir)
         elif target in asic.YOSYS_TARGETS or target in asic.TARDIGRADE_TARGETS:
             asic._run_lbflow(design, target, options, builddir, quiet, start,
                              stop, timeout, clk, lintonly=lintonly)
@@ -99,6 +106,56 @@ def run_one(design_cls, target=None, options="", builddir="build", quiet=True,
         else:
             raise ValueError(
                 f"target '{target}' is not a known FPGA, SC, or LB target")
+        return (metrics, None)
+    except Exception as e:  # noqa: BLE001 - report to parent, keep the sweep going
+        return (None, str(e))
+
+
+def run_task(task, design_cls, tool=None, builddir="build", quiet=True,
+             timeout=None):
+    """Run one RTL-only task (sim|lint) for a benchmark; return (metrics, error).
+
+    RTL-only tasks take no target/PDK and run their whole (short) flow. 'sim'
+    compiles + runs the self-checking testbench (needs a 'testbench' fileset)
+    via a local SimFlow on an SC Sim project; 'lint' statically analyzes the RTL
+    via a local LintFlow. Errors are caught and returned so a pool worker never
+    crashes the parent; module-level so it is picklable for the pool.
+    """
+    import siliconcompiler
+    from logikbench.common import _quiet, read_sim_metrics, read_lint_metrics
+    from logikbench.flows.sim import SimFlow
+    from logikbench.flows.lint import LintFlow
+
+    design = design_cls()
+    name = design.name
+    shutil.rmtree(os.path.join(builddir, name), ignore_errors=True)
+    try:
+        if task == "sim":
+            if not design.has_fileset("testbench"):
+                raise ValueError(f"{name}: no 'testbench' fileset to simulate")
+            proj = siliconcompiler.Sim(design)
+            proj.set("option", "builddir", builddir)
+            if timeout is not None:
+                proj.set("option", "timeout", timeout)
+            _quiet(proj, quiet)
+            # testbench fileset first so the sim top is the TB
+            proj.add_fileset("testbench")
+            proj.add_fileset("rtl")
+            proj.set_flow(SimFlow(tool=tool or "icarus"))
+            proj.run()
+            metrics = read_sim_metrics(name, builddir=builddir)
+        elif task == "lint":
+            proj = siliconcompiler.Project(design)
+            proj.set("option", "builddir", builddir)
+            if timeout is not None:
+                proj.set("option", "timeout", timeout)
+            _quiet(proj, quiet)
+            proj.add_fileset("rtl")
+            proj.set_flow(LintFlow(tool=tool or "slang"))
+            proj.run()
+            metrics = read_lint_metrics(name, builddir=builddir)
+        else:
+            raise ValueError(f"run_task: unsupported RTL-only task '{task}'")
         return (metrics, None)
     except Exception as e:  # noqa: BLE001 - report to parent, keep the sweep going
         return (None, str(e))

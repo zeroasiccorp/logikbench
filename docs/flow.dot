@@ -1,0 +1,45 @@
+// LogikBench task flow: `lb syn` synthesizes once and caches the netlist;
+// the back-end verbs start from that cached netlist instead of re-synthesizing.
+// Render: dot -Tpng docs/flow.dot -o docs/flow.png
+digraph logikbench {
+    rankdir=LR;
+    labelloc="t";
+    label="LogikBench flow: synthesize once, cache the netlist, reuse it";
+    fontname="Helvetica"; fontsize=16;
+    node [fontname="Helvetica", fontsize=11];
+    edge [fontname="Helvetica", fontsize=10, color="#555555"];
+
+    rtl   [label="RTL\n(benchmark)", shape=folder, style=filled, fillcolor="#eeeeee"];
+
+    // RTL-only verbs (no target, no netlist)
+    sim   [label="lb sim\ncompile + simulate", shape=box, style="rounded,filled", fillcolor="#e8f0e8"];
+    lint  [label="lb lint\nslang / verilator", shape=box, style="rounded,filled", fillcolor="#e8f0e8"];
+
+    // the one synthesizer (producer)
+    syn   [label="lb syn\nyosys | tardigrade", shape=box, style="rounded,filled", fillcolor="#cfe3f7"];
+
+    // the cached interface artifact
+    cache [label="netlist cache\nbuild/netlists/<token>/<name>.vg\n(+ .key: RTL hash)", shape=cylinder, style=filled, fillcolor="#fdf3d0"];
+
+    // back-end verbs (consume the cached netlist; miss -> 'run lb syn first')
+    pnr   [label="lb pnr\nasicflow: floorplan..route", shape=box, style="rounded,filled", fillcolor="#f7e0cf"];
+    sta   [label="lb sta\nOpenSTA", shape=box, style="rounded,filled", fillcolor="#f7e0cf"];
+    lec   [label="lb lec\nkeplerformal", shape=box, style="rounded,filled", fillcolor="#f7e0cf"];
+
+    // deferred (no backing SC tool yet)
+    formal [label="lb formal\n(deferred)", shape=box, style="rounded,dashed", fontcolor="#999999", color="#999999"];
+    power  [label="lb power\n(deferred)", shape=box, style="rounded,dashed", fontcolor="#999999", color="#999999"];
+
+    rtl -> sim;
+    rtl -> lint;
+    rtl -> syn;
+    syn -> cache [label="produces", fontcolor="#1a6fb0", color="#1a6fb0"];
+
+    cache -> pnr [label="consumes", fontcolor="#b05a1a", color="#b05a1a"];
+    cache -> sta [color="#b05a1a"];
+    cache -> lec [label="revised", color="#b05a1a"];
+    rtl   -> lec [label="golden (elaborated)", style=dotted];
+
+    cache -> power [style=dashed, color="#999999"];
+    rtl   -> formal [style=dashed, color="#999999"];
+}

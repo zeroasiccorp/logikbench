@@ -86,7 +86,7 @@ class Synthesis(YosysTask):
         self.add_parameter(
             "lintonly", "bool",
             "elaborate (read_slang + hierarchy check) then stop before the "
-            "synthesis core; used by 'lb run --lintonly'", False)
+            "synthesis core; used by 'lb syn --lintonly'", False)
 
     def task(self):
         return "synthesis"
