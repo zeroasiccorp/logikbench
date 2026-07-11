@@ -73,7 +73,7 @@ ASIC area of dual-port). The 64-byte parallel compare, barrel-shift gather,
 candidate select, and the circular byte-write commit map to **LUTs + FFs**. The
 constant-multiply hash maps to a small multiplier.
 
-On `zeroasic_z1015` (defaults) the block synthesizes to ~17.4K LUTs, ~660 FFs,
+With defaults the block synthesizes to roughly ~17.4K LUTs, ~660 FFs,
 2 multipliers, and the three memories as BRAM macros. The hash table dominates
 BRAM (16384 x 96 bits = 192 KB); `HASHBITS` and `NWAY` trade compression ratio
 for memory footprint.

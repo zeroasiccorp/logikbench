@@ -45,14 +45,13 @@ is the correct mapping here:
 
 - FPGA block RAM (Xilinx RAMB18/36, zeroasic `sdpram`, etc.) has a
   **synchronous read** only. A combinational ROM therefore cannot map to BRAM
-  on any fabric -- it becomes LUTs. Verified: on both `zeroasic_z1015` and
-  `xilinx_virtex7` the design synthesizes with **zero BRAM**; the table folds
-  into LUTs.
-- On `zeroasic_z1015` it could never be BRAM regardless: that fabric's BRAM is
-  `init none` (no contents preload), so a constant ROM has no way in. (The
-  synthesis flow also runs `--ignore-initial`, which strips `initial`-block
-  memory loads -- this is what broke the previous version's `sine_lut`. The
-  `case` ROM survives because it is logic, not an initialized array.)
+  on any fabric -- it becomes LUTs, so the design synthesizes with **zero
+  BRAM**; the table folds into LUTs.
+- It could never be BRAM regardless: on fabrics whose BRAM has no contents
+  preload (`init none`) a constant ROM has no way in. (The synthesis flow also
+  runs `--ignore-initial`, which strips `initial`-block memory loads -- this is
+  what broke the previous version's `sine_lut`. The `case` ROM survives because
+  it is logic, not an initialized array.)
 - At 256 x 16 = 4 Kbit the LUT ROM is small and keeps the twiddle path
   single-cycle. Forcing it into BRAM would require a **registered (synchronous)
   read**, adding a pipeline cycle to the twiddle path (and re-aligning the

@@ -60,7 +60,7 @@ The code (K=7, G0=133, G1=171) is fixed; `SW` and `MAXLEN` are configurable.
 
 ## Mapping
 
-Verified on `zeroasic_z1015`: ~6900 LUTs (the 64 ACS adders/comparators + the
+Maps to roughly ~6900 LUTs (the 64 ACS adders/comparators + the
 64-way min reduction + control), ~880 FF (path metrics), and BRAM for the
 survivor memory (`sdpram_16384x1` + `sdpram_1024x16`), no DSP, no latches.
 

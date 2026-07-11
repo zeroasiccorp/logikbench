@@ -59,8 +59,7 @@ synthesis unrolls it into the parallel CRC XOR tree, so the same source covers
 
 Pure XOR logic (the parallel CRC tree plus the per-byte taps and the last-word
 byte-count mux) and the 32-bit CRC state register: maps to LUTs + flip-flops,
-no DSP and no BRAM. Verified on `zeroasic_z1015`: ~608 LUTs + 66 FF at W=64,
-no latches.
+no DSP and no BRAM (roughly ~600 LUTs + 66 FF at W=64, no latches).
 
 ## Files
 
