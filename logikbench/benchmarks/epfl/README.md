@@ -33,10 +33,17 @@ The EPFL benchmarks were copied over to LogikBench to simplify dependency manage
 
 ## Modifications
 
-The RTL is the upstream file with logic unchanged. Each circuit keeps its
-upstream file and top-module name (e.g. `adder.v` / `module adder`). The only
-change is a name normalization for `mem_ctrl`, vendored as `memctrl` (folder,
-file, and top module) so the identifier is a single token.
+The RTL logic is unchanged. Two name changes:
+
+1. **`mem_ctrl` normalized to `memctrl`** (folder, file, and top module) so the
+   identifier is a single token.
+2. **`priority` top module renamed to `priority_encoder`** -- `priority` is a
+   reserved SystemVerilog keyword, so slang (LogikBench lints in SV mode)
+   rejects a module named `priority`. The benchmark name stays `priority`; only
+   the RTL module and the design's top-module setting use `priority_encoder`.
+
+All other circuits keep their upstream file and top-module name (e.g. `adder.v`
+/ `module adder`).
 
 ## How to Cite
 

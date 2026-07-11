@@ -20,8 +20,9 @@ class Priority(Design):
         for item in source:
             self.add_file(item, fileset, dataroot=root)
 
-        # top module
-        self.set_topmodule('priority', fileset)
+        # top module (the RTL module was renamed from the reserved SV keyword
+        # 'priority' to 'priority_encoder' so slang can lint it; see README)
+        self.set_topmodule('priority_encoder', fileset)
 
 
 if __name__ == "__main__":
