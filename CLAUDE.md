@@ -49,6 +49,7 @@
   name (stay vendor-neutral).
 - Keep the algorithm vs hardware-implementation split, and state provenance
   honestly (original vs vendored).
+- When bringing in bencharmks from external sources, like we did for epfl, iscas85, iscas89, and koios document any and all modifications.
 
 ## Verilog Directives
 

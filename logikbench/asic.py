@@ -214,10 +214,10 @@ def _write_sc_wrapper(builddir, name, target, clk_ns, bench_sdc):
     own SDC when it ships one (bench_sdc), otherwise the shared default.sdc
     (which guardbands sensible defaults). LB_CLK_NS is injected only when 'lb
     --clk' (clk_ns) is given; otherwise the PDK's tech.tcl supplies its default.
-    Written to the build-dir root with an absolute path so SC resolves it
-    regardless of design dataroot.
+    Written inside the benchmark's run dir (<builddir>/<name>/<name>.sdc) with an
+    absolute path so SC resolves it regardless of design dataroot.
     """
-    path = os.path.abspath(os.path.join(builddir, f"{name}_lbsdc.sdc"))
+    path = os.path.abspath(os.path.join(builddir, name, f"{name}.sdc"))
     os.makedirs(os.path.dirname(path), exist_ok=True)
     src = bench_sdc if bench_sdc else _DEFAULT_SDC
     clk_line = f"set LB_CLK_NS {clk_ns}\n" if clk_ns is not None else ""
@@ -309,17 +309,18 @@ def _run_lbflow(design, target, options, builddir, quiet, start, stop, timeout,
         proj.summary()
 
 
-def _run_scflow(design, target, builddir, quiet, start, stop, timeout,
-                clk_ns=None, lintonly=False):
+def _run_scflow(design, target, group, cache_root, builddir, quiet, start, stop,
+                timeout, clk_ns=None, lintonly=False):
     """`lb pnr` ASIC path: place-and-route a *cached* synthesized netlist through
     OpenROAD (asicflow backend, floorplan -> detailed route). No synthesis: the
     netlist comes from `lb syn` (default: the yosys netlist). 'target' is
-    'sc_<pdk>'; the cache lives at <root>/netlists/yosys_<pdk>/<name>.vg."""
+    'sc_<pdk>'; the cache lives at
+    <cache_root>/netlists/yosys_<pdk>/<group>/<name>.vg."""
     pdk = target.split("_", 1)[1]
     # consume lb syn's cached netlist (yosys by default); miss -> tell the user
-    root = os.path.dirname(builddir)
     syn_token = f"yosys_{pdk}"
-    netlist = read_netlist_cache(root, syn_token, design.name, design)
+    netlist = read_netlist_cache(cache_root, syn_token, group, design.name,
+                                 design)
     if netlist is None:
         raise ValueError(
             f"{design.name}: no cached netlist for '{syn_token}'. Run "
@@ -344,15 +345,15 @@ def _run_scflow(design, target, builddir, quiet, start, stop, timeout,
         proj.summary()
 
 
-def _run_sta(design, target, builddir, quiet, start, stop, timeout,
-             clk_ns=None, lintonly=False):
+def _run_sta(design, target, group, cache_root, builddir, quiet, start, stop,
+             timeout, clk_ns=None, lintonly=False):
     """`lb sta` ASIC path: OpenSTA on a *cached* synthesized netlist (fmax,
     slacks) -- no synthesis, no P&R. 'target' is 'sta_<pdk>'; the cache lives at
-    <root>/netlists/yosys_<pdk>/<name>.vg."""
+    <cache_root>/netlists/yosys_<pdk>/<group>/<name>.vg."""
     pdk = target.split("_", 1)[1]
-    root = os.path.dirname(builddir)
     syn_token = f"yosys_{pdk}"
-    netlist = read_netlist_cache(root, syn_token, design.name, design)
+    netlist = read_netlist_cache(cache_root, syn_token, group, design.name,
+                                 design)
     if netlist is None:
         raise ValueError(
             f"{design.name}: no cached netlist for '{syn_token}'. Run "

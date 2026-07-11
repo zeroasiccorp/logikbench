@@ -13,6 +13,7 @@ from logikbench.benchmarks import blocks
 from logikbench.benchmarks import epfl
 from logikbench.benchmarks import iscas85
 from logikbench.benchmarks import iscas89
+from logikbench.benchmarks import koios
 
 __all__ = [
     "basic",
@@ -21,5 +22,6 @@ __all__ = [
     "blocks",
     "epfl",
     "iscas85",
-    "iscas89"
+    "iscas89",
+    "koios"
 ]

@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 
 import argparse
+import glob
 import os
 import sys
 import json
+from collections import defaultdict
 
 import logikbench as lb
 from concurrent.futures import ProcessPoolExecutor, as_completed
@@ -20,7 +22,7 @@ SCHEMA_VERSION = 1
 
 # benchmark groups available to both subcommands
 ALL_GROUPS = ['basic', 'memory', 'arithmetic', 'epfl', 'blocks',
-              'iscas85', 'iscas89']
+              'iscas85', 'iscas89', 'koios']
 
 # metrics tracked are determined by the run mode (fpga vs asic synthesis)
 FLOW_METRICS = {'fpga': FPGA_METRICS, 'asic': ASIC_METRICS}
@@ -79,8 +81,8 @@ def make_worklist(args):
     Shared across targets (the benchmark set is the same for every target). The
     class is resolved here (the app owns benchmark discovery) and passed on to
     run_one, so the runner never reflects over the package. The design name is
-    the SC name (e.g. 'epfl_arbiter'), which may differ from the class name --
-    it is what keys build dirs, metrics, and the -n filter.
+    the SC name (e.g. 'arbiter'), bare and unique only within its group -- the
+    (group, name) pair keys the per-group build dir, metrics, and -n filter.
     """
     namefilter = set(n.lower() for n in args.name) if args.name else None
     worklist = []
@@ -100,11 +102,22 @@ def check_worklist(args, worklist):
     globally unique), so an unmatched name is simply not a known benchmark.
     """
     if args.name:
-        matched = {name for _, _, name in worklist}
-        unmatched = [n for n in args.name if n.lower() not in matched]
+        groups_by_name = defaultdict(set)
+        for g, _, nm in worklist:
+            groups_by_name[nm].add(g)
+        unmatched = [n for n in args.name if n.lower() not in groups_by_name]
         if unmatched:
             print("error: not a known benchmark: "
                   f"{', '.join(unmatched)}", file=sys.stderr)
+            sys.exit(2)
+        # a bare name found in more than one selected group is ambiguous
+        ambiguous = [(n.lower(), groups_by_name[n.lower()]) for n in args.name
+                     if len(groups_by_name[n.lower()]) > 1]
+        if ambiguous:
+            for nm, gs in ambiguous:
+                print(f"error: benchmark '{nm}' exists in multiple groups "
+                      f"({', '.join(sorted(gs))}); narrow with -g",
+                      file=sys.stderr)
             sys.exit(2)
     if not worklist:
         print("error: no benchmarks selected for group(s): "
@@ -120,8 +133,9 @@ def target_runlist(target, args, worklist):
     builddir = target_builddir(args, target)
     runlist = []
     for group, cls, name in worklist:
-        if is_complete(name, builddir):
-            loc = os.path.join(".", builddir, name)
+        gdir = os.path.join(builddir, group)
+        if is_complete(name, gdir):
+            loc = os.path.join(".", gdir, name)
             print(f"Skipping {name} ({loc}): already complete.")
         else:
             runlist.append((group, cls, name))
@@ -152,7 +166,7 @@ def run_sweep(args, targets, worklist, netlist_cache=False):
     failures = []
     total = len(tasks)
     done = 0  # completed-job counter; printed as [done/total] progress
-    cls_by_name = {name: cls for _, _, cls, name in tasks}
+    cls_by_name = {(group, name): cls for _, group, cls, name in tasks}
 
     # Same completion message for every job, regardless of target (FPGA or
     # ASIC) or scheduling (-j sequential vs parallel).
@@ -160,9 +174,10 @@ def run_sweep(args, targets, worklist, netlist_cache=False):
         nonlocal done
         done += 1
         prefix = f"[{done}/{total}]"
-        # show the per-benchmark build directory (e.g. ./build/sc_gf180/muxcase)
-        # so the message points at where the artifacts live
-        loc = os.path.join(".", target_builddir(args, target), name)
+        # per-benchmark build dir is namespaced by group (bare names are only
+        # unique within a group): ./<builddir>/<target>/<group>/<name>
+        gdir = os.path.join(target_builddir(args, target), group)
+        loc = os.path.join(".", gdir, name)
         if error is not None:
             print(f"{prefix} Error synthesizing {name} ({loc}): "
                   f"{error}", file=sys.stderr)
@@ -172,24 +187,28 @@ def run_sweep(args, targets, worklist, netlist_cache=False):
             # cache the mapped netlist (ASIC syn only) so the back-end verbs
             # (pnr/sta/lec) start from it instead of re-synthesizing
             if netlist_cache and target_mode(target) == "asic":
-                src = os.path.join(target_builddir(args, target), name, "job0",
-                                   "synthesis", "0", "outputs", f"{name}.vg")
-                if os.path.isfile(src):
-                    write_netlist_cache(args.builddir, target, name, src,
-                                        cls_by_name[name]())
+                # the synthesis output netlist is named after the top module,
+                # which no longer always equals the (bare) design name, so glob
+                # the single .vg rather than assuming '<name>.vg'.
+                odir = os.path.join(gdir, name, "job0", "synthesis", "0",
+                                    "outputs")
+                vgs = glob.glob(os.path.join(odir, "*.vg"))
+                if vgs:
+                    write_netlist_cache(args.builddir, target, group, name,
+                                        vgs[0], cls_by_name[(group, name)]())
         # By default reclaim disk as we go (pass or fail), keeping only the
         # manifest --resume needs; --keep retains everything. Runs
         # in the parent for both the sequential and -j parallel paths, so
         # benchmarks never race on it.
         if not args.keep:
-            clean_build(name, builddir=target_builddir(args, target))
+            clean_build(name, builddir=gdir)
 
     if args.jobs > 1:
         with ProcessPoolExecutor(max_workers=args.jobs) as pool:
             futures = {}
             for target, group, cls, name in tasks:
                 builddir = target_builddir(args, target)
-                future = pool.submit(run_one, cls, target,
+                future = pool.submit(run_one, cls, target, group,
                                      options, builddir, quiet,
                                      start, stop, timeout, args.clk,
                                      lintonly)
@@ -201,7 +220,7 @@ def run_sweep(args, targets, worklist, netlist_cache=False):
     else:
         for target, group, cls, name in tasks:
             builddir = target_builddir(args, target)
-            _, error = run_one(cls, target, options,
+            _, error = run_one(cls, target, group, options,
                                builddir, quiet, start, stop,
                                timeout, args.clk, lintonly)
             record(target, group, name, error)
@@ -218,13 +237,16 @@ def gather_target_metrics(target, args, worklist):
     builddir = target_builddir(args, target)
     metric_names = FLOW_METRICS[mode]
 
+    # metrics are nested by group (metrics[<metric>][<group>][<name>]) because a
+    # bare benchmark name is only unique within its group.
     metrics_out = {metric: {} for metric in metric_names}
     options = None
     for group, cls, name in worklist:
+        gdir = os.path.join(builddir, group)
         if mode == 'asic':
-            metrics = read_asic_metrics(name, builddir=builddir)
+            metrics = read_asic_metrics(name, builddir=gdir)
         else:
-            metrics = read_metrics(name, FPGA_METRICS, builddir=builddir)
+            metrics = read_metrics(name, FPGA_METRICS, builddir=gdir)
         if metrics is None:
             if args.name is not None:
                 # only warn about benchmarks the user explicitly named
@@ -235,15 +257,16 @@ def gather_target_metrics(target, args, worklist):
             # report runtime to 2 decimal places (0.xx)
             if metric == "tasktime" and value is not None:
                 value = round(value, 2)
-            metrics_out[metric][name] = value
+            metrics_out[metric].setdefault(group, {})[name] = value
         # options are uniform across a target's sweep; read once from a built one
         if options is None:
             options = read_tool_var(name, "yosys", "synthesis", "options",
-                                    builddir=builddir)
+                                    builddir=gdir)
 
     collected = set()
     for col in metrics_out.values():
-        collected.update(col.keys())
+        for gname, names in col.items():
+            collected.update((gname, n) for n in names)
     return metrics_out, options, len(collected)
 
 
@@ -281,8 +304,10 @@ def _merge_metrics_into(src_path, dst_path):
         except (ValueError, OSError):
             dst = {}
     metrics = dst.get("metrics", {})
-    for metric, col in src.get("metrics", {}).items():
-        metrics.setdefault(metric, {}).update(col)
+    for metric, groups in src.get("metrics", {}).items():
+        dstm = metrics.setdefault(metric, {})
+        for grp, names in groups.items():
+            dstm.setdefault(grp, {}).update(names)
     payload = {"meta": src.get("meta", dst.get("meta", {})), "metrics": metrics}
     with open(dst_path, "w") as f:
         json.dump(payload, f, indent=2, sort_keys=True)
@@ -308,16 +333,20 @@ def save_target(target, args, worklist):
                 payload = json.load(f)
         except (ValueError, OSError):
             payload = {}
+    # deep merge by group: metrics[<metric>][<group>][<name>], preserving names
+    # from prior runs that this run did not touch.
     metrics = payload.get("metrics", {})
-    for metric, col in metrics_out.items():
-        metrics.setdefault(metric, {}).update(col)
+    for metric, groups in metrics_out.items():
+        dst = metrics.setdefault(metric, {})
+        for grp, names in groups.items():
+            dst.setdefault(grp, {}).update(names)
 
     # provenance: what produced these numbers (git versions the rest). Tools are
     # discovered from the flow the target ran; refreshed each run.
     tools, scversion = {}, None
-    for _, _, nm in worklist:
-        tools, scversion = read_flow_tools(nm, builddir=target_builddir(args,
-                                                                        target))
+    tbd = target_builddir(args, target)
+    for grp, _, nm in worklist:
+        tools, scversion = read_flow_tools(nm, builddir=os.path.join(tbd, grp))
         if tools or scversion:
             break
     meta = payload.get("meta", {})
@@ -341,14 +370,15 @@ def save_target(target, args, worklist):
 def add_selection_args(parser):
     """Benchmark selection + build plumbing shared by every task subcommand.
     No --target: RTL-only tasks (sim/lint) take none; target tasks add it."""
-    select = parser.add_mutually_exclusive_group()
-    select.add_argument("-g", "--group", nargs='+', choices=ALL_GROUPS,
+    parser.add_argument("-g", "--group", nargs='+', choices=ALL_GROUPS,
                         default=ALL_GROUPS, metavar="GROUP",
                         help=f"Benchmark group(s) (default: all: {ALL_GROUPS}). "
-                             "Mutually exclusive with -n")
-    select.add_argument("-n", "--name", nargs='+',
-                        help="Specific benchmark(s) by name, searched across all "
-                             "groups (globally unique). Mutually exclusive with -g")
+                             "Also narrows -n when a bare name lives in several "
+                             "groups")
+    parser.add_argument("-n", "--name", nargs='+',
+                        help="Specific benchmark(s) by bare name, looked up "
+                             "within the selected group(s); a name found in more "
+                             "than one group requires -g to disambiguate")
     parser.add_argument('-b', dest='builddir', default="build", metavar="DIR",
                         help="Build directory root (default: build)")
     parser.add_argument('-j', dest='jobs', type=int, default=1, metavar="N",
@@ -382,14 +412,18 @@ def save_task(task, args, results):
                 payload = json.load(f)
         except (ValueError, OSError):
             payload = {}
+    # benchmarks nested by group ({group: {name: metrics}}); deep-merge so a
+    # subset run updates only its benchmarks and preserves the rest.
     bench = payload.get("benchmarks", {})
-    bench.update(results)
+    for group, names in results.items():
+        bench.setdefault(group, {}).update(names)
     payload = {"meta": {"task": task, "schema_version": SCHEMA_VERSION,
                         "logikbench": getattr(lb, "__version__", None)},
                "benchmarks": bench}
     with open(out, "w") as f:
         json.dump(payload, f, indent=2, sort_keys=True)
-    print(f"Wrote {len(results)} benchmark(s) -> {out}")
+    n = sum(len(v) for v in results.values())
+    print(f"Wrote {n} benchmark(s) -> {out}")
 
 
 def publish_task(task, args):
@@ -416,7 +450,8 @@ def publish_task(task, args):
         except (ValueError, OSError):
             dst_data = {}
     bench = dst_data.get("benchmarks", {})
-    bench.update(src_data.get("benchmarks", {}))
+    for group, names in src_data.get("benchmarks", {}).items():
+        bench.setdefault(group, {}).update(names)
     payload = {"meta": src_data.get("meta", dst_data.get("meta", {})),
                "benchmarks": bench}
     with open(dst, "w") as f:
@@ -434,43 +469,48 @@ def run_rtl_task(args):
     timeout = args.timeout or None
     quiet = not args.verbose
     tasks = []
-    for _, cls, name in worklist:
-        if args.resume and is_complete(name, args.builddir):
-            loc = os.path.join(".", args.builddir, name)
+    for group, cls, name in worklist:
+        gdir = os.path.join(args.builddir, group)
+        if args.resume and is_complete(name, gdir):
+            loc = os.path.join(".", gdir, name)
             print(f"Skipping {name} ({loc}): already complete.")
             continue
-        tasks.append((cls, name))
+        tasks.append((group, cls, name))
     total = len(tasks)
     done = 0
-    results = {}
+    results = {}       # nested by group: {group: {name: metrics}}
     failures = []
 
-    def record(name, metrics, error):
+    def record(group, name, metrics, error):
         nonlocal done
         done += 1
         prefix = f"[{done}/{total}]"
-        loc = os.path.join(".", args.builddir, name)
+        loc = os.path.join(".", args.builddir, group, name)
         if error is not None:
             print(f"{prefix} Error ({task}) {name} ({loc}): {error}",
                   file=sys.stderr)
-            failures.append(name)
+            failures.append(f"{group}/{name}")
         else:
-            results[name] = metrics
+            results.setdefault(group, {})[name] = metrics
             status = (metrics or {}).get("status")
             tag = f" [{status}]" if status else ""
             print(f"{prefix} Finished ({task}) {name} ({loc}){tag}.")
 
     if args.jobs and args.jobs > 1:
         with ProcessPoolExecutor(max_workers=args.jobs) as pool:
-            futs = {pool.submit(run_task, task, cls, args.tool, args.builddir,
-                                quiet, timeout): name for cls, name in tasks}
+            futs = {pool.submit(run_task, task, cls, args.tool,
+                                os.path.join(args.builddir, group),
+                                quiet, timeout): (group, name)
+                    for group, cls, name in tasks}
             for fut in as_completed(futs):
                 m, e = fut.result()
-                record(futs[fut], m, e)
+                g, n = futs[fut]
+                record(g, n, m, e)
     else:
-        for cls, name in tasks:
-            m, e = run_task(task, cls, args.tool, args.builddir, quiet, timeout)
-            record(name, m, e)
+        for group, cls, name in tasks:
+            m, e = run_task(task, cls, args.tool,
+                            os.path.join(args.builddir, group), quiet, timeout)
+            record(group, name, m, e)
 
     save_task(task, args, results)
     if args.publish:

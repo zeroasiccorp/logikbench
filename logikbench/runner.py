@@ -58,8 +58,9 @@ TARGETS = (list(fpga.FPGA_TARGETS) + SC_TARGETS + YOSYS_TARGETS
            + TARDIGRADE_TARGETS + STA_TARGETS)
 
 
-def run_one(design_cls, target=None, options="", builddir="build", quiet=True,
-            start=None, stop=None, timeout=None, clk=None, lintonly=False):
+def run_one(design_cls, target=None, group="", options="", builddir="build",
+            quiet=True, start=None, stop=None, timeout=None, clk=None,
+            lintonly=False):
     """Run a single benchmark class; return (metrics, error).
 
     'design_cls' is the benchmark's Design subclass (resolved by the caller); it
@@ -72,10 +73,14 @@ def run_one(design_cls, target=None, options="", builddir="build", quiet=True,
     targets).
     """
     design = design_cls()
-    # key off the SC design name, not the class name: a class like EPFLArbiter
-    # has design name 'epfl_arbiter', so item.lower() would not match its build
-    # dir or recorded metrics.
+    # key off the SC design name, not the class name (a class like ConvLayer
+    # has design name 'conv_layer', which keys its build dir and metrics).
     name = design.name
+    # bare names are unique only within a group, so namespace the whole
+    # per-benchmark build tree by group: <target-builddir>/<group>/<name>. The
+    # netlist cache lives one level above the target tree (the -b root).
+    cache_root = os.path.dirname(builddir)
+    builddir = os.path.join(builddir, group)
     # fresh run by default (avoids SC build reuse); keep the prior build only
     # when resuming mid-flow with --start, which needs earlier steps' outputs.
     # --stop alone still runs from the beginning, so it wipes.
@@ -90,13 +95,13 @@ def run_one(design_cls, target=None, options="", builddir="build", quiet=True,
             metrics = {} if lintonly else read_metrics(name, FPGA_METRICS,
                                                        builddir)
         elif target in asic.SC_TARGETS:
-            asic._run_scflow(design, target, builddir, quiet, start, stop,
-                             timeout, clk, lintonly=lintonly)
+            asic._run_scflow(design, target, group, cache_root, builddir, quiet,
+                             start, stop, timeout, clk, lintonly=lintonly)
             metrics = {} if lintonly else read_metrics(name, ASIC_METRICS,
                                                        builddir)
         elif target in asic.STA_TARGETS:
-            asic._run_sta(design, target, builddir, quiet, start, stop,
-                          timeout, clk, lintonly=lintonly)
+            asic._run_sta(design, target, group, cache_root, builddir, quiet,
+                          start, stop, timeout, clk, lintonly=lintonly)
             metrics = read_metrics(name, ASIC_METRICS, builddir)
         elif target in asic.YOSYS_TARGETS or target in asic.TARDIGRADE_TARGETS:
             asic._run_lbflow(design, target, options, builddir, quiet, start,

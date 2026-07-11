@@ -37,23 +37,31 @@ mirror (public domain, no license attached):
 * Source: https://pld.ttu.ee/~maksim/benchmarks/iscas89/verilog/
 * Retrieved: 2026-07-03
 
-The circuit logic is unmodified, but the original files are not directly
-synthesizable, so each was normalized (logic untouched):
-
-* The flip-flop primitive was replaced with an equivalent synthesizable
-  behavioral model. The originals model the flop either at switch level
-  (simulation-only device primitives) or by wrapping an undefined library cell;
-  neither maps in a logic-synthesis flow. The replacement is a positional
-  `dff (CK, Q, D)` with `always @(posedge CK) Q <= D;`.
-* The unused `GND`/`VDD` power ports were removed from the circuit module (they
-  are never referenced internally).
-* `s1196` is the one exception where the original `dff` instances carry no
-  clock and the module has no clock port; a `CK` input was added and each
-  instance rewired to the 3-argument form, making it a proper synchronous
-  circuit consistent with the rest of the suite.
+The circuit logic is unmodified. The original files are not directly
+synthesizable, so each was normalized (logic untouched) and the benchmarks were
+renamed on import; both are detailed under Modifications below.
 
 This mirror carries the widely distributed 28-circuit subset; the classic
 `s208` and `s1494` are not included upstream.
+
+## Modifications
+
+Changes LogikBench made to the upstream files, documented for provenance. The
+circuit logic is unchanged throughout, and each file and its top module keep the
+upstream name (e.g. `s27.v` / `module s27`). The original files are not directly
+synthesizable, so each was normalized:
+
+1. **Flip-flop primitive replaced** with an equivalent synthesizable behavioral
+   model. The originals model the flop either at switch level (simulation-only
+   device primitives) or by wrapping an undefined library cell; neither maps in
+   a logic-synthesis flow. The replacement is a positional `dff (CK, Q, D)` with
+   `always @(posedge CK) Q <= D;`.
+2. **Unused `GND`/`VDD` power ports removed** from the circuit module (they are
+   never referenced internally).
+3. **`s1196` clock fix**: the original `dff` instances carry no clock and the
+   module has no clock port; a `CK` input was added and each instance rewired to
+   the 3-argument form, making it a proper synchronous circuit consistent with
+   the rest of the suite.
 
 ## Timing constraints (SDC)
 
@@ -75,14 +83,33 @@ top-level README's "ASIC Timing Constraints (SDC)" section.
 
 The 28 circuits vendored here:
 
-`s27`, `s298`, `s344`, `s349`, `s382`, `s386`, `s400`, `s420`, `s444`,
-`s510`, `s526`, `s641`, `s713`, `s820`, `s832`, `s838`, `s953`, `s1196`,
-`s1238`, `s1423`, `s1488`, `s5378`, `s9234`, `s13207`, `s15850`,
-`s35932`, `s38417`, `s38584`.
+`s27`, `s298`, `s344`, `s349`, `s382`,
+`s386`, `s400`, `s420`, `s444`, `s510`,
+`s526`, `s641`, `s713`, `s820`, `s832`,
+`s838`, `s953`, `s1196`, `s1238`,
+`s1423`, `s1488`, `s5378`, `s9234`,
+`s13207`, `s15850`, `s35932`, `s38417`,
+`s38584`.
 
 The numeric suffix approximates the combinational gate count; all circuits are
-single-clock (`CK`) synchronous. The largest (`s35932`, `s38417`, `s38584`) are
-substantial and may need `--timeout` on slower flows.
+single-clock (`CK`) synchronous. The largest (`s35932`,
+`s38417`, `s38584`) are substantial and may need `--timeout` on
+slower flows.
+
+## How to Cite
+
+If you use the ISCAS'89 benchmarks, please cite the original work:
+
+```bibtex
+@inproceedings{brglez1989iscas89,
+  title={Combinational Profiles of Sequential Benchmark Circuits},
+  author={Brglez, Franc and Bryan, David and Kozminski, Krzysztof},
+  booktitle={Proc. IEEE International Symposium on Circuits and Systems (ISCAS)},
+  volume={3},
+  pages={1929--1934},
+  year={1989}
+}
+```
 
 ## References
 

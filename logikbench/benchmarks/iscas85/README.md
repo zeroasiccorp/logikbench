@@ -41,6 +41,13 @@ mirror (public domain, no license attached):
 base `c880.v` is a cell-library-mapped netlist that references undefined cells
 and does not synthesize standalone. All other circuits are the base `.v` files.
 
+## Modifications
+
+The netlists are vendored as the upstream files, logic and structure unchanged:
+each file and its top module keep the upstream name (e.g. `c17.v` / `module
+c17`). The one source choice is `c880`, which uses the primitive-gate `c880a.v`
+variant rather than the mirror's cell-mapped `c880.v` (see Provenance).
+
 ## Timing constraints (SDC)
 
 ISCAS'85 circuits are combinational and have no clock port, so LogikBench's
@@ -50,23 +57,37 @@ required.
 
 ## Benchmark Listing
 
-| Circuit | Function                                             |
-|---------|------------------------------------------------------|
-| c17     | Trivial 6-gate circuit (smoke test)                  |
-| c432    | 27-channel interrupt controller (priority decoder)   |
-| c499    | 32-bit single-error-correcting (SEC) circuit         |
-| c880    | 8-bit ALU                                            |
-| c1355   | 32-bit single-error-correcting (SEC) circuit         |
-| c1908   | 16-bit single-error-correcting/double-detecting      |
-| c2670   | 12-bit ALU and controller                            |
-| c3540   | 8-bit ALU                                            |
-| c5315   | ALU with parity                                      |
-| c6288   | 16x16 combinational multiplier                       |
-| c7552   | 32-bit adder/comparator                              |
+| Benchmark      | Function                                             |
+|----------------|------------------------------------------------------|
+| c17    | Trivial 6-gate circuit (smoke test)                  |
+| c432   | 27-channel interrupt controller (priority decoder)   |
+| c499   | 32-bit single-error-correcting (SEC) circuit         |
+| c880   | 8-bit ALU                                            |
+| c1355  | 32-bit single-error-correcting (SEC) circuit         |
+| c1908  | 16-bit single-error-correcting/double-detecting      |
+| c2670  | 12-bit ALU and controller                            |
+| c3540  | 8-bit ALU                                            |
+| c5315  | ALU with parity                                      |
+| c6288  | 16x16 combinational multiplier                       |
+| c7552  | 32-bit adder/comparator                              |
 
 Functional interpretations follow the reverse-engineering study by Hansen,
 Yalcin, and Hayes (see References); the original release treated the circuits as
 neutral netlists without documented function.
+
+## How to Cite
+
+If you use the ISCAS'85 benchmarks, please cite the original work:
+
+```bibtex
+@inproceedings{brglez1985iscas85,
+  title={A Neutral Netlist of 10 Combinational Benchmark Circuits and a Target Translator in Fortran},
+  author={Brglez, Franc and Fujiwara, Hideo},
+  booktitle={Proc. IEEE International Symposium on Circuits and Systems (ISCAS)},
+  pages={663--698},
+  year={1985}
+}
+```
 
 ## References
 
