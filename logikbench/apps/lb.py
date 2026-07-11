@@ -584,15 +584,7 @@ LogikBench commandline runner.
 """, formatter_class=argparse.RawDescriptionHelpFormatter)
 
     sub = parser.add_subparsers(dest="command", required=False,
-                                metavar="{syn,pnr,sta,sim,lint}")
-
-    # ---- sim: simulate benchmarks (self-checking testbench), RTL-only ----
-    sim_p = sub.add_parser("sim", help="Simulate benchmarks",
-                           formatter_class=LbHelpFormatter)
-    add_selection_args(sim_p)
-    sim_p.add_argument('--tool', default="icarus",
-                       choices=["icarus", "verilator"],
-                       help="Simulator (default: icarus)")
+                                metavar="{lint,sim,syn,pnr,sta}")
 
     # ---- lint: static-analyze benchmark RTL, RTL-only ----
     lint_p = sub.add_parser("lint", help="Lint benchmarks",
@@ -602,14 +594,22 @@ LogikBench commandline runner.
                         choices=["slang", "verilator"],
                         help="Linter (default: slang)")
 
+    # ---- sim: simulate benchmarks (self-checking testbench), RTL-only ----
+    sim_p = sub.add_parser("sim", help="Simulate benchmarks",
+                           formatter_class=LbHelpFormatter)
+    add_selection_args(sim_p)
+    sim_p.add_argument('--tool', default="icarus",
+                       choices=["icarus", "verilator"],
+                       help="Simulator (default: icarus)")
+
     # ---- syn: synthesize benchmarks (target task) ----
     syn_p = sub.add_parser("syn", help="Synthesize benchmarks",
                            formatter_class=LbHelpFormatter)
-    add_selection_args(syn_p)
     syn_p.add_argument('-t', '--target', nargs='+', required=True,
                        metavar="TARGET",
                        help=f"PDK stem for ASIC ({_SYN_PDKS}) or an FPGA part "
                             "(e.g. xilinx_virtex7). Sweeps several in turn.")
+    add_selection_args(syn_p)
     syn_p.add_argument('--tool', default="yosys",
                        choices=["yosys", "tardigrade"],
                        help="ASIC synthesis mapper (default: yosys; FPGA parts "
@@ -627,12 +627,12 @@ LogikBench commandline runner.
     # ---- pnr: place-and-route benchmarks (target task) ----
     pnr_p = sub.add_parser("pnr", help="Place-and-route benchmarks",
                            formatter_class=LbHelpFormatter)
-    add_selection_args(pnr_p)
     pnr_p.add_argument('-t', '--target', nargs='+', required=True,
                        metavar="TARGET",
                        help=f"ASIC PDK stem ({_SYN_PDKS}). Place-and-routes the "
                             "netlist from `lb syn --target <pdk>` (run that "
                             "first). FPGA P&R (Logik) is not wired yet.")
+    add_selection_args(pnr_p)
     pnr_p.add_argument('--tool', default="openroad", choices=["openroad"],
                        help="Place-and-route engine (default: openroad)")
     pnr_p.add_argument('--clk', type=float, default=None, metavar="PERIOD",
@@ -650,13 +650,13 @@ LogikBench commandline runner.
                             "(default: route -- through detailed route)")
 
     # ---- sta: static timing analysis on a cached netlist (target task) ----
-    sta_p = sub.add_parser("sta", help="Static timing analysis (ASIC)",
+    sta_p = sub.add_parser("sta", help="STA benchmarks",
                            formatter_class=LbHelpFormatter)
-    add_selection_args(sta_p)
     sta_p.add_argument('-t', '--target', nargs='+', required=True,
                        metavar="TARGET",
                        help=f"ASIC PDK stem ({_SYN_PDKS}). Runs OpenSTA on the "
                             "netlist from `lb syn --target <pdk>` (run first).")
+    add_selection_args(sta_p)
     sta_p.add_argument('--tool', default="opensta", choices=["opensta"],
                        help="STA engine being benchmarked (default: opensta)")
     sta_p.add_argument('--clk', type=float, default=None, metavar="PERIOD",
