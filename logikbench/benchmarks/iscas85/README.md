@@ -68,6 +68,20 @@ Functional interpretations follow the reverse-engineering study by Hansen,
 Yalcin, and Hayes (see References); the original release treated the circuits as
 neutral netlists without documented function.
 
+## How to Cite
+
+If you use the ISCAS'85 benchmarks, please cite the original work:
+
+```bibtex
+@inproceedings{brglez1985iscas85,
+  title={A Neutral Netlist of 10 Combinational Benchmark Circuits and a Target Translator in Fortran},
+  author={Brglez, Franc and Fujiwara, Hideo},
+  booktitle={Proc. IEEE International Symposium on Circuits and Systems (ISCAS)},
+  pages={663--698},
+  year={1985}
+}
+```
+
 ## References
 
 ### Algorithm / origin

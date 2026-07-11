@@ -30,3 +30,19 @@ The EPFL benchmarks were copied over to LogikBench to simplify dependency manage
 | sqrt          | n/a    |
 | square        | n/a    |
 | voter         | n/a    |
+
+## How to Cite
+
+If you use the EPFL benchmarks, please cite the original work:
+
+L. Amaru, P.-E. Gaillardon, and G. De Micheli, "The EPFL Combinational Benchmark
+Suite," in Proc. 24th International Workshop on Logic & Synthesis (IWLS), 2015.
+
+```bibtex
+@inproceedings{amaru2015epfl,
+  title={The EPFL Combinational Benchmark Suite},
+  author={Amar{\'u}, Luca and Gaillardon, Pierre-Emmanuel and De Micheli, Giovanni},
+  booktitle={Proceedings of the 24th International Workshop on Logic \& Synthesis (IWLS)},
+  year={2015}
+}
+```

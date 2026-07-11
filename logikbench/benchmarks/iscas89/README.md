@@ -84,6 +84,21 @@ The numeric suffix approximates the combinational gate count; all circuits are
 single-clock (`CK`) synchronous. The largest (`s35932`, `s38417`, `s38584`) are
 substantial and may need `--timeout` on slower flows.
 
+## How to Cite
+
+If you use the ISCAS'89 benchmarks, please cite the original work:
+
+```bibtex
+@inproceedings{brglez1989iscas89,
+  title={Combinational Profiles of Sequential Benchmark Circuits},
+  author={Brglez, Franc and Bryan, David and Kozminski, Krzysztof},
+  booktitle={Proc. IEEE International Symposium on Circuits and Systems (ISCAS)},
+  volume={3},
+  pages={1929--1934},
+  year={1989}
+}
+```
+
 ## References
 
 ### Algorithm / origin
