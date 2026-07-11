@@ -608,7 +608,7 @@ LogikBench commandline runner.
     syn_p.add_argument('-t', '--target', nargs='+', required=True,
                        metavar="TARGET",
                        help=f"PDK stem for ASIC ({_SYN_PDKS}) or an FPGA part "
-                            "(e.g. xilinx_virtex7). Sweeps several in turn.")
+                            "(e.g. virtex7). Sweeps several in turn.")
     add_selection_args(syn_p)
     syn_p.add_argument('--tool', default="yosys",
                        choices=["yosys", "tardigrade"],

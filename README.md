@@ -69,10 +69,10 @@ The steps below are the same for either install path:
 sc-install -group fpga
 
 # Synthesize your first benchmark on an FPGA target
-lb syn -n mux --target xilinx_virtex7
+lb syn -n mux --target virtex7
 
 # Run a whole group; metrics go to build/results/<target>.json
-lb syn -g basic --target xilinx_virtex7
+lb syn -g basic --target virtex7
 lb syn -g basic --target asap7          # ASIC synthesis (yosys mapper)
 
 # Simulate the self-checking testbenches, or lint the RTL
@@ -243,7 +243,7 @@ LogikBench includes the `lb` command-line tool for batch processing benchmarks. 
 each benchmark is a SiliconCompiler `Design`, and `lb` has one subcommand per task:
 
 - `lb syn` synthesizes the selected benchmarks for one or more `--target`s (an
-  ASIC PDK stem such as `freepdk45`, or an FPGA part such as `xilinx_virtex7`)
+  ASIC PDK stem such as `freepdk45`, or an FPGA part such as `virtex7`)
   with `--tool` (yosys or, for ASIC, tardigrade). It writes a per-target metrics
   file `build/results/<target>.json`, incrementally (read-modify-write), so
   running a subset updates only those benchmarks and preserves the rest.
@@ -277,19 +277,19 @@ command:
 
 | Target | Synth command |
 |--------|---------------|
-| `xilinx_virtex7` | `synth_xilinx -family xc7` |
-| `quicklogic_polarpro` | `synth_quicklogic -family pp3` |
-| `microchip_polarfire` | `synth_microchip -family polarfire` |
-| `lattice_ice40` | `synth_ice40` |
-| `lattice_ecp5` | `synth_lattice -family ecp5` |
-| `gowin_gw5a` | `synth_gowin -family gw5a` |
-| `achronix_speedster` | `synth_achronix` |
-| `adi_flex16ffc` | `synth_analogdevices -tech t16ffc` |
-| `efinix_trion` | `synth_efinix` |
-| `fabulous_generic` | `synth_fabulous` |
-| `gatemate_cologne` | `synth_gatemate` |
-| `zeroasic_z1015` | `synth_fpga -config <arch>` (wildebeest) |
-| `zeroasic_z1060` | `synth_fpga -config <arch>` (wildebeest) |
+| `virtex7` | `synth_xilinx -family xc7` |
+| `polarpro` | `synth_quicklogic -family pp3` |
+| `polarfire` | `synth_microchip -family polarfire` |
+| `ice40` | `synth_ice40` |
+| `ecp5` | `synth_lattice -family ecp5` |
+| `gw5a` | `synth_gowin -family gw5a` |
+| `speedster` | `synth_achronix` |
+| `flex16ffc` | `synth_analogdevices -tech t16ffc` |
+| `trion` | `synth_efinix` |
+| `generic` | `synth_fabulous` |
+| `cologne` | `synth_gatemate` |
+| `z1015` | `synth_fpga -config <arch>` (wildebeest) |
+| `z1060` | `synth_fpga -config <arch>` (wildebeest) |
 
 The `zeroasic_*` targets load the [Wildebeest](https://github.com/zeroasiccorp/wildebeest)
 plugin and run `synth_fpga -config <arch>`, where `<arch>` is the per-part
@@ -403,19 +403,19 @@ and preserves the rest. Use `--publish` to promote them into the committed
 Synthesize a group on an FPGA target (metrics -> `build/results/<target>.json`):
 
 ```bash
-lb syn -g arithmetic --target xilinx_virtex7
+lb syn -g arithmetic --target virtex7
 ```
 
 Synthesize a single benchmark for a Zero ASIC part (needs the wildebeest plugin):
 
 ```bash
-lb syn -n mux --target zeroasic_z1015
+lb syn -n mux --target z1015
 ```
 
 Sweep several FPGA targets at once, 8 benchmarks in parallel:
 
 ```bash
-lb syn -g basic --target xilinx_virtex7 lattice_ice40 gowin_gw5a -j 8
+lb syn -g basic --target virtex7 ice40 gw5a -j 8
 ```
 
 Run ASIC synthesis + timing (`lbflow`) on freepdk45 with the tardigrade mapper:

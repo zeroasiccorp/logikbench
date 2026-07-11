@@ -4,7 +4,7 @@
     "options": "",
     "schema_version": 1,
     "siliconcompiler": "0.37.12",
-    "target": "zeroasic_z1015",
+    "target": "z1015",
     "tools": {
       "yosys": "0.63"
     }

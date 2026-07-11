@@ -106,9 +106,9 @@ matches `blocks/fft` and `blocks/ofdm`.
 
 - **NCO sine ROM**: a 256-entry combinational `case` (emitted by `genddc.py`),
   read combinationally and instantiated twice (sin + cos). It deliberately maps
-  to **LUTs, not BRAM** -- FPGA block RAM is synchronous-read only and the
-  `zeroasic_z1015` BRAM is `init none`, and the flow runs `--ignore-initial`, so
-  a constant ROM cannot live in BRAM. Same rationale as `blocks/fft`.
+  to **LUTs, not BRAM** -- FPGA block RAM is synchronous-read only and cannot
+  generally preload contents, and the flow runs `--ignore-initial`, so a
+  constant ROM cannot live in BRAM. Same rationale as `blocks/fft`.
 - **Multipliers**: the mixer uses ~2 multiplies; the FIR uses `NTAP`
   multiplies. These map to DSP / `efpga_mult` blocks (~`2 + NTAP` ~= 17 for the
   defaults, x2 if the tool does not share between lanes -- the FIR is

@@ -98,7 +98,7 @@ def load_configs(results_dir):
                 data = json.load(f)
             if _is_payload(data):
                 # key by file stem, not the embedded target, so variants of one
-                # target (e.g. zeroasic_z1015 and zeroasic_z1015opt) are kept as
+                # target (e.g. z1015 and z1015opt) are kept as
                 # separate columns instead of overwriting each other.
                 stem = os.path.splitext(os.path.basename(path))[0]
                 collected[stem] = data
@@ -148,8 +148,8 @@ def build_section(targets, metric_names, collected):
             by_group.setdefault(group, []).append(bench)
 
     return {
-        # columns are keyed/labeled by file stem (e.g. zeroasic_z1015,
-        # zeroasic_z1015opt); the dashboard header shows the stem directly.
+        # columns are keyed/labeled by file stem (e.g. z1015,
+        # z1015opt); the dashboard header shows the stem directly.
         "targets": targets,
         # synthesis settings each column was produced with (shown under the
         # column name); empty string means defaults.

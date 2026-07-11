@@ -1,7 +1,9 @@
 """FPGA synthesis path for LogikBench (the custom 'lbflow' FPGA flow).
 
-A '--target' of the form '<vendor>_<partname>' selects a yosys synth command
-(see FPGA_TARGETS), which is passed verbatim to scripts/fpga/synthesis_fpga.tcl.
+A '--target' names an FPGA part (e.g. 'virtex7'), which the FPGA_TARGETS lookup
+maps to a yosys synth command; that command is passed verbatim to
+scripts/fpga/synthesis_fpga.tcl. Mirrors the ASIC split: --target is the part,
+--tool (default yosys) is the synthesizer.
 """
 
 import os
@@ -26,27 +28,30 @@ def _zeroasic_command(part):
     return f"plugin -i wildebeest; synth_fpga -config {config}"
 
 
-# FPGA targets, named "<vendor>_<partname>", mapped to the yosys synth command
-# (with family/tech/partname/config args) that implements them. The command is
-# passed verbatim to scripts/fpga/synthesis_fpga.tcl, which runs it (a ';'
-# separates a plugin load from the synth command, as the zeroasic parts need
-# wildebeest) and appends -top plus the user's --options.
+# FPGA targets, keyed by product/part name (the vendor prefix is dropped, e.g.
+# 'virtex7' not 'xilinx_virtex7'), mapped to the yosys synth command (with the
+# family/tech/partname/config args) that implements them. The command is passed
+# verbatim to scripts/fpga/synthesis_fpga.tcl, which runs it (a ';' separates a
+# plugin load from the synth command, as the zeroasic parts need wildebeest) and
+# appends -top plus the user's --options. The part name is intentionally
+# independent of the -family/-tech flag inside the command (virtex7 -> xc7,
+# polarpro -> pp3, flex16ffc -> t16ffc).
 # 'intel' is intentionally absent: yosys' synth_intel is experimental and reads
 # a per-family techmap (intel/<family>/dsp_map.v) the yosys build does not ship.
 FPGA_TARGETS = {
-    "xilinx_virtex7":      "synth_xilinx -family xc7",
-    "quicklogic_polarpro": "synth_quicklogic -family pp3",
-    "microchip_polarfire": "synth_microchip -family polarfire",
-    "lattice_ice40":       "synth_ice40",
-    "lattice_ecp5":        "synth_lattice -family ecp5",
-    "gowin_gw5a":          "synth_gowin -family gw5a",
-    "achronix_speedster":  "synth_achronix",
-    "adi_flex16ffc":       "synth_analogdevices -tech t16ffc",
-    "efinix_trion":        "synth_efinix",
-    "fabulous_generic":    "synth_fabulous",
-    "gatemate_cologne":    "synth_gatemate",
-    "zeroasic_z1015":      _zeroasic_command("z1015"),
-    "zeroasic_z1060":      _zeroasic_command("z1060"),
+    "virtex7":   "synth_xilinx -family xc7",
+    "polarpro":  "synth_quicklogic -family pp3",
+    "polarfire": "synth_microchip -family polarfire",
+    "ice40":     "synth_ice40",
+    "ecp5":      "synth_lattice -family ecp5",
+    "gw5a":      "synth_gowin -family gw5a",
+    "speedster": "synth_achronix",
+    "flex16ffc": "synth_analogdevices -tech t16ffc",
+    "trion":     "synth_efinix",
+    "generic":   "synth_fabulous",
+    "cologne":   "synth_gatemate",
+    "z1015":     _zeroasic_command("z1015"),
+    "z1060":     _zeroasic_command("z1060"),
 }
 
 

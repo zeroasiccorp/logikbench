@@ -59,7 +59,7 @@ are +/-{1,3,5,7}*AMP per axis (`AMP = 2048`).
 
 ## Mapping
 
-Verified on `zeroasic_z1015`: ~8500 LUTs, ~10.2k FF (the reorder/symbol buffers
+Maps to roughly ~8500 LUTs, ~10.2k FF (the reorder/symbol buffers
 are parallel-access, so flip-flops rather than BRAM), and 48 DSP cells (the two
 `fft` instances' twiddle multipliers); no latches.
 
