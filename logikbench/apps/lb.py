@@ -20,7 +20,7 @@ SCHEMA_VERSION = 1
 
 # benchmark groups available to both subcommands
 ALL_GROUPS = ['basic', 'memory', 'arithmetic', 'epfl', 'blocks',
-              'iscas85', 'iscas89']
+              'iscas85', 'iscas89', 'koios']
 
 # metrics tracked are determined by the run mode (fpga vs asic synthesis)
 FLOW_METRICS = {'fpga': FPGA_METRICS, 'asic': ASIC_METRICS}
