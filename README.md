@@ -624,7 +624,7 @@ lb lint -g basic
 | nvdla | NVDLA deep-learning accelerator | [readme](logikbench/benchmarks/large/nvdla/README.md) |  |
 | ofdm | OFDM modem (QAM + IFFT/FFT) | [readme](logikbench/benchmarks/large/ofdm/README.md) | Y |
 | rocket | Rocket RISC-V core | [readme](logikbench/benchmarks/large/rocket/README.md) |  |
-| sonicboom | SonicBOOM (BOOM v3) out-of-order RISC-V core | [readme](logikbench/benchmarks/large/sonicboom/README.md) |  |
+| sonicboom | SonicBOOM (v3) out-of-order RISC-V core | [readme](logikbench/benchmarks/large/sonicboom/README.md) |  |
 | vortex | Vortex GPU core | [readme](logikbench/benchmarks/large/vortex/README.md) |  |
 | wally | CVW-Wally RISC-V core | [readme](logikbench/benchmarks/large/wally/README.md) |  |
 
