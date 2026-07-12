@@ -21,7 +21,7 @@ from logikbench.runner import (
 SCHEMA_VERSION = 1
 
 # benchmark groups available to both subcommands
-ALL_GROUPS = ['basic', 'memory', 'arithmetic', 'epfl', 'blocks',
+ALL_GROUPS = ['basic', 'memory', 'arithmetic', 'epfl', 'blocks', 'large',
               'iscas85', 'iscas89', 'koios']
 
 # metrics tracked are determined by the run mode (fpga vs asic synthesis)
