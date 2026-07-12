@@ -627,7 +627,7 @@ lb lint -g basic
 | ofdm | OFDM modem (QAM + IFFT/FFT) | [readme](logikbench/benchmarks/large/ofdm/README.md) | Y |
 | rocket | Rocket RISC-V core | [readme](logikbench/benchmarks/large/rocket/README.md) |  |
 | vortex | Vortex GPU core | [readme](logikbench/benchmarks/large/vortex/README.md) |  |
-| wally | CVW-Wally RISC-V core | [wally/](logikbench/benchmarks/large/wally/) |  |
+| wally | CVW-Wally RISC-V core | [readme](logikbench/benchmarks/large/wally/README.md) |  |
 
 ### EPFL Benchmarks (19 benchmarks)
 
