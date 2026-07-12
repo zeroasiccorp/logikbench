@@ -8,9 +8,10 @@ UMI crossbar (`umi_crossbar`) from Zero ASIC's UMI library, configured as an
 - repo: https://github.com/zeroasiccorp/umi (PyPI package `umi`)
 - module: `umi.sumi.Crossbar` (topmodule `umi_crossbar`)
 
-No RTL is vendored: the source is referenced from the installed `umi` pip
-package (resolved at import). The Vmux (lambdalib) and umi Arbiter dependency
-filesets are pulled from their packages.
+The umi RTL is vendored in `rtl/` (`umi_crossbar`, `umi_arbiter`, plus the
+`umi_messages.vh` header), copied from the `umi` pip package (version 0.4.15).
+`Vmux` (lambdalib) remains a dependency -- it is a mux-shim library, not
+benchmark RTL. Logic is unchanged; configured via the parameters below.
 
 # Parameters (overridden in umicross.py)
 
