@@ -20,6 +20,7 @@ from .picorv32.picorv32 import Picorv32
 from .reedsolomon.reedsolomon import Reedsolomon
 from .spi.spi import Spi
 from .serv.serv import Serv
+from .sha256.sha256 import Sha256
 from .uart.uart import Uart
 from .umicross.umicross import Umicross
 from .umidev.umidev import Umidev
@@ -59,6 +60,7 @@ __all__ = [
     "Reedsolomon",
     "Spi",
     "Serv",
+    "Sha256",
     "Uart",
     "Umicross",
     "Umidev",

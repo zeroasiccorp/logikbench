@@ -33,6 +33,18 @@ if { $sc_ignore_initial } {
     lappend sc_slang_args --ignore-initial
 }
 
+# Forward the design fileset's top-level parameter overrides (set via
+# Design.set_param) to slang as '-G <name>=<value>'. The resolved slang command
+# file (sc_rtl.f) carries +incdir+/+define+/sources but NOT params, so without
+# this a set_param has no effect on synthesis. Mirrors SC's own
+# sc_synth_asic.tcl.
+set sc_designlib [sc_cfg_get option design]
+if { [sc_cfg_exists library $sc_designlib fileset $fileset param] } {
+    dict for {key value} [sc_cfg_get library $sc_designlib fileset $fileset param] {
+        lappend sc_slang_args -G "${key}=${value}"
+    }
+}
+
 ###############################
 # Read in Design using Slang
 ################################
