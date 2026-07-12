@@ -383,9 +383,9 @@ def add_selection_args(parser):
                         help="Build directory root (default: build)")
     parser.add_argument('-j', dest='jobs', type=int, default=1, metavar="N",
                         help="Benchmarks to run in parallel (default: 1)")
-    parser.add_argument('--timeout', type=float, default=3600, metavar="SEC",
+    parser.add_argument('--timeout', type=float, default=7200, metavar="SEC",
                         help="Per-step wall-clock cap in seconds "
-                             "(default: 3600; 0 disables)")
+                             "(default: 7200; 0 disables)")
     parser.add_argument('--publish', action='store_true',
                         help="Merge results into the committed ./results tree "
                              "(git clone only; errors otherwise)")
