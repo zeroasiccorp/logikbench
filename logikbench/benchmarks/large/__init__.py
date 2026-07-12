@@ -9,6 +9,7 @@ from .nvdlasmall.nvdlasmall import NvdlaSmall
 from .ofdm.ofdm import Ofdm
 from .rocket.rocket import Rocket
 from .sonicboom.sonicboom import Sonicboom
+from .tpu.tpu import Tpu
 from .vortex.vortex import Vortex
 from .wally.wally import Wally
 
@@ -24,6 +25,7 @@ __all__ = [
     "Ofdm",
     "Rocket",
     "Sonicboom",
+    "Tpu",
     "Vortex",
     "Wally",
 ]

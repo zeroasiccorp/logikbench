@@ -8,10 +8,13 @@ TPU matrix-multiply unit (MXU).
 ## What it is
 
 `tpu` computes one tile product `C = A * B`, where `A` and `B` are `N x N`
-signed `int8` matrices and `C` is `N x N` signed `int32`. The default
-configuration is `N = 8` (a 64-PE array), `DW = 8` (int8 operands), and
-`ACCW = 32` (int32 accumulators) -- the classic TPU datatype. `N`, `DW`, and
-`ACCW` are parameters.
+signed `int8` matrices and `C` is `N x N` signed `int32`. `N`, `DW`, and `ACCW`
+are parameters; `DW = 8` (int8 operands) and `ACCW = 32` (int32 accumulators)
+are the classic TPU datatype.
+
+This benchmark is configured at **`N = 128`** (a 128x128, 16384-PE array --
+the scale of the Google TPU v1 MXU, ~10M gates), set via `set_param('N', ...)`
+in `tpu.py`. The RTL default is `N = 8`.
 
 `B` is the *weight* matrix: it is loaded into the array and held stationary in
 the processing elements. `A` is the *activation* matrix: it is streamed through

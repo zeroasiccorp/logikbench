@@ -22,6 +22,10 @@ class Tpu(Design):
 
         # top module
         self.set_topmodule(name, fileset)
+        # Large configuration: a 128x128 systolic array (16384 PEs, ~10M
+        # gates), the scale of the Google TPU v1 MXU. N is a top-level RTL
+        # parameter; the flow forwards it to the mapper (slang -G / chparam).
+        self.set_param('N', '128', fileset)
 
         # self-checking testbench (`lb sim`)
         self.add_file(f'testbench/test_{name}_smoke.v', 'testbench', dataroot=root)
