@@ -215,7 +215,10 @@ def run_sweep(args, targets, worklist, netlist_cache=False):
                 futures[future] = (target, group, name)
             for future in as_completed(futures):
                 target, group, name = futures[future]
-                _, error = future.result()
+                try:
+                    _, error = future.result()
+                except Exception as e:  # noqa: BLE001 - worker died hard (OOM-kill, segfault, signal)
+                    error = f"worker died: {e}"
                 record(target, group, name, error)
     else:
         for target, group, cls, name in tasks:
@@ -503,8 +506,11 @@ def run_rtl_task(args):
                                 quiet, timeout): (group, name)
                     for group, cls, name in tasks}
             for fut in as_completed(futs):
-                m, e = fut.result()
                 g, n = futs[fut]
+                try:
+                    m, e = fut.result()
+                except Exception as exc:  # noqa: BLE001 - worker died hard (OOM-kill, segfault, signal)
+                    m, e = None, f"worker died: {exc}"
                 record(g, n, m, e)
     else:
         for group, cls, name in tasks:
