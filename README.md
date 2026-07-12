@@ -16,7 +16,7 @@ LogikBench is a curated open source RTL benchmark suite that enables reproducibl
 
 | Challenge              | LogikBench Solution                                     |
 |------------------------|---------------------------------------------------------|
-| No "Spec CPU for RTL"  | 220 standardized RTL benchmark circuits                 |
+| No "Spec CPU for RTL"  | 239 standardized RTL benchmark circuits                 |
 | Circuit diversity      | Broad mix of circuit types, sizes, and source origins   |
 | Size diversity         | Per-circuit parameterization across multiple scales     |
 | Trust                  | Documented source code provenance and curation criteria |
