@@ -38,9 +38,9 @@ module axi_crossbar #
     // Number of AXI outputs (master interfaces)
     parameter NM = 16,
     // Width of data bus in bits
-    parameter DW = 32,
+    parameter DW = 64,
     // Width of address bus in bits
-    parameter AW = 32,
+    parameter AW = 64,
     // Width of wstrb (width of data bus in words)
     parameter STRB_WIDTH = (DW/8),
     // Input ID field width (from AXI masters)
