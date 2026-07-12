@@ -16,7 +16,7 @@ LogikBench is a curated open source RTL benchmark suite that enables reproducibl
 
 | Challenge              | LogikBench Solution                                     |
 |------------------------|---------------------------------------------------------|
-| No "Spec CPU for RTL"  | 239 standardized RTL benchmark circuits                 |
+| "No Spec CPU for RTL"  | 240 robust Verilog RTL benchmark circuits               |
 | Circuit diversity      | Broad mix of circuit types, sizes, and source origins   |
 | Size diversity         | Per-circuit parameterization across multiple scales     |
 | Trust                  | Documented source code provenance and curation criteria |
@@ -29,12 +29,10 @@ LogikBench includes the following benchmark types:
 
 | Benchmark type                  | Groups (-g)                 |
 |---------------------------------|-----------------------------|
-| Micro-benchmarks                | basic, arithmetic           |
+| Micro-benchmarks                | basic, arithmetic, memory   |
 | Legacy synthetic benchmarks     | epfl, isca85, isca89, koios |
 | Divers catalog of real circuits | blocks                      |
 | Very large benchmarks           | large                       |
-
-🏆 [Results dashboard](https://zeroasiccorp.github.io/logikbench)
 
 ----
 
@@ -613,7 +611,7 @@ lb lint -g basic
 | viterbi | Viterbi decoder | [readme](logikbench/benchmarks/blocks/viterbi/README.md) | Y |
 | wordalign | Comma detect + bitslip aligner | [readme](logikbench/benchmarks/blocks/wordalign/README.md) | Y |
 
-### Large Benchmarks (11 benchmarks)
+### Large Benchmarks (12 benchmarks)
 
 | Benchmark | Description | Source | AI |
 |-----------|-------------|--------|----|
@@ -626,6 +624,7 @@ lb lint -g basic
 | nvdla | NVDLA deep-learning accelerator | [readme](logikbench/benchmarks/large/nvdla/README.md) |  |
 | ofdm | OFDM modem (QAM + IFFT/FFT) | [readme](logikbench/benchmarks/large/ofdm/README.md) | Y |
 | rocket | Rocket RISC-V core | [readme](logikbench/benchmarks/large/rocket/README.md) |  |
+| sonicboom | SonicBOOM (v3) out-of-order RISC-V core | [readme](logikbench/benchmarks/large/sonicboom/README.md) |  |
 | vortex | Vortex GPU core | [readme](logikbench/benchmarks/large/vortex/README.md) |  |
 | wally | CVW-Wally RISC-V core | [readme](logikbench/benchmarks/large/wally/README.md) |  |
 

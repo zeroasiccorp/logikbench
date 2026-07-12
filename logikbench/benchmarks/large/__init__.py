@@ -7,6 +7,7 @@ from .lz77.lz77 import Lz77
 from .nvdla.nvdla import Nvdla
 from .ofdm.ofdm import Ofdm
 from .rocket.rocket import Rocket
+from .sonicboom.sonicboom import Sonicboom
 from .vortex.vortex import Vortex
 from .wally.wally import Wally
 
@@ -20,6 +21,7 @@ __all__ = [
     "Nvdla",
     "Ofdm",
     "Rocket",
+    "Sonicboom",
     "Vortex",
     "Wally",
 ]
