@@ -16,7 +16,7 @@ LogikBench is a curated open source RTL benchmark suite that enables reproducibl
 
 | Challenge              | LogikBench Solution                                     |
 |------------------------|---------------------------------------------------------|
-| No "Spec CPU for RTL"  | 220 standardized RTL benchmark circuits                 |
+| No "Spec CPU for RTL"  | 239 standardized RTL benchmark circuits                 |
 | Circuit diversity      | Broad mix of circuit types, sizes, and source origins   |
 | Size diversity         | Per-circuit parameterization across multiple scales     |
 | Trust                  | Documented source code provenance and curation criteria |
@@ -27,11 +27,12 @@ LogikBench is a curated open source RTL benchmark suite that enables reproducibl
 
 LogikBench includes the following benchmark types:
 
-| Benchmark type               | Groups (-g)               |
-|------------------------------|---------------------------|
-| Micro-benchmarks             | basic, arithmetic         |
-| Legacy synthetic benchmarks  | epfl, isca85, isca89      |
-| Very large and real circuits | blocks                    |
+| Benchmark type                  | Groups (-g)                 |
+|---------------------------------|-----------------------------|
+| Micro-benchmarks                | basic, arithmetic           |
+| Legacy synthetic benchmarks     | epfl, isca85, isca89, koios |
+| Divers catalog of real circuits | blocks                      |
+| Very large benchmarks           | large                       |
 
 🏆 [Results dashboard](https://zeroasiccorp.github.io/logikbench)
 
@@ -570,20 +571,15 @@ lb lint -g basic
 | regfile | Register file | [readme](logikbench/benchmarks/memory/regfile/README.md) |  |
 | rom | Read-only memory | [rom.v](logikbench/benchmarks/memory/rom/rtl/rom.v) |  |
 
-### Complex Blocks (48 benchmarks)
+### Complex Blocks (37 benchmarks)
 
 | Benchmark | Description | Source | AI |
 |-----------|-------------|--------|----|
-| aes | AES encryption core | [readme](logikbench/benchmarks/blocks/aes/README.md) |  |
 | apbregs | APB register file | [apbregs.v](logikbench/benchmarks/blocks/apbregs/rtl/apbregs.v) |  |
-| axicrossbar | AXI crossbar | [readme](logikbench/benchmarks/blocks/axicrossbar/README.md) |  |
 | axiram | AXI RAM interface | [readme](logikbench/benchmarks/blocks/axiram/README.md) |  |
-| blackparrot | BlackParrot RISC-V core | [readme](logikbench/benchmarks/blocks/blackparrot/README.md) |  |
 | conv2d | Streaming 3x3 2D convolution | [readme](logikbench/benchmarks/blocks/conv2d/README.md) | Y |
-| coralnpu | CoralNPU neural accelerator | [readme](logikbench/benchmarks/blocks/coralnpu/README.md) |  |
 | crc32 | CRC-32 generator | [readme](logikbench/benchmarks/blocks/crc32/README.md) | Y |
 | codec8b10b | 8b/10b line encoder/decoder | [readme](logikbench/benchmarks/blocks/codec8b10b/README.md) | Y |
-| cva6 | CVA6 (Ariane) RISC-V core | [readme](logikbench/benchmarks/blocks/cva6/README.md) |  |
 | ddc | Digital down-converter (NCO/mixer/CIC/FIR) | [readme](logikbench/benchmarks/blocks/ddc/README.md) | Y |
 | ethmac | Ethernet MAC | [readme](logikbench/benchmarks/blocks/ethmac/README.md) |  |
 | fft | Fast Fourier Transform | [readme](logikbench/benchmarks/blocks/fft/README.md) | Y |
@@ -601,14 +597,10 @@ lb lint -g basic
 | lfsr | Linear feedback shift register | [readme](logikbench/benchmarks/blocks/lfsr/README.md) |  |
 | linkmap | JESD204-style transport framer/deframer | [readme](logikbench/benchmarks/blocks/linkmap/README.md) | Y |
 | lpddr5 | LPDDR5 memory controller (UMI + DFI, ECC) | [readme](logikbench/benchmarks/blocks/lpddr5/README.md) | Y |
-| lz77 | LZ77 (LZSS) compressor/decompressor | [readme](logikbench/benchmarks/blocks/lz77/README.md) | Y |
 | median3x3 | Streaming 3x3 median filter | [readme](logikbench/benchmarks/blocks/median3x3/README.md) | Y |
-| nvdla | NVDLA deep-learning accelerator | [readme](logikbench/benchmarks/blocks/nvdla/README.md) |  |
-| ofdm | OFDM modem (QAM + IFFT/FFT) | [readme](logikbench/benchmarks/blocks/ofdm/README.md) | Y |
 | openpiton | OpenPiton manycore tile | [readme](logikbench/benchmarks/blocks/openpiton/README.md) |  |
 | picorv32 | PicoRV32 RISC-V core | [readme](logikbench/benchmarks/blocks/picorv32/README.md) |  |
 | reedsolomon | Reed-Solomon RS(544,514) codec | [readme](logikbench/benchmarks/blocks/reedsolomon/README.md) | Y |
-| rocket | Rocket RISC-V core | [readme](logikbench/benchmarks/blocks/rocket/README.md) |  |
 | sad8x8 | 8x8 sum of absolute differences | [readme](logikbench/benchmarks/blocks/sad8x8/README.md) | Y |
 | serv | SERV bit-serial RISC-V core | [readme](logikbench/benchmarks/blocks/serv/README.md) |  |
 | sobel3x3 | Streaming 3x3 Sobel edge detector | [readme](logikbench/benchmarks/blocks/sobel3x3/README.md) | Y |
@@ -619,9 +611,23 @@ lb lint -g basic
 | umidev | UMI device endpoint | [readme](logikbench/benchmarks/blocks/umidev/README.md) |  |
 | umiregs | UMI register file | [umiregs.v](logikbench/benchmarks/blocks/umiregs/rtl/umiregs.v) |  |
 | viterbi | Viterbi decoder | [readme](logikbench/benchmarks/blocks/viterbi/README.md) | Y |
-| vortex | Vortex GPU core | [readme](logikbench/benchmarks/blocks/vortex/README.md) |  |
-| wally | CVW-Wally RISC-V core | [wally/](logikbench/benchmarks/blocks/wally/) |  |
 | wordalign | Comma detect + bitslip aligner | [readme](logikbench/benchmarks/blocks/wordalign/README.md) | Y |
+
+### Large Benchmarks (11 benchmarks)
+
+| Benchmark | Description | Source | AI |
+|-----------|-------------|--------|----|
+| aes | AES encryption core | [readme](logikbench/benchmarks/large/aes/README.md) |  |
+| axicrossbar | AXI crossbar | [readme](logikbench/benchmarks/large/axicrossbar/README.md) |  |
+| blackparrot | BlackParrot RISC-V core | [readme](logikbench/benchmarks/large/blackparrot/README.md) |  |
+| coralnpu | CoralNPU neural accelerator | [readme](logikbench/benchmarks/large/coralnpu/README.md) |  |
+| cva6 | CVA6 (Ariane) RISC-V core | [readme](logikbench/benchmarks/large/cva6/README.md) |  |
+| lz77 | LZ77 compressor/decompressor | [readme](logikbench/benchmarks/large/lz77/README.md) | Y |
+| nvdla | NVDLA deep-learning accelerator | [readme](logikbench/benchmarks/large/nvdla/README.md) |  |
+| ofdm | OFDM modem (QAM + IFFT/FFT) | [readme](logikbench/benchmarks/large/ofdm/README.md) | Y |
+| rocket | Rocket RISC-V core | [readme](logikbench/benchmarks/large/rocket/README.md) |  |
+| vortex | Vortex GPU core | [readme](logikbench/benchmarks/large/vortex/README.md) |  |
+| wally | CVW-Wally RISC-V core | [readme](logikbench/benchmarks/large/wally/README.md) |  |
 
 ### EPFL Benchmarks (19 benchmarks)
 
@@ -715,24 +721,21 @@ Deep-learning accelerator and layer designs (pure RTL, hard blocks disabled). Se
 | softmax | Softmax classification layer | [softmax.v](logikbench/benchmarks/koios/softmax/rtl/softmax.v) |
 | spmv | Sparse matrix-vector multiplication | [spmv.v](logikbench/benchmarks/koios/spmv/rtl/spmv.v) |
 | lstm | LSTM engine | [lstm.v](logikbench/benchmarks/koios/lstm/rtl/lstm.v) |
-| robot_rl | Reinforcement-learning robot / maze application | [robot_rl.v](logikbench/benchmarks/koios/robot_rl/rtl/robot_rl.v) |
+| robot_rl | Reinforcement-learning | [robot_rl.v](logikbench/benchmarks/koios/robot_rl/rtl/robot_rl.v) |
 | dnnweaver | DNNWeaver-like accelerator | [dnnweaver.v](logikbench/benchmarks/koios/dnnweaver/rtl/dnnweaver.v) |
-| tpu_like_small_os | Google-TPU-v1-like accelerator (small, output-stationary) | [tpu_like_small_os.v](logikbench/benchmarks/koios/tpu_like_small_os/rtl/tpu_like_small_os.v) |
-| tpu_like_small_ws | Google-TPU-v1-like accelerator (small, weight-stationary) | [tpu_like_small_ws.v](logikbench/benchmarks/koios/tpu_like_small_ws/rtl/tpu_like_small_ws.v) |
+| tpu_like_small_os | Google-TPU-v1 (output-stationary) | [tpu_like_small_os.v](logikbench/benchmarks/koios/tpu_like_small_os/rtl/tpu_like_small_os.v) |
+| tpu_like_small_ws | Google-TPU-v1 (weight-stationary) | [tpu_like_small_ws.v](logikbench/benchmarks/koios/tpu_like_small_ws/rtl/tpu_like_small_ws.v) |
 | clstm_like_small | CLSTM-like accelerator (small) | [clstm_like_small.v](logikbench/benchmarks/koios/clstm_like_small/rtl/clstm_like_small.v) |
 | clstm_like_medium | CLSTM-like accelerator (medium) | [clstm_like_medium.v](logikbench/benchmarks/koios/clstm_like_medium/rtl/clstm_like_medium.v) |
 | dla_like_small | Intel-DLA-like accelerator (small) | [dla_like_small.v](logikbench/benchmarks/koios/dla_like_small/rtl/dla_like_small.v) |
 | dla_like_medium | Intel-DLA-like accelerator (medium) | [dla_like_medium.v](logikbench/benchmarks/koios/dla_like_medium/rtl/dla_like_medium.v) |
-| bwave_like_fixed_small | Microsoft-Brainwave-like NPU (fixed-point, small) | [bwave_like_fixed_small.v](logikbench/benchmarks/koios/bwave_like_fixed_small/rtl/bwave_like_fixed_small.v) |
-| bwave_like_float_small | Microsoft-Brainwave-like NPU (floating-point, small) | [bwave_like_float_small.v](logikbench/benchmarks/koios/bwave_like_float_small/rtl/bwave_like_float_small.v) |
+| bwave_like_fixed_small | Microsoft-Brainwave-like NPU | [bwave_like_fixed_small.v](logikbench/benchmarks/koios/bwave_like_fixed_small/rtl/bwave_like_fixed_small.v) |
+| bwave_like_float_small | Microsoft-Brainwave-like NPU | [bwave_like_float_small.v](logikbench/benchmarks/koios/bwave_like_float_small/rtl/bwave_like_float_small.v) |
 
 ----
 
 
-
 ## Leaderboard (WIP)
-
-
 
 Targets ranked by total LUTs over all benchmarks (config: `small`), lowest first. A benchmark with no result for a target is charged the highest LUT count any target reached on it.
 Comparing different FPGA architectures is by definition an apples to oranges exercise. Ranking by no means implies quality or goodness, it's just a neat way to compress and order data.

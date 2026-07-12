@@ -10,6 +10,7 @@ from logikbench.benchmarks import basic
 from logikbench.benchmarks import arithmetic
 from logikbench.benchmarks import memory
 from logikbench.benchmarks import blocks
+from logikbench.benchmarks import large
 from logikbench.benchmarks import epfl
 from logikbench.benchmarks import iscas85
 from logikbench.benchmarks import iscas89
@@ -20,6 +21,7 @@ __all__ = [
     "arithmetic",
     "memory",
     "blocks",
+    "large",
     "epfl",
     "iscas85",
     "iscas89",

@@ -8,9 +8,7 @@ Each benchmark circuit includes information about the author, license, and sourc
 
 | Circuit       | Params      | Ready  | Description     |
 |---------------|-------------|--------|-----------------|
-| aes           | n/a         | Y      | 128b AES cipher
 | apbregs       | DW,AW       | Y      | APB register file
-| axicrossbar   | DW,AW,NM,NS | Y      | AXI crossbar
 | axidev        | DW,AW       |        | AXI device
 | axihost       | DW,AW       |        | AXI host
 | conv2d        | DW, N       |        | 2D convolution filter
@@ -28,7 +26,6 @@ Each benchmark circuit includes information about the author, license, and sourc
 | lfsr          | DW,LFSRW    | Y      | Configurable LFSR
 | matmul        | DW          |        | Systolic array matmul
 | median3x3     | DW          |        | 2D median filter
-| ofdm          |             |        |
 | picorv32      |             | Y      | 32b RISC-V CPU
 | sad8x8        | DW          |        | 2D SAD filter
 | serv          |             | Y      | Bit serial CPU

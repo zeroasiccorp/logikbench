@@ -8,9 +8,10 @@ FULL, registered endpoint with a narrow (64-bit) UMI link.
 - repo: https://github.com/zeroasiccorp/umi (PyPI package `umi`)
 - module: `umi.sumi.Endpoint` (topmodule `umi_endpoint`)
 
-No RTL is vendored: the source is referenced from the installed `umi` pip
-package (resolved at import). The Decode/Pack/Unpack dependency filesets are
-pulled from the umi package.
+The RTL is vendored in `rtl/` (`umi_endpoint`, `umi_decode`, `umi_pack`,
+`umi_unpack`, plus the `umi_messages.vh` header), copied from the `umi` pip
+package (version 0.4.15). Logic is unchanged; the endpoint is configured via
+the parameters below.
 
 # Parameters (overridden in umidev.py)
 
