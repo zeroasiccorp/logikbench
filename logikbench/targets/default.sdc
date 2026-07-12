@@ -64,6 +64,22 @@ if {[llength $LB_CLK] > 0} {
 }
 
 ########################################
+# Asynchronous reset
+########################################
+# Reset distribution is a clock-tree / place-and-route concern (a buffered reset
+# tree built during CTS). In this synth-only timing run the reset is an
+# unbuffered, high-fanout net, so its recovery/removal checks carry an enormous
+# estimated delay and would otherwise dominate fmax on large designs (e.g. a
+# reset reaching every flop across many parallel cores). Declare reset ports as
+# false paths so timing reflects the functional logic, not the pre-CTS reset
+# net. Matched by common reset port names (explicit, to avoid data ports whose
+# name merely contains "rst", e.g. "burst"/"first").
+set LB_RESETS [get_ports -quiet {reset reset_n resetn rst rst_n rstn nreset nrst}]
+foreach _r $LB_RESETS {
+    set_false_path -from $_r
+}
+
+########################################
 # Input constraints
 ########################################
 # Remove the clock port(s) from LB_INPUTS so I/O constraints never land on the
