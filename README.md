@@ -721,10 +721,10 @@ Deep-learning accelerator and layer designs (pure RTL, hard blocks disabled). Se
 | softmax | Softmax classification layer | [softmax.v](logikbench/benchmarks/koios/softmax/rtl/softmax.v) |
 | spmv | Sparse matrix-vector multiplication | [spmv.v](logikbench/benchmarks/koios/spmv/rtl/spmv.v) |
 | lstm | LSTM engine | [lstm.v](logikbench/benchmarks/koios/lstm/rtl/lstm.v) |
-| robot_rl | Reinforcement-learning robot / maze application | [robot_rl.v](logikbench/benchmarks/koios/robot_rl/rtl/robot_rl.v) |
+| robot_rl | Reinforcement-learning | [robot_rl.v](logikbench/benchmarks/koios/robot_rl/rtl/robot_rl.v) |
 | dnnweaver | DNNWeaver-like accelerator | [dnnweaver.v](logikbench/benchmarks/koios/dnnweaver/rtl/dnnweaver.v) |
-| tpu_like_small_os | Google-TPU-v1-like accelerator (output-stationary) | [tpu_like_small_os.v](logikbench/benchmarks/koios/tpu_like_small_os/rtl/tpu_like_small_os.v) |
-| tpu_like_small_ws | Google-TPU-v1-like accelerator (weight-stationary) | [tpu_like_small_ws.v](logikbench/benchmarks/koios/tpu_like_small_ws/rtl/tpu_like_small_ws.v) |
+| tpu_like_small_os | Google-TPU-v1 (output-stationary) | [tpu_like_small_os.v](logikbench/benchmarks/koios/tpu_like_small_os/rtl/tpu_like_small_os.v) |
+| tpu_like_small_ws | Google-TPU-v1 (weight-stationary) | [tpu_like_small_ws.v](logikbench/benchmarks/koios/tpu_like_small_ws/rtl/tpu_like_small_ws.v) |
 | clstm_like_small | CLSTM-like accelerator (small) | [clstm_like_small.v](logikbench/benchmarks/koios/clstm_like_small/rtl/clstm_like_small.v) |
 | clstm_like_medium | CLSTM-like accelerator (medium) | [clstm_like_medium.v](logikbench/benchmarks/koios/clstm_like_medium/rtl/clstm_like_medium.v) |
 | dla_like_small | Intel-DLA-like accelerator (small) | [dla_like_small.v](logikbench/benchmarks/koios/dla_like_small/rtl/dla_like_small.v) |
