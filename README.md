@@ -36,6 +36,43 @@ LogikBench includes the following benchmark types:
 
 ----
 
+## Repository Organization
+
+```
+logikbench/
+|-- logikbench/                 # Python package (the installable module)
+|   |-- apps/lb.py              # the `lb` CLI: lint | sim | syn | pnr | sta
+|   |-- runner.py               # dispatch a benchmark to the right flow
+|   |-- asic.py / fpga.py       # ASIC and FPGA flow drivers
+|   |-- common.py               # shared plumbing (metrics, netlist cache)
+|   |-- flows/                  # SiliconCompiler flow definitions (syn/sta/pnr)
+|   |-- tools/                  # tool drivers + scripts (yosys, tardigrade)
+|   |-- targets/                # default.sdc + per-PDK tech knobs
+|   `-- benchmarks/             # the benchmark circuits, grouped by kind
+|       |-- basic/ memory / ... # micro-benchmarks
+|       |-- epfl/ iscas85/ ...  # legacy synthetic suites
+|       |-- blocks/             # diverse catalog of real circuits
+|       `-- large/              # very large designs (CPU cores, accelerators)
+|-- tests/                      # pytest suite (test_lint, ...)
+|-- examples/                   # standalone usage examples
+|-- docs/ dashboard/ site/      # documentation and the results dashboard
+`-- results/                    # published metric baselines
+```
+
+Every benchmark is a self-contained directory under its group:
+
+```
+benchmarks/<group>/<name>/
+|-- <name>.py         # SiliconCompiler Design object (files, params, topmodule)
+|-- rtl/              # technology-agnostic Verilog
+|-- testbench/        # self-checking smoke test for `lb sim`   (optional)
+|-- README.md         # what it is, source/provenance, license
+|-- LICENSE           # included when the RTL is vendored
+`-- ai.json           # AI-provenance record (AI-generated blocks only)
+```
+
+----
+
 ## Quick Start
 
 ### 1. Install LogikBench (Python 3.10+)
