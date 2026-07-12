@@ -16,7 +16,7 @@ LogikBench is a curated open source RTL benchmark suite that enables reproducibl
 
 | Challenge              | LogikBench Solution                                     |
 |------------------------|---------------------------------------------------------|
-| "No Spec CPU for RTL"  | 242 robust Verilog RTL benchmark circuits               |
+| "No Spec CPU for RTL"  | 243 robust Verilog RTL benchmark circuits               |
 | Circuit diversity      | Broad mix of circuit types, sizes, and source origins   |
 | Size diversity         | Per-circuit parameterization across multiple scales     |
 | Trust                  | Documented source code provenance and curation criteria |
@@ -611,12 +611,13 @@ lb lint -g basic
 | viterbi | Viterbi decoder | [readme](logikbench/benchmarks/blocks/viterbi/README.md) | Y |
 | wordalign | Comma detect + bitslip aligner | [readme](logikbench/benchmarks/blocks/wordalign/README.md) | Y |
 
-### Large Benchmarks (14 benchmarks)
+### Large Benchmarks (15 benchmarks)
 
 | Benchmark | Description | Source | AI |
 |-----------|-------------|--------|----|
 | aes | AES encryption core | [readme](logikbench/benchmarks/large/aes/README.md) |  |
 | axicrossbar | AXI crossbar | [readme](logikbench/benchmarks/large/axicrossbar/README.md) |  |
+| bitcoin | SHA256d proof-of-work miner (parametrized, uses sha256) | [readme](logikbench/benchmarks/large/bitcoin/README.md) | Y |
 | blackparrot | BlackParrot RISC-V core | [readme](logikbench/benchmarks/large/blackparrot/README.md) |  |
 | coralnpu | CoralNPU neural accelerator | [readme](logikbench/benchmarks/large/coralnpu/README.md) |  |
 | cva6 | CVA6 (Ariane) RISC-V core | [readme](logikbench/benchmarks/large/cva6/README.md) |  |

@@ -1,5 +1,6 @@
 from .aes.aes import Aes
 from .axicrossbar.axicrossbar import Axicrossbar
+from .bitcoin.bitcoin import Bitcoin
 from .blackparrot.blackparrot import BlackParrot
 from .coralnpu.coralnpu import CoralNPU
 from .cva6.cva6 import Cva6
@@ -16,6 +17,7 @@ from .wally.wally import Wally
 __all__ = [
     "Aes",
     "Axicrossbar",
+    "Bitcoin",
     "BlackParrot",
     "CoralNPU",
     "Cva6",
