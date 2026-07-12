@@ -3,12 +3,12 @@ from glob import glob
 from siliconcompiler import Design
 
 
-class Nvdla(Design):
+class NvdlaSmall(Design):
     def __init__(self):
 
-        name = 'nvdla'
+        name = 'nvdlasmall'
         topmodule = 'NV_nvdla'
-        root = 'nvdla_root'
+        root = 'nvdlasmall_root'
         here = dirname(abspath(__file__))
 
         # Config defines must be parsed first so the macros propagate to the
@@ -39,5 +39,5 @@ class Nvdla(Design):
 
 
 if __name__ == "__main__":
-    d = Nvdla()
-    d.write_fileset("nvdla.f", fileset="rtl")
+    d = NvdlaSmall()
+    d.write_fileset("nvdlasmall.f", fileset="rtl")

@@ -4,7 +4,8 @@ from .blackparrot.blackparrot import BlackParrot
 from .coralnpu.coralnpu import CoralNPU
 from .cva6.cva6 import Cva6
 from .lz77.lz77 import Lz77
-from .nvdla.nvdla import Nvdla
+from .nvdlafull.nvdlafull import NvdlaFull
+from .nvdlasmall.nvdlasmall import NvdlaSmall
 from .ofdm.ofdm import Ofdm
 from .rocket.rocket import Rocket
 from .sonicboom.sonicboom import Sonicboom
@@ -18,7 +19,8 @@ __all__ = [
     "CoralNPU",
     "Cva6",
     "Lz77",
-    "Nvdla",
+    "NvdlaFull",
+    "NvdlaSmall",
     "Ofdm",
     "Rocket",
     "Sonicboom",
