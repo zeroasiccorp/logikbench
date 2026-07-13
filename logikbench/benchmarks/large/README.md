@@ -32,6 +32,7 @@ re-applying the synthesis-time threshold.
 | nvdlafull   | NVDLA accelerator (nv_full, 2048 MACs)               |
 | nvdlasmall  | NVDLA accelerator (nv_small)                         |
 | ofdm        | OFDM modem (QAM + IFFT/FFT)                          |
+| qr          | QR decomposition solver (CORDIC/Givens systolic)     |
 | rocket      | Rocket RISC-V core                                   |
 | sonicboom   | SonicBOOM (BOOM v3) out-of-order RISC-V core         |
 | tpu         | Weight-stationary systolic matrix multiply (TPU MXU) |
