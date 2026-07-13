@@ -8,6 +8,7 @@ from .lz77.lz77 import Lz77
 from .nvdlafull.nvdlafull import NvdlaFull
 from .nvdlasmall.nvdlasmall import NvdlaSmall
 from .ofdm.ofdm import Ofdm
+from .qr.qr import Qr
 from .rocket.rocket import Rocket
 from .sonicboom.sonicboom import Sonicboom
 from .tpu.tpu import Tpu
@@ -25,6 +26,7 @@ __all__ = [
     "NvdlaFull",
     "NvdlaSmall",
     "Ofdm",
+    "Qr",
     "Rocket",
     "Sonicboom",
     "Tpu",
