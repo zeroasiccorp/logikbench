@@ -16,7 +16,7 @@ LogikBench is a curated open source RTL benchmark suite that enables reproducibl
 
 | Challenge              | LogikBench Solution                                     |
 |------------------------|---------------------------------------------------------|
-| "No Spec CPU for RTL"  | 243 robust Verilog RTL benchmark circuits               |
+| "No Spec CPU for RTL"  | 250 robust Verilog RTL benchmark circuits               |
 | Circuit diversity      | Broad mix of circuit types, sizes, and source origins   |
 | Size diversity         | Per-circuit parameterization across multiple scales     |
 | Trust                  | Documented source code provenance and curation criteria |
@@ -606,16 +606,21 @@ lb lint -g basic
 | regfile | Register file | [readme](logikbench/benchmarks/memory/regfile/README.md) |  |
 | rom | Read-only memory | [rom.v](logikbench/benchmarks/memory/rom/rtl/rom.v) |  |
 
-### Complex Blocks (37 benchmarks)
+### Complex Blocks (43 benchmarks)
 
 | Benchmark | Description | Source | AI |
 |-----------|-------------|--------|----|
 | apbregs | APB register file | [apbregs.v](logikbench/benchmarks/blocks/apbregs/rtl/apbregs.v) |  |
 | axiram | AXI RAM interface | [readme](logikbench/benchmarks/blocks/axiram/README.md) |  |
+| beamformer | N-channel delay-and-sum beamformer (RAM-based delay) | [readme](logikbench/benchmarks/blocks/beamformer/README.md) | Y |
 | conv2d | Streaming 3x3 2D convolution | [readme](logikbench/benchmarks/blocks/conv2d/README.md) | Y |
 | crc32 | CRC-32 generator | [readme](logikbench/benchmarks/blocks/crc32/README.md) | Y |
+| chiplink | Chiplet die-to-die link, AIB/BoW-style (per-lane deskew) | [readme](logikbench/benchmarks/blocks/chiplink/README.md) | Y |
 | codec8b10b | 8b/10b line encoder/decoder | [readme](logikbench/benchmarks/blocks/codec8b10b/README.md) | Y |
+| colorconv | Color-space conversion (RGB<->YCbCr, BT.601) | [readme](logikbench/benchmarks/blocks/colorconv/README.md) | Y |
 | ddc | Digital down-converter (NCO/mixer/CIC/FIR) | [readme](logikbench/benchmarks/blocks/ddc/README.md) | Y |
+| dds | Direct digital synthesizer / NCO (sine/cosine) | [readme](logikbench/benchmarks/blocks/dds/README.md) | Y |
+| dma | AXI4 scatter-gather DMA (single channel) | [readme](logikbench/benchmarks/blocks/dma/README.md) | Y |
 | ethmac | Ethernet MAC | [readme](logikbench/benchmarks/blocks/ethmac/README.md) |  |
 | fft | Fast Fourier Transform | [readme](logikbench/benchmarks/blocks/fft/README.md) | Y |
 | firfix | Fixed-coefficient FIR filter | [firfix.v](logikbench/benchmarks/blocks/firfix/rtl/firfix.v) |  |
@@ -648,7 +653,7 @@ lb lint -g basic
 | viterbi | Viterbi decoder | [readme](logikbench/benchmarks/blocks/viterbi/README.md) | Y |
 | wordalign | Comma detect + bitslip aligner | [readme](logikbench/benchmarks/blocks/wordalign/README.md) | Y |
 
-### Large Benchmarks (15 benchmarks)
+### Large Benchmarks (16 benchmarks)
 
 | Benchmark | Description | Source | AI |
 |-----------|-------------|--------|----|
@@ -662,6 +667,7 @@ lb lint -g basic
 | nvdlafull | NVDLA deep-learning accelerator (nv_full config, 2048 MACs) | [readme](logikbench/benchmarks/large/nvdlafull/README.md) |  |
 | nvdlasmall | NVDLA deep-learning accelerator (nv_small config) | [readme](logikbench/benchmarks/large/nvdlasmall/README.md) |  |
 | ofdm | OFDM modem (QAM + IFFT/FFT) | [readme](logikbench/benchmarks/large/ofdm/README.md) | Y |
+| qr | QR decomposition solver (CORDIC/Givens systolic) | [readme](logikbench/benchmarks/large/qr/README.md) | Y |
 | rocket | Rocket RISC-V core | [readme](logikbench/benchmarks/large/rocket/README.md) |  |
 | sonicboom | SonicBOOM (v3) out-of-order RISC-V core | [readme](logikbench/benchmarks/large/sonicboom/README.md) |  |
 | tpu | Weight-stationary systolic matrix multiply (TPU MXU, 128x128) | [readme](logikbench/benchmarks/large/tpu/README.md) | Y |
