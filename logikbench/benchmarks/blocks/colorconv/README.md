@@ -53,5 +53,10 @@ produces three equal outputs, and checks the neutral YCbCr-to-RGB point. Prints
 
 ## References
 
+This `colorconv.v` is an original RTL implementation, written from the ITU-R
+BT.601 color-conversion equations and the standard fixed-point
+matrix-multiply-and-clamp datapath; it is not derived from a specific HDL
+source.
+
 * ITU-R BT.601, "Studio encoding parameters of digital television for standard
   4:3 and wide-screen 16:9 aspect ratios."

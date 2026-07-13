@@ -48,5 +48,10 @@ per-channel delay through the RAM (`beam = NCHAN*k - 3`). Prints `PASSED` or
 
 ## References
 
+This `beamformer.v` is an original RTL implementation, written from the
+delay-and-sum receive-beamforming definition and the standard RAM delay-line +
+apodization-weight + adder-tree architecture; it is not derived from a specific
+HDL source.
+
 * Delay-and-sum beamforming: standard phased-array / medical-ultrasound receive
   front end (per-channel focusing delay + apodization, coherent summation).
