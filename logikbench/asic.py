@@ -194,6 +194,32 @@ def _macro_liberties(proj):
     return sorted(set(libs))
 
 
+def _blackbox_verilog(proj):
+    """Verilog blackbox models of ASIC libraries that ship them (e.g. I/O).
+
+    Some libraries provide no liberty, only empty Verilog blackbox modules --
+    the asap7 'fakeio7' I/O library is the case in point: its pad macros
+    (FAKEIO7_*) exist only as blackbox verilog (blackbox/model.v), no NLDM.
+    Those must be read into yosys as blackboxes BEFORE the design so an
+    instantiated pad cell links to a blackbox module (and survives in the
+    netlist) instead of erroring as an unknown module. Mirrors the SC asicflow,
+    which reads each asiclib's 'tool/yosys/blackbox_fileset' verilog
+    (sc_synth_asic.tcl). Libraries without a blackbox fileset (the std cells,
+    which map via liberty) contribute nothing.
+    """
+    files = []
+    for name in proj.get("asic", "asiclib"):
+        lib = proj.get("library", name, field="schema")
+        if not lib.valid("tool", "yosys", "blackbox_fileset"):
+            continue
+        for fs in lib.get("tool", "yosys", "blackbox_fileset"):
+            for f in (lib.get_file(fileset=fs) or []):
+                s = str(f)
+                if s.endswith((".v", ".sv")):
+                    files.append(s)
+    return sorted(set(files))
+
+
 def _bench_sdc(design):
     """The benchmark's own SDC path from its 'sdc' fileset, or '' if none.
 
@@ -293,6 +319,10 @@ def _run_lbflow(design, target, options, builddir, quiet, start, stop, timeout,
         # hard-macro liberties read as blackboxes so an instantiated SRAM (via
         # the lambdalib memory alias) stays a macro instead of mapping to flops.
         synvar("macrolib", _macro_liberties(proj))
+        # verilog blackbox models for libraries that ship no liberty (e.g. the
+        # asap7 fakeio7 I/O pad macros), read as blackboxes so instantiated pad
+        # cells link and survive in the netlist instead of erroring as unknown.
+        synvar("blackbox", _blackbox_verilog(proj))
     elif tool == "tardigrade":
         synvar("pdk", pdk)
     if options:

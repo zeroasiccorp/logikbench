@@ -16,7 +16,7 @@ LogikBench is a curated open source RTL benchmark suite that enables reproducibl
 
 | Challenge              | LogikBench Solution                                     |
 |------------------------|---------------------------------------------------------|
-| "No Spec CPU for RTL"  | 240 robust Verilog RTL benchmark circuits               |
+| "No Spec CPU for RTL"  | 243 robust Verilog RTL benchmark circuits               |
 | Circuit diversity      | Broad mix of circuit types, sizes, and source origins   |
 | Size diversity         | Per-circuit parameterization across multiple scales     |
 | Trust                  | Documented source code provenance and curation criteria |
@@ -33,6 +33,43 @@ LogikBench includes the following benchmark types:
 | Legacy synthetic benchmarks     | epfl, isca85, isca89, koios |
 | Divers catalog of real circuits | blocks                      |
 | Very large benchmarks           | large                       |
+
+----
+
+## Repository Organization
+
+```
+logikbench/
+|-- logikbench/                 # Python package (the installable module)
+|   |-- apps/lb.py              # the `lb` CLI: lint | sim | syn | pnr | sta
+|   |-- runner.py               # dispatch a benchmark to the right flow
+|   |-- asic.py / fpga.py       # ASIC and FPGA flow drivers
+|   |-- common.py               # shared plumbing (metrics, netlist cache)
+|   |-- flows/                  # SiliconCompiler flow definitions (syn/sta/pnr)
+|   |-- tools/                  # tool drivers + scripts (yosys, tardigrade)
+|   |-- targets/                # default.sdc + per-PDK tech knobs
+|   `-- benchmarks/             # the benchmark circuits, grouped by kind
+|       |-- basic/ memory / ... # micro-benchmarks
+|       |-- epfl/ iscas85/ ...  # legacy synthetic suites
+|       |-- blocks/             # diverse catalog of real circuits
+|       `-- large/              # very large designs (CPU cores, accelerators)
+|-- tests/                      # pytest suite (test_lint, ...)
+|-- examples/                   # standalone usage examples
+|-- docs/ dashboard/ site/      # documentation and the results dashboard
+`-- results/                    # published metric baselines
+```
+
+Every benchmark is a self-contained directory under its group:
+
+```
+benchmarks/<group>/<name>/
+|-- <name>.py         # SiliconCompiler Design object (files, params, topmodule)
+|-- rtl/              # technology-agnostic Verilog
+|-- testbench/        # self-checking smoke test for `lb sim`   (optional)
+|-- README.md         # what it is, source/provenance, license
+|-- LICENSE           # included when the RTL is vendored
+`-- ai.json           # AI-provenance record (AI-generated blocks only)
+```
 
 ----
 
@@ -601,9 +638,9 @@ lb lint -g basic
 | reedsolomon | Reed-Solomon RS(544,514) codec | [readme](logikbench/benchmarks/blocks/reedsolomon/README.md) | Y |
 | sad8x8 | 8x8 sum of absolute differences | [readme](logikbench/benchmarks/blocks/sad8x8/README.md) | Y |
 | serv | SERV bit-serial RISC-V core | [readme](logikbench/benchmarks/blocks/serv/README.md) |  |
+| sha256 | SHA-256/224 secure hash core | [readme](logikbench/benchmarks/blocks/sha256/README.md) |  |
 | sobel3x3 | Streaming 3x3 Sobel edge detector | [readme](logikbench/benchmarks/blocks/sobel3x3/README.md) | Y |
 | spi | SPI controller | [readme](logikbench/benchmarks/blocks/spi/README.md) |  |
-| tpu | Weight-stationary systolic matrix multiply (TPU MXU) | [readme](logikbench/benchmarks/blocks/tpu/README.md) | Y |
 | uart | UART | [readme](logikbench/benchmarks/blocks/uart/README.md) |  |
 | umicross | UMI crossbar | [readme](logikbench/benchmarks/blocks/umicross/README.md) |  |
 | umidev | UMI device endpoint | [readme](logikbench/benchmarks/blocks/umidev/README.md) |  |
@@ -611,20 +648,23 @@ lb lint -g basic
 | viterbi | Viterbi decoder | [readme](logikbench/benchmarks/blocks/viterbi/README.md) | Y |
 | wordalign | Comma detect + bitslip aligner | [readme](logikbench/benchmarks/blocks/wordalign/README.md) | Y |
 
-### Large Benchmarks (12 benchmarks)
+### Large Benchmarks (15 benchmarks)
 
 | Benchmark | Description | Source | AI |
 |-----------|-------------|--------|----|
 | aes | AES encryption core | [readme](logikbench/benchmarks/large/aes/README.md) |  |
 | axicrossbar | AXI crossbar | [readme](logikbench/benchmarks/large/axicrossbar/README.md) |  |
+| bitcoin | SHA256d proof-of-work miner (parametrized, uses sha256) | [readme](logikbench/benchmarks/large/bitcoin/README.md) | Y |
 | blackparrot | BlackParrot RISC-V core | [readme](logikbench/benchmarks/large/blackparrot/README.md) |  |
 | coralnpu | CoralNPU neural accelerator | [readme](logikbench/benchmarks/large/coralnpu/README.md) |  |
 | cva6 | CVA6 (Ariane) RISC-V core | [readme](logikbench/benchmarks/large/cva6/README.md) |  |
 | lz77 | LZ77 compressor/decompressor | [readme](logikbench/benchmarks/large/lz77/README.md) | Y |
-| nvdla | NVDLA deep-learning accelerator | [readme](logikbench/benchmarks/large/nvdla/README.md) |  |
+| nvdlafull | NVDLA deep-learning accelerator (nv_full config, 2048 MACs) | [readme](logikbench/benchmarks/large/nvdlafull/README.md) |  |
+| nvdlasmall | NVDLA deep-learning accelerator (nv_small config) | [readme](logikbench/benchmarks/large/nvdlasmall/README.md) |  |
 | ofdm | OFDM modem (QAM + IFFT/FFT) | [readme](logikbench/benchmarks/large/ofdm/README.md) | Y |
 | rocket | Rocket RISC-V core | [readme](logikbench/benchmarks/large/rocket/README.md) |  |
 | sonicboom | SonicBOOM (v3) out-of-order RISC-V core | [readme](logikbench/benchmarks/large/sonicboom/README.md) |  |
+| tpu | Weight-stationary systolic matrix multiply (TPU MXU, 128x128) | [readme](logikbench/benchmarks/large/tpu/README.md) | Y |
 | vortex | Vortex GPU core | [readme](logikbench/benchmarks/large/vortex/README.md) |  |
 | wally | CVW-Wally RISC-V core | [readme](logikbench/benchmarks/large/wally/README.md) |  |
 

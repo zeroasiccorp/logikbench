@@ -13,21 +13,30 @@ cleanly separated from the next design at ~160 s. (Synthesis time, not RTL
 bytes, is the criterion: e.g. `wally` has small RTL but elaborates to a large
 design, while `aes` has large RTL but a shorter run.)
 
+Designs added since the original split -- full CPU cores, accelerators, and
+parametrized generators (e.g. `sonicboom`, `nvdlafull`, `tpu`, `bitcoin`) -- are
+placed here directly when they clearly belong to this size class, rather than by
+re-applying the synthesis-time threshold.
+
 ## Benchmark listing
 
-| Benchmark   | Description                          |
-|-------------|--------------------------------------|
-| aes         | AES encryption core                  |
-| axicrossbar | AXI crossbar                         |
-| blackparrot | BlackParrot RISC-V core              |
-| coralnpu    | CoralNPU neural accelerator          |
-| cva6        | CVA6 (Ariane) RISC-V core            |
-| lz77        | LZ77 (LZSS) compressor/decompressor  |
-| nvdla       | NVDLA deep-learning accelerator      |
-| ofdm        | OFDM modem (QAM + IFFT/FFT)          |
-| rocket      | Rocket RISC-V core                   |
-| vortex      | Vortex GPU core                      |
-| wally       | CVW-Wally RISC-V core                |
+| Benchmark   | Description                                          |
+|-------------|------------------------------------------------------|
+| aes         | AES encryption core                                  |
+| axicrossbar | AXI crossbar                                         |
+| bitcoin     | SHA256d proof-of-work miner (uses sha256)            |
+| blackparrot | BlackParrot RISC-V core                              |
+| coralnpu    | CoralNPU neural accelerator                          |
+| cva6        | CVA6 (Ariane) RISC-V core                            |
+| lz77        | LZ77 (LZSS) compressor/decompressor                  |
+| nvdlafull   | NVDLA accelerator (nv_full, 2048 MACs)               |
+| nvdlasmall  | NVDLA accelerator (nv_small)                         |
+| ofdm        | OFDM modem (QAM + IFFT/FFT)                          |
+| rocket      | Rocket RISC-V core                                   |
+| sonicboom   | SonicBOOM (BOOM v3) out-of-order RISC-V core         |
+| tpu         | Weight-stationary systolic matrix multiply (TPU MXU) |
+| vortex      | Vortex GPU core                                      |
+| wally       | CVW-Wally RISC-V core                                |
 
 Provenance, license, and source history for each design live in its own
 `<name>/README.md` (moved intact from `blocks`).

@@ -80,6 +80,13 @@ class Synthesis(YosysTask):
             "of synthesizing to flops (empty for FPGA / macro-free designs)",
             [])
         self.add_parameter(
+            "blackbox", "[str]",
+            "verilog blackbox model file(s) (e.g. I/O pad macros with no "
+            "liberty) read with 'read_verilog -setattr blackbox' before the "
+            "design so instantiated library cells link to blackboxes and "
+            "survive in the netlist (empty for FPGA / designs with none)",
+            [])
+        self.add_parameter(
             "ignore_initial", "bool",
             "pass slang --ignore-initial (drop initial blocks); opt-in for "
             "benchmarks whose initial blocks are simulation-only", False)

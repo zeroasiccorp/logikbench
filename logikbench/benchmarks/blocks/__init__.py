@@ -20,7 +20,7 @@ from .picorv32.picorv32 import Picorv32
 from .reedsolomon.reedsolomon import Reedsolomon
 from .spi.spi import Spi
 from .serv.serv import Serv
-from .tpu.tpu import Tpu
+from .sha256.sha256 import Sha256
 from .uart.uart import Uart
 from .umicross.umicross import Umicross
 from .umidev.umidev import Umidev
@@ -36,6 +36,7 @@ from .jesd204b.jesd204b import Jesd204b
 from .median3x3.median3x3 import Median3x3
 from .sad8x8.sad8x8 import Sad8x8
 from .sobel3x3.sobel3x3 import Sobel3x3
+from .padring.padring import Padring
 
 __all__ = [
     "Apbregs",
@@ -60,7 +61,7 @@ __all__ = [
     "Reedsolomon",
     "Spi",
     "Serv",
-    "Tpu",
+    "Sha256",
     "Uart",
     "Umicross",
     "Umidev",
@@ -75,4 +76,5 @@ __all__ = [
     "Median3x3",
     "Sad8x8",
     "Sobel3x3",
+    "Padring",
 ]

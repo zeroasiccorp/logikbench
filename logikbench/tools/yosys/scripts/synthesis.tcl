@@ -13,6 +13,7 @@ set sc_command [sc_cfg_tool_task_get var command]
 set sc_options [sc_cfg_tool_task_get var options]
 set sc_liberty [sc_cfg_tool_task_get var liberty]
 set sc_macrolib [sc_cfg_tool_task_get var macrolib]
+set sc_blackbox [sc_cfg_tool_task_get var blackbox]
 set sc_ignore_initial [sc_cfg_tool_task_get var ignore_initial]
 set sc_lintonly [sc_cfg_tool_task_get var lintonly]
 
@@ -33,6 +34,18 @@ if { $sc_ignore_initial } {
     lappend sc_slang_args --ignore-initial
 }
 
+# Forward the design fileset's top-level parameter overrides (set via
+# Design.set_param) to slang as '-G <name>=<value>'. The resolved slang command
+# file (sc_rtl.f) carries +incdir+/+define+/sources but NOT params, so without
+# this a set_param has no effect on synthesis. Mirrors SC's own
+# sc_synth_asic.tcl.
+set sc_designlib [sc_cfg_get option design]
+if { [sc_cfg_exists library $sc_designlib fileset $fileset param] } {
+    dict for {key value} [sc_cfg_get library $sc_designlib fileset $fileset param] {
+        lappend sc_slang_args -G "${key}=${value}"
+    }
+}
+
 ###############################
 # Read in Design using Slang
 ################################
@@ -43,6 +56,15 @@ if { $sc_ignore_initial } {
 # for FPGA and macro-free ASIC designs.
 foreach macro_lib $sc_macrolib {
     yosys read_liberty -lib $macro_lib
+}
+
+# Read verilog blackbox models (libraries with no liberty, e.g. the asap7
+# fakeio7 I/O pad macros) as blackboxes BEFORE the design, for the same reason:
+# slang links an instantiated pad cell (FAKEIO7_*) to a blackbox module and the
+# instance survives in the netlist instead of erroring as an unknown module.
+# '-setattr blackbox' keeps the empty stub modules from being optimized away.
+foreach bb_file $sc_blackbox {
+    yosys read_verilog -setattr blackbox -sv $bb_file
 }
 
 yosys plugin -i slang

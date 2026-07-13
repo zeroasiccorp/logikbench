@@ -1,5 +1,6 @@
 from .aes.aes import Aes
 from .axicrossbar.axicrossbar import Axicrossbar
+from .bitcoin.bitcoin import Bitcoin
 from .blackparrot.blackparrot import BlackParrot
 from .coralnpu.coralnpu import CoralNPU
 from .cva6.cva6 import Cva6
@@ -9,12 +10,14 @@ from .nvdlasmall.nvdlasmall import NvdlaSmall
 from .ofdm.ofdm import Ofdm
 from .rocket.rocket import Rocket
 from .sonicboom.sonicboom import Sonicboom
+from .tpu.tpu import Tpu
 from .vortex.vortex import Vortex
 from .wally.wally import Wally
 
 __all__ = [
     "Aes",
     "Axicrossbar",
+    "Bitcoin",
     "BlackParrot",
     "CoralNPU",
     "Cva6",
@@ -24,6 +27,7 @@ __all__ = [
     "Ofdm",
     "Rocket",
     "Sonicboom",
+    "Tpu",
     "Vortex",
     "Wally",
 ]

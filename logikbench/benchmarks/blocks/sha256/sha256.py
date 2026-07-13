@@ -2,12 +2,14 @@ from os.path import dirname, abspath
 from siliconcompiler import Design
 
 
-class Tpu(Design):
+class Sha256(Design):
     def __init__(self):
 
-        name = 'tpu'
+        name = 'sha256'
         root = f'{name}_root'
-        source = ['rtl/tpu_pe.v', 'rtl/tpu_array.v', 'rtl/tpu.v']
+        # leaf modules first, top last (single compilation unit)
+        source = ['rtl/sha256_k_constants.v', 'rtl/sha256_w_mem.v',
+                  'rtl/sha256_core.v', 'rtl/sha256.v']
 
         # create a Design object
         super().__init__(name)
@@ -20,7 +22,7 @@ class Tpu(Design):
         for item in source:
             self.add_file(item, fileset, dataroot=root)
 
-        # top module
+        # top module (full core + 32-bit register interface)
         self.set_topmodule(name, fileset)
 
         # self-checking testbench (`lb sim`)
@@ -29,5 +31,5 @@ class Tpu(Design):
 
 
 if __name__ == "__main__":
-    d = Tpu()
-    d.write_fileset("tpu.f", fileset="rtl")
+    d = Sha256()
+    d.write_fileset("sha256.f", fileset="rtl")
