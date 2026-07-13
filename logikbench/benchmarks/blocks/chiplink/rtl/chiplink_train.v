@@ -4,41 +4,37 @@
 // License:  MIT (see LICENSE file in LogikBench repository)
 //#############################################################################
 /******************************************************************************
- * chiplink_train: per-lane deskew / alignment FSM.
+ * chiplink_train: per-lane training lock (rx_fwclk domain).
  *
- * During training the lane carries a one-hot marker (a single '1' at frame
- * phase 0). Because each lane is skewed independently, the marker arrives at
- * the receiver at some phase 'a' of the free-running receive counter rphase.
- * This block latches that phase on the first marker and computes a per-lane
- * delay = (SER - a) mod SER, so that applying that delay lines the marker (and
- * therefore every payload bit) back up to rphase 0. 'locked' asserts once the
- * marker has been seen and holds through the data phase.
+ * During training the transmitter drives a one-cycle marker on every lane at
+ * frame phase 0 (once per SER-cycle frame). This lane sees that marker delayed
+ * by its own wire skew, so it lands at some receive frame phase. The lane
+ * locks on the first marker and reports the phase (capphase) at which it was
+ * captured; the receiver turns the per-lane capphase values (referenced to
+ * lane 0) into whole-UI deskew depths and a common frame boundary.
  ******************************************************************************/
 module chiplink_train
   #(parameter SER = 4,
     parameter PW  = 2)
   (
-   input  clk,
-   input  reset_n,
-   input  train,      // 1 = training phase
-   input  lane_bit,   // this lane's received bit
-   input  [PW-1:0] rphase,     // receiver frame phase
-   output reg           locked,     // 1 once this lane is aligned
-   output reg  [PW-1:0] delay       // per-lane deskew (cycles)
+   input           fwclk,
+   input           rst_n,
+   input           train,        // 1 during the training phase
+   input           lane_bit,     // this lane's captured bit (history bit 0)
+   input  [PW-1:0] rphase,       // free-running receive frame phase
+   output reg          locked,
+   output reg [PW-1:0] capphase   // receive frame phase at which the marker hit
    );
 
-   always @(posedge clk or negedge reset_n) begin
-      if (!reset_n) begin
-         locked <= 1'b0;
-         delay  <= {PW{1'b0}};
+   always @(posedge fwclk or negedge rst_n) begin
+      if (!rst_n) begin
+         locked   <= 1'b0;
+         capphase <= {PW{1'b0}};
       end
       else if (train && !locked && lane_bit) begin
-         // marker seen at phase rphase -> delay to bring it to phase 0
-         delay  <= (rphase == {PW{1'b0}}) ? {PW{1'b0}}
-                                          : (SER - rphase);
-         locked <= 1'b1;
+         capphase <= rphase;
+         locked   <= 1'b1;
       end
-      // once locked (and in the data phase) delay/locked hold
    end
 
 endmodule

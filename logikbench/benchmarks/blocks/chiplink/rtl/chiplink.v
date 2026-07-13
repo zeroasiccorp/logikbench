@@ -4,78 +4,56 @@
 // License:  MIT (see LICENSE file in LogikBench repository)
 //#############################################################################
 /******************************************************************************
- * chiplink: a chiplet die-to-die (D2D) link, in the style of AIB / BoW
- * (Bunch of Wires) -- a source-synchronous parallel interface.
+ * chiplink: source-synchronous parallel chiplet die-to-die link controller
+ * (the digital layer of an AIB/BoW/UCIe-style link), single data rate.
  *
- * A DW-bit word is serialized across NLANES parallel wires (SER = DW/NLANES
- * bits per lane per frame) by the TX, carried over the wires with independent
- * per-lane skew, and recovered by the RX, which deskews each lane and realigns
- * the word using a training pattern. This is a synthesizable model of the
- * link logic (framing, training, per-lane deskew, word alignment); it does not
- * model the analog/DDR PHY. TX and RX are wired lane-to-lane here so the block
- * is self-contained and testable, with a per-lane skew input that delays each
- * lane between TX and RX for verification.
- *
- * The TX trains (sends alignment markers) until the RX reports 'aligned', then
- * switches to carrying data. Requires DW to be a multiple of NLANES and
- * SER >= 2. Per-lane skew must be < SER cycles (intra-frame deskew).
+ * Contains a transmit endpoint and a receive endpoint, but they are NOT wired
+ * together inside the design: the link (tx_fwclk, tx_data / rx_fwclk, rx_data)
+ * is exposed at the top level and closed externally (a testbench, or the far
+ * die) with per-lane skew and forwarded-clock flight delay. Three clock
+ * domains: tx_clk (transmit core), rx_fwclk (forwarded clock, receive capture),
+ * and rx_clk (receive core), with a gray-code async FIFO crossing from the
+ * forwarded clock into rx_clk.
  ******************************************************************************/
 module chiplink
   #(parameter NLANES = 8,
     parameter DW = 32)
   (
-   input  clk,
-   input  reset_n,
-   // TX-side word input
-   input  [DW-1:0]     din,
-   input  din_valid,
-   output din_ready,
-   // RX-side word output
-   output [DW-1:0]     dout,
-   output dout_valid,
-   // link status
-   output aligned,
-   // per-lane skew (3 bits/lane), applied on the wires between TX and RX
-   input  [NLANES*3-1:0] lane_skew
+   // transmit endpoint (tx_clk domain)
+   input               tx_clk,
+   input               tx_rst_n,
+   input [DW-1:0]      tx_din,
+   input               tx_din_valid,
+   output              tx_din_ready,
+   // forwarded clock + lane data out (link, driven off tx_clk)
+   output              tx_fwclk,
+   output [NLANES-1:0] tx_data,
+   // receive endpoint
+   input               rx_clk,
+   input               rx_rst_n,
+   input               rx_fwclk, // forwarded clock in (link)
+   input [NLANES-1:0]  rx_data,  // lane data in (link)
+   output [DW-1:0]     rx_dout,
+   output              rx_dout_valid,
+   output              rx_aligned
    );
 
-   wire [NLANES-1:0] tx_lane;   // TX serial output per lane
-   wire [NLANES-1:0] rx_lane;   // lane bits after skew insertion
-   wire              train = ~aligned;
+   chiplink_tx #(.NLANES(NLANES), .DW(DW)) u_tx
+     (.tx_clk       (tx_clk),
+      .tx_rst_n     (tx_rst_n),
+      .tx_din       (tx_din),
+      .tx_din_valid (tx_din_valid),
+      .tx_din_ready (tx_din_ready),
+      .tx_fwclk     (tx_fwclk),
+      .tx_data      (tx_data));
 
-   chiplink_tx #(.DW(DW), .NLANES(NLANES)) u_tx
-     (.clk       (clk),
-      .reset_n   (reset_n),
-      .train     (train),
-      .din       (din),
-      .din_valid (din_valid),
-      .din_ready (din_ready),
-      .lane      (tx_lane));
-
-   // per-lane skew: delay lane g by lane_skew[g] cycles (0..7); models the
-   // independent flight-time mismatch a real D2D link's deskew must absorb.
-   genvar g;
-   generate
-      for (g = 0; g < NLANES; g = g + 1) begin: skew
-         reg  [7:0] sreg;
-         wire [2:0] d = lane_skew[g*3 +: 3];
-         always @(posedge clk or negedge reset_n) begin
-            if (!reset_n)
-              sreg <= 8'b0;
-            else
-              sreg <= {sreg[6:0], tx_lane[g]};
-         end
-         assign rx_lane[g] = (d == 3'd0) ? tx_lane[g] : sreg[d-3'd1];
-      end
-   endgenerate
-
-   chiplink_rx #(.DW(DW), .NLANES(NLANES)) u_rx
-     (.clk        (clk),
-      .reset_n    (reset_n),
-      .train      (train),
-      .lane       (rx_lane),
-      .dout       (dout),
-      .dout_valid (dout_valid),
-      .aligned    (aligned));
+   chiplink_rx #(.NLANES(NLANES), .DW(DW)) u_rx
+     (.rx_clk        (rx_clk),
+      .rx_rst_n      (rx_rst_n),
+      .rx_fwclk      (rx_fwclk),
+      .rx_data       (rx_data),
+      .rx_dout       (rx_dout),
+      .rx_dout_valid (rx_dout_valid),
+      .rx_aligned    (rx_aligned));
 
 endmodule

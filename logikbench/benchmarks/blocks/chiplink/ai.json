@@ -7,16 +7,16 @@
     "model": "claude-opus-4-8",
     "provider": "Anthropic",
     "interface": "Claude Code",
-    "date": "2026-07-12"
+    "date": "2026-07-13"
   },
   "human_review": {
     "reviewed": true,
     "reviewer": "Andreas Olofsson",
-    "date": "2026-07-12",
-    "notes": "Architecture, scope, and verification were directed and reviewed by the author; validated by a per-lane-skew training and data round-trip testbench."
+    "date": "2026-07-13",
+    "notes": "Architecture, scope, and verification were directed and reviewed by the author; source-synchronous digital layer, analog PHY explicitly out of scope."
   },
   "origin": {
     "type": "original",
-    "notes": "Original implementation written for LogikBench; models an AIB/BoW-style source-synchronous D2D link (framing, training, per-lane deskew, word alignment), not copied from any specific HDL source."
+    "notes": "Original implementation written for LogikBench; follows the cited standards and hardware architectures, not copied from any specific HDL source."
   }
 }

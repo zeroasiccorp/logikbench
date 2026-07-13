@@ -8,8 +8,8 @@ class Chiplink(Design):
         name = 'chiplink'
         root = f'{name}_root'
         # leaf modules first, top last (single compilation unit)
-        source = ['rtl/chiplink_train.v', 'rtl/chiplink_tx.v',
-                  'rtl/chiplink_rx.v', 'rtl/chiplink.v']
+        source = ['rtl/chiplink_cdc_fifo.v', 'rtl/chiplink_train.v',
+                  'rtl/chiplink_tx.v', 'rtl/chiplink_rx.v', 'rtl/chiplink.v']
 
         # create a Design object
         super().__init__(name)

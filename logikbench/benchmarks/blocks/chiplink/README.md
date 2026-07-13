@@ -2,65 +2,86 @@
 
 **Source:** [rtl/chiplink.v](rtl/chiplink.v)
 
-A chiplet die-to-die (D2D) link in the style of **AIB** (Advanced Interface
-Bus) and **BoW** (Bunch of Wires): a source-synchronous parallel interface that
-serializes words across many wires, tolerates independent per-lane skew, and
-recovers word alignment with a training pattern.
+A source-synchronous parallel chiplet die-to-die (D2D) link controller in the
+style of AIB / BoW / UCIe -- the **digital** layer of the link. Single data
+rate (SDR): the transmitter forwards its clock alongside the lane data, and the
+receiver captures in that forwarded-clock domain, deskews the lanes, reassembles
+the word, and crosses into its own core clock through an asynchronous FIFO.
 
 ## What it is
 
-A `DW`-bit word is sent across `NLANES` parallel wires, `SER = DW/NLANES` bits
-per lane per frame (a frame is `SER` cycles). Each wire has its own flight time,
-so the receiver must **deskew** the lanes and **realign** them into words before
-the payload is meaningful. This is a synthesizable model of the *link logic* --
-framing, training, per-lane deskew, and word alignment -- not the analog/DDR
-PHY. TX and RX are wired lane-to-lane in one block so it is self-contained and
-testable, with a per-lane skew input that delays each lane between them.
+The block is a complete transmit endpoint and receive endpoint whose link wires
+are exposed at the top level (they are NOT looped back inside the design -- a
+testbench or the far die closes the link, applying per-lane skew and forwarded-
+clock flight delay). A DW-bit word is serialized across NLANES wires over
+SER = DW/NLANES forwarded-clock cycles (one bit per lane per cycle); the
+receiver trains on a per-frame marker to deskew the lanes, reassembles the word,
+and hands it to the core clock domain.
 
-## Circuit
+## Circuit / clock domains
 
 ```
-chiplink                top: TX -> per-lane skew -> RX; trains until aligned
-+- chiplink_tx          serialize word over NLANES lanes; send a one-hot
-|                       alignment marker per frame during training
-+- (per-lane skew)      delays each lane independently (models flight-time skew)
-+- chiplink_rx          per-lane history + word assembly; emits DW words
-   +- chiplink_train    per lane: find the marker's phase, set the deskew delay,
-                        assert aligned when every lane is locked
+tx_clk domain            | forwarded clock          | rx_clk domain
+-------------------------|--------------------------|----------------------
+chiplink_tx              |  chiplink_rx (capture)   |  chiplink_rx (core)
+  serialize + forward    |   sample lanes (rx_fwclk)|   pop FIFO -> rx_dout
+  clock + training marker|   per-lane deskew (train)|   rx_aligned
+                         |   reassemble word        |
+                         |   push -> [cdc_fifo] ------> pop
 ```
 
-- **Training / deskew:** during training every lane sends a one-hot marker (a
-  single `1` at frame phase 0). The marker arrives at a different receive phase
-  per lane; each `chiplink_train` latches that phase and sets a per-lane delay
-  so the marker -- and hence every payload bit -- realigns to a common frame
-  boundary. `aligned` asserts once all lanes are locked; the TX then switches
-  from markers to data.
-- **Data:** after alignment the TX carries one word per frame (handshaked with
-  `din_ready`); the RX deskews each lane, assembles the word, and presents it on
-  `dout`/`dout_valid`.
+- **chiplink_tx** (tx_clk): forwards tx_clk as tx_fwclk, drives one lane bit per
+  cycle, sends a frame-phase-0 training marker after reset, then data.
+- **chiplink_train** (rx_fwclk): per-lane lock to the marker, reports its capture
+  phase.
+- **chiplink_rx** (rx_fwclk -> rx_clk): captures lanes in the forwarded-clock
+  domain, deskews each lane relative to lane 0 (aligning to the latest lane),
+  reassembles the word, pushes it into the CDC FIFO; pops in rx_clk.
+- **chiplink_cdc_fifo**: gray-code asynchronous FIFO with 2-flop pointer
+  synchronizers -- the real clock-domain crossing from the forwarded clock into
+  the receiver core clock.
 
 ## Parameters
 
-- `NLANES` (default 8): number of parallel wires.
-- `DW` (default 32): word width. Must be a multiple of `NLANES`.
-- `SER = DW/NLANES`: bits per lane per frame; must be >= 2 (so the marker is
-  unambiguous). Per-lane skew must be < `SER` cycles (intra-frame deskew).
+- `NLANES` (default 8): parallel wires.
+- `DW` (default 32): word width. `SER = DW/NLANES` must be a power of two.
+
+## Layer / scope
+
+This models the **digital source-synchronous link controller**: clock
+forwarding (as a distinct clock domain), the SDR gearbox, per-lane whole-UI
+deskew + training, the clock-domain-crossing FIFO, and word alignment. Lane 0 is
+the deskew reference (earliest lane); skew is resolved within one frame
+(whole-UI, < SER cycles).
+
+### Not modeled (mixed-signal PHY IP, out of scope for RTL)
+
+- Analog drivers / receivers / termination / ESD.
+- DLL / phase-interpolator clock eye-centering.
+- Sub-UI analog per-bit deskew.
+- The DDR SerDes front-end. (A DDR gearbox would double the per-wire rate but
+  requires the analog eye-centering above to capture both edges, so the digital
+  model is SDR; DDR is a possible extension that depends on the out-of-scope
+  PHY.)
+- Lane redundancy / repair, inter-frame (> one frame) skew.
 
 ## Testbench
 
-`testbench/test_chiplink_smoke.v` applies a different skew to each lane, runs
-training, waits for `aligned`, then streams distinct known words through the
-link and checks that the receive side reconstructs the same words in order
-(found as a contiguous run in the received stream, to absorb the fixed link
-latency). Prints `PASSED`/`FAILED`, with a watchdog.
+`testbench/test_chiplink_smoke.v` is a self-checking smoke test (`lb sim`). It
+runs tx_clk and rx_clk at different, asynchronous frequencies (10 ns / 14 ns) to
+exercise the clock-domain crossing, connects the link externally with a distinct
+per-lane whole-cycle skew, waits for `rx_aligned` after training, then streams K
+known words on the transmit side and verifies the same K words emerge in order
+on `rx_dout` in the receiver clock domain (having crossed the async FIFO),
+printing `PASSED` or `FAILED`.
 
 ## References
 
-This `chiplink.v` is an original RTL implementation, written from AIB/BoW-style
-source-synchronous die-to-die link principles and a standard per-lane deskew /
-word-alignment architecture; it is not derived from a specific HDL source.
+This `chiplink.v` is an original RTL implementation, written from
+source-synchronous (forwarded-clock) parallel die-to-die link principles
+(AIB/BoW/UCIe) and a standard DDR-gearbox + per-lane-deskew + clock-domain-
+crossing architecture; it is not derived from a specific HDL source.
 
-* Advanced Interface Bus (AIB), Intel / CHIPS Alliance:
-  https://github.com/chipsalliance/AIB-specification
-* Bunch of Wires (BoW) / Open Domain-Specific Architecture (ODSA), Open Compute
-  Project: https://www.opencompute.org/
+* Intel Advanced Interface Bus (AIB).
+* Open Compute Project Bunch of Wires (BoW) / OpenHBI.
+* Universal Chiplet Interconnect Express (UCIe) specification.
