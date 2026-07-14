@@ -91,4 +91,12 @@ module test_huffman_smoke;
       $finish;
    end
    initial begin #20000000; $display("FAILED (timeout)"); $finish; end
+
+`ifdef WAVES
+   initial begin
+      $dumpfile("test_huffman_smoke.vcd");
+      $dumpvars(0, test_huffman_smoke);
+   end
+`endif
+
 endmodule

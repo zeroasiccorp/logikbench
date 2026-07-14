@@ -72,4 +72,11 @@ module test_cam_smoke;
       $finish;
    end
 
+`ifdef WAVES
+   initial begin
+      $dumpfile("test_cam_smoke.vcd");
+      $dumpvars(0, test_cam_smoke);
+   end
+`endif
+
 endmodule

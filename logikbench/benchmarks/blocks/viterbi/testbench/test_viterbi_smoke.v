@@ -146,7 +146,10 @@ module test_viterbi_smoke;
    end
 
 `ifdef WAVES
-   initial begin $dumpfile("test_viterbi_smoke.vcd"); $dumpvars(0, test_viterbi_smoke); end
+   initial begin
+      $dumpfile("test_viterbi_smoke.vcd");
+      $dumpvars(0, test_viterbi_smoke);
+   end
 `endif
 
 endmodule

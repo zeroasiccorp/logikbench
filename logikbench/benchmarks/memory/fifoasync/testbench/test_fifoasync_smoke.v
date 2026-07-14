@@ -79,4 +79,11 @@ module test_fifoasync_smoke;
       $finish;
    end
 
+`ifdef WAVES
+   initial begin
+      $dumpfile("test_fifoasync_smoke.vcd");
+      $dumpvars(0, test_fifoasync_smoke);
+   end
+`endif
+
 endmodule

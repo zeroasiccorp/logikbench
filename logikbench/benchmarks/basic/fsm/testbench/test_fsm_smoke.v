@@ -76,4 +76,12 @@ module test_fsm_smoke;
       else $display("FAILED (%0d errors)", errors);
       $finish;
    end
+
+`ifdef WAVES
+   initial begin
+      $dumpfile("test_fsm_smoke.vcd");
+      $dumpvars(0, test_fsm_smoke);
+   end
+`endif
+
 endmodule

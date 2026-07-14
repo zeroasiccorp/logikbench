@@ -89,4 +89,12 @@ module test_lz77_smoke;
       $finish;
    end
    initial begin #40000000; $display("FAILED (timeout)"); $finish; end
+
+`ifdef WAVES
+   initial begin
+      $dumpfile("test_lz77_smoke.vcd");
+      $dumpvars(0, test_lz77_smoke);
+   end
+`endif
+
 endmodule

@@ -65,4 +65,12 @@ module test_macc_smoke;
       else $display("FAILED (%0d errors)", errors);
       $finish;
    end
+
+`ifdef WAVES
+   initial begin
+      $dumpfile("test_macc_smoke.vcd");
+      $dumpvars(0, test_macc_smoke);
+   end
+`endif
+
 endmodule

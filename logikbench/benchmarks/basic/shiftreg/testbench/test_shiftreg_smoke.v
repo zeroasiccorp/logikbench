@@ -56,4 +56,11 @@ module test_shiftreg_smoke;
       $finish;
    end
 
+`ifdef WAVES
+   initial begin
+      $dumpfile("test_shiftreg_smoke.vcd");
+      $dumpvars(0, test_shiftreg_smoke);
+   end
+`endif
+
 endmodule

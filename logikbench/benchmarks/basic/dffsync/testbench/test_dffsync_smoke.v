@@ -51,4 +51,11 @@ module test_dffsync_smoke;
       $finish;
    end
 
+`ifdef WAVES
+   initial begin
+      $dumpfile("test_dffsync_smoke.vcd");
+      $dumpvars(0, test_dffsync_smoke);
+   end
+`endif
+
 endmodule

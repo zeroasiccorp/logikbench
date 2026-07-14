@@ -89,4 +89,12 @@ module test_reedsolomon_smoke;
       $finish;
    end
    initial begin #8000000; $display("FAILED (timeout)"); $finish; end
+
+`ifdef WAVES
+   initial begin
+      $dumpfile("test_reedsolomon_smoke.vcd");
+      $dumpvars(0, test_reedsolomon_smoke);
+   end
+`endif
+
 endmodule

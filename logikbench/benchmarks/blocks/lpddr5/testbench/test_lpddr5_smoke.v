@@ -289,4 +289,11 @@ module test_lpddr5_smoke;
       $finish;
    end
 
+`ifdef WAVES
+   initial begin
+      $dumpfile("test_lpddr5_smoke.vcd");
+      $dumpvars(0, test_lpddr5_smoke);
+   end
+`endif
+
 endmodule

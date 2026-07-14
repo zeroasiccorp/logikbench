@@ -81,4 +81,12 @@ module test_recip_smoke;
       else $display("FAILED (%0d errors)", errors);
       $finish;
    end
+
+`ifdef WAVES
+   initial begin
+      $dumpfile("test_recip_smoke.vcd");
+      $dumpvars(0, test_recip_smoke);
+   end
+`endif
+
 endmodule

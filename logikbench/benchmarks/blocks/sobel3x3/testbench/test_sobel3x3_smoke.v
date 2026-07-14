@@ -70,4 +70,12 @@ module test_sobel3x3_smoke;
       $finish;
    end
    initial begin #100000; $display("FAILED (timeout)"); $finish; end
+
+`ifdef WAVES
+   initial begin
+      $dumpfile("test_sobel3x3_smoke.vcd");
+      $dumpvars(0, test_sobel3x3_smoke);
+   end
+`endif
+
 endmodule

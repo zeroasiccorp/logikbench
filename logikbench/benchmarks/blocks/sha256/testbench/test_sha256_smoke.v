@@ -105,4 +105,11 @@ module test_sha256_smoke;
       $finish;
    end
 
+`ifdef WAVES
+   initial begin
+      $dumpfile("test_sha256_smoke.vcd");
+      $dumpvars(0, test_sha256_smoke);
+   end
+`endif
+
 endmodule

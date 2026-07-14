@@ -43,4 +43,11 @@ module test_mux_smoke;
       $finish;
    end
 
+`ifdef WAVES
+   initial begin
+      $dumpfile("test_mux_smoke.vcd");
+      $dumpvars(0, test_mux_smoke);
+   end
+`endif
+
 endmodule

@@ -100,4 +100,11 @@ module test_apbregs_smoke;
       $finish;
    end
 
+`ifdef WAVES
+   initial begin
+      $dumpfile("test_apbregs_smoke.vcd");
+      $dumpvars(0, test_apbregs_smoke);
+   end
+`endif
+
 endmodule

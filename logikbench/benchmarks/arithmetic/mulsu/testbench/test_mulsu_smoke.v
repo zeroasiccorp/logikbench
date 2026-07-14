@@ -45,4 +45,12 @@ module test_mulsu_smoke;
       else $display("FAILED (%0d errors)", errors);
       $finish;
    end
+
+`ifdef WAVES
+   initial begin
+      $dumpfile("test_mulsu_smoke.vcd");
+      $dumpvars(0, test_mulsu_smoke);
+   end
+`endif
+
 endmodule

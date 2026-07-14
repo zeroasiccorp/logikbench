@@ -38,4 +38,11 @@ module test_onehot_smoke;
       $finish;
    end
 
+`ifdef WAVES
+   initial begin
+      $dumpfile("test_onehot_smoke.vcd");
+      $dumpvars(0, test_onehot_smoke);
+   end
+`endif
+
 endmodule

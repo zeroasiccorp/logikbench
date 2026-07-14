@@ -70,4 +70,12 @@ module test_fifosync_smoke;
       else $display("FAILED (%0d errors)", errors);
       $finish;
    end
+
+`ifdef WAVES
+   initial begin
+      $dumpfile("test_fifosync_smoke.vcd");
+      $dumpvars(0, test_fifosync_smoke);
+   end
+`endif
+
 endmodule

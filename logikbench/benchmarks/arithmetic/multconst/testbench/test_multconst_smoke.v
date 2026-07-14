@@ -46,4 +46,12 @@ module test_multconst_smoke;
       else $display("FAILED (%0d errors)", errors);
       $finish;
    end
+
+`ifdef WAVES
+   initial begin
+      $dumpfile("test_multconst_smoke.vcd");
+      $dumpvars(0, test_multconst_smoke);
+   end
+`endif
+
 endmodule

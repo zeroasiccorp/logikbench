@@ -47,4 +47,12 @@ module test_simdmul_smoke;
       else $display("FAILED (%0d errors)", errors);
       $finish;
    end
+
+`ifdef WAVES
+   initial begin
+      $dumpfile("test_simdmul_smoke.vcd");
+      $dumpvars(0, test_simdmul_smoke);
+   end
+`endif
+
 endmodule

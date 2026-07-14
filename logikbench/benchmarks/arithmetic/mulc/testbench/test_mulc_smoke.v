@@ -31,4 +31,12 @@ module test_mulc_smoke;
       for(t=0;t<30;t=t+1) chk($random,$random,$random,$random);
       if(errors==0)$display("PASSED");else $display("FAILED (%0d errors)",errors);
       $finish; end
+
+`ifdef WAVES
+   initial begin
+      $dumpfile("test_mulc_smoke.vcd");
+      $dumpvars(0, test_mulc_smoke);
+   end
+`endif
+
 endmodule

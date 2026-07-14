@@ -44,4 +44,11 @@ module test_band_smoke;
       $finish;
    end
 
+`ifdef WAVES
+   initial begin
+      $dumpfile("test_band_smoke.vcd");
+      $dumpvars(0, test_band_smoke);
+   end
+`endif
+
 endmodule

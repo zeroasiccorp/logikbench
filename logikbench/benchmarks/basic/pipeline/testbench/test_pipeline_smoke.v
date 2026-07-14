@@ -61,4 +61,12 @@ module test_pipeline_smoke;
       else $display("FAILED (%0d errors)", errors);
       $finish;
    end
+
+`ifdef WAVES
+   initial begin
+      $dumpfile("test_pipeline_smoke.vcd");
+      $dumpvars(0, test_pipeline_smoke);
+   end
+`endif
+
 endmodule

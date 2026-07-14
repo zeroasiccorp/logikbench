@@ -59,4 +59,12 @@ module test_sad8x8_smoke;
       $finish;
    end
    initial begin #50000; $display("FAILED timeout"); $finish; end
+
+`ifdef WAVES
+   initial begin
+      $dumpfile("test_sad8x8_smoke.vcd");
+      $dumpvars(0, test_sad8x8_smoke);
+   end
+`endif
+
 endmodule
