@@ -329,14 +329,17 @@ def is_complete(name, builddir="build", jobname="job0"):
 
 
 def clean_build(name, builddir="build", jobname="job0"):
-    """Delete a benchmark's synthesis artifacts, keeping only the manifest.
+    """Reclaim a benchmark's bulky build artifacts, keeping only what metric
+    extraction needs so results stay re-derivable (and auditable) offline.
 
-    --resume and the metric readers read a single file per benchmark -- the job
-    manifest '<builddir>/<name>/<jobname>/<name>.pkg.json'. Everything else in
-    the build tree (synthesis logs, netlists, reports, tool working dirs) is
-    disposable and is what fills the disk (multi-GB logs on large designs). This
-    removes all of it and prunes the now-empty directories, leaving just the
-    manifest so a later collect (and skip-completed --resume) still works.
+    Kept: the job manifest '<builddir>/<name>/<jobname>/<name>.pkg.json' (the
+    recorded metrics, read by --resume and the metric readers) plus every
+    node's 'reports/' directory -- the small, structured metric sources:
+    stat.json (cells/luts/dsps/brams), ltp.rpt (logic depth), and the ASIC
+    timing reports (cellarea/fmax/...). Deleted: netlists (.vg/.netlist.json),
+    the multi-GB tool logs, intermediate node manifests, and tool working
+    files -- the bulk that fills the disk. Now-empty directories are pruned.
+    'lb syn --keep' skips this entirely and retains the full tree.
 
     No-op when the manifest is absent (nothing built, or already cleaned). Note
     that removing the intermediate node outputs makes a later mid-flow '--from'
@@ -346,12 +349,18 @@ def clean_build(name, builddir="build", jobname="job0"):
     manifest = os.path.join(benchdir, jobname, f"{name}.pkg.json")
     if not os.path.isfile(manifest):
         return
-    keep = os.path.abspath(manifest)
+    keep_manifest = os.path.abspath(manifest)
+
+    def _keep(path):
+        ap = os.path.abspath(path)
+        # the job manifest, plus every metric-source report (any file living
+        # under a node's 'reports/' dir): stat.json, ltp.rpt, timing rpts.
+        return ap == keep_manifest or f"{os.sep}reports{os.sep}" in ap
     # bottom-up so a directory is visited after its contents are removed
     for root, dirs, files in os.walk(benchdir, topdown=False):
         for fname in files:
             path = os.path.join(root, fname)
-            if os.path.abspath(path) != keep:
+            if not _keep(path):
                 os.remove(path)
         for dname in dirs:
             dpath = os.path.join(root, dname)
