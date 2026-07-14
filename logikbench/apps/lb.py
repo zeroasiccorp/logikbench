@@ -118,6 +118,15 @@ def target_mode(target):
     return 'fpga' if target in FPGA_TARGETS else 'asic'
 
 
+def result_stem(target):
+    """Filename stem for a target's collected/published metrics. ASIC runner
+    tokens already carry the tool ('yosys_asap7', 'sc_sky130'); FPGA part tokens
+    ('virtex7') are yosys-only, so prefix them for a uniform '<tool>_<target>'."""
+    if target in FPGA_TARGETS:
+        return f"yosys_{target}"
+    return target
+
+
 def target_builddir(args, target):
     """Per-target build tree: <builddir>/<target>/<benchmark>/..."""
     return os.path.join(args.builddir, target)
@@ -380,7 +389,7 @@ def save_target(target, args, worklist):
                                                             worklist)
     outdir = results_builddir(args)
     os.makedirs(outdir, exist_ok=True)
-    output = os.path.join(outdir, f"{target}.json")
+    output = os.path.join(outdir, f"{result_stem(target)}.json")
 
     # incremental read-modify-write: update only the benchmarks in this run and
     # preserve metrics already recorded for others (so a subset run/publish does
@@ -625,14 +634,15 @@ def publish_target_task(task, tokens, args):
                  "(the committed 'results' tree only exists there).")
     src_dir = results_builddir(args)
     for tok in tokens:
-        src = os.path.join(src_dir, f"{tok}.json")
+        stem = result_stem(tok)
+        src = os.path.join(src_dir, f"{stem}.json")
         if not os.path.isfile(src):
             print(f"--publish: no build metrics for '{tok}' at {src}, skipping",
                   file=sys.stderr)
             continue
         dstdir = os.path.join(tree, task, target_mode(tok))
         os.makedirs(dstdir, exist_ok=True)
-        dst = os.path.join(dstdir, f"{tok}.json")
+        dst = os.path.join(dstdir, f"{stem}.json")
         _merge_metrics_into(src, dst)
         print(f"Published {tok} -> {dst}")
 
