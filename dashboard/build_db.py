@@ -48,8 +48,7 @@ METRIC_INFO = {
                    "desc": "Wall-clock runtime of the synthesis step, as "
                            "recorded by SiliconCompiler."},
     "memory":     {"label": "Peak memory", "dir": "lower",  "unit": "MB",
-                   # SC records peak RSS in bytes; scale to MB for display
-                   "scale": 1e-6,
+                   # values are already stored in MB (rescaled at collection)
                    "desc": "Peak process memory of the synthesis step, as "
                            "recorded by SiliconCompiler."},
     "leakagepower": {"label": "Leakage",   "dir": "lower",  "unit": "mW",
@@ -63,8 +62,7 @@ METRIC_INFO = {
                    "desc": "Total standard-cell area of the synthesized "
                            "netlist."},
     "fmax":       {"label": "Fmax",        "dir": "higher", "unit": "MHz",
-                   # SC records fmax in Hz; scale to MHz for display
-                   "scale": 1e-6,
+                   # values are already stored in MHz (rescaled at collection)
                    "desc": "Maximum clock frequency from post-synthesis static "
                            "timing; combinational designs are timed against a "
                            "virtual clock."},
