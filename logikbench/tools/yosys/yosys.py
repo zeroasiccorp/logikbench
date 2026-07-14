@@ -29,27 +29,46 @@ _MUX_FABRIC = {"mux4x0", "mux8x0", "muxf7", "muxf8", "l6mux21", "pfumx",
                "cc_mx4", "cc_mx8", "mx4"}
 
 
+# Block-RAM (hardened memory block) primitives by vendor, as observed from
+# yosys synth output across the FPGA targets: xilinx RAMB18E1/RAMB36E1,
+# gatemate CC_BRAM_*, ice40 SB_RAM40_4K, zeroasic spram/sdpram/tdpram, efinix
+# EFX_RAM_5K, microchip RAM1K20, lattice ecp5 DP16KD/PDPW16KD, gowin DPX9B/
+# SDPX9B. Distributed/LUT-based memory (adi RAMS64X1, fabulous RegFile) is NOT
+# a block RAM -- it lives in the logic fabric -- so it is intentionally absent.
+_BRAM_SUBSTR = ("ramb", "bram", "sb_ram", "spram", "sdpram", "tdpram",
+                "efx_ram", "ram1k", "16kd", "dpx9b")
+
+
 def _is_dsp(cell):
     """True if a cell is a hard multiplier / MAC / DSP block: xilinx DSP48E1,
     lattice MULT18X18D, gatemate CC_MULT, microchip MACC_PA, adi RBBDSP,
-    zeroasic efpga_mult*. Like the muxes, these implement logic a LUT-only
-    fabric would otherwise spend (many) LUTs on, so they count toward the total.
-    Carry/ALU cells (CARRY4, ALU, CCU2C, ARI1, ...) are NOT DSPs and excluded."""
+    zeroasic efpga_mult. Recorded as the separate 'dsps' metric (not folded
+    into the LUT count). Carry/ALU cells (CARRY4, ALU, CCU2C, ARI1, EFX_ADD,
+    ...) are NOT DSPs and excluded."""
     name = cell.lower()
     return "mult" in name or "dsp" in name or "macc" in name
+
+
+def _is_bram(cell):
+    """True if a cell is a hardened block-RAM primitive (see _BRAM_SUBSTR).
+    Recorded as the separate 'brams' metric. Distributed/LUT-based RAM is
+    excluded -- it is logic-fabric memory, not a dedicated block."""
+    name = cell.lower()
+    return any(s in name for s in _BRAM_SUBSTR)
 
 
 def _is_lut(cell):
     """True if a yosys cell type counts toward the LUT (logic-fabric) total.
 
     Includes lookup tables (LUTn, $lut, SB_LUT4, CC_LUTn, EFX_LUT4, LUTFF;
-    microchip CFG1..CFG4), the dedicated mux-fabric primitives that share the
+    microchip CFG1..CFG4) and the dedicated mux-fabric primitives that share the
     LUT logic block (see _MUX_FABRIC, plus the lut-named wide muxes MUX2_LUT* /
-    LUTMUX*), and hard DSP/multiply/MAC blocks (see _is_dsp). Counting the muxes
-    and DSPs keeps fabrics that offload logic to them (quicklogic, xilinx, ...)
-    comparable with LUT-only fabrics like ice40."""
+    LUTMUX*). Counting the muxes keeps fabrics that offload logic to them
+    (quicklogic, gowin, ...) comparable with LUT-only fabrics like ice40. Hard
+    DSP and block-RAM blocks are NOT LUTs -- they are the 'dsps'/'brams'
+    metrics."""
     name = cell.lower()
-    if name in _MUX_FABRIC or _is_dsp(name):
+    if name in _MUX_FABRIC:
         return True
     return "lut" in name or re.fullmatch(r"cfg[1-4]", name) is not None
 
@@ -141,16 +160,22 @@ class Synthesis(YosysTask):
         super().post_process()
         # reuse YosysTask's stat.json metric extraction (cells, cellarea, ...)
         self._synthesis_post_process()
-        self._record_luts()
+        self._record_fpga_resources()
         self._record_logicdepth()
 
-    def _record_luts(self):
-        """Record the FPGA LUT count, which SC's base does not break out.
+    def _record_fpga_resources(self):
+        """Record the FPGA fabric resource counts SC's base does not break out:
+        LUTs, DSP blocks, and block RAMs.
 
-        'cells' is the total cell count; the LUTs are a subset reported per
-        type in stat.json. ASIC netlists have no LUTs, so nothing is recorded
-        there.
+        'cells' is the total cell count; luts/dsps/brams are disjoint subsets
+        reported per type in stat.json, classified by _is_lut / _is_dsp /
+        _is_bram. FPGA only: these are fabric resources, so on an ASIC run
+        (mode != 'fpga') nothing is recorded. On FPGA a zero count is a real
+        result (the design maps to no DSP/BRAM) and is recorded as 0, not
+        dropped.
         """
+        if self.get("var", "mode") != "fpga":
+            return
         stat_json = "reports/stat.json"
         if not os.path.exists(stat_json):
             return
@@ -158,9 +183,16 @@ class Synthesis(YosysTask):
             stats = json.load(f)
         design = stats.get("design", stats)
         by_type = design.get("num_cells_by_type", {})
-        luts = sum(n for cell, n in by_type.items() if _is_lut(cell))
-        if luts:
-            self.record_metric("luts", luts, source_file=stat_json)
+        counts = {"luts": 0, "dsps": 0, "brams": 0}
+        for cell, n in by_type.items():
+            if _is_lut(cell):
+                counts["luts"] += n
+            elif _is_dsp(cell):
+                counts["dsps"] += n
+            elif _is_bram(cell):
+                counts["brams"] += n
+        for metric, n in counts.items():
+            self.record_metric(metric, n, source_file=stat_json)
 
     def _record_logicdepth(self):
         """Record combinational logic depth: the longest topological path (in

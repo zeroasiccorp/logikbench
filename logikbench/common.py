@@ -15,7 +15,7 @@ from siliconcompiler import Project
 from siliconcompiler.schema import EditableSchema
 
 # SC-standard metric names tracked per run mode.
-FPGA_METRICS = ["luts", "logicdepth", "tasktime"]
+FPGA_METRICS = ["luts", "dsps", "brams", "logicdepth", "memory", "tasktime"]
 ASIC_METRICS = ["cells", "cellarea", "fmax", "logicdepth",
                 "leakagepower", "setuptns", "memory", "tasktime"]
 # sim (`lb sim`): pass/fail status + SC's 'tasktime' recorded at each of the

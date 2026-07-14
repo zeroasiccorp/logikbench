@@ -32,15 +32,19 @@ METRICS_BY_MODE = {"fpga": FPGA_METRICS, "asic": ASIC_METRICS}
 # per-metric presentation: 'dir' is which way is better (the dashboard colors
 # the winner green and shades losers yellow->red); 'unit' is appended in the
 # cell; 'desc' is the explanation the dashboard shows under the metric tabs.
-_FPGA_CELL_DESC = (
-    "Cells include LUTs, dedicated mux primitives, and hardened DSP blocks."
-)
 METRIC_INFO = {
     "cells":      {"label": "Cells",       "dir": "lower",  "unit": "",
                    "desc": "Total mapped standard-cell instances in the "
                            "synthesized netlist."},
-    "luts":       {"label": "Cells",       "dir": "lower",  "unit": "",
-                   "desc": _FPGA_CELL_DESC},
+    "luts":       {"label": "LUTs",        "dir": "lower",  "unit": "",
+                   "desc": "LUTs and dedicated mux-fabric primitives that share "
+                           "the LUT logic block (DSP and block RAM excluded)."},
+    "dsps":       {"label": "DSPs",        "dir": "lower",  "unit": "",
+                   "desc": "Hard multiplier / MAC / DSP blocks in the mapped "
+                           "netlist."},
+    "brams":      {"label": "BRAMs",       "dir": "lower",  "unit": "",
+                   "desc": "Hardened block-RAM primitives in the mapped netlist "
+                           "(distributed LUT-based RAM excluded)."},
     "logicdepth": {"label": "Logic depth", "dir": "lower",  "unit": "",
                    "desc": "Longest combinational path on the mapped netlist, "
                            "in cells (flip-flops excluded)."},
