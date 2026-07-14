@@ -18,5 +18,8 @@ for {set i 0} {$i < [llength $sc_parts]} {incr i} {
     }
 }
 
-# Logic depth
-yosys ltp -noff
+# Logic depth. Tee the 'ltp' result to a small report so the metric survives
+# the post-run cleanup (clean_build keeps reports/ but reclaims the run log).
+yosys echo off
+yosys tee -o ./reports/ltp.rpt ltp -noff
+yosys echo on
