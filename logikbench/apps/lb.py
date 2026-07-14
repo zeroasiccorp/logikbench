@@ -97,6 +97,18 @@ class LbHelpFormatter(argparse.HelpFormatter):
         return super()._format_action(action) + "\n"
 
 
+def run_label(value):
+    """argparse type for --label: a short variant tag suffixed onto the build
+    dir and result filename. Restricted to letters/digits so it stays a clean
+    path/filename component (the '_' is reserved as the target/label separator).
+    """
+    if value and value.isalnum():
+        return value
+    raise argparse.ArgumentTypeError(
+        f"{value!r} is not a valid label: use letters/digits only "
+        "(e.g. 'optdelay')")
+
+
 def flow_step(value):
     """argparse type for --from/--to: a friendly stage name (STEPS, mapped to
     the stage's first/last node) or a raw SC node 'step' / 'step.task' passed
@@ -118,18 +130,22 @@ def target_mode(target):
     return 'fpga' if target in FPGA_TARGETS else 'asic'
 
 
-def result_stem(target):
+def result_stem(target, label=None):
     """Filename stem for a target's collected/published metrics. ASIC runner
     tokens already carry the tool ('yosys_asap7', 'sc_sky130'); FPGA part tokens
-    ('virtex7') are yosys-only, so prefix them for a uniform '<tool>_<target>'."""
-    if target in FPGA_TARGETS:
-        return f"yosys_{target}"
-    return target
+    ('virtex7') are yosys-only, so prefix them for a uniform '<tool>_<target>'.
+    A --label variant is suffixed as '<stem>_<label>' so it stays distinct."""
+    stem = f"yosys_{target}" if target in FPGA_TARGETS else target
+    return f"{stem}_{label}" if label else stem
 
 
 def target_builddir(args, target):
-    """Per-target build tree: <builddir>/<target>/<benchmark>/..."""
-    return os.path.join(args.builddir, target)
+    """Per-target build tree: <builddir>/<target>/<benchmark>/... A --label
+    variant gets its own tree (<builddir>/<target>_<label>/...) so it never
+    shares (or resumes from) the default run's artifacts."""
+    label = getattr(args, "label", None)
+    stem = f"{target}_{label}" if label else target
+    return os.path.join(args.builddir, stem)
 
 
 def make_worklist(args):
@@ -389,7 +405,8 @@ def save_target(target, args, worklist):
                                                             worklist)
     outdir = results_builddir(args)
     os.makedirs(outdir, exist_ok=True)
-    output = os.path.join(outdir, f"{result_stem(target)}.json")
+    label = getattr(args, "label", None)
+    output = os.path.join(outdir, f"{result_stem(target, label)}.json")
 
     # incremental read-modify-write: update only the benchmarks in this run and
     # preserve metrics already recorded for others (so a subset run/publish does
@@ -430,6 +447,8 @@ def save_target(target, args, worklist):
     meta = payload.get("meta", {})
     meta["schema_version"] = SCHEMA_VERSION
     meta["target"] = target
+    if label:
+        meta["label"] = label
     if options is not None:
         meta["options"] = options
     meta["logikbench"] = getattr(lb, "__version__", None)
@@ -633,8 +652,9 @@ def publish_target_task(task, tokens, args):
         sys.exit("--publish requires a git clone of the logikbench repo "
                  "(the committed 'results' tree only exists there).")
     src_dir = results_builddir(args)
+    label = getattr(args, "label", None)
     for tok in tokens:
-        stem = result_stem(tok)
+        stem = result_stem(tok, label)
         src = os.path.join(src_dir, f"{stem}.json")
         if not os.path.isfile(src):
             print(f"--publish: no build metrics for '{tok}' at {src}, skipping",
@@ -744,6 +764,11 @@ LogikBench commandline runner.
     syn_p.add_argument('--options', default="", metavar="OPTS",
                        help="Extra options passed verbatim to the mapper (use "
                             "the =form so leading dashes parse: --options=-abc9)")
+    syn_p.add_argument('--label', default=None, metavar="LABEL", type=run_label,
+                       help="Name this run variant (letters/digits). Isolates "
+                            "its build tree (build/<target>_<label>) and result "
+                            "file (<tool>_<target>_<label>.json), so an options "
+                            "sweep does not clobber the default run.")
     syn_p.add_argument('--lintonly', action='store_true',
                        help="Elaborate (parse + hierarchy check) then stop "
                             "before synthesis")
