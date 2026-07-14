@@ -81,7 +81,7 @@ FPGA_TARGETS = {
     "speedster": "synth_achronix",
     "flex16ffc": "synth_analogdevices -tech t16ffc",
     "trion":     "synth_efinix",
-    "generic":   "synth_fabulous",
+    "fabulous":  "synth_fabulous",
     "cologne":   "synth_gatemate",
     "z1015":     _zeroasic_command("z1015"),
     "z1060":     _zeroasic_command("z1060"),

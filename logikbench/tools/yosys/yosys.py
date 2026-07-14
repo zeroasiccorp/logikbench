@@ -116,7 +116,7 @@ _CELLMAP = {
         "lut": {"LUT1", "LUT2", "LUT3", "LUT4", "LUT5", "LUT6"},
         "ignore": {"INBUF", "OUTBUF"},
     },
-    "fabulous": {                        # synth_fabulous  (generic)
+    "fabulous": {                        # synth_fabulous  (fabulous)
         "bram": {"RegFile_32x4"},        # dedicated hard RegFile BEL, not LUTRAM
         "register": {"LUTFF", "LUTFF_E", "LUTFF_SR", "LUTFF_SS", "LUTFF_ESR",
                      "LUTFF_ESS"},
