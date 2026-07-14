@@ -27,7 +27,7 @@ import shutil
 from logikbench import asic, fpga
 from logikbench.common import (
     FPGA_METRICS, ASIC_METRICS, STEPS, read_metrics, read_asic_metrics,
-    read_tool_var, read_flow_tools, is_complete, clean_build,
+    read_tool_var, read_flow_tools, read_metric_units, is_complete, clean_build,
     write_netlist_cache, read_netlist_cache, netlist_cache_path,
 )
 from logikbench.fpga import FPGA_TARGETS
@@ -38,7 +38,8 @@ __all__ = [
     "FPGA_TARGETS", "SC_TARGETS", "YOSYS_TARGETS", "TARDIGRADE_TARGETS",
     "STA_TARGETS", "TARGETS",
     "run_one", "run_task", "read_metrics", "read_asic_metrics",
-    "read_tool_var", "read_flow_tools", "is_complete", "clean_build",
+    "read_tool_var", "read_flow_tools", "read_metric_units",
+    "is_complete", "clean_build",
     "write_netlist_cache", "read_netlist_cache", "netlist_cache_path",
 ]
 

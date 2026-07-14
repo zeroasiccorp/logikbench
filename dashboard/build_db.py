@@ -47,6 +47,18 @@ METRIC_INFO = {
     "tasktime":   {"label": "Runtime",     "dir": "lower",  "unit": "s",
                    "desc": "Wall-clock runtime of the synthesis step, as "
                            "recorded by SiliconCompiler."},
+    "memory":     {"label": "Peak memory", "dir": "lower",  "unit": "MB",
+                   # SC records peak RSS in bytes; scale to MB for display
+                   "scale": 1e-6,
+                   "desc": "Peak process memory of the synthesis step, as "
+                           "recorded by SiliconCompiler."},
+    "leakagepower": {"label": "Leakage",   "dir": "lower",  "unit": "mW",
+                     # SC records leakage power in milliwatts (raw value shown)
+                     "desc": "Static leakage power of the synthesized netlist "
+                             "from post-synthesis timing analysis."},
+    "setuptns":   {"label": "Setup TNS",   "dir": "higher", "unit": "ns",
+                   "desc": "Total negative setup slack across all endpoints "
+                           "from post-synthesis static timing (0 is best)."},
     "cellarea":   {"label": "Cell area",   "dir": "lower",  "unit": "um^2",
                    "desc": "Total standard-cell area of the synthesized "
                            "netlist."},
@@ -173,8 +185,9 @@ def main():
                          "e.g. results/fpga/{small,fast} (default: results/fpga)")
     ap.add_argument("--metrics", choices=list(METRICS_BY_MODE), default="fpga",
                     help="metric set to tabulate: 'fpga' (luts/logicdepth/"
-                         "tasktime) or 'asic' (cells/cellarea/fmax/tasktime) "
-                         "(default: fpga); ignored with --flat (derived per mode)")
+                         "tasktime) or 'asic' (cells/cellarea/fmax/logicdepth/"
+                         "leakagepower/setuptns/memory/tasktime) (default: "
+                         "fpga); ignored with --flat (derived per mode)")
     ap.add_argument("--flat", action="store_true",
                     help="read flat <target>.json collect files directly from "
                          "--results (no config subdirs), split them into fpga/asic "

@@ -14,7 +14,7 @@ from logikbench.runner import (
     FPGA_METRICS, ASIC_METRICS, FPGA_TARGETS,
     YOSYS_TARGETS, STEPS, run_one, run_task,
     read_metrics, read_asic_metrics, read_tool_var, read_flow_tools,
-    is_complete, clean_build, write_netlist_cache,
+    read_metric_units, is_complete, clean_build, write_netlist_cache,
 )
 
 # results file layout version (bump when the JSON structure changes)
@@ -342,12 +342,17 @@ def save_target(target, args, worklist):
             dst.setdefault(grp, {}).update(names)
 
     # provenance: what produced these numbers (git versions the rest). Tools are
-    # discovered from the flow the target ran; refreshed each run.
-    tools, scversion = {}, None
+    # discovered from the flow the target ran; refreshed each run. The per-metric
+    # units come from SC's metric schema in the same benchmark's manifest, so
+    # values in 'metrics' stay raw and self-describing via meta['units'].
+    tools, scversion, units = {}, None, {}
     tbd = target_builddir(args, target)
+    metric_names = FLOW_METRICS[target_mode(target)]
     for grp, _, nm in worklist:
-        tools, scversion = read_flow_tools(nm, builddir=os.path.join(tbd, grp))
+        gdir = os.path.join(tbd, grp)
+        tools, scversion = read_flow_tools(nm, builddir=gdir)
         if tools or scversion:
+            units = read_metric_units(nm, metric_names, builddir=gdir) or {}
             break
     meta = payload.get("meta", {})
     meta["schema_version"] = SCHEMA_VERSION
@@ -359,6 +364,8 @@ def save_target(target, args, worklist):
         meta["siliconcompiler"] = scversion
     if tools:
         meta["tools"] = tools
+    if units:
+        meta["units"] = units
 
     payload = {"meta": meta, "metrics": metrics}
     with open(output, "w") as f:
