@@ -9,7 +9,8 @@ import json
 from collections import defaultdict
 
 import logikbench as lb
-from concurrent.futures import ProcessPoolExecutor, as_completed
+from concurrent.futures import (
+    ProcessPoolExecutor, as_completed, wait, FIRST_COMPLETED)
 
 from logikbench.runner import (
     FPGA_METRICS, ASIC_METRICS, FPGA_TARGETS,
@@ -158,12 +159,15 @@ def make_worklist(args):
     (group, name) pair keys the per-group build dir, metrics, and -n filter.
     """
     namefilter = set(n.lower() for n in args.name) if args.name else None
+    skipfilter = set(n.lower() for n in getattr(args, "skip", None) or [])
     worklist = []
     for group in args.group:
         module = getattr(lb, group)
         for item in module.__all__:
             cls = getattr(module, item)
             name = cls().name
+            if name in skipfilter:            # --skip wins over -n/-g
+                continue
             if namefilter is None or name in namefilter:
                 worklist.append((group, cls, name))
     return worklist
@@ -174,6 +178,19 @@ def check_worklist(args, worklist):
     run/collect never silently does nothing. -n searches all groups (names are
     globally unique), so an unmatched name is simply not a known benchmark.
     """
+    skip = getattr(args, "skip", None)
+    if skip:
+        # a typo'd --skip name would silently exclude nothing (the long job
+        # then runs anyway), so validate against the selected groups' names.
+        known = {getattr(mod, item)().name
+                 for group in args.group
+                 for mod in (getattr(lb, group),)
+                 for item in mod.__all__}
+        unknown = [n for n in skip if n.lower() not in known]
+        if unknown:
+            print("error: --skip: not a known benchmark: "
+                  f"{', '.join(unknown)}", file=sys.stderr)
+            sys.exit(2)
     if args.name:
         groups_by_name = defaultdict(set)
         for g, _, nm in worklist:
@@ -215,6 +232,60 @@ def target_runlist(target, args, worklist):
     return runlist
 
 
+def _load_estimates(targets):
+    """Historical per-(target, group, name) runtime and peak-memory estimates
+    from the committed results (metrics 'tasktime' in seconds, 'memory' in MB),
+    for longest-first ordering and memory-aware admission. Returns (runtime_est,
+    memory_est, have_runtime): the two callables take (target, group, name);
+    runtime_est falls back to the per-benchmark median across targets (0 if
+    unseen), memory_est to the per-benchmark max (None if unseen, so the caller
+    treats it conservatively). have_runtime is False when no tasktime data
+    exists at all, so the caller leaves ordering unchanged."""
+    tree = find_results_tree()
+    runtime, memory = {}, {}
+    rt_peers, mem_peers = defaultdict(list), defaultdict(list)
+    for target in set(targets):
+        if not tree:
+            break
+        path = os.path.join(tree, "syn", target_mode(target),
+                            f"{result_stem(target)}.json")
+        if not os.path.isfile(path):
+            continue
+        try:
+            with open(path) as f:
+                metrics = json.load(f).get("metrics", {})
+        except (ValueError, OSError):
+            continue
+        for metric, store, peers in (("tasktime", runtime, rt_peers),
+                                     ("memory", memory, mem_peers)):
+            for group, names in metrics.get(metric, {}).items():
+                if not isinstance(names, dict):
+                    continue
+                for name, val in names.items():
+                    if isinstance(val, (int, float)):
+                        store[(target, group, name)] = val
+                        peers[(group, name)].append(val)
+
+    def _median(vals):
+        return sorted(vals)[len(vals) // 2]
+
+    def runtime_est(target, group, name):
+        val = runtime.get((target, group, name))
+        if val is not None:
+            return val
+        peer = rt_peers.get((group, name))
+        return _median(peer) if peer else 0.0
+
+    def memory_est(target, group, name):
+        val = memory.get((target, group, name))
+        if val is not None:
+            return val
+        peer = mem_peers.get((group, name))
+        return max(peer) if peer else None
+
+    return runtime_est, memory_est, bool(runtime)
+
+
 def run_sweep(args, targets, worklist, netlist_cache=False):
     """Synthesize the whole target x benchmark matrix; return the failures.
 
@@ -227,6 +298,16 @@ def run_sweep(args, targets, worklist, netlist_cache=False):
     tasks = [(target, group, cls, name)
              for target in targets
              for group, cls, name in target_runlist(target, args, worklist)]
+
+    # Longest-processing-time-first: submit the slowest benchmarks earliest so a
+    # long job never becomes an end straggler running alone while workers idle.
+    # No-op (current order preserved) when there is no historical runtime data.
+    runtime_est, memory_est, have_runtime = _load_estimates(targets)
+    if have_runtime:
+        tasks.sort(key=lambda t: runtime_est(t[0], t[1], t[3]), reverse=True)
+    # --mem: cap concurrency so summed historical peak memory (MB) of running
+    # jobs stays under budget, on top of -j. Unset -> pure -j behavior.
+    budget_mb = args.mem * 1024 if getattr(args, "mem", None) else None
 
     timeout = args.timeout or None   # --timeout 0 disables the cap
     quiet = not args.verbose
@@ -278,18 +359,39 @@ def run_sweep(args, targets, worklist, netlist_cache=False):
 
     if args.jobs > 1:
         with ProcessPoolExecutor(max_workers=args.jobs) as pool:
-            futures = {}
-            for target, group, cls, name in tasks:
-                builddir = target_builddir(args, target)
-                future = pool.submit(run_one, cls, target, group,
-                                     options, builddir, quiet,
-                                     start, stop, timeout, args.clk,
-                                     lintonly)
-                futures[future] = (target, group, name)
-            for future in as_completed(futures):
-                target, group, name = futures[future]
-                _, error = future.result()
-                record(target, group, name, error)
+            running = {}          # future -> (target, group, name, est_mem_mb)
+            running_mem = 0.0
+            idx = 0
+            while idx < len(tasks) or running:
+                # admit tasks (in longest-first order) up to the worker count
+                # and the memory budget; a lone over-budget job runs anyway.
+                while idx < len(tasks) and len(running) < args.jobs:
+                    target, group, cls, name = tasks[idx]
+                    est = memory_est(target, group, name)
+                    if budget_mb is not None and est is None:
+                        est = budget_mb        # unknown footprint -> run alone
+                    est = est or 0.0
+                    if (budget_mb is not None and running
+                            and running_mem + est > budget_mb):
+                        break                  # wait for memory to free up
+                    if (budget_mb is not None and not running
+                            and est > budget_mb):
+                        print(f"warning: {target}/{group}/{name} needs "
+                              f"~{est / 1024:.1f}GB > --mem {args.mem}GB; "
+                              "running it alone", file=sys.stderr)
+                    future = pool.submit(run_one, cls, target, group, options,
+                                         target_builddir(args, target), quiet,
+                                         start, stop, timeout, args.clk,
+                                         lintonly)
+                    running[future] = (target, group, name, est)
+                    running_mem += est
+                    idx += 1
+                finished, _ = wait(running, return_when=FIRST_COMPLETED)
+                for future in finished:
+                    target, group, name, est = running.pop(future)
+                    running_mem -= est
+                    _, error = future.result()
+                    record(target, group, name, error)
     else:
         for target, group, cls, name in tasks:
             builddir = target_builddir(args, target)
@@ -478,10 +580,19 @@ def add_selection_args(parser):
                         help="Specific benchmark(s) by bare name, looked up "
                              "within the selected group(s); a name found in more "
                              "than one group requires -g to disambiguate")
+    parser.add_argument("--skip", nargs='+', metavar="NAME",
+                        help="Benchmark(s) to exclude by bare name (applied "
+                             "after -g/-n). Skip long-pole benchmarks here and "
+                             "run them separately with -n.")
     parser.add_argument('-b', dest='builddir', default="build", metavar="DIR",
                         help="Build directory root (default: build)")
     parser.add_argument('-j', dest='jobs', type=int, default=1, metavar="N",
                         help="Benchmarks to run in parallel (default: 1)")
+    parser.add_argument('--mem', type=float, default=None, metavar="GB",
+                        help="Memory budget in GB: throttle concurrency so the "
+                             "summed historical peak memory of running "
+                             "benchmarks stays under this, on top of -j "
+                             "(default: bounded by -j only)")
     parser.add_argument('--timeout', type=float, default=7200, metavar="SEC",
                         help="Per-step wall-clock cap in seconds "
                              "(default: 7200; 0 disables)")

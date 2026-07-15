@@ -34,11 +34,30 @@ METRICS_BY_MODE = {"fpga": FPGA_METRICS, "asic": ASIC_METRICS}
 # cell; 'desc' is the explanation the dashboard shows under the metric tabs.
 METRIC_INFO = {
     "cells":      {"label": "Cells",       "dir": "lower",  "unit": "",
-                   "desc": "Total mapped standard-cell instances in the "
-                           "synthesized netlist."},
+                   "desc": "Total cell count. FPGA: unweighted sum of the "
+                           "reported fabric resources (LUTs, muxes, LUT RAM, "
+                           "DSPs, BRAMs, registers, latches, carry). ASIC: "
+                           "total mapped standard-cell instances."},
     "luts":       {"label": "LUTs",        "dir": "lower",  "unit": "",
-                   "desc": "LUTs and dedicated mux-fabric primitives that share "
-                           "the LUT logic block (DSP and block RAM excluded)."},
+                   "desc": "Logic LUTs (incl. standalone inverters and the "
+                           "LUT-site equivalent of distributed/LUT RAM); "
+                           "dedicated muxes, DSP, and block RAM excluded."},
+    "muxes":      {"label": "Muxes",       "dir": "lower",  "unit": "",
+                   "desc": "Dedicated mux-fabric primitives (wide muxes that "
+                           "combine or replace LUT logic), counted separately "
+                           "from LUTs."},
+    "lutram":     {"label": "LUT RAM",     "dir": "lower",  "unit": "",
+                   "desc": "Distributed (LUT-based) RAM primitives, counted "
+                           "separately from LUTs and block RAM."},
+    "registers":  {"label": "Registers",   "dir": "lower",  "unit": "",
+                   "desc": "Flip-flops / sequential elements in the mapped "
+                           "netlist."},
+    "latches":    {"label": "Latches",     "dir": "lower",  "unit": "",
+                   "desc": "Level-sensitive latch primitives in the mapped "
+                           "netlist."},
+    "carrycells": {"label": "Carry cells", "dir": "lower",  "unit": "",
+                   "desc": "Dedicated carry-chain / arithmetic cells (carry, "
+                           "ALU adders), counted separately from LUTs."},
     "dsps":       {"label": "DSPs",        "dir": "lower",  "unit": "",
                    "desc": "Hard multiplier / MAC / DSP blocks in the mapped "
                            "netlist."},
