@@ -206,28 +206,46 @@ derived from an external source:
 
 ## Benchmark Metrics
 
-FPGA runs report three metrics, all extracted from the Yosys synthesis run (no place-and-route): **LUTs**, **logic depth**, and **runtime**.
+FPGA runs report per-benchmark resource counts extracted from the Yosys synthesis run (no place-and-route) — **cells** (the total, defined below), **LUTs**, **muxes**, **LUT RAM**, **DSPs**, **block RAMs**, **registers**, **latches**, and **carry cells** — plus **logic depth** and **runtime**.
 
 ASIC runs report three metrics, **Cell Area**, **FMAX**, and **runtime**. Cell
 Area comes from the Yosys synthesis run; FMAX is computed by an OpenSTA timing
 run on the synthesized netlist. Neither involves place-and-route.
 
 
-### FPGA LUTs
+### FPGA resource counts
 
 > NOTE that it is impossible to do a truly fair synthesis comparison between different FPGA architectures because it's an apples to oranges comparison. The approach below is our attempt at normalization. File an issue if you disagree with it.
 
-The LUT count is the synthesized logic-fabric usage, read from Yosys' `stat` per-cell-type report (`num_cells_by_type`). Note that ideally, each target should have a custom post processing function blessed by the vendor to fairly extract their metrics. LUTs include three kinds of cell:
+Each cell type in Yosys' `stat` per-cell-type report (`num_cells_by_type`) is binned by an explicit **per-target cell table** (`_CELLMAP` in `logikbench/tools/yosys/yosys.py`) that lists, for each vendor, the exact cell names it emits — explicit names rather than substring heuristics. The names are ground-truthed from the Yosys techlib sources (the `*_map.v` / `*.txt` / `cells_sim.v` files that define what each `synth_*` emits); the two out-of-tree plugins (`analogdevices`/flex16ffc and the Zero ASIC `z10xx` parts) are ground-truthed from `stat.json` instead. A cell type not listed for its vendor is written to `reports/fpga_unclassified.json` instead of being silently miscounted, so classification gaps stay visible and get filled as new designs/fabrics are run. The buckets:
 
-1. **Lookup tables** — the basic LUT primitives, whose names vary by vendor: `LUT1..LUT6`, `$lut`, `SB_LUT4` (ice40), `EFX_LUT4` (efinix), `CC_LUT*` (gatemate), `LUTFF` (fabulous), and `CFG1..CFG4` (microchip PolarFire).
+1. **LUTs** — logic lookup tables (`LUT1..LUT6`, `$lut`, `SB_LUT4`, `EFX_LUT4`, `CC_LUT*`, `CFG1..CFG4`) plus standalone inverters (`INV`). A pure logic-LUT count: muxes, LUT RAM, and flip-flops are *not* included.
 
-2. **Dedicated mux-fabric cells** — the hardwired wide multiplexers that live in the same logic block as the LUTs and implement muxing a LUT-only fabric would otherwise spend LUTs on: `MUXF7/MUXF8` (xilinx), `mux4x0/mux8x0` (quicklogic), `MUX2_LUT5..8` (gowin), `LUTMUX7/8` (adi), `L6MUX21/PFUMX` (lattice ECP5), `CC_MX4/CC_MX8` (gatemate), `MX4` (microchip).
+2. **Muxes** — dedicated mux-fabric primitives, counted *separately* from LUTs: "combining" muxes that merge outputs of LUTs already counted (`MUXF7/MUXF8`, `PFUMX/L6MUX21` — counting them as LUTs would double-count) and "replacing" muxes that do select logic in place of LUTs (`mux4x0/mux8x0`, `MUX2_LUT5..8`, `LUTMUX7/8`, `CC_MX4/CC_MX8`, `MX4`).
 
-3. **Hard DSP / multiply / MAC blocks** — dedicated multiplier and multiply-accumulate cells: `DSP48E1` (xilinx), `MULT18X18D` (lattice ECP5), `CC_MULT` (gatemate), `MACC_PA` (microchip), `RBBDSP` (adi), `efpga_mult*` (Zero ASIC). A fabric without them builds multipliers out of LUTs, so a target that uses a hard block would otherwise read as artificially LUT-light. (Carry/ALU cells such as `CARRY4`, `ALU`, `CCU2C`, `ARI1` are *not* DSPs and are not counted.)
+3. **LUT RAM** — distributed (LUT-based) RAM primitives that live in the logic fabric rather than a hard block (`RAM64X1S`/`RAM32M`/`SRL16E`/… on xilinx, `TRELLIS_DPR16X4`, gowin `RAM16SDP*`, adi `RAMS64X1`). Counted separately from both LUTs and block RAM (the Yosys techlibs carry no LUT-site weights to fold them into LUTs, and the count is the honest, source-grounded number).
 
-Including mux cells keeps the comparison fair: ice40 has no dedicated mux, so its read/select logic is built entirely from LUTs and is fully counted; fabrics like QuickLogic or GateMate offload that same logic to mux cells, which would otherwise make their LUT count read artificially low (e.g. `regfile` on QuickLogic is mostly `mux8x0` cells, not LUTs).
+4. **DSPs** — hard multiplier / MAC blocks: `DSP48E1`, `SB_MAC16`, `MULT18X18D`, `CC_MULT`, `MACC_PA`, `RBBDSP`, `efpga_mult*`. (efinix and gowin gw5a emit none — their multipliers stay soft logic.)
 
-Every fabric cell counts as one, regardless of its capacity: a 6-input LUT (Xilinx, ADI) packs more logic than a 4-input LUT, and a hard mux (e.g. QuickLogic `mux8x0`) does an 8:1 select that a LUT-only fabric would spend several LUTs on — but each is one cell. This makes the metric a clean *logic-cell utilization* count, most directly comparable *within* an architecture family (e.g. the Zero ASIC `z10xx` parts, or two synthesis options on one target). Across vendors the cells differ in size, so cross-vendor LUT counts are informative rather than a strict apples-to-apples ranking — each architecture wins where its cell type fits the design (mux fabrics on mux/select/decode logic, LUT/carry fabrics on arithmetic).
+5. **Block RAMs** — hardened memory blocks: `RAMB18E1/RAMB36E1`, `RAM1K20`/`RAM64x12`, `SB_RAM40_4K*`/`SB_SPRAM256KA`, `EFX_RAM_5K`, `CC_BRAM_20K/40K`, `DP16KD/PDPW16KD`, gowin `SP/DPB/SDPB*`, `sdpram/spram`, and the fabulous `RegFile_32x4` hard RegFile BEL.
+
+6. **Registers** — flip-flops / sequential elements: `FDRE/FDSE/FDCE/FDPE*`, `SLE`, `EFX_FF`, `CC_DFF`, `DFF*`, `TRELLIS_FF`, `FFRE`, `SB_DFF*`, `dffe*`, `dffepc`, `LUTFF*`.
+
+7. **Latches** — level-sensitive latch primitives (`LDCE/LDPE/LDCPE`, `CC_DLT`).
+
+8. **Carry cells** — dedicated carry-chain / arithmetic cells: `CARRY4`, `SB_CARRY`, `ARI1`, `EFX_ADD`, `CC_ADDF`, `ALU`, `CCU2C`, `CRY4*`.
+
+I/O and clock buffers and constants count toward nothing. Breaking out muxes, LUT RAM, registers, latches, and carry as their own metrics leaves **LUTs** a pure logic-LUT count, so a fabric that offloads logic to muxes (QuickLogic, GateMate) or absorbs it into carry/DSP/BRAM is not confused with one that spends LUTs.
+
+**Cells** is the derived total — the unweighted sum of every reported bucket above:
+
+```
+cells = luts + muxes + lutram + dsps + brams + registers + latches + carrycells
+```
+
+It excludes the I/O/clock buffers and constants (and any unclassified cells), so it is the count of *fabric* cells the design maps to, not Yosys' raw `num_cells` (which also counts pads/buffers).
+
+Every fabric cell counts as one, regardless of its capacity: a 6-input LUT packs more logic than a 4-input LUT, and a hard mux does an 8:1 select that a LUT-only fabric would spend several LUTs on — but each is one cell. This makes each count a clean *cell-utilization* metric, most directly comparable *within* an architecture family (e.g. the Zero ASIC `z10xx` parts, or two synthesis options on one target). Across vendors the cells differ in size, so cross-vendor counts are informative rather than a strict apples-to-apples ranking.
 
 ### FPGA Logic depth
 
@@ -322,7 +340,7 @@ command:
 | `speedster` | `synth_achronix` |
 | `flex16ffc` | `synth_analogdevices -tech t16ffc` |
 | `trion` | `synth_efinix` |
-| `generic` | `synth_fabulous` |
+| `fabulous` | `synth_fabulous` |
 | `cologne` | `synth_gatemate` |
 | `z1015` | `synth_fpga -config <arch>` (wildebeest) |
 | `z1060` | `synth_fpga -config <arch>` (wildebeest) |
