@@ -6,7 +6,10 @@ import math
 import os
 import sys
 import json
+import threading
 from collections import defaultdict
+
+import psutil
 
 import logikbench as lb
 from concurrent.futures import (
@@ -286,6 +289,29 @@ def _load_estimates(targets):
     return runtime_est, memory_est, bool(runtime)
 
 
+def _memory_watchdog(stop_event, floor_bytes, interval=5.0):
+    """Background monitor for a parallel sweep: every 'interval' seconds check
+    total SYSTEM available memory (via psutil, so it accounts for every process
+    on the machine -- other apps and leaked/orphaned tool processes from prior
+    runs, not just this sweep's own children) and print a WARNING when it drops
+    below 'floor_bytes', the regime where the machine starts thrashing swap or
+    OOM-kills a synth job. Warns once per crossing and re-arms only after
+    available climbs back above 2x the floor, so it never spams. Runs as a
+    daemon thread and exits when stop_event is set."""
+    armed = True
+    while not stop_event.wait(interval):
+        vm = psutil.virtual_memory()
+        if vm.available < floor_bytes and armed:
+            sw = psutil.swap_memory()
+            print(f"WARNING: only ~{vm.available / 2**30:.1f}GB RAM free "
+                  f"(swap {sw.percent:.0f}% used); the system may thrash or "
+                  "OOM-kill a job. Reduce -j, set --mem, or check for leaked "
+                  "processes (e.g. stray 'sta'/'yosys').", file=sys.stderr)
+            armed = False
+        elif vm.available > 2 * floor_bytes:
+            armed = True         # re-arm once memory pressure recedes
+
+
 def run_sweep(args, targets, worklist, netlist_cache=False):
     """Synthesize the whole target x benchmark matrix; return the failures.
 
@@ -358,40 +384,52 @@ def run_sweep(args, targets, worklist, netlist_cache=False):
             clean_build(name, builddir=gdir)
 
     if args.jobs > 1:
-        with ProcessPoolExecutor(max_workers=args.jobs) as pool:
-            running = {}          # future -> (target, group, name, est_mem_mb)
-            running_mem = 0.0
-            idx = 0
-            while idx < len(tasks) or running:
-                # admit tasks (in longest-first order) up to the worker count
-                # and the memory budget; a lone over-budget job runs anyway.
-                while idx < len(tasks) and len(running) < args.jobs:
-                    target, group, cls, name = tasks[idx]
-                    est = memory_est(target, group, name)
-                    if budget_mb is not None and est is None:
-                        est = budget_mb        # unknown footprint -> run alone
-                    est = est or 0.0
-                    if (budget_mb is not None and running
-                            and running_mem + est > budget_mb):
-                        break                  # wait for memory to free up
-                    if (budget_mb is not None and not running
-                            and est > budget_mb):
-                        print(f"warning: {target}/{group}/{name} needs "
-                              f"~{est / 1024:.1f}GB > --mem {args.mem}GB; "
-                              "running it alone", file=sys.stderr)
-                    future = pool.submit(run_one, cls, target, group, options,
-                                         target_builddir(args, target), quiet,
-                                         start, stop, timeout, args.clk,
-                                         lintonly)
-                    running[future] = (target, group, name, est)
-                    running_mem += est
-                    idx += 1
-                finished, _ = wait(running, return_when=FIRST_COMPLETED)
-                for future in finished:
-                    target, group, name, est = running.pop(future)
-                    running_mem -= est
-                    _, error = future.result()
-                    record(target, group, name, error)
+        # Watch system available memory and warn when it drops near empty;
+        # a daemon thread so it never blocks sweep teardown. Floor: 10% of
+        # installed RAM, but at least 2GB.
+        stop_event = threading.Event()
+        floor = max(2 * 2**30, int(0.10 * psutil.virtual_memory().total))
+        watcher = threading.Thread(
+            target=_memory_watchdog, daemon=True, args=(stop_event, floor))
+        watcher.start()
+        try:
+            with ProcessPoolExecutor(max_workers=args.jobs) as pool:
+                running = {}      # future -> (target, group, name, est_mem_mb)
+                running_mem = 0.0
+                idx = 0
+                while idx < len(tasks) or running:
+                    # admit tasks (longest-first) up to the worker count and the
+                    # memory budget; a lone over-budget job runs anyway.
+                    while idx < len(tasks) and len(running) < args.jobs:
+                        target, group, cls, name = tasks[idx]
+                        est = memory_est(target, group, name)
+                        if budget_mb is not None and est is None:
+                            est = budget_mb    # unknown footprint -> run alone
+                        est = est or 0.0
+                        if (budget_mb is not None and running
+                                and running_mem + est > budget_mb):
+                            break              # wait for memory to free up
+                        if (budget_mb is not None and not running
+                                and est > budget_mb):
+                            print(f"warning: {target}/{group}/{name} needs "
+                                  f"~{est / 1024:.1f}GB > --mem {args.mem}GB; "
+                                  "running it alone", file=sys.stderr)
+                        future = pool.submit(
+                            run_one, cls, target, group, options,
+                            target_builddir(args, target), quiet,
+                            start, stop, timeout, args.clk, lintonly)
+                        running[future] = (target, group, name, est)
+                        running_mem += est
+                        idx += 1
+                    finished, _ = wait(running, return_when=FIRST_COMPLETED)
+                    for future in finished:
+                        target, group, name, est = running.pop(future)
+                        running_mem -= est
+                        _, error = future.result()
+                        record(target, group, name, error)
+        finally:
+            stop_event.set()      # tell the watchdog to exit
+            watcher.join(timeout=2)
     else:
         for target, group, cls, name in tasks:
             builddir = target_builddir(args, target)
