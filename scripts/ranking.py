@@ -34,7 +34,7 @@ ARCH = {
     "speedster": "LUT6",
     "flex16ffc": "LUT6",
     "trion": "LUT4",
-    "generic": "LUT4",
+    "fabulous": "LUT4",
     "cologne": "LUT8",
     "gw5a": "LUT4",
     "ecp5": "LUT4",
