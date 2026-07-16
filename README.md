@@ -10,13 +10,13 @@
 
 ## Why LogikBench
 
-LogikBench is a curated open source RTL benchmark suite that enables reproducible evaluation of EDA tools, process technologies, architectures, and LLMs.
+LogikBench is a large hybrid benchmark suite of human authored and AI generated Verilog RTL circuits. Use cases includes objective evaluation of EDA algorithms/tools, PDKs, architectures, model/LLMs, compute infrastructure, (and more...).
 
 > "Sunlight is said to be the best of disinfectants." --Supreme Court Justice Louis Brandeis
 
 | Challenge              | LogikBench Solution                                     |
 |------------------------|---------------------------------------------------------|
-| "No Spec CPU for RTL"  | 250 robust Verilog RTL benchmark circuits               |
+| "No Spec CPU for RTL"  | 250 robust Verilog RTL benchmark circuits (>1M LOC)     |
 | Circuit diversity      | Broad mix of circuit types, sizes, and source origins   |
 | Size diversity         | Per-circuit parameterization across multiple scales     |
 | Trust                  | Documented source code provenance and curation criteria |
@@ -33,6 +33,9 @@ LogikBench includes the following benchmark types:
 | Legacy synthetic benchmarks     | epfl, isca85, isca89, koios |
 | Divers catalog of real circuits | blocks                      |
 | Very large benchmarks           | large                       |
+
+
+![Circuit sizes](docs/histogram.png)
 
 ----
 
@@ -114,15 +117,214 @@ lb syn -g basic --target asap7          # ASIC synthesis (yosys mapper)
 # Simulate the self-checking testbenches, or lint the RTL
 lb sim -g basic
 lb lint -g basic
+
+# Full set of help options
+lb syn -h
 ```
 
-`lb -h` (or `lb <command> -h`) lists every option; the commands are `syn`
-(synthesis), `pnr` (place-and-route), `sim` (simulation), and `lint`. Picking a
-benchmark is optional: with neither `-g` nor `-n`, a command sweeps all groups.
-For ASIC area/FMAX metrics, install `sc-install -group asic` and use an ASIC
-`--target` PDK such as `freepdk45`. See [Tool Installation](#tool-installation)
-for the full tool prerequisites.
+----
 
+## LB User Guide
+
+![LogikBench flow](docs/flow.png)
+
+LogikBench includes the `lb` command-line tool for batch processing benchmarks. It drives SiliconCompiler flows through [SiliconCompiler](https://github.com/siliconcompiler/siliconcompiler):
+each benchmark is a SiliconCompiler `Design`, and `lb` has one subcommand per task:
+
+- `lb syn` synthesizes the selected benchmarks for one or more `--target`s (an
+  ASIC PDK stem such as `freepdk45`, or an FPGA part such as `virtex7`)
+  with `--tool` (yosys or, for ASIC, tardigrade). It writes a per-target metrics
+  file `build/results/<target>.json`, incrementally (read-modify-write), so
+  running a subset updates only those benchmarks and preserves the rest.
+- `lb pnr` runs place-and-route (the SC asicflow through `route`) on an ASIC
+  `--target` PDK; `--from/--to` restrict the flow (e.g. `--to synthesis.timing`
+  for synth-stage metrics only).
+- `lb sim` compiles and runs each benchmark's self-checking testbench; `lb lint`
+  statically analyzes the RTL. Both are RTL-only (no `--target`).
+
+Benchmark selection (`-g/--group` or `-n/--name`; default: all groups) and the
+run controls (`-j`, `--timeout`, `--resume`, `--keep`, `--publish`) are common to
+every command; `--publish` copies results into the committed `./results` tree
+(git clone only). Run `lb <command> -h` for the full option list.
+
+### Flow: synthesize once, reuse the netlist
+
+`lb syn` is the only synthesizer. It caches its mapped netlist under
+`build/netlists/<token>/<name>.vg` (with a `.key` that hashes the RTL, so an
+edit invalidates it), and the back-end verbs -- `pnr`, `sta`, `lec` -- start
+from that cached netlist instead of re-synthesizing. A cache miss (or stale
+netlist) errors with a "run `lb syn` first" hint. `sim` and `lint` work
+straight off the RTL and need no netlist.
+
+
+### FPGA Targets
+
+`-t/--target` selects what runs and is required; pass several to sweep them in
+turn. FPGA targets are named `<vendor>_<partname>` and map to a Yosys synth
+command:
+
+| Target | Synth command |
+|--------|---------------|
+| `virtex7` | `synth_xilinx -family xc7` |
+| `polarpro` | `synth_quicklogic -family pp3` |
+| `polarfire` | `synth_microchip -family polarfire` |
+| `ice40` | `synth_ice40` |
+| `ecp5` | `synth_lattice -family ecp5` |
+| `gw5a` | `synth_gowin -family gw5a` |
+| `speedster` | `synth_achronix` |
+| `flex16ffc` | `synth_analogdevices -tech t16ffc` |
+| `trion` | `synth_efinix` |
+| `fabulous` | `synth_fabulous` |
+| `cologne` | `synth_gatemate` |
+| `z1015` | `synth_fpga -config <arch>` (wildebeest) |
+| `z1060` | `synth_fpga -config <arch>` (wildebeest) |
+
+The `zeroasic_*` targets load the [Wildebeest](https://github.com/zeroasiccorp/wildebeest)
+plugin and run `synth_fpga -config <arch>`, where `<arch>` is the per-part
+architecture config vendored under `logikbench/targets/zeroasic/`.
+
+### ASIC Targets
+
+ASIC runs take an ASIC PDK stem as `--target`. `lb syn --tool yosys|tardigrade`
+runs the lightweight `lbflow` (synthesis + OpenSTA timing, no place-and-route)
+used for the QoR metrics above; `lb pnr` runs the full SiliconCompiler `asicflow`
+(synth -> floorplan -> place -> cts -> route), trimmed to a single library and a
+single setup corner so each benchmark stays fast. `lb pnr --to synthesis.timing`
+stops the asicflow at synthesis for synth-stage metrics only.
+
+| `--target` PDK | Library |
+|----------------|---------|
+| `freepdk45` | FreePDK45 / Nangate45 (lambdapdk) |
+| `asap7` | ASAP7 7nm |
+| `sky130` | SkyWater 130 |
+| `gf180` | GlobalFoundries 180 |
+| `ihp130` | IHP SG13G2 130 |
+
+So `lb syn --target freepdk45 --tool tardigrade` runs the tardigrade lbflow, and
+`lb pnr --target asap7` runs the asicflow through route on ASAP7. All of these
+are lambdapdk std-cell PDKs.
+
+### Options
+
+Common to every command (`syn`, `pnr`, `sim`, `lint`):
+
+| Flag | Description |
+|------|-------------|
+| `-g`, `--group` | Benchmark group(s): `basic`, `memory`, `arithmetic`, `epfl`, `blocks`, `iscas85`, `iscas89` (default: all groups; mutually exclusive with `-n`) |
+| `-n`, `--name` | Act only on benchmark(s) with these name(s), searched across all groups (names are globally unique; mutually exclusive with `-g`) |
+| `-b` | Build directory root; per-benchmark work goes in `<builddir>/<name>` (default: `build`) |
+| `-j` | Number of benchmarks to run in parallel (default: 1) |
+| `--timeout` | Per-step wall-clock cap in seconds; a step that exceeds it is killed and marked failed (default: 3600; 0 disables) |
+| `--resume` | Skip benchmarks whose build already completed successfully |
+| `--keep` | Keep the full per-benchmark artifacts (default: reclaim as each finishes) |
+| `--publish` | Copy this run's results into the committed `./results` tree, merging incrementally. Requires a git clone (errors otherwise) |
+| `-v`, `--verbose` | Show full SiliconCompiler tool/scheduler logs (quieted by default) |
+
+Per-command flags:
+
+| Command | Flags |
+|---------|-------|
+| `syn` | `-t/--target` (PDK stem or FPGA part, required), `--tool {yosys,tardigrade}`, `--clk` (ns), `--options`, `--lintonly` |
+| `pnr` | `-t/--target` (ASIC PDK stem, required), `--clk` (ns), `--options`, `--lintonly`, `--from`/`--to` (flow step: `synthesis`, `floorplan`, `place`, `cts`, `route`) |
+| `sim` | `--tool {icarus,verilator}` |
+| `lint` | `--tool {slang,verilator}` |
+
+Each command wipes a benchmark's build directory before running, so runs are
+always fresh (no SiliconCompiler build reuse); use `--resume` to skip completed
+benchmarks. `syn`/`pnr` write `build/results/<target>.json` incrementally
+(read-modify-write), so a subset run updates only those benchmarks
+and preserves the rest. Use `--publish` to promote them into the committed
+`./results` tree (git clone only).
+
+### ASIC Timing Constraints (SDC)
+
+Every ASIC run is timing-constrained automatically. You do not need to write an
+SDC per benchmark: the flow generates a small wrapper that injects `--clk` and
+the per-PDK knobs, then sources the shared default constraints in
+`logikbench/targets/default.sdc`. Applied to every benchmark, it:
+
+- creates one clock per port whose name matches `*clk*`/`*clock*` (so
+  multi-clock designs such as `ethmac`, with `rx_clk`/`tx_clk`, are fully
+  constrained), all at the `--clk` period;
+- creates a single virtual clock for purely combinational benchmarks (no clock
+  port), so their input-to-output paths are still timed;
+- constrains all data inputs and outputs with input/output delays at 50% of the
+  clock period, and applies per-PDK input transition (slew), load capacitance,
+  and setup/hold clock uncertainty read from `logikbench/targets/<pdk>/tech.tcl`.
+
+The only number you normally set is `--clk` (the clock period in nanoseconds,
+the same value for every PDK; it is scaled into each PDK's native time unit):
+
+```bash
+lb syn -g basic --target freepdk45 --clk 2   # constrain every basic benchmark at 2 ns
+```
+
+**Customizing a single benchmark.** When a benchmark needs constraints the
+defaults cannot express (e.g. a specific clock name, a subset of ports, a false
+path), ship an SDC in the block directory and register it in the benchmark's
+`.py`. Because `default.sdc` guardbands its defaults, a custom SDC only sets
+what it wants to override, then sources the shared file:
+
+```tcl
+# logikbench/<group>/<name>/sdc/<name>.sdc
+set LB_CLK     [get_ports my_clock]     ;# override clock detection
+set LB_INPUTS  [all_inputs]             ;# or a hand-picked subset
+set LB_OUTPUTS [all_outputs]
+source $LB_DEFAULT_SDC                  ;# tech.tcl + generic constraints
+```
+
+Register it in the benchmark class (alongside the `rtl` fileset):
+
+```python
+self.add_file(f'sdc/{name}.sdc', 'sdc', dataroot=root)
+```
+
+The wrapper then sources your SDC instead of `default.sdc` directly. Any of
+`LB_CLK`, `LB_INPUTS`, `LB_OUTPUTS` you leave unset fall back to the guardbanded
+defaults; `LB_CLK_NS` (from `--clk`) and `LB_TECH_FILE`/`LB_DEFAULT_SDC` (paths)
+are always injected for you.
+
+----
+
+## Examples
+
+Synthesize a group on an FPGA target (metrics -> `build/results/<target>.json`):
+
+```bash
+lb syn -g arithmetic --target virtex7
+```
+
+Synthesize a single benchmark for a Zero ASIC part (needs the wildebeest plugin):
+
+```bash
+lb syn -n mux --target z1015
+```
+
+Sweep several FPGA targets at once, 8 benchmarks in parallel:
+
+```bash
+lb syn -g basic --target virtex7 ice40 gw5a -j 8
+```
+
+Run ASIC synthesis + timing (`lbflow`) on freepdk45 with the tardigrade mapper:
+
+```bash
+lb syn -g basic --target freepdk45 --tool tardigrade
+```
+
+Run the asap7 SC asicflow through full place-and-route (stop earlier with e.g.
+`--to synthesis.timing`):
+
+```bash
+lb pnr -g basic --target asap7
+```
+
+Simulate the self-checking testbenches, or lint the RTL:
+
+```bash
+lb sim -g basic
+lb lint -g basic
+```
 ----
 
 ## Benchmark Architecture
@@ -392,207 +594,6 @@ stub, not a release artifact.
 
 ----
 
-## Running Benchmarks
-
-LogikBench includes the `lb` command-line tool for batch processing benchmarks. It drives SiliconCompiler flows through [SiliconCompiler](https://github.com/siliconcompiler/siliconcompiler):
-each benchmark is a SiliconCompiler `Design`, and `lb` has one subcommand per task:
-
-- `lb syn` synthesizes the selected benchmarks for one or more `--target`s (an
-  ASIC PDK stem such as `freepdk45`, or an FPGA part such as `virtex7`)
-  with `--tool` (yosys or, for ASIC, tardigrade). It writes a per-target metrics
-  file `build/results/<target>.json`, incrementally (read-modify-write), so
-  running a subset updates only those benchmarks and preserves the rest.
-- `lb pnr` runs place-and-route (the SC asicflow through `route`) on an ASIC
-  `--target` PDK; `--from/--to` restrict the flow (e.g. `--to synthesis.timing`
-  for synth-stage metrics only).
-- `lb sim` compiles and runs each benchmark's self-checking testbench; `lb lint`
-  statically analyzes the RTL. Both are RTL-only (no `--target`).
-
-Benchmark selection (`-g/--group` or `-n/--name`; default: all groups) and the
-run controls (`-j`, `--timeout`, `--resume`, `--keep`, `--publish`) are common to
-every command; `--publish` copies results into the committed `./results` tree
-(git clone only). Run `lb <command> -h` for the full option list.
-
-### Flow: synthesize once, reuse the netlist
-
-`lb syn` is the only synthesizer. It caches its mapped netlist under
-`build/netlists/<token>/<name>.vg` (with a `.key` that hashes the RTL, so an
-edit invalidates it), and the back-end verbs -- `pnr`, `sta`, `lec` -- start
-from that cached netlist instead of re-synthesizing. A cache miss (or stale
-netlist) errors with a "run `lb syn` first" hint. `sim` and `lint` work
-straight off the RTL and need no netlist.
-
-![LogikBench flow](docs/flow.png)
-
-### FPGA Targets
-
-`-t/--target` selects what runs and is required; pass several to sweep them in
-turn. FPGA targets are named `<vendor>_<partname>` and map to a Yosys synth
-command:
-
-| Target | Synth command |
-|--------|---------------|
-| `virtex7` | `synth_xilinx -family xc7` |
-| `polarpro` | `synth_quicklogic -family pp3` |
-| `polarfire` | `synth_microchip -family polarfire` |
-| `ice40` | `synth_ice40` |
-| `ecp5` | `synth_lattice -family ecp5` |
-| `gw5a` | `synth_gowin -family gw5a` |
-| `speedster` | `synth_achronix` |
-| `flex16ffc` | `synth_analogdevices -tech t16ffc` |
-| `trion` | `synth_efinix` |
-| `fabulous` | `synth_fabulous` |
-| `cologne` | `synth_gatemate` |
-| `z1015` | `synth_fpga -config <arch>` (wildebeest) |
-| `z1060` | `synth_fpga -config <arch>` (wildebeest) |
-
-The `zeroasic_*` targets load the [Wildebeest](https://github.com/zeroasiccorp/wildebeest)
-plugin and run `synth_fpga -config <arch>`, where `<arch>` is the per-part
-architecture config vendored under `logikbench/targets/zeroasic/`.
-
-### ASIC Targets
-
-ASIC runs take an ASIC PDK stem as `--target`. `lb syn --tool yosys|tardigrade`
-runs the lightweight `lbflow` (synthesis + OpenSTA timing, no place-and-route)
-used for the QoR metrics above; `lb pnr` runs the full SiliconCompiler `asicflow`
-(synth -> floorplan -> place -> cts -> route), trimmed to a single library and a
-single setup corner so each benchmark stays fast. `lb pnr --to synthesis.timing`
-stops the asicflow at synthesis for synth-stage metrics only.
-
-| `--target` PDK | Library |
-|----------------|---------|
-| `freepdk45` | FreePDK45 / Nangate45 (lambdapdk) |
-| `asap7` | ASAP7 7nm |
-| `sky130` | SkyWater 130 |
-| `gf180` | GlobalFoundries 180 |
-| `ihp130` | IHP SG13G2 130 |
-
-So `lb syn --target freepdk45 --tool tardigrade` runs the tardigrade lbflow, and
-`lb pnr --target asap7` runs the asicflow through route on ASAP7. All of these
-are lambdapdk std-cell PDKs.
-
-### ASIC Timing Constraints (SDC)
-
-Every ASIC run is timing-constrained automatically. You do not need to write an
-SDC per benchmark: the flow generates a small wrapper that injects `--clk` and
-the per-PDK knobs, then sources the shared default constraints in
-`logikbench/targets/default.sdc`. Applied to every benchmark, it:
-
-- creates one clock per port whose name matches `*clk*`/`*clock*` (so
-  multi-clock designs such as `ethmac`, with `rx_clk`/`tx_clk`, are fully
-  constrained), all at the `--clk` period;
-- creates a single virtual clock for purely combinational benchmarks (no clock
-  port), so their input-to-output paths are still timed;
-- constrains all data inputs and outputs with input/output delays at 50% of the
-  clock period, and applies per-PDK input transition (slew), load capacitance,
-  and setup/hold clock uncertainty read from `logikbench/targets/<pdk>/tech.tcl`.
-
-The only number you normally set is `--clk` (the clock period in nanoseconds,
-the same value for every PDK; it is scaled into each PDK's native time unit):
-
-```bash
-lb syn -g basic --target freepdk45 --clk 2   # constrain every basic benchmark at 2 ns
-```
-
-**Customizing a single benchmark.** When a benchmark needs constraints the
-defaults cannot express (e.g. a specific clock name, a subset of ports, a false
-path), ship an SDC in the block directory and register it in the benchmark's
-`.py`. Because `default.sdc` guardbands its defaults, a custom SDC only sets
-what it wants to override, then sources the shared file:
-
-```tcl
-# logikbench/<group>/<name>/sdc/<name>.sdc
-set LB_CLK     [get_ports my_clock]     ;# override clock detection
-set LB_INPUTS  [all_inputs]             ;# or a hand-picked subset
-set LB_OUTPUTS [all_outputs]
-source $LB_DEFAULT_SDC                  ;# tech.tcl + generic constraints
-```
-
-Register it in the benchmark class (alongside the `rtl` fileset):
-
-```python
-self.add_file(f'sdc/{name}.sdc', 'sdc', dataroot=root)
-```
-
-The wrapper then sources your SDC instead of `default.sdc` directly. Any of
-`LB_CLK`, `LB_INPUTS`, `LB_OUTPUTS` you leave unset fall back to the guardbanded
-defaults; `LB_CLK_NS` (from `--clk`) and `LB_TECH_FILE`/`LB_DEFAULT_SDC` (paths)
-are always injected for you.
-
-### Options
-
-Common to every command (`syn`, `pnr`, `sim`, `lint`):
-
-| Flag | Description |
-|------|-------------|
-| `-g`, `--group` | Benchmark group(s): `basic`, `memory`, `arithmetic`, `epfl`, `blocks`, `iscas85`, `iscas89` (default: all groups; mutually exclusive with `-n`) |
-| `-n`, `--name` | Act only on benchmark(s) with these name(s), searched across all groups (names are globally unique; mutually exclusive with `-g`) |
-| `-b` | Build directory root; per-benchmark work goes in `<builddir>/<name>` (default: `build`) |
-| `-j` | Number of benchmarks to run in parallel (default: 1) |
-| `--timeout` | Per-step wall-clock cap in seconds; a step that exceeds it is killed and marked failed (default: 3600; 0 disables) |
-| `--resume` | Skip benchmarks whose build already completed successfully |
-| `--keep` | Keep the full per-benchmark artifacts (default: reclaim as each finishes) |
-| `--publish` | Copy this run's results into the committed `./results` tree, merging incrementally. Requires a git clone (errors otherwise) |
-| `-v`, `--verbose` | Show full SiliconCompiler tool/scheduler logs (quieted by default) |
-
-Per-command flags:
-
-| Command | Flags |
-|---------|-------|
-| `syn` | `-t/--target` (PDK stem or FPGA part, required), `--tool {yosys,tardigrade}`, `--clk` (ns), `--options`, `--lintonly` |
-| `pnr` | `-t/--target` (ASIC PDK stem, required), `--clk` (ns), `--options`, `--lintonly`, `--from`/`--to` (flow step: `synthesis`, `floorplan`, `place`, `cts`, `route`) |
-| `sim` | `--tool {icarus,verilator}` |
-| `lint` | `--tool {slang,verilator}` |
-
-Each command wipes a benchmark's build directory before running, so runs are
-always fresh (no SiliconCompiler build reuse); use `--resume` to skip completed
-benchmarks. `syn`/`pnr` write `build/results/<target>.json` incrementally
-(read-modify-write), so a subset run updates only those benchmarks
-and preserves the rest. Use `--publish` to promote them into the committed
-`./results` tree (git clone only).
-
-----
-
-## Examples
-
-Synthesize a group on an FPGA target (metrics -> `build/results/<target>.json`):
-
-```bash
-lb syn -g arithmetic --target virtex7
-```
-
-Synthesize a single benchmark for a Zero ASIC part (needs the wildebeest plugin):
-
-```bash
-lb syn -n mux --target z1015
-```
-
-Sweep several FPGA targets at once, 8 benchmarks in parallel:
-
-```bash
-lb syn -g basic --target virtex7 ice40 gw5a -j 8
-```
-
-Run ASIC synthesis + timing (`lbflow`) on freepdk45 with the tardigrade mapper:
-
-```bash
-lb syn -g basic --target freepdk45 --tool tardigrade
-```
-
-Run the asap7 SC asicflow through full place-and-route (stop earlier with e.g.
-`--to synthesis.timing`):
-
-```bash
-lb pnr -g basic --target asap7
-```
-
-Simulate the self-checking testbenches, or lint the RTL:
-
-```bash
-lb sim -g basic
-lb lint -g basic
-```
-----
 
 ## Benchmark Inventory
 
@@ -898,17 +899,6 @@ Deep-learning accelerator and layer designs (pure RTL, hard blocks disabled). Se
 
 ----
 
-
-## Leaderboard (WIP)
-
-Targets ranked by total LUTs over all benchmarks (config: `small`), lowest first. A benchmark with no result for a target is charged the highest LUT count any target reached on it.
-Comparing different FPGA architectures is by definition an apples to oranges exercise. Ranking by no means implies quality or goodness, it's just a neat way to compress and order data.
-
-### ASIC Synthesis
-
-ASIC leaderboard tables (cell area and FMAX, starting with `freepdk45`) are
-work in progress and will be published here once results are collected.
-
 ## Tool Installation
 
 LogikBench itself is pure Python. Because the project is under active
@@ -984,3 +974,7 @@ customized variants of SC's own tools) is in
 ## License
 
 The LogikBench project is licensed under the [MIT](LICENSE) license unless specified otherwise inside the individual benchmark folders.
+
+## Support
+
+This work was supported by the U.S. Department of Energy, Office of Science, Advanced Scientific Computing Research program under the project, Democratization of Co-design for Energy-Efficient Heterogeneous Computing (DeCoDe) and the Competitive Portfolio program under the project, End-to-end codesign for performance, energy-efficiency, and security in AI-enabled computational science (ENCODE) at Pacific Northwest National Laboratory (PNNL). The DeCoDe project is part of the Microelectronics Energy Efficiency Research Center for Advanced Technologies (MEERCAT), a DOE Office of Science Microelectronics Science Research Center (MSRC). PNNL is a multi-program national laboratory operated for the U.S. Department of Energy (DOE) by Battelle Memorial Institute under Contract No. DE-AC05-76RL01830.
