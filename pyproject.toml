@@ -65,6 +65,15 @@ analysis = [
              "pandas >= 2.0",
              "matplotlib >= 3.7"
 ]
+test = [
+    "pytest == 9.1.1",
+    "pytest-xdist==3.8.0",
+    "pytest-split==0.11.0",
+    "pytest-timeout == 2.4.0",
+    "tclint==0.8.0",
+    "jsonschema == 4.26.0",
+    "flake8 == 7.3.0"
+]
 
 [project.scripts]
 lb = "logikbench.apps.lb:main"
@@ -75,15 +84,4 @@ addopts = "-n auto"
 timeout = "60"
 markers = [
     "eda: test requires external EDA tools (yosys, iverilog) on PATH",
-]
-
-[project.optional-dependencies]
-test = [
-    "pytest == 9.1.1",
-    "pytest-xdist==3.8.0",
-    "pytest-split==0.11.0",
-    "pytest-timeout == 2.4.0",
-    "tclint==0.8.0",
-    "jsonschema == 4.26.0",
-    "flake8 == 7.3.0"
 ]
