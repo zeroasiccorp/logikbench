@@ -3,7 +3,7 @@
     "logikbench": "0.1.1.dev372+g6bef846eb.d20260710",
     "schema_version": 1,
     "siliconcompiler": "0.38.0",
-    "target": "tg_asap7",
+    "target": "tardigrade_asap7",
     "tools": {
       "opensta": "3.1.0",
       "tardigrade": "0.1.dev587+ge97a64490.d20260709"

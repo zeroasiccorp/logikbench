@@ -51,8 +51,8 @@ def _tech_tcl(pdk):
 # target module (e.g. 'skywater130_demo') and the mapper Task ('tardigrade')
 # keep their names; only the token shown in lb targets changes.
 _PDK_RENAME = {"skywater130": "sky130"}       # SC pdk stem -> lb pdk token
-_TOOL_RENAME = {"tardigrade": "tg"}           # mapper name -> lb tool token
-_TOOL_UNRENAME = {v: k for k, v in _TOOL_RENAME.items()}
+# The lb tool token equals the mapper name (yosys, tardigrade) -- no
+# abbreviation, so the target/result-file token reads 'tardigrade_<pdk>'.
 
 
 def _pdk_of(module):
@@ -87,11 +87,10 @@ _LBFLOW_PDKS = list(_SC_PDKS)
 # '<vendor>_<part>' scheme (tool/company first, part/pdk second):
 #   sc_<pdk>     -> SC 'asicflow' (PDK + libs + scenarios, through P&R)
 #   yosys_<pdk>  -> lbflow: yosys synthesis + OpenSTA timing (no P&R)
-#   tg_<pdk>     -> lbflow with tardigrade as the synthesis mapper
+#   tardigrade_<pdk> -> lbflow with tardigrade as the synthesis mapper
 SC_TARGETS = [f"sc_{pdk}" for pdk in _SC_PDKS]
 YOSYS_TARGETS = [f"yosys_{pdk}" for pdk in _LBFLOW_PDKS]
-TARDIGRADE_TARGETS = [f"{_TOOL_RENAME['tardigrade']}_{pdk}"
-                      for pdk in _LBFLOW_PDKS]
+TARDIGRADE_TARGETS = [f"tardigrade_{pdk}" for pdk in _LBFLOW_PDKS]
 # sta_<pdk> -> OpenSTA on lb syn's cached netlist (no synth/P&R)
 STA_TARGETS = [f"sta_{pdk}" for pdk in _SC_PDKS]
 
@@ -302,8 +301,7 @@ def _run_lbflow(design, target, options, builddir, quiet, start, stop, timeout,
     mapped netlist, so the two mappers are directly comparable. 'options' pass
     through to the active mapper verbatim.
     """
-    tool, pdk = target.split("_", 1)
-    tool = _TOOL_UNRENAME.get(tool, tool)   # lb token 'tg' -> mapper 'tardigrade'
+    tool, pdk = target.split("_", 1)   # token equals the mapper name (yosys|tardigrade)
     proj = _setup_asic_project(design, _SC_MODULE[pdk], builddir, quiet,
                                timeout, clk_ns)
     proj.set_flow(ASICSynthesis(tool=tool))

@@ -121,7 +121,7 @@ function metric(){ return SECTION.metrics.find(m => m.key === metricKey); }
 function splitCol(t){ const i = t.indexOf("_"); return i < 0 ? [t, ""] : [t.slice(0, i), t.slice(i + 1)]; }
 function toolOf(t){ return splitCol(t)[0]; }
 function pdkOf(t){ return splitCol(t)[1]; }
-const TOOL_LABEL = { tardigrade: "tg" };   // button display alias
+const TOOL_LABEL = {};   // button display aliases (none; tokens shown as-is)
 const uniq = a => [...new Set(a)];
 const ALL_TOOLS = uniq(SECTION.targets.map(toolOf));
 const ALL_PDKS = uniq(SECTION.targets.map(pdkOf).filter(Boolean));

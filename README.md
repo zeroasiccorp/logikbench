@@ -266,6 +266,21 @@ standard-cell library but not place-and-route effects (buffering, sizing, or
 filler), so it tracks logic complexity rather than final silicon area. As with
 the FPGA LUT count, it is most directly comparable within one PDK/library.
 
+**Memory-macro area (sky130 caveat).** RAM-bearing designs map their storage to
+the PDK's SRAM macros via the lambdalib `la_spram`/`la_dpram` aliases. The
+synthetic-RAM PDKs (`asap7`, `freepdk45`, via `fakeram`) generate an exact-fit
+macro, and `ihp130`/`gf180` ship several real SRAM sizes, so their `memory`-group
+cell area is meaningful. **`sky130` is the exception:** lambdapdk provides a
+*single* sky130 SRAM macro (`sky130_sram_1rw1r_64x256_8`), so a RAM whose shape
+does not match it -- the `memory` group and the line-buffered
+`conv2d`/`median3x3`/`sobel3x3` blocks -- is built by tiling many copies plus
+address/mux glue (or, under some tools, falling back to flip-flops). This
+inflates the reported cell area far above the other nodes (sky130 can exceed
+even 180nm gf180). **sky130 `memory`-group cell area is therefore not
+node-comparable** and reflects macro-tiling overhead, not logic. This is an
+upstream PDK-library limitation (one available macro), not a synthesis bug; the
+other PDKs' memory results are unaffected.
+
 ### ASIC FMAX
 
 FMAX is the maximum operating frequency, computed by an OpenSTA timing run on the
@@ -285,9 +300,95 @@ the period is only a starting reference (FMAX is the minimum achievable period);
 for the `lb pnr` asicflow path it is the real optimization target that
 place-and-route works to.
 
+**Interpreting FMAX (sequential vs combinational).** Because the generic SDC
+applies zero input/output delay, `min_period` is the design's critical-path
+delay under the clock and FMAX is `1 / (critical path)`. For a design *with*
+registers this is the register-to-register path -- a genuine maximum clock
+frequency. For a *purely combinational* design (no registers -- e.g. the basic
+gate blocks, the ISCAS85 circuits, and the combinational EPFL/arithmetic
+designs) the only timed path is input-to-output, so FMAX is
+`1 / (combinational path delay)`: the rate at which the block could run if its
+I/O were registered, **not** a realizable silicon clock frequency. Shallow
+combinational blocks therefore report very high FMAX -- a one- or two-gate
+design can exceed 10 GHz -- which is the correct reciprocal of a small gate
+delay (dominated by logic depth), not an error. Two consequences: (1)
+combinational and sequential FMAX are different quantities and should not be
+pooled into a single distribution or "fastest" ranking -- filter by whether a
+design has registers before aggregating across the suite; and (2) the
+zero-I/O-delay assumption gives the internal logic the whole period, so
+combinational FMAX reflects raw logic speed with no I/O budget.
+
 ### Runtime
 
 Runtime is the wall-clock time of the synthesis step, reported to 0.01 s.
+
+----
+
+## Results Coverage and Release Status
+
+Published baselines live in `results/syn/{asic,fpga}/`. The lists below are the
+**supported** (complete, trustworthy) surface; anything under *Experimental* is
+present but not release-quality. A full audit -- coverage matrix, data-integrity
+findings, and RTL/doc gaps -- is in [`audit.md`](audit.md).
+
+Each cell is **succeeded / attempted** -- benchmarks with a result over
+benchmarks run on that target -- and **-** means the group was not run there.
+Per-benchmark detail is in [`audit.md`](audit.md).
+
+### ASIC coverage
+
+yosys synthesis + OpenSTA timing (`tardigrade` = second mapper, comparison only).
+
+| Target            | basic | arith | memory | blocks | epfl  | iscas85 | iscas89 | large | koios |
+|-------------------|-------|-------|--------|--------|-------|---------|---------|-------|-------|
+| yosys asap7       | 26/26 | 71/71 | 17/17  | 42/44  | 19/19 | 11/11   | 28/28   | 3/5   | -     |
+| yosys freepdk45   | 26/26 | 71/71 | 16/17  | 42/43  | 16/16 | 11/11   | 28/28   | -     | -     |
+| yosys gf180       | 26/26 | 71/71 | 16/17  | 42/43  | 16/16 | 11/11   | 28/28   | -     | -     |
+| yosys ihp130      | 26/26 | 71/71 | 16/17  | 41/43  | 16/16 | 11/11   | 28/28   | -     | -     |
+| yosys sky130      | 26/26 | 71/71 | 16/17* | 41/43  | 16/16 | 11/11   | 28/28   | -     | -     |
+| tardigrade asap7  | 26/26 | 71/71 | 16/17  | 41/43  | 19/19 | 11/11   | 28/28   | 7/16  | -     |
+| tardigrade sky130 | 26/26 | 71/71 | 16/17  | 40/43  | 19/19 | 11/11   | 24/28   | -     | -     |
+
+Notes: only 16 of the 19 `epfl` designs are run off asap7 (the `hyp`/`log2`/
+`multiplier` giants time out). `16/17*` sky130 memory: the 16 results have
+inflated, non-node-comparable area (single SRAM macro; see caveats).
+`memory/ramtdpdc` produces no area on any PDK. `koios` is not run on ASIC.
+
+### FPGA coverage
+
+yosys resource counts, no timing. `z1015`/`z1060` also have `_optdelay`
+(delay-recipe) variants with near-identical coverage. `large`/`koios` run on
+`virtex7` only.
+
+| Target    | basic | arith | memory | blocks | epfl  | iscas85 | iscas89 | large | koios |
+|-----------|-------|-------|--------|--------|-------|---------|---------|-------|-------|
+| cologne   | 26/26 | 71/71 | 17/17  | 43/43  | 19/19 | 11/11   | 28/28   | -     | -     |
+| ecp5      | 26/26 | 71/71 | 17/17  | 43/43  | 19/19 | 11/11   | 28/28   | -     | -     |
+| flex16ffc | 24/26 | 71/71 | 17/17  | 43/43  | 19/19 | 11/11   | 28/28   | -     | -     |
+| gw5a      | 26/26 | 71/71 | 17/17  | 43/43  | 18/19 | 11/11   | 28/28   | -     | -     |
+| ice40     | 26/26 | 71/71 | 16/17  | 43/43  | 19/19 | 11/11   | 28/28   | -     | -     |
+| polarfire | 26/26 | 71/71 | 16/17  | 41/43  | 19/19 | 11/11   | 28/28   | -     | -     |
+| polarpro  | 26/26 | 71/71 | 17/17  | 43/43  | 19/19 | 11/11   | 28/28   | -     | -     |
+| trion     | 26/26 | 71/71 | 16/17  | 43/43  | 19/19 | 11/11   | 28/28   | -     | -     |
+| virtex7   | 26/26 | 71/71 | 17/17  | 54/55  | 19/19 | 11/11   | 28/28   | 12/17 | 17/19 |
+| z1015     | 24/26 | 70/71 | 17/17  | 42/43  | 19/19 | 11/11   | 28/28   | -     | -     |
+| z1060     | 24/26 | 71/71 | 17/17  | 42/43  | 19/19 | 11/11   | 28/28   | -     | -     |
+| fabulous  | 22/26 | 64/71 | 16/17  | 24/43  | 19/19 | 11/11   | 28/28   | -     | -     |
+| speedster | 20/26 | 64/71 | 15/17  | 21/43  | 19/19 | 11/11   | 28/28   | -     | -     |
+
+`fabulous`/`speedster` map only ~half of `blocks` (and some `basic`/`arithmetic`)
+-- treat as experimental. `results/sim/sim.json` is a 10-benchmark simulation
+stub, not a release artifact.
+
+### Known caveats
+
+- **FPGA metrics are resource-only** -- no FMAX (no place-and-route).
+- **sky130 `memory` cell area is inflated and not node-comparable** -- lambdapdk
+  ships a single sky130 SRAM macro, so RAM shapes are tiled with glue (see
+  [ASIC Cell Area](#asic-cell-area)). Other PDKs' memory results are unaffected.
+- **FMAX for combinational designs** is `1 / (combinational path delay)`, not a
+  clock rate; do not pool it with sequential FMAX (see [ASIC FMAX](#asic-fmax)).
+- `memory/ramtdpdc` has no ASIC cell area (the RAM is dropped and timing fails).
 
 ----
 
