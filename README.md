@@ -974,3 +974,7 @@ customized variants of SC's own tools) is in
 ## License
 
 The LogikBench project is licensed under the [MIT](LICENSE) license unless specified otherwise inside the individual benchmark folders.
+
+## Support
+
+This work was supported by the U.S. Department of Energy, Office of Science, Advanced Scientific Computing Research program under the project, Democratization of Co-design for Energy-Efficient Heterogeneous Computing (DeCoDe) and the Competitive Portfolio program under the project, End-to-end codesign for performance, energy-efficiency, and security in AI-enabled computational science (ENCODE) at Pacific Northwest National Laboratory (PNNL). The DeCoDe project is part of the Microelectronics Energy Efficiency Research Center for Advanced Technologies (MEERCAT), a DOE Office of Science Microelectronics Science Research Center (MSRC). PNNL is a multi-program national laboratory operated for the U.S. Department of Energy (DOE) by Battelle Memorial Institute under Contract No. DE-AC05-76RL01830.
