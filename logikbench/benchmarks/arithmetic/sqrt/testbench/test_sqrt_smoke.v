@@ -75,4 +75,11 @@ module test_sqrt_smoke;
       $finish;
    end
 
+`ifdef WAVES
+   initial begin
+      $dumpfile("test_sqrt_smoke.vcd");
+      $dumpvars(0, test_sqrt_smoke);
+   end
+`endif
+
 endmodule

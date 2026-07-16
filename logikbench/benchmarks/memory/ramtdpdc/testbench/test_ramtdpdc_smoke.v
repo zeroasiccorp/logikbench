@@ -66,4 +66,11 @@ module test_ramtdpdc_smoke;
       $finish;
    end
 
+`ifdef WAVES
+   initial begin
+      $dumpfile("test_ramtdpdc_smoke.vcd");
+      $dumpvars(0, test_ramtdpdc_smoke);
+   end
+`endif
+
 endmodule

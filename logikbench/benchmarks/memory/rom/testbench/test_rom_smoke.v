@@ -44,4 +44,11 @@ module test_rom_smoke;
       $finish;
    end
 
+`ifdef WAVES
+   initial begin
+      $dumpfile("test_rom_smoke.vcd");
+      $dumpvars(0, test_rom_smoke);
+   end
+`endif
+
 endmodule

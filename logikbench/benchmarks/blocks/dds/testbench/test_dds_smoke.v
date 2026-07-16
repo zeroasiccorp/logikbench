@@ -113,4 +113,11 @@ module test_dds_smoke;
       $finish;
    end
 
+`ifdef WAVES
+   initial begin
+      $dumpfile("test_dds_smoke.vcd");
+      $dumpvars(0, test_dds_smoke);
+   end
+`endif
+
 endmodule

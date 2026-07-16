@@ -143,4 +143,11 @@ module test_colorconv_smoke;
       $finish;
    end
 
+`ifdef WAVES
+   initial begin
+      $dumpfile("test_colorconv_smoke.vcd");
+      $dumpvars(0, test_colorconv_smoke);
+   end
+`endif
+
 endmodule

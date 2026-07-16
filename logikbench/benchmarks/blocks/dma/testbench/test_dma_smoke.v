@@ -216,4 +216,11 @@ module test_dma_smoke;
       $finish;
    end
 
+`ifdef WAVES
+   initial begin
+      $dumpfile("test_dma_smoke.vcd");
+      $dumpvars(0, test_dma_smoke);
+   end
+`endif
+
 endmodule

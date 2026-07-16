@@ -128,4 +128,11 @@ module test_beamformer_smoke;
       $finish;
    end
 
+`ifdef WAVES
+   initial begin
+      $dumpfile("test_beamformer_smoke.vcd");
+      $dumpvars(0, test_beamformer_smoke);
+   end
+`endif
+
 endmodule

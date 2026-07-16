@@ -26,4 +26,12 @@ module test_relu_smoke;
       for(t=0;t<30;t=t+1) chk($random);
       if(errors==0)$display("PASSED");else $display("FAILED (%0d errors)",errors);
       $finish; end
+
+`ifdef WAVES
+   initial begin
+      $dumpfile("test_relu_smoke.vcd");
+      $dumpvars(0, test_relu_smoke);
+   end
+`endif
+
 endmodule

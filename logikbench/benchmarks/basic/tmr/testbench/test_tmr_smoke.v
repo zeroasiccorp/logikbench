@@ -42,4 +42,12 @@ module test_tmr_smoke;
       else $display("FAILED (%0d errors)", errors);
       $finish;
    end
+
+`ifdef WAVES
+   initial begin
+      $dumpfile("test_tmr_smoke.vcd");
+      $dumpvars(0, test_tmr_smoke);
+   end
+`endif
+
 endmodule

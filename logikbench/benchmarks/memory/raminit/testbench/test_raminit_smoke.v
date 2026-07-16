@@ -63,4 +63,11 @@ module test_raminit_smoke;
       $finish;
    end
 
+`ifdef WAVES
+   initial begin
+      $dumpfile("test_raminit_smoke.vcd");
+      $dumpvars(0, test_raminit_smoke);
+   end
+`endif
+
 endmodule

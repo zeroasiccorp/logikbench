@@ -76,7 +76,7 @@ verilator.
 
 ## Modifications
 
-The `nvdlav1` vmod is almost directly consumable; three minimal adjustments
+The `nvdlav1` vmod is almost directly consumable; four minimal adjustments
 were needed to lint/synthesize the standalone tree (none change behavior):
 
 - **Timescale removed** from the 59 files that declared `` `timescale `` (57
@@ -101,6 +101,16 @@ were needed to lint/synthesize the standalone tree (none change behavior):
   identical ports, minus the empty marker module -- which is exactly what
   NVDLA's `tmake` build emits for the small tree. The marker carries no
   hardware, so nothing in lint or synthesis changes.
+- **`vlibs/NV_DW_lsd.v`** (leading-sign detector): the `DWF_lsd_enc` scan loop
+  used a data-dependent bound (`for (i=...; done==0; ...)`) with a wrapping
+  unsigned counter, which slang cannot prove terminates and so unrolls to its
+  `--unroll-limit` (4000), aborting elaboration -- even though the real trip
+  count is only `a_width-1` (36 and 44 in this design). Rewritten as a
+  statically bounded descending scan (`for (i=a_width-2; i>=0; i=i-1)` with a
+  signed `integer i`) that latches the first (highest-index) sign change via
+  `!done`. Proven functionally identical (both `enc` and `dec`) to the original
+  against 105,894 vectors -- exhaustive at widths 4/8/16, plus corner patterns,
+  single-bit walks, and 20k random vectors at the instantiated widths 36 and 44.
 
 ## How to Cite
 

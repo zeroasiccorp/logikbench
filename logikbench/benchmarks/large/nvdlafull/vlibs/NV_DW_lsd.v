@@ -19,19 +19,22 @@ module NV_DW_lsd (a, dec, enc);
 //get the encoded output: the number of sign bits.
 function [enc_width-1:0] DWF_lsd_enc (input  [a_width-1:0] A);
   reg [enc_width-1:0] temp_enc;
-  reg [enc_width-1:0] i;
+  integer i;
   reg done;
-  begin 
+  begin
   done =0;
-  temp_enc = a_width-1; 
-  for (i=a_width-2; done==0; i=i-1) begin
-    if (A[i+1] != A[i]) begin
-      temp_enc = a_width - i -2;
-      done =1;
-    end
-    else if(i==0) begin
-        temp_enc = a_width-1;
-        done =1;
+  temp_enc = a_width-1;
+  // MODIFIED (see README): the original loop bound was data-dependent
+  // (done==0) with a wrapping unsigned counter, which slang cannot prove
+  // terminating and unrolls to --unroll-limit. Rewritten as a statically
+  // bounded descending scan (i>=0, signed integer) that latches the first
+  // (highest-index) sign change via !done. Functionally identical; the
+  // default temp_enc=a_width-1 covers the no-change case (was the i==0
+  // else-branch). Trip count is a_width-1, so no unroll blow-up.
+  for (i=a_width-2; i>=0; i=i-1) begin
+    if (!done && (A[i+1] != A[i])) begin
+      temp_enc = a_width - i - 2;
+      done = 1;
     end
   end
   DWF_lsd_enc = temp_enc;

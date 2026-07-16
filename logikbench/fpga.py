@@ -9,9 +9,42 @@ scripts/fpga/synthesis_fpga.tcl. Mirrors the ASIC split: --target is the part,
 import os
 
 from siliconcompiler.metrics import FPGAMetricsSchema
+from siliconcompiler.schema import EditableSchema, Parameter, Scope, PerNode
 
 from logikbench.flows.syn import FPGASynthesis
 from logikbench.common import _base_project, _set_range
+
+
+class LbFpgaMetricsSchema(FPGAMetricsSchema):
+    """SC FPGA metrics plus counts the base schema does not break out --
+    'muxes', 'carrycells', 'latches', and 'lutram' -- each recorded separately
+    from 'luts' so the LUT metric stays a pure logic-LUT count. ('registers'
+    already exists in the base schema.)"""
+
+    def __init__(self):
+        super().__init__()
+        schema = EditableSchema(self)
+        for metric, desc in [
+                ("muxes", "dedicated mux-fabric primitives (wide muxes that "
+                          "combine or replace LUT logic)"),
+                ("carrycells", "dedicated carry-chain / arithmetic cells "
+                               "(carry, ALU adders)"),
+                ("latches", "level-sensitive latch primitives"),
+                ("lutram", "distributed (LUT-based) RAM primitives")]:
+            schema.insert(
+                metric,
+                Parameter(
+                    "int<0..>",
+                    scope=Scope.JOB,
+                    pernode=PerNode.REQUIRED,
+                    shorthelp=f"Metric: FPGA {metric} used",
+                    switch=f"-metric_{metric} 'step index <int>'",
+                    example=[
+                        f"cli: -metric_{metric} 'place 0 100'",
+                        f"api: fpga.set('metric', '{metric}', 100, "
+                        "step='place', index=0)"],
+                    help=f"Count of {desc}, recorded separately from LUTs."))
+
 
 # Vendored zeroasic FPGA architecture files (one subdir per part), fetched from
 # siliconcompiler/logiklib releases by scripts/fetch_zeroasic_arch.py. Each part
@@ -48,7 +81,7 @@ FPGA_TARGETS = {
     "speedster": "synth_achronix",
     "flex16ffc": "synth_analogdevices -tech t16ffc",
     "trion":     "synth_efinix",
-    "generic":   "synth_fabulous",
+    "fabulous":  "synth_fabulous",
     "cologne":   "synth_gatemate",
     "z1015":     _zeroasic_command("z1015"),
     "z1060":     _zeroasic_command("z1060"),
@@ -58,7 +91,7 @@ FPGA_TARGETS = {
 def _run_fpga(design, target, options, builddir, quiet, start, stop, timeout,
               lintonly=False):
     """lbflow FPGA synthesis; the target name maps to a yosys synth command."""
-    proj = _base_project(design, builddir, FPGAMetricsSchema(), quiet, timeout)
+    proj = _base_project(design, builddir, LbFpgaMetricsSchema(), quiet, timeout)
     proj.add_fileset("rtl")
     proj.set_flow(FPGASynthesis())
     proj.set("tool", "yosys", "task", "synthesis", "var", "mode", "fpga")

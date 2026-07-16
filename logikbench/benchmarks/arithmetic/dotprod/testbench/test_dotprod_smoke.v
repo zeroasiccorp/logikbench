@@ -27,4 +27,12 @@ module test_dotprod_smoke;
       for(t=0;t<40;t=t+1) chk;
       if(errors==0)$display("PASSED");else $display("FAILED (%0d errors)",errors);
       $finish; end
+
+`ifdef WAVES
+   initial begin
+      $dumpfile("test_dotprod_smoke.vcd");
+      $dumpvars(0, test_dotprod_smoke);
+   end
+`endif
+
 endmodule

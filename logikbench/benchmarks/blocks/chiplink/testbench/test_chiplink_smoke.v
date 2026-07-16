@@ -142,4 +142,11 @@ module test_chiplink_smoke;
       $finish;
    end
 
+`ifdef WAVES
+   initial begin
+      $dumpfile("test_chiplink_smoke.vcd");
+      $dumpvars(0, test_chiplink_smoke);
+   end
+`endif
+
 endmodule

@@ -50,4 +50,11 @@ module test_ramasync_smoke;
       $finish;
    end
 
+`ifdef WAVES
+   initial begin
+      $dumpfile("test_ramasync_smoke.vcd");
+      $dumpvars(0, test_ramasync_smoke);
+   end
+`endif
+
 endmodule

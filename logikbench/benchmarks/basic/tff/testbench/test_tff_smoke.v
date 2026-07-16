@@ -44,4 +44,12 @@ module test_tff_smoke;
       else $display("FAILED (%0d errors)", errors);
       $finish;
    end
+
+`ifdef WAVES
+   initial begin
+      $dumpfile("test_tff_smoke.vcd");
+      $dumpvars(0, test_tff_smoke);
+   end
+`endif
+
 endmodule

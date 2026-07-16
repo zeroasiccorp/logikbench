@@ -324,7 +324,13 @@ def _run_lbflow(design, target, options, builddir, quiet, start, stop, timeout,
         # cells link and survive in the netlist instead of erroring as unknown.
         synvar("blackbox", _blackbox_verilog(proj))
     elif tool == "tardigrade":
-        synvar("pdk", pdk)
+        # tardigrade re-derives the PDK mapping defaults by importing SC's
+        # 'siliconcompiler.targets.<pdk>_demo' -- the same target module
+        # logikbench set the project up with above -- so it needs the SC pdk
+        # stem (e.g. 'skywater130'), NOT the lb display token (e.g. 'sky130').
+        # Feed it the canonical stem so both mappers resolve the PDK identically
+        # rather than the tardigrade path re-deriving it from a renamed token.
+        synvar("pdk", _SC_MODULE[pdk][:-len("_demo")])
     if options:
         synvar("options", options.split())
     if lintonly:

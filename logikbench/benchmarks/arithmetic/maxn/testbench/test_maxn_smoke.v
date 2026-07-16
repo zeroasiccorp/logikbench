@@ -44,4 +44,12 @@ module test_maxn_smoke;
       else $display("FAILED (%0d errors)", errors);
       $finish;
    end
+
+`ifdef WAVES
+   initial begin
+      $dumpfile("test_maxn_smoke.vcd");
+      $dumpvars(0, test_maxn_smoke);
+   end
+`endif
+
 endmodule

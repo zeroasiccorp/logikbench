@@ -32,27 +32,60 @@ METRICS_BY_MODE = {"fpga": FPGA_METRICS, "asic": ASIC_METRICS}
 # per-metric presentation: 'dir' is which way is better (the dashboard colors
 # the winner green and shades losers yellow->red); 'unit' is appended in the
 # cell; 'desc' is the explanation the dashboard shows under the metric tabs.
-_FPGA_CELL_DESC = (
-    "Cells include LUTs, dedicated mux primitives, and hardened DSP blocks."
-)
 METRIC_INFO = {
     "cells":      {"label": "Cells",       "dir": "lower",  "unit": "",
-                   "desc": "Total mapped standard-cell instances in the "
-                           "synthesized netlist."},
-    "luts":       {"label": "Cells",       "dir": "lower",  "unit": "",
-                   "desc": _FPGA_CELL_DESC},
+                   "desc": "Total cell count. FPGA: unweighted sum of the "
+                           "reported fabric resources (LUTs, muxes, LUT RAM, "
+                           "DSPs, BRAMs, registers, latches, carry). ASIC: "
+                           "total mapped standard-cell instances."},
+    "luts":       {"label": "LUTs",        "dir": "lower",  "unit": "",
+                   "desc": "Logic LUTs (incl. standalone inverters and the "
+                           "LUT-site equivalent of distributed/LUT RAM); "
+                           "dedicated muxes, DSP, and block RAM excluded."},
+    "muxes":      {"label": "Muxes",       "dir": "lower",  "unit": "",
+                   "desc": "Dedicated mux-fabric primitives (wide muxes that "
+                           "combine or replace LUT logic), counted separately "
+                           "from LUTs."},
+    "lutram":     {"label": "LUT RAM",     "dir": "lower",  "unit": "",
+                   "desc": "Distributed (LUT-based) RAM primitives, counted "
+                           "separately from LUTs and block RAM."},
+    "registers":  {"label": "Registers",   "dir": "lower",  "unit": "",
+                   "desc": "Flip-flops / sequential elements in the mapped "
+                           "netlist."},
+    "latches":    {"label": "Latches",     "dir": "lower",  "unit": "",
+                   "desc": "Level-sensitive latch primitives in the mapped "
+                           "netlist."},
+    "carrycells": {"label": "Carry cells", "dir": "lower",  "unit": "",
+                   "desc": "Dedicated carry-chain / arithmetic cells (carry, "
+                           "ALU adders), counted separately from LUTs."},
+    "dsps":       {"label": "DSPs",        "dir": "lower",  "unit": "",
+                   "desc": "Hard multiplier / MAC / DSP blocks in the mapped "
+                           "netlist."},
+    "brams":      {"label": "BRAMs",       "dir": "lower",  "unit": "",
+                   "desc": "Hardened block-RAM primitives in the mapped netlist "
+                           "(distributed LUT-based RAM excluded)."},
     "logicdepth": {"label": "Logic depth", "dir": "lower",  "unit": "",
                    "desc": "Longest combinational path on the mapped netlist, "
                            "in cells (flip-flops excluded)."},
     "tasktime":   {"label": "Runtime",     "dir": "lower",  "unit": "s",
                    "desc": "Wall-clock runtime of the synthesis step, as "
                            "recorded by SiliconCompiler."},
+    "memory":     {"label": "Peak memory", "dir": "lower",  "unit": "MB",
+                   # values are already stored in MB (rescaled at collection)
+                   "desc": "Peak process memory of the synthesis step, as "
+                           "recorded by SiliconCompiler."},
+    "leakagepower": {"label": "Leakage",   "dir": "lower",  "unit": "mW",
+                     # SC records leakage power in milliwatts (raw value shown)
+                     "desc": "Static leakage power of the synthesized netlist "
+                             "from post-synthesis timing analysis."},
+    "setuptns":   {"label": "Setup TNS",   "dir": "higher", "unit": "ns",
+                   "desc": "Total negative setup slack across all endpoints "
+                           "from post-synthesis static timing (0 is best)."},
     "cellarea":   {"label": "Cell area",   "dir": "lower",  "unit": "um^2",
                    "desc": "Total standard-cell area of the synthesized "
                            "netlist."},
     "fmax":       {"label": "Fmax",        "dir": "higher", "unit": "MHz",
-                   # SC records fmax in Hz; scale to MHz for display
-                   "scale": 1e-6,
+                   # values are already stored in MHz (rescaled at collection)
                    "desc": "Maximum clock frequency from post-synthesis static "
                            "timing; combinational designs are timed against a "
                            "virtual clock."},
@@ -173,8 +206,9 @@ def main():
                          "e.g. results/fpga/{small,fast} (default: results/fpga)")
     ap.add_argument("--metrics", choices=list(METRICS_BY_MODE), default="fpga",
                     help="metric set to tabulate: 'fpga' (luts/logicdepth/"
-                         "tasktime) or 'asic' (cells/cellarea/fmax/tasktime) "
-                         "(default: fpga); ignored with --flat (derived per mode)")
+                         "tasktime) or 'asic' (cells/cellarea/fmax/logicdepth/"
+                         "leakagepower/setuptns/memory/tasktime) (default: "
+                         "fpga); ignored with --flat (derived per mode)")
     ap.add_argument("--flat", action="store_true",
                     help="read flat <target>.json collect files directly from "
                          "--results (no config subdirs), split them into fpga/asic "

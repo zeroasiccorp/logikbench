@@ -91,4 +91,11 @@ module test_cache_smoke;
       $finish;
    end
 
+`ifdef WAVES
+   initial begin
+      $dumpfile("test_cache_smoke.vcd");
+      $dumpvars(0, test_cache_smoke);
+   end
+`endif
+
 endmodule

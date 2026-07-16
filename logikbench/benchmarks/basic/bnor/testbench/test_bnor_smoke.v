@@ -44,4 +44,11 @@ module test_bnor_smoke;
       $finish;
    end
 
+`ifdef WAVES
+   initial begin
+      $dumpfile("test_bnor_smoke.vcd");
+      $dumpvars(0, test_bnor_smoke);
+   end
+`endif
+
 endmodule

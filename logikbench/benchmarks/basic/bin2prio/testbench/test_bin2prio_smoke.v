@@ -53,4 +53,12 @@ module test_bin2prio_smoke;
       else $display("FAILED (%0d errors)", errors);
       $finish;
    end
+
+`ifdef WAVES
+   initial begin
+      $dumpfile("test_bin2prio_smoke.vcd");
+      $dumpvars(0, test_bin2prio_smoke);
+   end
+`endif
+
 endmodule

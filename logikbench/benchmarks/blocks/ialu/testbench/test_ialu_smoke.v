@@ -109,4 +109,11 @@ module test_ialu_smoke;
       $finish;
    end
 
+`ifdef WAVES
+   initial begin
+      $dumpfile("test_ialu_smoke.vcd");
+      $dumpvars(0, test_ialu_smoke);
+   end
+`endif
+
 endmodule

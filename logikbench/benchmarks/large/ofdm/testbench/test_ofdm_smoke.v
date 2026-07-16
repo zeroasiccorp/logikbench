@@ -70,4 +70,12 @@ module test_ofdm_smoke;
       $finish;
    end
    initial begin #5000000; $display("FAILED (timeout)"); $finish; end
+
+`ifdef WAVES
+   initial begin
+      $dumpfile("test_ofdm_smoke.vcd");
+      $dumpvars(0, test_ofdm_smoke);
+   end
+`endif
+
 endmodule

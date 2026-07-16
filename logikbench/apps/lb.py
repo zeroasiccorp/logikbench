@@ -2,19 +2,24 @@
 
 import argparse
 import glob
+import math
 import os
 import sys
 import json
+import threading
 from collections import defaultdict
 
+import psutil
+
 import logikbench as lb
-from concurrent.futures import ProcessPoolExecutor, as_completed
+from concurrent.futures import (
+    ProcessPoolExecutor, as_completed, wait, FIRST_COMPLETED)
 
 from logikbench.runner import (
     FPGA_METRICS, ASIC_METRICS, FPGA_TARGETS,
     YOSYS_TARGETS, STEPS, run_one, run_task,
     read_metrics, read_asic_metrics, read_tool_var, read_flow_tools,
-    is_complete, clean_build, write_netlist_cache,
+    read_metric_units, is_complete, clean_build, write_netlist_cache,
 )
 
 # results file layout version (bump when the JSON structure changes)
@@ -26,6 +31,53 @@ ALL_GROUPS = ['basic', 'memory', 'arithmetic', 'epfl', 'blocks', 'large',
 
 # metrics tracked are determined by the run mode (fpga vs asic synthesis)
 FLOW_METRICS = {'fpga': FPGA_METRICS, 'asic': ASIC_METRICS}
+
+# Metrics whose raw SC unit reads badly at human scale are rescaled at collection
+# time: metric -> (multiply raw value by, unit label recorded in meta['units']).
+# fmax is Hz (a 4 GHz design prints as 4e9) and memory is bytes; everything else
+# is already at a human scale (um^2, mw, ns, s) and stays in its raw SC unit.
+METRIC_DISPLAY = {
+    "fmax":   (1e-6, "MHz"),   # Hz -> MHz
+    "memory": (1e-6, "MB"),    # B  -> MB (decimal, 1e6 bytes)
+}
+# significant figures kept for float metrics (strips IEEE-754 print noise like
+# 4.461479999999998 -> 4.461); integer counts (cells, logicdepth) pass through.
+METRIC_SIGFIGS = 4
+# metrics rounded to a fixed number of decimal places instead of sig figs
+# (tasktime s, cellarea um^2, fmax MHz read better as fixed 0.xx numbers).
+METRIC_DECIMALS = {"tasktime": 2, "cellarea": 2, "fmax": 2}
+
+
+def round_sig(value, sig=METRIC_SIGFIGS):
+    """Round a float to `sig` significant figures. Non-floats and 0 pass through
+    unchanged, so integer counts stay integers and there is no log10(0)."""
+    if not isinstance(value, float) or value == 0:
+        return value
+    return round(value, sig - 1 - math.floor(math.log10(abs(value))))
+
+
+def round_metric(metric, value):
+    """Round a metric value for display: fixed decimals for the metrics in
+    METRIC_DECIMALS, else sig figs. Non-floats (counts) pass through."""
+    if not isinstance(value, float):
+        return value
+    decimals = METRIC_DECIMALS.get(metric)
+    if decimals is not None:
+        return round(value, decimals)
+    return round_sig(value)
+
+
+def present_value(metric, value):
+    """Turn a raw SC metric value into the human-readable form stored in the
+    results JSON: apply METRIC_DISPLAY scaling (e.g. fmax Hz->MHz), then round
+    it (see round_metric)."""
+    if value is None:
+        return None
+    scale = METRIC_DISPLAY.get(metric)
+    if scale is not None:
+        value = value * scale[0]
+    return round_metric(metric, value)
+
 
 # `lb syn --target`: PDK stems (ASIC lbflow) + FPGA parts. --tool picks the ASIC
 # mapper; the runner token is '<tool>_<pdk>' (FPGA parts run as-is, yosys only).
@@ -49,6 +101,18 @@ class LbHelpFormatter(argparse.HelpFormatter):
         return super()._format_action(action) + "\n"
 
 
+def run_label(value):
+    """argparse type for --label: a short variant tag suffixed onto the build
+    dir and result filename. Restricted to letters/digits so it stays a clean
+    path/filename component (the '_' is reserved as the target/label separator).
+    """
+    if value and value.isalnum():
+        return value
+    raise argparse.ArgumentTypeError(
+        f"{value!r} is not a valid label: use letters/digits only "
+        "(e.g. 'optdelay')")
+
+
 def flow_step(value):
     """argparse type for --from/--to: a friendly stage name (STEPS, mapped to
     the stage's first/last node) or a raw SC node 'step' / 'step.task' passed
@@ -70,9 +134,22 @@ def target_mode(target):
     return 'fpga' if target in FPGA_TARGETS else 'asic'
 
 
+def result_stem(target, label=None):
+    """Filename stem for a target's collected/published metrics. ASIC runner
+    tokens already carry the tool ('yosys_asap7', 'sc_sky130'); FPGA part tokens
+    ('virtex7') are yosys-only, so prefix them for a uniform '<tool>_<target>'.
+    A --label variant is suffixed as '<stem>_<label>' so it stays distinct."""
+    stem = f"yosys_{target}" if target in FPGA_TARGETS else target
+    return f"{stem}_{label}" if label else stem
+
+
 def target_builddir(args, target):
-    """Per-target build tree: <builddir>/<target>/<benchmark>/..."""
-    return os.path.join(args.builddir, target)
+    """Per-target build tree: <builddir>/<target>/<benchmark>/... A --label
+    variant gets its own tree (<builddir>/<target>_<label>/...) so it never
+    shares (or resumes from) the default run's artifacts."""
+    label = getattr(args, "label", None)
+    stem = f"{target}_{label}" if label else target
+    return os.path.join(args.builddir, stem)
 
 
 def make_worklist(args):
@@ -85,12 +162,15 @@ def make_worklist(args):
     (group, name) pair keys the per-group build dir, metrics, and -n filter.
     """
     namefilter = set(n.lower() for n in args.name) if args.name else None
+    skipfilter = set(n.lower() for n in getattr(args, "skip", None) or [])
     worklist = []
     for group in args.group:
         module = getattr(lb, group)
         for item in module.__all__:
             cls = getattr(module, item)
             name = cls().name
+            if name in skipfilter:            # --skip wins over -n/-g
+                continue
             if namefilter is None or name in namefilter:
                 worklist.append((group, cls, name))
     return worklist
@@ -101,6 +181,19 @@ def check_worklist(args, worklist):
     run/collect never silently does nothing. -n searches all groups (names are
     globally unique), so an unmatched name is simply not a known benchmark.
     """
+    skip = getattr(args, "skip", None)
+    if skip:
+        # a typo'd --skip name would silently exclude nothing (the long job
+        # then runs anyway), so validate against the selected groups' names.
+        known = {getattr(mod, item)().name
+                 for group in args.group
+                 for mod in (getattr(lb, group),)
+                 for item in mod.__all__}
+        unknown = [n for n in skip if n.lower() not in known]
+        if unknown:
+            print("error: --skip: not a known benchmark: "
+                  f"{', '.join(unknown)}", file=sys.stderr)
+            sys.exit(2)
     if args.name:
         groups_by_name = defaultdict(set)
         for g, _, nm in worklist:
@@ -142,6 +235,83 @@ def target_runlist(target, args, worklist):
     return runlist
 
 
+def _load_estimates(targets):
+    """Historical per-(target, group, name) runtime and peak-memory estimates
+    from the committed results (metrics 'tasktime' in seconds, 'memory' in MB),
+    for longest-first ordering and memory-aware admission. Returns (runtime_est,
+    memory_est, have_runtime): the two callables take (target, group, name);
+    runtime_est falls back to the per-benchmark median across targets (0 if
+    unseen), memory_est to the per-benchmark max (None if unseen, so the caller
+    treats it conservatively). have_runtime is False when no tasktime data
+    exists at all, so the caller leaves ordering unchanged."""
+    tree = find_results_tree()
+    runtime, memory = {}, {}
+    rt_peers, mem_peers = defaultdict(list), defaultdict(list)
+    for target in set(targets):
+        if not tree:
+            break
+        path = os.path.join(tree, "syn", target_mode(target),
+                            f"{result_stem(target)}.json")
+        if not os.path.isfile(path):
+            continue
+        try:
+            with open(path) as f:
+                metrics = json.load(f).get("metrics", {})
+        except (ValueError, OSError):
+            continue
+        for metric, store, peers in (("tasktime", runtime, rt_peers),
+                                     ("memory", memory, mem_peers)):
+            for group, names in metrics.get(metric, {}).items():
+                if not isinstance(names, dict):
+                    continue
+                for name, val in names.items():
+                    if isinstance(val, (int, float)):
+                        store[(target, group, name)] = val
+                        peers[(group, name)].append(val)
+
+    def _median(vals):
+        return sorted(vals)[len(vals) // 2]
+
+    def runtime_est(target, group, name):
+        val = runtime.get((target, group, name))
+        if val is not None:
+            return val
+        peer = rt_peers.get((group, name))
+        return _median(peer) if peer else 0.0
+
+    def memory_est(target, group, name):
+        val = memory.get((target, group, name))
+        if val is not None:
+            return val
+        peer = mem_peers.get((group, name))
+        return max(peer) if peer else None
+
+    return runtime_est, memory_est, bool(runtime)
+
+
+def _memory_watchdog(stop_event, floor_bytes, interval=5.0):
+    """Background monitor for a parallel sweep: every 'interval' seconds check
+    total SYSTEM available memory (via psutil, so it accounts for every process
+    on the machine -- other apps and leaked/orphaned tool processes from prior
+    runs, not just this sweep's own children) and print a WARNING when it drops
+    below 'floor_bytes', the regime where the machine starts thrashing swap or
+    OOM-kills a synth job. Warns once per crossing and re-arms only after
+    available climbs back above 2x the floor, so it never spams. Runs as a
+    daemon thread and exits when stop_event is set."""
+    armed = True
+    while not stop_event.wait(interval):
+        vm = psutil.virtual_memory()
+        if vm.available < floor_bytes and armed:
+            sw = psutil.swap_memory()
+            print(f"WARNING: only ~{vm.available / 2**30:.1f}GB RAM free "
+                  f"(swap {sw.percent:.0f}% used); the system may thrash or "
+                  "OOM-kill a job. Reduce -j, set --mem, or check for leaked "
+                  "processes (e.g. stray 'sta'/'yosys').", file=sys.stderr)
+            armed = False
+        elif vm.available > 2 * floor_bytes:
+            armed = True         # re-arm once memory pressure recedes
+
+
 def run_sweep(args, targets, worklist, netlist_cache=False):
     """Synthesize the whole target x benchmark matrix; return the failures.
 
@@ -154,6 +324,16 @@ def run_sweep(args, targets, worklist, netlist_cache=False):
     tasks = [(target, group, cls, name)
              for target in targets
              for group, cls, name in target_runlist(target, args, worklist)]
+
+    # Longest-processing-time-first: submit the slowest benchmarks earliest so a
+    # long job never becomes an end straggler running alone while workers idle.
+    # No-op (current order preserved) when there is no historical runtime data.
+    runtime_est, memory_est, have_runtime = _load_estimates(targets)
+    if have_runtime:
+        tasks.sort(key=lambda t: runtime_est(t[0], t[1], t[3]), reverse=True)
+    # --mem: cap concurrency so summed historical peak memory (MB) of running
+    # jobs stays under budget, on top of -j. Unset -> pure -j behavior.
+    budget_mb = args.mem * 1024 if getattr(args, "mem", None) else None
 
     timeout = args.timeout or None   # --timeout 0 disables the cap
     quiet = not args.verbose
@@ -204,19 +384,52 @@ def run_sweep(args, targets, worklist, netlist_cache=False):
             clean_build(name, builddir=gdir)
 
     if args.jobs > 1:
-        with ProcessPoolExecutor(max_workers=args.jobs) as pool:
-            futures = {}
-            for target, group, cls, name in tasks:
-                builddir = target_builddir(args, target)
-                future = pool.submit(run_one, cls, target, group,
-                                     options, builddir, quiet,
-                                     start, stop, timeout, args.clk,
-                                     lintonly)
-                futures[future] = (target, group, name)
-            for future in as_completed(futures):
-                target, group, name = futures[future]
-                _, error = future.result()
-                record(target, group, name, error)
+        # Watch system available memory and warn when it drops near empty;
+        # a daemon thread so it never blocks sweep teardown. Floor: 10% of
+        # installed RAM, but at least 2GB.
+        stop_event = threading.Event()
+        floor = max(2 * 2**30, int(0.10 * psutil.virtual_memory().total))
+        watcher = threading.Thread(
+            target=_memory_watchdog, daemon=True, args=(stop_event, floor))
+        watcher.start()
+        try:
+            with ProcessPoolExecutor(max_workers=args.jobs) as pool:
+                running = {}      # future -> (target, group, name, est_mem_mb)
+                running_mem = 0.0
+                idx = 0
+                while idx < len(tasks) or running:
+                    # admit tasks (longest-first) up to the worker count and the
+                    # memory budget; a lone over-budget job runs anyway.
+                    while idx < len(tasks) and len(running) < args.jobs:
+                        target, group, cls, name = tasks[idx]
+                        est = memory_est(target, group, name)
+                        if budget_mb is not None and est is None:
+                            est = budget_mb    # unknown footprint -> run alone
+                        est = est or 0.0
+                        if (budget_mb is not None and running
+                                and running_mem + est > budget_mb):
+                            break              # wait for memory to free up
+                        if (budget_mb is not None and not running
+                                and est > budget_mb):
+                            print(f"warning: {target}/{group}/{name} needs "
+                                  f"~{est / 1024:.1f}GB > --mem {args.mem}GB; "
+                                  "running it alone", file=sys.stderr)
+                        future = pool.submit(
+                            run_one, cls, target, group, options,
+                            target_builddir(args, target), quiet,
+                            start, stop, timeout, args.clk, lintonly)
+                        running[future] = (target, group, name, est)
+                        running_mem += est
+                        idx += 1
+                    finished, _ = wait(running, return_when=FIRST_COMPLETED)
+                    for future in finished:
+                        target, group, name, est = running.pop(future)
+                        running_mem -= est
+                        _, error = future.result()
+                        record(target, group, name, error)
+        finally:
+            stop_event.set()      # tell the watchdog to exit
+            watcher.join(timeout=2)
     else:
         for target, group, cls, name in tasks:
             builddir = target_builddir(args, target)
@@ -253,10 +466,9 @@ def gather_target_metrics(target, args, worklist):
                 print(f"No results for {name} benchmark ({group}).")
             continue
         for metric in metric_names:
-            value = metrics.get(metric)
-            # report runtime to 2 decimal places (0.xx)
-            if metric == "tasktime" and value is not None:
-                value = round(value, 2)
+            # rescale to a human unit (fmax->MHz, memory->MB) and round off
+            # float print-noise before storing; see present_value/METRIC_DISPLAY
+            value = present_value(metric, metrics.get(metric))
             metrics_out[metric].setdefault(group, {})[name] = value
         # options are uniform across a target's sweep; read once from a built one
         if options is None:
@@ -290,6 +502,18 @@ def find_results_tree():
         here = parent
 
 
+def should_publish(args):
+    """Whether to promote results into the committed 'results' tree.
+
+    An explicit --publish/--no-publish always wins. When neither is given
+    (args.publish is None) we autodetect: publish when run from a git clone that
+    has the tree, and skip on a PyPI install where that tree does not exist.
+    """
+    if args.publish is not None:
+        return args.publish
+    return find_results_tree() is not None
+
+
 def _merge_metrics_into(src_path, dst_path):
     """Incrementally merge one <target>.json into another: benchmark values in
     src update dst per metric; benchmarks/metrics only in dst are preserved.
@@ -321,7 +545,8 @@ def save_target(target, args, worklist):
                                                             worklist)
     outdir = results_builddir(args)
     os.makedirs(outdir, exist_ok=True)
-    output = os.path.join(outdir, f"{target}.json")
+    label = getattr(args, "label", None)
+    output = os.path.join(outdir, f"{result_stem(target, label)}.json")
 
     # incremental read-modify-write: update only the benchmarks in this run and
     # preserve metrics already recorded for others (so a subset run/publish does
@@ -342,16 +567,28 @@ def save_target(target, args, worklist):
             dst.setdefault(grp, {}).update(names)
 
     # provenance: what produced these numbers (git versions the rest). Tools are
-    # discovered from the flow the target ran; refreshed each run.
-    tools, scversion = {}, None
+    # discovered from the flow the target ran; refreshed each run. The per-metric
+    # units come from SC's metric schema in the same benchmark's manifest, so
+    # values in 'metrics' stay raw and self-describing via meta['units'].
+    tools, scversion, units = {}, None, {}
     tbd = target_builddir(args, target)
+    metric_names = FLOW_METRICS[target_mode(target)]
     for grp, _, nm in worklist:
-        tools, scversion = read_flow_tools(nm, builddir=os.path.join(tbd, grp))
+        gdir = os.path.join(tbd, grp)
+        tools, scversion = read_flow_tools(nm, builddir=gdir)
         if tools or scversion:
+            units = read_metric_units(nm, metric_names, builddir=gdir) or {}
             break
+    # record the display unit for any metric we rescaled (e.g. fmax Hz->MHz),
+    # so meta['units'] stays authoritative for the values written above.
+    for metric, (_, unit) in METRIC_DISPLAY.items():
+        if metric in units:
+            units[metric] = unit
     meta = payload.get("meta", {})
     meta["schema_version"] = SCHEMA_VERSION
     meta["target"] = target
+    if label:
+        meta["label"] = label
     if options is not None:
         meta["options"] = options
     meta["logikbench"] = getattr(lb, "__version__", None)
@@ -359,6 +596,8 @@ def save_target(target, args, worklist):
         meta["siliconcompiler"] = scversion
     if tools:
         meta["tools"] = tools
+    if units:
+        meta["units"] = units
 
     payload = {"meta": meta, "metrics": metrics}
     with open(output, "w") as f:
@@ -379,16 +618,28 @@ def add_selection_args(parser):
                         help="Specific benchmark(s) by bare name, looked up "
                              "within the selected group(s); a name found in more "
                              "than one group requires -g to disambiguate")
+    parser.add_argument("--skip", nargs='+', metavar="NAME",
+                        help="Benchmark(s) to exclude by bare name (applied "
+                             "after -g/-n). Skip long-pole benchmarks here and "
+                             "run them separately with -n.")
     parser.add_argument('-b', dest='builddir', default="build", metavar="DIR",
                         help="Build directory root (default: build)")
     parser.add_argument('-j', dest='jobs', type=int, default=1, metavar="N",
                         help="Benchmarks to run in parallel (default: 1)")
+    parser.add_argument('--mem', type=float, default=None, metavar="GB",
+                        help="Memory budget in GB: throttle concurrency so the "
+                             "summed historical peak memory of running "
+                             "benchmarks stays under this, on top of -j "
+                             "(default: bounded by -j only)")
     parser.add_argument('--timeout', type=float, default=7200, metavar="SEC",
                         help="Per-step wall-clock cap in seconds "
                              "(default: 7200; 0 disables)")
-    parser.add_argument('--publish', action='store_true',
-                        help="Merge results into the committed ./results tree "
-                             "(git clone only; errors otherwise)")
+    parser.add_argument('--publish', action=argparse.BooleanOptionalAction,
+                        default=None,
+                        help="Merge results into the committed ./results tree. "
+                             "Default: autodetect -- on when run from a git "
+                             "clone, off on a PyPI install. Use --no-publish to "
+                             "keep results in the build tree only.")
     parser.add_argument('-v', '--verbose', action='store_true',
                         help="Show full tool logs (quieted by default)")
     parser.add_argument('--resume', action='store_true',
@@ -513,7 +764,7 @@ def run_rtl_task(args):
             record(group, name, m, e)
 
     save_task(task, args, results)
-    if args.publish:
+    if should_publish(args):
         publish_task(task, args)
     if failures:
         print(f"\n{len(failures)} benchmark(s) failed: {', '.join(failures)}")
@@ -550,15 +801,17 @@ def publish_target_task(task, tokens, args):
         sys.exit("--publish requires a git clone of the logikbench repo "
                  "(the committed 'results' tree only exists there).")
     src_dir = results_builddir(args)
+    label = getattr(args, "label", None)
     for tok in tokens:
-        src = os.path.join(src_dir, f"{tok}.json")
+        stem = result_stem(tok, label)
+        src = os.path.join(src_dir, f"{stem}.json")
         if not os.path.isfile(src):
             print(f"--publish: no build metrics for '{tok}' at {src}, skipping",
                   file=sys.stderr)
             continue
         dstdir = os.path.join(tree, task, target_mode(tok))
         os.makedirs(dstdir, exist_ok=True)
-        dst = os.path.join(dstdir, f"{tok}.json")
+        dst = os.path.join(dstdir, f"{stem}.json")
         _merge_metrics_into(src, dst)
         print(f"Published {tok} -> {dst}")
 
@@ -573,7 +826,7 @@ def run_target_task(task, tokens, args):
     if not getattr(args, "lintonly", False):
         for tok in tokens:
             save_target(tok, args, worklist)
-        if args.publish:
+        if should_publish(args):
             publish_target_task(task, tokens, args)
     elif args.publish:
         print("--publish ignored: lint-only runs produce no metrics",
@@ -660,6 +913,11 @@ LogikBench commandline runner.
     syn_p.add_argument('--options', default="", metavar="OPTS",
                        help="Extra options passed verbatim to the mapper (use "
                             "the =form so leading dashes parse: --options=-abc9)")
+    syn_p.add_argument('--label', default=None, metavar="LABEL", type=run_label,
+                       help="Name this run variant (letters/digits). Isolates "
+                            "its build tree (build/<target>_<label>) and result "
+                            "file (<tool>_<target>_<label>.json), so an options "
+                            "sweep does not clobber the default run.")
     syn_p.add_argument('--lintonly', action='store_true',
                        help="Elaborate (parse + hierarchy check) then stop "
                             "before synthesis")

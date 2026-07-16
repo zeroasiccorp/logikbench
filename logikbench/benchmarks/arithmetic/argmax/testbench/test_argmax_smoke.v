@@ -45,4 +45,12 @@ module test_argmax_smoke;
       else $display("FAILED (%0d errors)", errors);
       $finish;
    end
+
+`ifdef WAVES
+   initial begin
+      $dumpfile("test_argmax_smoke.vcd");
+      $dumpvars(0, test_argmax_smoke);
+   end
+`endif
+
 endmodule

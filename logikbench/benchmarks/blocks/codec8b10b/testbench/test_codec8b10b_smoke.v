@@ -128,4 +128,12 @@ module test_codec8b10b_smoke;
       else $display("FAILED (%0d errors)", errors);
       $finish;
    end
+
+`ifdef WAVES
+   initial begin
+      $dumpfile("test_codec8b10b_smoke.vcd");
+      $dumpvars(0, test_codec8b10b_smoke);
+   end
+`endif
+
 endmodule

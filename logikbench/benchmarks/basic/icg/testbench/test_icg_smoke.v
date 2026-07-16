@@ -50,4 +50,12 @@ module test_icg_smoke;
       else $display("FAILED (%0d errors)", errors);
       $finish;
    end
+
+`ifdef WAVES
+   initial begin
+      $dumpfile("test_icg_smoke.vcd");
+      $dumpvars(0, test_icg_smoke);
+   end
+`endif
+
 endmodule

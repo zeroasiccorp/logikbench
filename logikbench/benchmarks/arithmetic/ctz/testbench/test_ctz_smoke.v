@@ -49,4 +49,12 @@ module test_ctz_smoke;
       else $display("FAILED (%0d errors)", errors);
       $finish;
    end
+
+`ifdef WAVES
+   initial begin
+      $dumpfile("test_ctz_smoke.vcd");
+      $dumpvars(0, test_ctz_smoke);
+   end
+`endif
+
 endmodule

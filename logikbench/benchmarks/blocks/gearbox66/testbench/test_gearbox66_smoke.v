@@ -83,4 +83,12 @@ module test_gearbox66_smoke;
 	$display("FAILED (%0d errors, %0d/%0d recovered)", errors, qh, NP);
       $finish;
    end
+
+`ifdef WAVES
+   initial begin
+      $dumpfile("test_gearbox66_smoke.vcd");
+      $dumpvars(0, test_gearbox66_smoke);
+   end
+`endif
+
 endmodule

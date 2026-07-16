@@ -74,4 +74,11 @@ module test_regfile_smoke;
       $finish;
    end
 
+`ifdef WAVES
+   initial begin
+      $dumpfile("test_regfile_smoke.vcd");
+      $dumpvars(0, test_regfile_smoke);
+   end
+`endif
+
 endmodule

@@ -30,4 +30,12 @@ module test_sine_smoke;
       if(errors==0)$display("PASSED");else $display("FAILED (%0d errors)",errors);
       $finish;
    end
+
+`ifdef WAVES
+   initial begin
+      $dumpfile("test_sine_smoke.vcd");
+      $dumpvars(0, test_sine_smoke);
+   end
+`endif
+
 endmodule

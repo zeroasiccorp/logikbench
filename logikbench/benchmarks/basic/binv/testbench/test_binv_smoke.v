@@ -44,4 +44,11 @@ module test_binv_smoke;
       $finish;
    end
 
+`ifdef WAVES
+   initial begin
+      $dumpfile("test_binv_smoke.vcd");
+      $dumpvars(0, test_binv_smoke);
+   end
+`endif
+
 endmodule

@@ -76,4 +76,11 @@ module test_firprog_smoke;
       $finish;
    end
 
+`ifdef WAVES
+   initial begin
+      $dumpfile("test_firprog_smoke.vcd");
+      $dumpvars(0, test_firprog_smoke);
+   end
+`endif
+
 endmodule

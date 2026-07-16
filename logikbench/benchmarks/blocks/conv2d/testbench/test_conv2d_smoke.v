@@ -77,4 +77,12 @@ module test_conv2d_smoke;
       $finish;
    end
    initial begin #200000; $display("FAILED (timeout)"); $finish; end
+
+`ifdef WAVES
+   initial begin
+      $dumpfile("test_conv2d_smoke.vcd");
+      $dumpvars(0, test_conv2d_smoke);
+   end
+`endif
+
 endmodule

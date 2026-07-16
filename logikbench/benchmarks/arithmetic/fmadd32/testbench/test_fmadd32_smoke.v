@@ -74,4 +74,12 @@ module test_fmadd32_smoke;
       else $display("FAILED (%0d errors)", errors);
       $finish;
    end
+
+`ifdef WAVES
+   initial begin
+      $dumpfile("test_fmadd32_smoke.vcd");
+      $dumpvars(0, test_fmadd32_smoke);
+   end
+`endif
+
 endmodule

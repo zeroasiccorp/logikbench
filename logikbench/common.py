@@ -15,8 +15,11 @@ from siliconcompiler import Project
 from siliconcompiler.schema import EditableSchema
 
 # SC-standard metric names tracked per run mode.
-FPGA_METRICS = ["luts", "logicdepth", "tasktime"]
-ASIC_METRICS = ["cells", "cellarea", "fmax", "tasktime"]
+FPGA_METRICS = ["cells", "luts", "muxes", "lutram", "dsps", "brams",
+                "registers", "latches", "carrycells", "logicdepth", "memory",
+                "tasktime"]
+ASIC_METRICS = ["cells", "cellarea", "fmax", "logicdepth",
+                "leakagepower", "setuptns", "memory", "tasktime"]
 # sim (`lb sim`): pass/fail status + SC's 'tasktime' recorded at each of the
 # two nodes (compile, simulate)
 SIM_METRICS = ["status", "tasktime"]
@@ -130,10 +133,11 @@ def read_metrics(name, metrics=ASIC_METRICS, builddir="build", jobname="job0"):
     """Read recorded metric values from a job manifest, without synthesizing.
 
     Scans the manifest for each metric at whichever node recorded it, so it
-    works across flows (lbflow, asicflow). 'tasktime' is read only from the
-    'synthesis' node (the synthesis runtime SC records there), not the later
-    place-and-route nodes; every other metric takes the last reported value.
-    Returns {metric: value} or None.
+    works across flows (lbflow, asicflow). The synthesis-resource metrics
+    'tasktime' and 'memory' are read only from the 'synthesis' node (the synth
+    runtime and peak memory SC records there), not the later timing/P&R nodes;
+    every other metric takes the last reported value. Returns {metric: value}
+    or None.
     """
     manifest = os.path.join(builddir, name, jobname, f"{name}.pkg.json")
     if not os.path.isfile(manifest):
@@ -144,8 +148,8 @@ def read_metrics(name, metrics=ASIC_METRICS, builddir="build", jobname="job0"):
     for metric in metrics:
         out[metric] = None
         nodes = data.get("metric", {}).get(metric, {}).get("node", {})
-        # synthesis-runtime metric: take it from the synthesis node only
-        if metric == "tasktime":
+        # synthesis-resource metrics: take them from the synthesis node only
+        if metric in ("tasktime", "memory"):
             for rec in nodes.get("synthesis", {}).values():
                 if rec.get("value") is not None:
                     out[metric] = rec.get("value")
@@ -222,6 +226,26 @@ def read_lint_metrics(name, builddir="build", jobname="job0"):
     """Read `lb lint` metrics (static-analysis error/warning counts) from a
     completed job's manifest. Returns {metric: value} or None."""
     return read_metrics(name, LINT_METRICS, builddir, jobname)
+
+
+def read_metric_units(name, metrics=ASIC_METRICS, builddir="build",
+                      jobname="job0"):
+    """Read each metric's unit string from a job manifest's SC metric schema.
+
+    SC stamps a canonical unit on each metric (e.g. cellarea 'um^2', fmax 'Hz',
+    leakagepower 'mw', memory 'B', tasktime 's'); pure counts like 'cells' and
+    'logicdepth' carry no unit (None). Reading from the manifest keeps the units
+    authoritative -- they track whatever SC actually recorded rather than a
+    hard-coded table. Returns {metric: unit-or-None} or None if the manifest is
+    absent.
+    """
+    manifest = os.path.join(builddir, name, jobname, f"{name}.pkg.json")
+    if not os.path.isfile(manifest):
+        return None
+    with open(manifest) as f:
+        data = json.load(f)
+    schema = data.get("metric", {})
+    return {metric: schema.get(metric, {}).get("unit") for metric in metrics}
 
 
 def read_tool_var(name, tool, task, var, builddir="build", jobname="job0"):
@@ -307,14 +331,17 @@ def is_complete(name, builddir="build", jobname="job0"):
 
 
 def clean_build(name, builddir="build", jobname="job0"):
-    """Delete a benchmark's synthesis artifacts, keeping only the manifest.
+    """Reclaim a benchmark's bulky build artifacts, keeping only what metric
+    extraction needs so results stay re-derivable (and auditable) offline.
 
-    --resume and the metric readers read a single file per benchmark -- the job
-    manifest '<builddir>/<name>/<jobname>/<name>.pkg.json'. Everything else in
-    the build tree (synthesis logs, netlists, reports, tool working dirs) is
-    disposable and is what fills the disk (multi-GB logs on large designs). This
-    removes all of it and prunes the now-empty directories, leaving just the
-    manifest so a later collect (and skip-completed --resume) still works.
+    Kept: the job manifest '<builddir>/<name>/<jobname>/<name>.pkg.json' (the
+    recorded metrics, read by --resume and the metric readers) plus every
+    node's 'reports/' directory -- the small, structured metric sources:
+    stat.json (cells/luts/dsps/brams), ltp.rpt (logic depth), and the ASIC
+    timing reports (cellarea/fmax/...). Deleted: netlists (.vg/.netlist.json),
+    the multi-GB tool logs, intermediate node manifests, and tool working
+    files -- the bulk that fills the disk. Now-empty directories are pruned.
+    'lb syn --keep' skips this entirely and retains the full tree.
 
     No-op when the manifest is absent (nothing built, or already cleaned). Note
     that removing the intermediate node outputs makes a later mid-flow '--from'
@@ -324,12 +351,18 @@ def clean_build(name, builddir="build", jobname="job0"):
     manifest = os.path.join(benchdir, jobname, f"{name}.pkg.json")
     if not os.path.isfile(manifest):
         return
-    keep = os.path.abspath(manifest)
+    keep_manifest = os.path.abspath(manifest)
+
+    def _keep(path):
+        ap = os.path.abspath(path)
+        # the job manifest, plus every metric-source report (any file living
+        # under a node's 'reports/' dir): stat.json, ltp.rpt, timing rpts.
+        return ap == keep_manifest or f"{os.sep}reports{os.sep}" in ap
     # bottom-up so a directory is visited after its contents are removed
     for root, dirs, files in os.walk(benchdir, topdown=False):
         for fname in files:
             path = os.path.join(root, fname)
-            if os.path.abspath(path) != keep:
+            if not _keep(path):
                 os.remove(path)
         for dname in dirs:
             dpath = os.path.join(root, dname)

@@ -50,4 +50,12 @@ module test_addtree_smoke;
       else $display("FAILED (%0d errors)", errors);
       $finish;
    end
+
+`ifdef WAVES
+   initial begin
+      $dumpfile("test_addtree_smoke.vcd");
+      $dumpvars(0, test_addtree_smoke);
+   end
+`endif
+
 endmodule

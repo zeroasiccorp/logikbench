@@ -141,8 +141,10 @@ module test_hamming_smoke;
    initial begin #500000; $display("FAILED (watchdog timeout)"); $finish; end
 
 `ifdef WAVES
-   initial begin $dumpfile("test_hamming_smoke.vcd");
-      $dumpvars(0, test_hamming_smoke); end
+   initial begin
+      $dumpfile("test_hamming_smoke.vcd");
+      $dumpvars(0, test_hamming_smoke);
+   end
 `endif
 
 endmodule

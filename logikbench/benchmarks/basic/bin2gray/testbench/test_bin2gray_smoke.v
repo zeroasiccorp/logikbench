@@ -44,4 +44,11 @@ module test_bin2gray_smoke;
       $finish;
    end
 
+`ifdef WAVES
+   initial begin
+      $dumpfile("test_bin2gray_smoke.vcd");
+      $dumpvars(0, test_bin2gray_smoke);
+   end
+`endif
+
 endmodule
