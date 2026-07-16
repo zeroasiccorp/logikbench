@@ -7,7 +7,7 @@
     "target": "yosys_asap7",
     "tools": {
       "opensta": "3.1.0",
-      "yosys": "0.66"
+      "yosys": "0.63"
     },
     "units": {
       "cellarea": "um^2",
@@ -235,7 +235,9 @@
       },
       "large": {
         "bitcoin": 242686.97,
-        "sonicboom": null,
+        "coralnpu": 164228.84,
+        "nvdlafull": null,
+        "sonicboom": 468400.3,
         "tpu": null
       },
       "memory": {
@@ -472,7 +474,9 @@
       },
       "large": {
         "bitcoin": 1583887,
-        "sonicboom": null,
+        "coralnpu": 1296720,
+        "nvdlafull": null,
+        "sonicboom": 1572709,
         "tpu": null
       },
       "memory": {
@@ -709,7 +713,9 @@
       },
       "large": {
         "bitcoin": 672.81,
-        "sonicboom": null,
+        "coralnpu": 280.01,
+        "nvdlafull": null,
+        "sonicboom": 666.26,
         "tpu": null
       },
       "memory": {
@@ -946,7 +952,9 @@
       },
       "large": {
         "bitcoin": 7.51,
-        "sonicboom": null,
+        "coralnpu": 5.08,
+        "nvdlafull": null,
+        "sonicboom": 27.6,
         "tpu": null
       },
       "memory": {
@@ -1183,7 +1191,9 @@
       },
       "large": {
         "bitcoin": 44,
-        "sonicboom": null,
+        "coralnpu": 7,
+        "nvdlafull": null,
+        "sonicboom": 5,
         "tpu": null
       },
       "memory": {
@@ -1420,7 +1430,9 @@
       },
       "large": {
         "bitcoin": 8315.0,
-        "sonicboom": null,
+        "coralnpu": 22570.0,
+        "nvdlafull": null,
+        "sonicboom": 12000.0,
         "tpu": 29280.0
       },
       "memory": {
@@ -1657,7 +1669,9 @@
       },
       "large": {
         "bitcoin": -69750.0,
-        "sonicboom": null,
+        "coralnpu": -124100.0,
+        "nvdlafull": null,
+        "sonicboom": -253800.0,
         "tpu": null
       },
       "memory": {
@@ -1894,7 +1908,9 @@
       },
       "large": {
         "bitcoin": 1012.67,
-        "sonicboom": null,
+        "coralnpu": 7040.69,
+        "nvdlafull": null,
+        "sonicboom": 4720.05,
         "tpu": 423.19
       },
       "memory": {
