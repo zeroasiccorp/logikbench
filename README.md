@@ -266,6 +266,21 @@ standard-cell library but not place-and-route effects (buffering, sizing, or
 filler), so it tracks logic complexity rather than final silicon area. As with
 the FPGA LUT count, it is most directly comparable within one PDK/library.
 
+**Memory-macro area (sky130 caveat).** RAM-bearing designs map their storage to
+the PDK's SRAM macros via the lambdalib `la_spram`/`la_dpram` aliases. The
+synthetic-RAM PDKs (`asap7`, `freepdk45`, via `fakeram`) generate an exact-fit
+macro, and `ihp130`/`gf180` ship several real SRAM sizes, so their `memory`-group
+cell area is meaningful. **`sky130` is the exception:** lambdapdk provides a
+*single* sky130 SRAM macro (`sky130_sram_1rw1r_64x256_8`), so a RAM whose shape
+does not match it -- the `memory` group and the line-buffered
+`conv2d`/`median3x3`/`sobel3x3` blocks -- is built by tiling many copies plus
+address/mux glue (or, under some tools, falling back to flip-flops). This
+inflates the reported cell area far above the other nodes (sky130 can exceed
+even 180nm gf180). **sky130 `memory`-group cell area is therefore not
+node-comparable** and reflects macro-tiling overhead, not logic. This is an
+upstream PDK-library limitation (one available macro), not a synthesis bug; the
+other PDKs' memory results are unaffected.
+
 ### ASIC FMAX
 
 FMAX is the maximum operating frequency, computed by an OpenSTA timing run on the
@@ -284,6 +299,24 @@ real frequency on every target). For the `lb syn` lbflow path (yosys/tardigrade)
 the period is only a starting reference (FMAX is the minimum achievable period);
 for the `lb pnr` asicflow path it is the real optimization target that
 place-and-route works to.
+
+**Interpreting FMAX (sequential vs combinational).** Because the generic SDC
+applies zero input/output delay, `min_period` is the design's critical-path
+delay under the clock and FMAX is `1 / (critical path)`. For a design *with*
+registers this is the register-to-register path -- a genuine maximum clock
+frequency. For a *purely combinational* design (no registers -- e.g. the basic
+gate blocks, the ISCAS85 circuits, and the combinational EPFL/arithmetic
+designs) the only timed path is input-to-output, so FMAX is
+`1 / (combinational path delay)`: the rate at which the block could run if its
+I/O were registered, **not** a realizable silicon clock frequency. Shallow
+combinational blocks therefore report very high FMAX -- a one- or two-gate
+design can exceed 10 GHz -- which is the correct reciprocal of a small gate
+delay (dominated by logic depth), not an error. Two consequences: (1)
+combinational and sequential FMAX are different quantities and should not be
+pooled into a single distribution or "fastest" ranking -- filter by whether a
+design has registers before aggregating across the suite; and (2) the
+zero-I/O-delay assumption gives the internal logic the whole period, so
+combinational FMAX reflects raw logic speed with no I/O budget.
 
 ### Runtime
 
