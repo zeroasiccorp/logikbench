@@ -16,7 +16,14 @@ Charts (matplotlib, static PNG/PDF):
   6. picorv32 area vs Fmax          (dual-axis connected lines)
   7. peak memory vs cell area       (all PDKs overlaid)
   8. runtime vs cell area           (all PDKs overlaid)
+  9. median cell area per group     (one line per group across nodes)
+ 10. EPFL Fmax ratio                (tardigrade/yosys per benchmark; asap7)
+ 11. EPFL Fmax dumbbell             (yosys vs tardigrade absolute; asap7)
+ 12. median cell area per group     (as a ratio, each node normalized to asap7)
 Plus report.md (coverage matrix, missing/NaN tally, schema-shape audit).
+
+Charts 10-11 need the tardigrade tg_<pdk> results alongside yosys_<pdk>; they
+are skipped when those files are absent.
 
 Note: Fmax and setuptns are higher-is-better (every other metric is lower).
 """
@@ -55,6 +62,16 @@ GROUPS = ["basic", "memory", "arithmetic", "epfl", "blocks",
 
 # PDK column order (the yosys_ prefix is stripped for display).
 PDKS = ["asap7", "freepdk45", "gf180", "ihp130", "sky130"]
+
+# Caption for the group-median cell-area charts (9, 12). The 'memory' group's
+# RAM area is not comparable across PDKs: RAMs map to an SRAM macro on some
+# nodes and a standard-cell/flop fallback on others, so the area can rise at a
+# smaller node (e.g. sky130 > gf180). 'ramtdpdc' has no area (synth drops the
+# RAM to ~5 cells and timing fails), so it is dropped from the median.
+MEM_AREA_NOTE = (
+    "Note: 'memory' group RAM area is not node-comparable -- SRAM-macro vs "
+    "standard-cell/flop mapping varies by PDK (e.g. sky130 > gf180); "
+    "ramtdpdc omitted (no area, timing fails).")
 
 
 # ---------------------------------------------------------------------------
@@ -212,6 +229,182 @@ def chart_benchmark_dual(df, name, targets, outbase, exts, out_id):
 
 
 # ---------------------------------------------------------------------------
+# Chart 9: median cell area per group across PDKs (one line per group)
+# ---------------------------------------------------------------------------
+def chart_group_area(df, targets, outbase, exts, out_id):
+    """Median cell area per benchmark group across the PDK columns, one
+    connected line per group on a shared x (log y). Same node ordering as chart
+    6 (widest process leftmost); no Fmax axis. Reads each group's per-node
+    left-to-right shrink as the process scales down."""
+    med = _pivot(df, "cellarea", targets, "median")     # group x node medians
+    x = list(range(len(targets)))
+
+    fig, ax = plt.subplots(figsize=(9, 6))
+    fig.patch.set_facecolor(SURFACE)
+    ax.set_facecolor(SURFACE)
+    for i, group in enumerate(GROUPS):
+        if group not in med.index:
+            continue
+        yv = [float(med.loc[group, t]) for t in targets]
+        ax.plot(x, yv, marker="o", ms=7, lw=2, color=CAT[i % len(CAT)],
+                zorder=3, label=group)
+
+    ax.set_yscale("log")
+    ax.set_xticks(x)
+    ax.set_xticklabels(targets, rotation=30, ha="right")
+    ax.set_xlim(-0.35, len(targets) - 0.65)
+    ax.set_ylabel("Median cell area (um^2)")
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
+    ax.spines["left"].set_color(BASE)
+    ax.spines["bottom"].set_color(BASE)
+    ax.tick_params(colors=MUTED, labelsize=9)
+    ax.grid(axis="y", color=GRID, linewidth=0.7, zorder=0)
+    ax.set_title("Median cell area per group across PDKs", color=INK,
+                 fontsize=13, loc="left", fontweight="bold", pad=10)
+    ax.legend(frameon=False, fontsize=9, labelcolor=INK2, loc="upper right")
+    fig.tight_layout(rect=[0, 0.06, 1, 1])   # reserve bottom band for note
+    fig.text(0.01, 0.015, MEM_AREA_NOTE, fontsize=7, color=MUTED,
+             ha="left", va="bottom")
+    _savefig(fig, outbase + out_id, exts)
+
+
+# ---------------------------------------------------------------------------
+# Chart 12: median cell area per group, normalized to asap7 (one line per group)
+# ---------------------------------------------------------------------------
+def chart_group_area_ratio(df, targets, outbase, exts, out_id):
+    """Median cell area per group across nodes, each group divided by its own
+    asap7 median so asap7 = 1.0 and every wider node shows its area inflation
+    relative to asap7 (linear y). Same node ordering as chart 9. Groups that scale
+    uniformly with the process overlap; divergence flags group-specific scaling
+    (e.g. SRAM-macro-driven 'memory')."""
+    med = _pivot(df, "cellarea", targets, "median")     # group x node medians
+    if "asap7" not in med.columns:
+        print("  chart 12 skipped: no asap7 cellarea data to normalize to")
+        return
+    x = list(range(len(targets)))
+
+    fig, ax = plt.subplots(figsize=(9, 6))
+    fig.patch.set_facecolor(SURFACE)
+    ax.set_facecolor(SURFACE)
+    for i, group in enumerate(GROUPS):
+        if group not in med.index:
+            continue
+        base_val = med.loc[group, "asap7"]
+        if not base_val or np.isnan(base_val):
+            continue
+        yv = [float(med.loc[group, t]) / float(base_val) for t in targets]
+        ax.plot(x, yv, marker="o", ms=7, lw=2, color=CAT[i % len(CAT)],
+                zorder=3, label=group)
+
+    ax.axhline(1.0, color=BASE, lw=1, zorder=2)          # asap7 baseline
+    ax.set_xticks(x)
+    ax.set_xticklabels(targets, rotation=30, ha="right")
+    ax.set_xlim(-0.35, len(targets) - 0.65)
+    ax.set_ylim(bottom=0)
+    ax.set_ylabel("Median cell area / asap7  (x)")
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
+    ax.spines["left"].set_color(BASE)
+    ax.spines["bottom"].set_color(BASE)
+    ax.tick_params(colors=MUTED, labelsize=9)
+    ax.grid(axis="y", color=GRID, linewidth=0.7, zorder=0)
+    ax.set_axisbelow(True)
+    ax.set_title("Median cell area per group, normalized to asap7", color=INK,
+                 fontsize=13, loc="left", fontweight="bold", pad=10)
+    ax.legend(frameon=False, fontsize=9, labelcolor=INK2, loc="upper right")
+    fig.tight_layout(rect=[0, 0.06, 1, 1])   # reserve bottom band for note
+    fig.text(0.01, 0.015, MEM_AREA_NOTE, fontsize=7, color=MUTED,
+             ha="left", va="bottom")
+    _savefig(fig, outbase + out_id, exts)
+
+
+# ---------------------------------------------------------------------------
+# Charts 10-11: yosys vs tardigrade comparison (one benchmark group, one PDK)
+#
+# These load BOTH tools directly (yosys_<pdk> and tg_<pdk>) and are kept apart
+# from the yosys-only dataframe above: that pipeline strips the tool prefix and
+# treats the column as the PDK, so merging tardigrade into it would corrupt
+# charts 1-9. Fmax is higher-is-better, so ratio = tardigrade / yosys (>1 means
+# tardigrade is faster).
+# ---------------------------------------------------------------------------
+def _tool_pair(results_dir, pdk, group, metric):
+    """(names, yosys_vals, tardigrade_vals) for one group/metric/PDK, over the
+    benchmarks present in both tools, sorted by tardigrade/yosys ratio."""
+    import json
+    with open(os.path.join(results_dir, f"yosys_{pdk}.json")) as fh:
+        y = json.load(fh)["metrics"][metric].get(group, {})
+    with open(os.path.join(results_dir, f"tg_{pdk}.json")) as fh:
+        t = json.load(fh)["metrics"][metric].get(group, {})
+    names = sorted(set(y) & set(t), key=lambda n: t[n] / y[n])
+    return names, [y[n] for n in names], [t[n] for n in names]
+
+
+def chart_tool_ratio(results_dir, pdk, group, outbase, exts, out_id):
+    """Bar chart of tardigrade/yosys Fmax ratio per benchmark, sorted low to
+    high (benchmark on x, ratio on y); parity line at 1.0."""
+    names, yv, tv = _tool_pair(results_dir, pdk, group, "fmax")
+    ratio = [t / y for t, y in zip(tv, yv)]
+    x = list(range(len(names)))
+    colors = [CAT[1] if r >= 1 else CAT[5] for r in ratio]
+
+    fig, ax = plt.subplots(figsize=(9, 6))
+    fig.patch.set_facecolor(SURFACE)
+    ax.set_facecolor(SURFACE)
+    ax.bar(x, ratio, color=colors, zorder=3)
+    ax.axhline(1.0, color=BASE, lw=1, zorder=2)
+    for i, r in enumerate(ratio):
+        ax.text(i, r + max(ratio) * 0.012, f"{r:.2f}", ha="center",
+                fontsize=8, color=INK2)
+    ax.set_xticks(x)
+    ax.set_xticklabels(names, rotation=45, ha="right")
+    ax.set_ylabel("tardigrade / yosys Fmax  (>1 = tardigrade faster)")
+    ax.set_ylim(0, max(ratio) * 1.12)
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
+    ax.spines["left"].set_color(BASE)
+    ax.spines["bottom"].set_color(BASE)
+    ax.tick_params(colors=MUTED, labelsize=9)
+    ax.grid(axis="y", color=GRID, linewidth=0.7, zorder=0)
+    ax.set_axisbelow(True)
+    ax.set_title(f"{group} Fmax gain: tardigrade vs yosys ({pdk})", color=INK,
+                 fontsize=13, loc="left", fontweight="bold", pad=10)
+    fig.tight_layout()
+    _savefig(fig, outbase + out_id, exts)
+
+
+def chart_tool_dumbbell(results_dir, pdk, group, outbase, exts, out_id):
+    """Dumbbell of absolute Fmax per benchmark: a yosys dot and a tardigrade dot
+    linked per row, log x, sorted by tardigrade/yosys ratio."""
+    names, yv, tv = _tool_pair(results_dir, pdk, group, "fmax")
+    y = list(range(len(names)))
+
+    fig, ax = plt.subplots(figsize=(8, 7))
+    fig.patch.set_facecolor(SURFACE)
+    ax.set_facecolor(SURFACE)
+    for i, (a, b) in enumerate(zip(yv, tv)):
+        ax.plot([a, b], [i, i], color=MUTED, lw=1.5, zorder=1)
+    ax.scatter(yv, y, color=CAT[0], s=45, zorder=3, label="yosys")
+    ax.scatter(tv, y, color=CAT[1], s=45, zorder=3, label="tardigrade")
+    ax.set_xscale("log")
+    ax.set_yticks(y)
+    ax.set_yticklabels(names)
+    ax.set_xlabel("Fmax (MHz, log scale)")
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
+    ax.spines["left"].set_color(BASE)
+    ax.spines["bottom"].set_color(BASE)
+    ax.tick_params(colors=MUTED, labelsize=9)
+    ax.grid(axis="x", color=GRID, linewidth=0.7, zorder=0)
+    ax.set_axisbelow(True)
+    ax.set_title(f"{group} Fmax: yosys vs tardigrade ({pdk})", color=INK,
+                 fontsize=13, loc="left", fontweight="bold", pad=10)
+    ax.legend(frameon=False, fontsize=10, labelcolor=INK2, loc="lower right")
+    fig.tight_layout()
+    _savefig(fig, outbase + out_id, exts)
+
+
+# ---------------------------------------------------------------------------
 # Orchestration
 # ---------------------------------------------------------------------------
 def main():
@@ -274,6 +467,20 @@ def main():
                          exts, "7_area_vs_memory")
     chart_metric_scatter(df, "cellarea", "tasktime", targets, METRIC_META, base,
                          exts, "8_area_vs_tasktime")
+    chart_group_area(df, targets, base, exts, "9_group_median_cellarea")
+    chart_group_area_ratio(df, targets, base, exts,
+                           "12_group_median_cellarea_ratio")
+
+    # yosys-vs-tardigrade comparison (asap7 EPFL) -- only if tg_ results exist
+    cmp_pdk = "asap7"
+    if (os.path.isfile(os.path.join(args.results, f"yosys_{cmp_pdk}.json"))
+            and os.path.isfile(os.path.join(args.results, f"tg_{cmp_pdk}.json"))):
+        chart_tool_ratio(args.results, cmp_pdk, "epfl", base, exts,
+                         f"10_epfl_fmax_ratio_{cmp_pdk}")
+        chart_tool_dumbbell(args.results, cmp_pdk, "epfl", base, exts,
+                            f"11_epfl_fmax_dumbbell_{cmp_pdk}")
+    else:
+        print(f"  charts 10-11 skipped: no tg_{cmp_pdk}.json (tardigrade)")
     write_report(df, files_meta, targets, METRICS,
                  os.path.join(args.out, "report.md"),
                  "ASIC results: data-quality report")
@@ -281,7 +488,7 @@ def main():
     n_bench = df.dropna(subset=["value"])["benchmark"].nunique()
     print(f"Loaded {len(files_meta)} PDK files, {n_bench} benchmarks -> "
           f"{args.out}")
-    print(f"  charts: asic_1..8.{'/'.join(exts)}  + summary.csv + report.md")
+    print(f"  charts: asic_1..12.{'/'.join(exts)}  + summary.csv + report.md")
 
 
 if __name__ == "__main__":
