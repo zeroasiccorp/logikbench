@@ -22,7 +22,7 @@ Charts (matplotlib, static PNG/PDF):
  12. median cell area per group     (as a ratio, each node normalized to asap7)
 Plus report.md (coverage matrix, missing/NaN tally, schema-shape audit).
 
-Charts 10-11 need the tardigrade tg_<pdk> results alongside yosys_<pdk>; they
+Charts 10-11 need the tardigrade_<pdk> results alongside yosys_<pdk>; they
 are skipped when those files are absent.
 
 Note: Fmax and setuptns are higher-is-better (every other metric is lower).
@@ -69,9 +69,9 @@ PDKS = ["asap7", "freepdk45", "gf180", "ihp130", "sky130"]
 # smaller node (e.g. sky130 > gf180). 'ramtdpdc' has no area (synth drops the
 # RAM to ~5 cells and timing fails), so it is dropped from the median.
 MEM_AREA_NOTE = (
-    "Note: 'memory' group RAM area is not node-comparable -- SRAM-macro vs "
-    "standard-cell/flop mapping varies by PDK (e.g. sky130 > gf180); "
-    "ramtdpdc omitted (no area, timing fails).")
+    "Note: sky130 'memory' area is inflated and not node-comparable -- "
+    "lambdapdk ships a single sky130 SRAM macro, so RAM shapes are tiled with "
+    "glue (e.g. sky130 > gf180); ramtdpdc omitted (no area, timing fails).")
 
 
 # ---------------------------------------------------------------------------
@@ -322,7 +322,7 @@ def chart_group_area_ratio(df, targets, outbase, exts, out_id):
 # ---------------------------------------------------------------------------
 # Charts 10-11: yosys vs tardigrade comparison (one benchmark group, one PDK)
 #
-# These load BOTH tools directly (yosys_<pdk> and tg_<pdk>) and are kept apart
+# These load BOTH tools directly (yosys_<pdk> and tardigrade_<pdk>) and are kept apart
 # from the yosys-only dataframe above: that pipeline strips the tool prefix and
 # treats the column as the PDK, so merging tardigrade into it would corrupt
 # charts 1-9. Fmax is higher-is-better, so ratio = tardigrade / yosys (>1 means
@@ -334,7 +334,7 @@ def _tool_pair(results_dir, pdk, group, metric):
     import json
     with open(os.path.join(results_dir, f"yosys_{pdk}.json")) as fh:
         y = json.load(fh)["metrics"][metric].get(group, {})
-    with open(os.path.join(results_dir, f"tg_{pdk}.json")) as fh:
+    with open(os.path.join(results_dir, f"tardigrade_{pdk}.json")) as fh:
         t = json.load(fh)["metrics"][metric].get(group, {})
     names = sorted(set(y) & set(t), key=lambda n: t[n] / y[n])
     return names, [y[n] for n in names], [t[n] for n in names]
@@ -471,16 +471,17 @@ def main():
     chart_group_area_ratio(df, targets, base, exts,
                            "12_group_median_cellarea_ratio")
 
-    # yosys-vs-tardigrade comparison (asap7 EPFL) -- only if tg_ results exist
+    # yosys-vs-tardigrade comparison (asap7 EPFL) -- only if tardigrade results exist
     cmp_pdk = "asap7"
     if (os.path.isfile(os.path.join(args.results, f"yosys_{cmp_pdk}.json"))
-            and os.path.isfile(os.path.join(args.results, f"tg_{cmp_pdk}.json"))):
+            and os.path.isfile(os.path.join(args.results,
+                                            f"tardigrade_{cmp_pdk}.json"))):
         chart_tool_ratio(args.results, cmp_pdk, "epfl", base, exts,
                          f"10_epfl_fmax_ratio_{cmp_pdk}")
         chart_tool_dumbbell(args.results, cmp_pdk, "epfl", base, exts,
                             f"11_epfl_fmax_dumbbell_{cmp_pdk}")
     else:
-        print(f"  charts 10-11 skipped: no tg_{cmp_pdk}.json (tardigrade)")
+        print(f"  charts 10-11 skipped: no tardigrade_{cmp_pdk}.json")
     write_report(df, files_meta, targets, METRICS,
                  os.path.join(args.out, "report.md"),
                  "ASIC results: data-quality report")

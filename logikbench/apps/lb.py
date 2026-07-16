@@ -82,7 +82,7 @@ def present_value(metric, value):
 # `lb syn --target`: PDK stems (ASIC lbflow) + FPGA parts. --tool picks the ASIC
 # mapper; the runner token is '<tool>_<pdk>' (FPGA parts run as-is, yosys only).
 _SYN_PDKS = sorted({t.split('_', 1)[1] for t in YOSYS_TARGETS})
-_SYN_TOOL_PREFIX = {'yosys': 'yosys', 'tardigrade': 'tg'}
+_SYN_TOOL_PREFIX = {'yosys': 'yosys', 'tardigrade': 'tardigrade'}
 
 
 class LbHelpFormatter(argparse.HelpFormatter):
