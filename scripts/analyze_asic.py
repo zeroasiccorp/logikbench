@@ -20,6 +20,7 @@ Charts (matplotlib, static PNG/PDF):
  10. EPFL Fmax ratio                (tardigrade/yosys per benchmark; asap7)
  11. EPFL Fmax dumbbell             (yosys vs tardigrade absolute; asap7)
  12. median cell area per group     (as a ratio, each node normalized to asap7)
+ 13. benchmark size histogram       (tardigrade cell count, log-binned)
 Plus report.md (coverage matrix, missing/NaN tally, schema-shape audit).
 
 Charts 10-11 need the tardigrade_<pdk> results alongside yosys_<pdk>; they
@@ -405,6 +406,41 @@ def chart_tool_dumbbell(results_dir, pdk, group, outbase, exts, out_id):
 
 
 # ---------------------------------------------------------------------------
+# Chart 13: benchmark size distribution (tardigrade cell count, log-binned)
+# ---------------------------------------------------------------------------
+def chart_cell_histogram(results_dir, pdk, outbase, exts, out_id):
+    """Histogram of benchmark size (post-synthesis cell count) over all
+    tardigrade_<pdk> benchmarks. Log-binned: cell counts span ~6 decades
+    (single gates to million-cell cores), so linear bins are useless."""
+    import json
+    with open(os.path.join(results_dir, f"tardigrade_{pdk}.json")) as fh:
+        cells = json.load(fh)["metrics"]["cells"]
+    vals = [v for grp in cells.values() if isinstance(grp, dict)
+            for v in grp.values() if isinstance(v, (int, float)) and v > 0]
+    bins = np.logspace(0, 7, 29)   # 1 .. 1e7, ~4 bins/decade (resolve the tail)
+
+    fig, ax = plt.subplots(figsize=(9, 5.5))
+    fig.patch.set_facecolor(SURFACE)
+    ax.set_facecolor(SURFACE)
+    ax.hist(vals, bins=bins, color=CAT[1], edgecolor=SURFACE, linewidth=0.6,
+            zorder=3)
+    ax.set_xscale("log")
+    ax.set_xlabel("Cell count (log scale)")
+    ax.set_ylabel(f"Benchmarks (n = {len(vals)})")
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
+    ax.spines["left"].set_color(BASE)
+    ax.spines["bottom"].set_color(BASE)
+    ax.tick_params(colors=MUTED, labelsize=9)
+    ax.grid(axis="y", color=GRID, linewidth=0.7, zorder=0)
+    ax.set_axisbelow(True)
+    ax.set_title(f"Benchmark size distribution -- tardigrade {pdk} (cell count)",
+                 color=INK, fontsize=13, loc="left", fontweight="bold", pad=10)
+    fig.tight_layout()
+    _savefig(fig, outbase + out_id, exts)
+
+
+# ---------------------------------------------------------------------------
 # Orchestration
 # ---------------------------------------------------------------------------
 def main():
@@ -480,8 +516,10 @@ def main():
                          f"10_epfl_fmax_ratio_{cmp_pdk}")
         chart_tool_dumbbell(args.results, cmp_pdk, "epfl", base, exts,
                             f"11_epfl_fmax_dumbbell_{cmp_pdk}")
+        chart_cell_histogram(args.results, cmp_pdk, base, exts,
+                             f"13_tardigrade_cell_histogram_{cmp_pdk}")
     else:
-        print(f"  charts 10-11 skipped: no tardigrade_{cmp_pdk}.json")
+        print(f"  charts 10-11,13 skipped: no tardigrade_{cmp_pdk}.json")
     write_report(df, files_meta, targets, METRICS,
                  os.path.join(args.out, "report.md"),
                  "ASIC results: data-quality report")
@@ -489,7 +527,7 @@ def main():
     n_bench = df.dropna(subset=["value"])["benchmark"].nunique()
     print(f"Loaded {len(files_meta)} PDK files, {n_bench} benchmarks -> "
           f"{args.out}")
-    print(f"  charts: asic_1..12.{'/'.join(exts)}  + summary.csv + report.md")
+    print(f"  charts: asic_1..13.{'/'.join(exts)}  + summary.csv + report.md")
 
 
 if __name__ == "__main__":
