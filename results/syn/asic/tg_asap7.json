@@ -231,6 +231,24 @@
         "s9234": 121.98,
         "s953": 42.53
       },
+      "large": {
+        "aes": 11706.95,
+        "axicrossbar": null,
+        "bitcoin": 303765.19,
+        "blackparrot": 429981.0,
+        "coralnpu": null,
+        "cva6": 39731.04,
+        "lz77": null,
+        "nvdlafull": null,
+        "nvdlasmall": null,
+        "ofdm": 20643.25,
+        "qr": null,
+        "rocket": null,
+        "sonicboom": null,
+        "tpu": 10394.29,
+        "vortex": 226.24,
+        "wally": null
+      },
       "memory": {
         "cache": 22886.72,
         "cam": 907.14,
@@ -461,6 +479,24 @@
         "s838": 281,
         "s9234": 967,
         "s953": 379
+      },
+      "large": {
+        "aes": 91388,
+        "axicrossbar": null,
+        "bitcoin": 2311352,
+        "blackparrot": 3288348,
+        "coralnpu": null,
+        "cva6": 335465,
+        "lz77": null,
+        "nvdlafull": null,
+        "nvdlasmall": null,
+        "ofdm": 170655,
+        "qr": null,
+        "rocket": null,
+        "sonicboom": null,
+        "tpu": 89745,
+        "vortex": 1743,
+        "wally": null
       },
       "memory": {
         "cache": 192319,
@@ -693,6 +729,24 @@
         "s9234": 3534.88,
         "s953": 4266.3
       },
+      "large": {
+        "aes": 35.55,
+        "axicrossbar": null,
+        "bitcoin": 922.47,
+        "blackparrot": 870.66,
+        "coralnpu": null,
+        "cva6": 11.45,
+        "lz77": null,
+        "nvdlafull": null,
+        "nvdlasmall": null,
+        "ofdm": 1040.12,
+        "qr": null,
+        "rocket": null,
+        "sonicboom": null,
+        "tpu": 1523.56,
+        "vortex": 3569.47,
+        "wally": null
+      },
       "memory": {
         "cache": 1968.34,
         "cam": 3689.2,
@@ -923,6 +977,24 @@
         "s838": 0.00211,
         "s9234": 0.00722,
         "s953": 0.00286
+      },
+      "large": {
+        "aes": 0.39,
+        "axicrossbar": null,
+        "bitcoin": 7.97,
+        "blackparrot": 21.3,
+        "coralnpu": null,
+        "cva6": 0.953,
+        "lz77": null,
+        "nvdlafull": null,
+        "nvdlasmall": null,
+        "ofdm": 1.14,
+        "qr": null,
+        "rocket": null,
+        "sonicboom": null,
+        "tpu": 0.556,
+        "vortex": 0.0115,
+        "wally": null
       },
       "memory": {
         "cache": 0.904,
@@ -1155,6 +1227,24 @@
         "s9234": 11,
         "s953": 6
       },
+      "large": {
+        "aes": 0,
+        "axicrossbar": null,
+        "bitcoin": 34,
+        "blackparrot": 40,
+        "coralnpu": null,
+        "cva6": 0,
+        "lz77": null,
+        "nvdlafull": null,
+        "nvdlasmall": null,
+        "ofdm": 30,
+        "qr": null,
+        "rocket": null,
+        "sonicboom": null,
+        "tpu": 23,
+        "vortex": 11,
+        "wally": null
+      },
       "memory": {
         "cache": 17,
         "cam": 9,
@@ -1385,6 +1475,24 @@
         "s838": 1101.0,
         "s9234": 1108.0,
         "s953": 1101.0
+      },
+      "large": {
+        "aes": 1834.0,
+        "axicrossbar": 265.2,
+        "bitcoin": 25500.0,
+        "blackparrot": 30940.0,
+        "coralnpu": null,
+        "cva6": 5085.0,
+        "lz77": null,
+        "nvdlafull": 17370.0,
+        "nvdlasmall": null,
+        "ofdm": 2868.0,
+        "qr": null,
+        "rocket": null,
+        "sonicboom": null,
+        "tpu": 1821.0,
+        "vortex": 2145.0,
+        "wally": null
       },
       "memory": {
         "cache": 2473.0,
@@ -1617,6 +1725,24 @@
         "s9234": -5.453,
         "s953": -0.644
       },
+      "large": {
+        "aes": -203900.0,
+        "axicrossbar": null,
+        "bitcoin": -81400.0,
+        "blackparrot": -525200.0,
+        "coralnpu": null,
+        "cva6": -1987000.0,
+        "lz77": null,
+        "nvdlafull": null,
+        "nvdlasmall": null,
+        "ofdm": -3222.0,
+        "qr": null,
+        "rocket": null,
+        "sonicboom": null,
+        "tpu": -884.0,
+        "vortex": -13.44,
+        "wally": null
+      },
       "memory": {
         "cache": -6104.0,
         "cam": -43.26,
@@ -1847,6 +1973,24 @@
         "s838": 29.66,
         "s9234": 37.69,
         "s953": 28.38
+      },
+      "large": {
+        "aes": 861.03,
+        "axicrossbar": 2.93,
+        "bitcoin": 4641.27,
+        "blackparrot": 5873.06,
+        "coralnpu": null,
+        "cva6": 2189.68,
+        "lz77": null,
+        "nvdlafull": 154.42,
+        "nvdlasmall": null,
+        "ofdm": 960.0,
+        "qr": null,
+        "rocket": null,
+        "sonicboom": null,
+        "tpu": 524.98,
+        "vortex": 257.11,
+        "wally": null
       },
       "memory": {
         "cache": 457.36,
