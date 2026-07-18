@@ -4,6 +4,7 @@ import argparse
 import glob
 import math
 import os
+import re
 import sys
 import json
 import threading
@@ -312,14 +313,127 @@ def _memory_watchdog(stop_event, floor_bytes, interval=5.0):
             armed = True         # re-arm once memory pressure recedes
 
 
-def run_sweep(args, targets, worklist, netlist_cache=False):
+# A -p value is either a plain integer or a Python range() sweep. range()
+# semantics match Python: range(stop), range(start,stop), range(start,stop,step).
+_RANGE_RE = re.compile(r"^range\(\s*(-?\d+)\s*"
+                       r"(?:,\s*(-?\d+)\s*)?"
+                       r"(?:,\s*(-?\d+)\s*)?\)$")
+
+
+def _parse_sweep(spec):
+    """Expand a range() spec to a list of ints, or return None for a scalar.
+
+    Only range() is a sweep; anything else (a bare integer) is a constant and
+    is handled by the caller. No expression evaluation -- parametric coupling is
+    expressed by matched range() steps (see expand_params), not by rules here.
+    """
+    m = _RANGE_RE.match(spec.strip())
+    if not m:
+        return None
+    args = [int(g) for g in m.groups() if g is not None]
+    if len(args) == 1:
+        return list(range(args[0]))
+    if len(args) == 2:
+        return list(range(args[0], args[1]))
+    if args[2] == 0:
+        sys.exit("error: -p range() step must not be zero")
+    return list(range(args[0], args[1], args[2]))
+
+
+def expand_params(param_list):
+    """Parse -p NAME=VALUE tokens into (points, dims).
+
+    VALUE is either a single integer (a constant applied to every sweep point)
+    or a Python range() that makes NAME a swept dimension. Multiple swept
+    dimensions are matched one-to-one by position (zipped), so they must expand
+    to the same length; there is no cross product and no coupling expressions.
+    Linear coupling is expressed with matched range() steps, e.g.
+    'DW=range(1,33) OW=range(2,65,2)' pairs each DW with OW = 2*DW. Nonlinear
+    coupling belongs in a Python loop over run_one, not here.
+
+    Returns (points, dims): 'points' is a list of {name: int} param dicts and
+    'dims' the ordered list of swept names (used to name each point's build
+    tree). With no range() there is a single point and no dims -- the ordinary
+    single run.
+    """
+    consts = {}
+    dims = []          # (name, [ints]) in declared order
+    for item in (param_list or []):
+        if "=" not in item:
+            sys.exit(f"error: -p expects NAME=VALUE, got '{item}'")
+        key, val = item.split("=", 1)
+        key, val = key.strip(), val.strip()
+        vals = _parse_sweep(val)
+        if vals is not None:
+            if not vals:
+                sys.exit(f"error: -p sweep '{key}={val}' expands to no values")
+            dims.append((key, vals))
+        else:
+            try:
+                consts[key] = int(val)
+            except ValueError:
+                sys.exit(f"error: -p value '{key}={val}' must be an integer or "
+                         "range() (logikbench parameters are integer-only)")
+
+    npoints = 1
+    if dims:
+        lengths = {len(v) for _, v in dims}
+        if len(lengths) != 1:
+            detail = ", ".join(f"{n}={len(v)}" for n, v in dims)
+            sys.exit("error: -p swept parameters are matched one-to-one and "
+                     f"must have equal length (got {detail})")
+        npoints = lengths.pop()
+
+    points = []
+    for i in range(npoints):
+        pt = dict(consts)
+        for name, vals in dims:
+            pt[name] = vals[i]
+        points.append(pt)
+    return points, [name for name, _ in dims]
+
+
+def _variant_name(base, point, dims):
+    """Name one sweep point's design: the base plus each swept dimension's
+    value, e.g. 'muls' with DW=8, OW=16 -> 'muls_DW8_OW16'. No suffix when
+    nothing is swept, so an ordinary single run keeps its bare name."""
+    if not dims:
+        return base
+    suffix = "_".join("%s%d" % (d, point[d]) for d in dims)
+    return "%s_%s" % (base, suffix)
+
+
+def expand_worklist(worklist, points, dims):
+    """Expand each benchmark into one entry per sweep point.
+
+    Returns the expanded [(group, cls, name)] worklist and a
+    {(group, name): params} map for the runner. With no sweep the worklist is
+    unchanged and each benchmark maps to its single constant param set, so the
+    downstream build and collect paths are identical to the non-sweep case.
+    """
+    expanded = []
+    params_by_name = {}
+    for group, cls, base in worklist:
+        for point in points:
+            name = _variant_name(base, point, dims)
+            expanded.append((group, cls, name))
+            params_by_name[(group, name)] = point
+    return expanded, params_by_name
+
+
+def run_sweep(args, targets, worklist, netlist_cache=False,
+              params_by_name=None):
     """Synthesize the whole target x benchmark matrix; return the failures.
 
     Each (target, benchmark) is an independent SC run, so -j fans them out over
     a single process pool across the entire matrix -- it speeds up sweeps that
-    are wide in benchmarks, wide in targets, or both. Pure build: metrics are
-    not read or written here (use 'collect' afterwards).
+    are wide in benchmarks, wide in targets, or both. 'params_by_name' maps
+    (group, name) to the RTL parameter overrides for that entry (from a -p
+    range() sweep); the name already encodes the swept values, so points never
+    collide. Pure build: metrics are not read or written here (use 'collect'
+    afterwards).
     """
+    params_by_name = params_by_name or {}
     # flat task list over all targets and their (post-resume-filter) benchmarks
     tasks = [(target, group, cls, name)
              for target in targets
@@ -417,7 +531,9 @@ def run_sweep(args, targets, worklist, netlist_cache=False):
                         future = pool.submit(
                             run_one, cls, target, group, options,
                             target_builddir(args, target), quiet,
-                            start, stop, timeout, args.clk, lintonly)
+                            start, stop, timeout, args.clk, lintonly,
+                            params=params_by_name.get((group, name), {}),
+                            name=name)
                         running[future] = (target, group, name, est)
                         running_mem += est
                         idx += 1
@@ -435,7 +551,9 @@ def run_sweep(args, targets, worklist, netlist_cache=False):
             builddir = target_builddir(args, target)
             _, error = run_one(cls, target, group, options,
                                builddir, quiet, start, stop,
-                               timeout, args.clk, lintonly)
+                               timeout, args.clk, lintonly,
+                               params=params_by_name.get((group, name), {}),
+                               name=name)
             record(target, group, name, error)
 
     return failures
@@ -822,11 +940,20 @@ def run_target_task(task, tokens, args):
     Returns an exit code."""
     worklist = make_worklist(args)
     check_worklist(args, worklist)
-    failures = run_sweep(args, tokens, worklist, netlist_cache=(task == "syn"))
+    # -p range() expands each benchmark into one build per swept point; the
+    # point's values are baked into its name so builds and metrics stay distinct.
+    points, dims = expand_params(getattr(args, "param", None))
+    is_sweep = bool(dims)
+    worklist, params_by_name = expand_worklist(worklist, points, dims)
+    failures = run_sweep(args, tokens, worklist,
+                         netlist_cache=(task == "syn" and not is_sweep),
+                         params_by_name=params_by_name)
     if not getattr(args, "lintonly", False):
         for tok in tokens:
             save_target(tok, args, worklist)
-        if should_publish(args):
+        # a sweep is exploratory characterization; do not auto-merge its many
+        # variant rows into the committed results tree unless asked explicitly.
+        if should_publish(args) and not (is_sweep and args.publish is None):
             publish_target_task(task, tokens, args)
     elif args.publish:
         print("--publish ignored: lint-only runs produce no metrics",
@@ -910,6 +1037,13 @@ LogikBench commandline runner.
     syn_p.add_argument('--clk', type=float, default=None, metavar="PERIOD",
                        help="ASIC clock period in ns (FPGA ignores it; default: "
                             "each PDK's tech.tcl clock)")
+    syn_p.add_argument('-p', '--param', nargs='+', default=[],
+                       metavar="NAME=VALUE",
+                       help="Override integer RTL top-module parameters. A "
+                            "value is an integer (-p DW=8 OW=16) or a Python "
+                            "range() to sweep it (-p DW=range(1,33)). Swept "
+                            "params are matched one-to-one by position, so "
+                            "-p DW=range(1,33) OW=range(2,65,2) runs OW=2*DW.")
     syn_p.add_argument('--options', default="", metavar="OPTS",
                        help="Extra options passed verbatim to the mapper (use "
                             "the =form so leading dashes parse: --options=-abc9)")
