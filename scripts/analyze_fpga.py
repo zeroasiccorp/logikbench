@@ -158,8 +158,8 @@ def main():
                          "(default: results/syn/fpga)")
     ap.add_argument("--out", default=os.path.join("analysis", "fpga"),
                     help="output directory (default: analysis/fpga)")
-    ap.add_argument("--format", choices=["png", "pdf", "both"], default="png",
-                    help="chart file format (default: png)")
+    ap.add_argument("--format", choices=["png", "pdf", "both"], default="both",
+                    help="chart file format (default: both)")
     ap.add_argument("--targets", nargs="+",
                     help="restrict to these targets")
     ap.add_argument("--groups", nargs="+",

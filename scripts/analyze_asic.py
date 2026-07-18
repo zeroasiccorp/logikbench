@@ -450,8 +450,8 @@ def main():
                          "(default: results/syn/asic)")
     ap.add_argument("--out", default=os.path.join("analysis", "asic"),
                     help="output directory (default: analysis/asic)")
-    ap.add_argument("--format", choices=["png", "pdf", "both"], default="png",
-                    help="chart file format (default: png)")
+    ap.add_argument("--format", choices=["png", "pdf", "both"], default="both",
+                    help="chart file format (default: both)")
     ap.add_argument("--targets", nargs="+",
                     help="restrict to these PDKs")
     ap.add_argument("--groups", nargs="+",
