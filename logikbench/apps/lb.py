@@ -379,19 +379,47 @@ def _variant_name(base, point, dims):
     return "%s_%s" % (base, suffix)
 
 
-def expand_worklist(worklist, points, dims):
+def param_lists(param_list):
+    """Parse -p tokens into {name: [values]} (single value -> [v]).
+
+    Used with --sweep to override individual declared self.variants dimensions.
+    """
+    out = {}
+    for item in (param_list or []):
+        if "=" not in item:
+            sys.exit(f"error: -p expects NAME=VALUE, got '{item}'")
+        key, val = item.split("=", 1)
+        key, val = key.strip(), val.strip()
+        vals = _parse_sweep(val)
+        out[key] = vals if vals is not None else [int(val)]
+    return out
+
+
+def expand_worklist(worklist, points, dims, sweep=False, p_over=None):
     """Expand each benchmark into one entry per sweep point.
 
     Returns the expanded [(group, cls, name)] worklist and a
-    {(group, name): params} map for the runner. With no sweep the worklist is
-    unchanged and each benchmark maps to its single constant param set, so the
-    downstream build and collect paths are identical to the non-sweep case.
+    {(group, name): params} map for the runner. Without sweep the worklist is
+    unchanged and each benchmark maps to its single -p param set. With sweep,
+    each benchmark instead expands the full cross product of its declared
+    self.variants, with any -p values overriding the matching dimensions.
     """
     expanded = []
     params_by_name = {}
+    p_over = p_over or {}
     for group, cls, base in worklist:
-        for point in points:
-            name = _variant_name(base, point, dims)
+        if sweep:
+            variants = dict(getattr(cls(), "variants", {}) or {})
+            variants.update(p_over)          # -p pins/overrides declared dims
+            bnames = list(variants)
+            bpoints = ([dict(zip(bnames, combo))
+                        for combo in product(*variants.values())]
+                       if bnames else [{}])
+            bdims = bnames
+        else:
+            bpoints, bdims = points, dims
+        for point in bpoints:
+            name = _variant_name(base, point, bdims)
             expanded.append((group, cls, name))
             params_by_name[(group, name)] = point
     return expanded, params_by_name
@@ -916,11 +944,15 @@ def run_target_task(task, tokens, args):
     Returns an exit code."""
     worklist = make_worklist(args)
     check_worklist(args, worklist)
-    # -p range() expands each benchmark into one build per swept point; the
-    # point's values are baked into its name so builds and metrics stay distinct.
+    # -p expands each benchmark into one build per point; --sweep instead
+    # expands each benchmark's declared self.variants. The point's values are
+    # baked into its name so builds and metrics stay distinct.
+    sweep = getattr(args, "sweep", False)
     points, dims = expand_params(getattr(args, "param", None))
-    is_sweep = bool(dims)
-    worklist, params_by_name = expand_worklist(worklist, points, dims)
+    p_over = param_lists(getattr(args, "param", None)) if sweep else None
+    is_sweep = bool(dims) or sweep
+    worklist, params_by_name = expand_worklist(worklist, points, dims,
+                                               sweep=sweep, p_over=p_over)
     failures = run_sweep(args, tokens, worklist,
                          netlist_cache=(task == "syn" and not is_sweep),
                          params_by_name=params_by_name)
@@ -1021,6 +1053,10 @@ LogikBench commandline runner.
                             "multiple swept params form a cross product. "
                             "Generate long lists in the shell: DW=$(seq -s, 1 "
                             "64).")
+    syn_p.add_argument('--sweep', action='store_true',
+                       help="Sweep the full cross product of each benchmark's "
+                            "declared variants (self.variants). -p values "
+                            "override individual swept dimensions.")
     syn_p.add_argument('--options', default="", metavar="OPTS",
                        help="Extra options passed verbatim to the mapper (use "
                             "the =form so leading dashes parse: --options=-abc9)")
