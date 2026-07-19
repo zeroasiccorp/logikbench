@@ -23,14 +23,14 @@ class Divs(Design):
         # top module
         self.set_topmodule(name, fileset)
 
-        # sweepable parameter ranges (defaults live in the RTL)
-        self.parameters = {
-            "DW": {"sweep": range(1, 65)},
-        }
-
         # self-checking testbench (`lb sim`)
         self.add_file(f'testbench/test_{name}_smoke.v', 'testbench', dataroot=root)
         self.set_topmodule(f'test_{name}_smoke', 'testbench')
+
+        # variants
+        self.variants = {
+            "DW": list(range(1, 65)),
+        }
 
 
 if __name__ == "__main__":
