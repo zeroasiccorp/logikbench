@@ -1,5 +1,6 @@
 from os.path import dirname, abspath
 from siliconcompiler import Design
+from logikbench.benchmarks.arithmetic.variants import ARITH_DW
 
 
 class Muls(Design):
@@ -29,7 +30,7 @@ class Muls(Design):
 
         # variants
         self.variants = {
-            "DW": list(range(1, 65)),
+            "DW": ARITH_DW,
         }
 
 

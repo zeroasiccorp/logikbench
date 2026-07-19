@@ -1,5 +1,6 @@
 from os.path import dirname, abspath
 from siliconcompiler import Design
+from logikbench.benchmarks.arithmetic.variants import ARITH_DW_FIXEDPT
 
 
 class Exp(Design):
@@ -26,6 +27,11 @@ class Exp(Design):
         # self-checking testbench (`lb sim`)
         self.add_file(f'testbench/test_{name}_smoke.v', 'testbench', dataroot=root)
         self.set_topmodule(f'test_{name}_smoke', 'testbench')
+
+        # variants
+        self.variants = {
+            "DW": ARITH_DW_FIXEDPT,
+        }
 
 
 if __name__ == "__main__":
