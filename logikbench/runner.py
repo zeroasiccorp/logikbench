@@ -42,22 +42,19 @@ __all__ = [
     "read_tool_var", "read_flow_tools", "read_metric_units",
     "is_complete", "clean_build",
     "write_netlist_cache", "read_netlist_cache", "netlist_cache_path",
-    "parameter_combos",
+    "variant_combos",
 ]
 
 
-def parameter_combos(design):
-    """Configurations a full sweep of a design's declared parameters yields.
-
-    The cross product of the sweepable ranges declared in design.parameters
-    (each sweepable parameter carries a 'sweep' entry). Parameters without a
-    'sweep' entry -- fixed, or derived like a multiplier's OW = 2*DW -- do not
-    multiply the count. Returns 1 when the design declares nothing sweepable, so
-    callers can size or estimate a run before launching it.
+def variant_combos(design):
+    """Number of design variants a full sweep produces: the cross product of the
+    swept value lists declared in design.variants. Coupled or derived parameters
+    (e.g. a multiplier's OW = 2*DW) are not listed there, so they do not inflate
+    the count. Returns 1 when the design declares no variants, so callers can
+    size or estimate a run before launching it.
     """
-    params = getattr(design, "parameters", {})
-    dims = [len(spec["sweep"]) for spec in params.values() if "sweep" in spec]
-    return prod(dims) if dims else 1
+    variants = getattr(design, "variants", {})
+    return prod(len(values) for values in variants.values())
 
 
 # ASIC target sets by tool, all '<tool>_<pdk>' (defined in logikbench.asic):

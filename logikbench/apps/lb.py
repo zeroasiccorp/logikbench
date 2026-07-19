@@ -4,11 +4,11 @@ import argparse
 import glob
 import math
 import os
-import re
 import sys
 import json
 import threading
 from collections import defaultdict
+from itertools import product
 
 import psutil
 
@@ -313,48 +313,35 @@ def _memory_watchdog(stop_event, floor_bytes, interval=5.0):
             armed = True         # re-arm once memory pressure recedes
 
 
-# A -p value is either a plain integer or a Python range() sweep. range()
-# semantics match Python: range(stop), range(start,stop), range(start,stop,step).
-_RANGE_RE = re.compile(r"^range\(\s*(-?\d+)\s*"
-                       r"(?:,\s*(-?\d+)\s*)?"
-                       r"(?:,\s*(-?\d+)\s*)?\)$")
-
-
 def _parse_sweep(spec):
-    """Expand a range() spec to a list of ints, or return None for a scalar.
+    """Expand a comma-separated integer list to a list of ints, or None.
 
-    Only range() is a sweep; anything else (a bare integer) is a constant and
-    is handled by the caller. No expression evaluation -- parametric coupling is
-    expressed by matched range() steps (see expand_params), not by rules here.
+    '8,16,32' -> [8, 16, 32] makes the parameter a swept dimension; a bare
+    integer returns None so the caller treats it as a scalar constant applied to
+    every point. Long lists are cheap to generate in the shell, e.g.
+    DW=$(seq -s, 1 64). Values are integers (logikbench parameters are integer).
     """
-    m = _RANGE_RE.match(spec.strip())
-    if not m:
+    if "," not in spec:
         return None
-    args = [int(g) for g in m.groups() if g is not None]
-    if len(args) == 1:
-        return list(range(args[0]))
-    if len(args) == 2:
-        return list(range(args[0], args[1]))
-    if args[2] == 0:
-        sys.exit("error: -p range() step must not be zero")
-    return list(range(args[0], args[1], args[2]))
+    out = []
+    for part in spec.split(","):
+        part = part.strip()
+        try:
+            out.append(int(part))
+        except ValueError:
+            sys.exit(f"error: -p list value '{part}' is not an integer")
+    return out
 
 
 def expand_params(param_list):
     """Parse -p NAME=VALUE tokens into (points, dims).
 
-    VALUE is either a single integer (a constant applied to every sweep point)
-    or a Python range() that makes NAME a swept dimension. Multiple swept
-    dimensions are matched one-to-one by position (zipped), so they must expand
-    to the same length; there is no cross product and no coupling expressions.
-    Linear coupling is expressed with matched range() steps, e.g.
-    'DW=range(1,33) OW=range(2,65,2)' pairs each DW with OW = 2*DW. Nonlinear
-    coupling belongs in a Python loop over run_one, not here.
-
-    Returns (points, dims): 'points' is a list of {name: int} param dicts and
-    'dims' the ordered list of swept names (used to name each point's build
-    tree). With no range() there is a single point and no dims -- the ordinary
-    single run.
+    VALUE is a single integer (a constant applied to every point) or a
+    comma-separated integer list that makes NAME a swept dimension. Swept
+    dimensions form a cross product -- 'DW=8,16 AW=1,2,4' is 6 points -- matching
+    how a design's self.variants combine. Returns (points, dims): 'points' is the
+    list of {name: int} param dicts and 'dims' the ordered swept names (used to
+    name each point's build tree). No list -> a single point and no dims.
     """
     consts = {}
     dims = []          # (name, [ints]) in declared order
@@ -365,32 +352,21 @@ def expand_params(param_list):
         key, val = key.strip(), val.strip()
         vals = _parse_sweep(val)
         if vals is not None:
-            if not vals:
-                sys.exit(f"error: -p sweep '{key}={val}' expands to no values")
             dims.append((key, vals))
         else:
             try:
                 consts[key] = int(val)
             except ValueError:
                 sys.exit(f"error: -p value '{key}={val}' must be an integer or "
-                         "range() (logikbench parameters are integer-only)")
+                         "comma-separated list (parameters are integer-only)")
 
-    npoints = 1
-    if dims:
-        lengths = {len(v) for _, v in dims}
-        if len(lengths) != 1:
-            detail = ", ".join(f"{n}={len(v)}" for n, v in dims)
-            sys.exit("error: -p swept parameters are matched one-to-one and "
-                     f"must have equal length (got {detail})")
-        npoints = lengths.pop()
-
+    dim_names = [name for name, _ in dims]
     points = []
-    for i in range(npoints):
+    for combo in product(*[vals for _, vals in dims]):
         pt = dict(consts)
-        for name, vals in dims:
-            pt[name] = vals[i]
+        pt.update(zip(dim_names, combo))
         points.append(pt)
-    return points, [name for name, _ in dims]
+    return points, dim_names
 
 
 def _variant_name(base, point, dims):
@@ -1040,10 +1016,11 @@ LogikBench commandline runner.
     syn_p.add_argument('-p', '--param', nargs='+', default=[],
                        metavar="NAME=VALUE",
                        help="Override integer RTL top-module parameters. A "
-                            "value is an integer (-p DW=8 OW=16) or a Python "
-                            "range() to sweep it (-p DW=range(1,33)). Swept "
-                            "params are matched one-to-one by position, so "
-                            "-p DW=range(1,33) OW=range(2,65,2) runs OW=2*DW.")
+                            "value is a single integer (-p DW=16) or a "
+                            "comma-separated list to sweep (-p DW=8,16,32); "
+                            "multiple swept params form a cross product. "
+                            "Generate long lists in the shell: DW=$(seq -s, 1 "
+                            "64).")
     syn_p.add_argument('--options', default="", metavar="OPTS",
                        help="Extra options passed verbatim to the mapper (use "
                             "the =form so leading dashes parse: --options=-abc9)")
