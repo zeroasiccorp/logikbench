@@ -27,6 +27,11 @@ class Viterbi(Design):
         self.add_file(f'testbench/test_{name}_smoke.v', 'testbench', dataroot=root)
         self.set_topmodule(f'test_{name}_smoke', 'testbench')
 
+        # variants
+        self.variants = {
+            "SW": [1, 2, 3, 4, 6],
+        }
+
 
 if __name__ == "__main__":
     d = Viterbi()

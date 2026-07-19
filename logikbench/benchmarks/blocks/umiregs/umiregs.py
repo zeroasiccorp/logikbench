@@ -1,5 +1,6 @@
 from os.path import dirname, abspath
 from siliconcompiler import Design
+from logikbench.benchmarks.blocks.variants import BLOCKS_DW_UMI
 
 
 class Umiregs(Design):
@@ -25,6 +26,11 @@ class Umiregs(Design):
 
         # top module
         self.set_topmodule('umidev', fileset)
+
+        # variants
+        self.variants = {
+            "DW": BLOCKS_DW_UMI,
+        }
 
 
 if __name__ == "__main__":

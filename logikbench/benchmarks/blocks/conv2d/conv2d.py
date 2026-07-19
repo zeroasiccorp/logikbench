@@ -1,5 +1,6 @@
 from os.path import dirname, abspath
 from siliconcompiler import Design
+from logikbench.benchmarks.blocks.variants import BLOCKS_DW
 from lambdalib.ramlib import Spram
 
 
@@ -30,6 +31,11 @@ class Conv2d(Design):
         # self-checking testbench (`lb sim`)
         self.add_file(f'testbench/test_{name}_smoke.v', 'testbench', dataroot=root)
         self.set_topmodule(f'test_{name}_smoke', 'testbench')
+
+        # variants
+        self.variants = {
+            "DW": BLOCKS_DW,
+        }
 
 
 if __name__ == "__main__":

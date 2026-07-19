@@ -1,5 +1,6 @@
 from os.path import dirname, abspath
 from siliconcompiler import Design
+from logikbench.benchmarks.blocks.variants import BLOCKS_N
 from lambdalib.veclib import Vmux
 
 
@@ -24,6 +25,11 @@ class Umicross(Design):
                 self.set_param('DW', '64')
                 self.set_param('AW', '64')
                 self.set_param('CW', '32')
+
+        # variants
+        self.variants = {
+            "N": BLOCKS_N,
+        }
 
 
 if __name__ == "__main__":
