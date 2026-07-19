@@ -30,7 +30,7 @@ class Wordalign(Design):
 
         # variants
         self.variants = {
-            "W": [w for w in BLOCKS_W if w >= 16],
+            "DW": [w for w in BLOCKS_W if w >= 16],
         }
 
 

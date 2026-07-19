@@ -1,6 +1,5 @@
 from os.path import dirname, abspath
 from siliconcompiler import Design
-from logikbench.benchmarks.blocks.variants import BLOCKS_DW
 from lambdalib.ramlib import Spram
 
 
@@ -34,7 +33,8 @@ class Sobel3x3(Design):
 
         # variants
         self.variants = {
-            "DW": BLOCKS_DW,
+            "DW": [8, 16, 32, 64],
+            "IMGW": [64, 128, 256, 512, 1024],
         }
 
 

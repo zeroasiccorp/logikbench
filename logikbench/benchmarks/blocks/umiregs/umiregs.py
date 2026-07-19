@@ -1,6 +1,5 @@
 from os.path import dirname, abspath
 from siliconcompiler import Design
-from logikbench.benchmarks.blocks.variants import BLOCKS_DW_UMI
 
 
 class Umiregs(Design):
@@ -29,7 +28,8 @@ class Umiregs(Design):
 
         # variants
         self.variants = {
-            "DW": BLOCKS_DW_UMI,
+            "DW": [32, 64, 128, 256],
+            "AW": [16, 32, 64],
         }
 
 

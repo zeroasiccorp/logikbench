@@ -1,6 +1,5 @@
 from os.path import dirname, abspath
 from siliconcompiler import Design
-from logikbench.benchmarks.blocks.variants import BLOCKS_DW
 
 
 class Apbregs(Design):
@@ -30,7 +29,8 @@ class Apbregs(Design):
 
         # variants
         self.variants = {
-            "DW": BLOCKS_DW,
+            "DW": [8, 16, 32, 64],
+            "AW": [4, 6, 8],
         }
 
 

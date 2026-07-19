@@ -30,6 +30,7 @@ class Viterbi(Design):
         # variants
         self.variants = {
             "SW": [1, 2, 3, 4, 6],
+            "MAXLEN": [64, 128, 256, 512, 1024],
         }
 
 

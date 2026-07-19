@@ -39,6 +39,7 @@ class Jesd204b(Design):
         self.set_topmodule(f'test_{name}_smoke', 'testbench')
 
         # variants
+        # L/M/N are a coupled JESD204B framing config; only L is safely swept
         self.variants = {
             "L": [1, 2, 4],
         }

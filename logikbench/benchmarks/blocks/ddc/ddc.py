@@ -1,6 +1,5 @@
 from os.path import dirname, abspath
 from siliconcompiler import Design
-from logikbench.benchmarks.blocks.variants import BLOCKS_DW
 
 
 class Ddc(Design):
@@ -34,7 +33,8 @@ class Ddc(Design):
 
         # variants
         self.variants = {
-            "DW": BLOCKS_DW,
+            "DW": [8, 16, 32, 64],
+            "NTAP": [8, 16, 32, 64],
         }
 
 

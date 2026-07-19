@@ -26,19 +26,19 @@
 //#############################################################################
 
 module crc32
-  #(parameter W = 64)                  // datapath bits/clock (mult of 8)
+  #(parameter DW = 64)                  // datapath bits/clock (mult of 8)
    (
-    input                 clk,
-    input                 rst,      // synchronous, active high
-    input                 in_valid,
-    input [W-1:0]         in_data,
-    input                 in_last,  // last word of the frame
-    input [$clog2(W/8):0] in_bytes, // valid bytes in last word (1..W/8)
-    output reg            out_valid,
-    output reg [31:0]     out_crc   // frame FCS (valid when out_valid)
+    input                  clk,
+    input                  rst,      // synchronous, active high
+    input                  in_valid,
+    input [DW-1:0]         in_data,
+    input                  in_last,  // last word of the frame
+    input [$clog2(DW/8):0] in_bytes, // valid bytes in last word (1..DW/8)
+    output reg             out_valid,
+    output reg [31:0]      out_crc   // frame FCS (valid when out_valid)
     );
 
-   localparam BW = W/8;                // byte lanes
+   localparam BW = DW/8;                // byte lanes
 
    localparam [31:0] POLY = 32'hEDB88320;   // reflect(0x04C11DB7)
    localparam [31:0] INIT = 32'hFFFFFFFF;

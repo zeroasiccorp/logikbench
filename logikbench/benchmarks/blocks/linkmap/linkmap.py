@@ -30,6 +30,9 @@ class Linkmap(Design):
         # variants
         self.variants = {
             "L": [1, 2, 4, 8],
+            "M": [1, 2, 4],
+            "S": [1, 2, 4],
+            "N": [8, 16],
         }
 
 

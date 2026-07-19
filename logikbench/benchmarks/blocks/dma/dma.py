@@ -1,6 +1,5 @@
 from os.path import dirname, abspath
 from siliconcompiler import Design
-from logikbench.benchmarks.blocks.variants import BLOCKS_DW_UMI
 
 
 class Dma(Design):
@@ -36,7 +35,8 @@ class Dma(Design):
 
         # variants
         self.variants = {
-            "DW": BLOCKS_DW_UMI,
+            "DW": [32, 64, 128, 256],
+            "DEPTH": [16, 64, 256, 1024],
         }
 
 

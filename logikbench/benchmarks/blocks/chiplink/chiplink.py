@@ -1,6 +1,5 @@
 from os.path import dirname, abspath
 from siliconcompiler import Design
-from logikbench.benchmarks.blocks.variants import BLOCKS_DW
 
 
 class Chiplink(Design):
@@ -38,7 +37,8 @@ class Chiplink(Design):
 
         # variants
         self.variants = {
-            "DW": [w for w in BLOCKS_DW if w >= 16],
+            "DW": [16, 32, 64],
+            "NLANES": [1, 2, 4, 8],
         }
 
 

@@ -30,7 +30,7 @@ class Crc32(Design):
 
         # variants
         self.variants = {
-            "W": BLOCKS_W,
+            "DW": BLOCKS_W,
         }
 
 
