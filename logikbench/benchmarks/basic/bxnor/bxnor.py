@@ -1,5 +1,6 @@
 from os.path import dirname, abspath
 from siliconcompiler import Design
+from logikbench.benchmarks.basic.variants import BASIC_DW
 
 
 class Bxnor(Design):
@@ -12,6 +13,11 @@ class Bxnor(Design):
         # self-checking testbench (`lb sim`)
         self.add_file(f"{root}/testbench/test_{name}_smoke.v", 'testbench')
         self.set_topmodule(f"test_{name}_smoke", 'testbench')
+
+        # variants
+        self.variants = {
+            "DW": BASIC_DW,
+        }
 
 
 if __name__ == "__main__":

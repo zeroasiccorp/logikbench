@@ -1,5 +1,6 @@
 from os.path import dirname, abspath
 from siliconcompiler import Design
+from logikbench.benchmarks.basic.variants import BASIC_DW
 from lambdalib.auxlib import Clkicgand
 
 
@@ -31,6 +32,11 @@ class Icg(Design):
         # lambdalib integrated clock-gating primitive (la_clkicgand)
         with self.active_fileset(fileset):
             self.add_depfileset(Clkicgand(), "rtl")
+
+        # variants
+        self.variants = {
+            "DW": BASIC_DW,
+        }
 
 
 if __name__ == "__main__":
