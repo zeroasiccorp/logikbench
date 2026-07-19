@@ -31,6 +31,12 @@ class Ofdm(Design):
         self.add_file(f'testbench/test_{name}_smoke.v', 'testbench', dataroot=root)
         self.set_topmodule(f'test_{name}_smoke', 'testbench')
 
+        # variants
+        self.variants = {
+            "DW": [8, 16, 32],
+            "N": [64, 128, 256, 512],
+        }
+
 
 if __name__ == "__main__":
     d = Ofdm()
