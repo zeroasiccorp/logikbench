@@ -16,9 +16,12 @@ scaling plus knobs) and the shared default.sdc. lb --clk (always nanoseconds)
 is injected as LB_CLK_NS. Benchmarks that ship no SDC run unconstrained.
 """
 
+import glob
 import importlib
 import os
 import pkgutil
+import shutil
+import sys
 
 import siliconcompiler.targets as sc_targets
 from siliconcompiler import ASIC
@@ -27,7 +30,8 @@ from logikbench.flows.sta.asic import ASICSta
 from lambdalib.ramlib import RAMTechLib
 
 from logikbench.flows.syn import ASICSynthesis
-from logikbench.common import _set_range, _quiet, read_netlist_cache
+from logikbench.common import (_set_range, _quiet, read_netlist_cache,
+                               write_netlist_cache)
 
 # The default clock period is NOT overridden here: when 'lb --clk' is not given
 # each PDK's tech.tcl provides LB_CLK_NS (and the ns->unit scaling), so the
@@ -343,22 +347,54 @@ def _run_lbflow(design, target, options, builddir, quiet, start, stop, timeout,
         proj.summary()
 
 
+def _ensure_synth_netlist(design, pdk, group, cache_root, quiet, timeout,
+                          clk_ns):
+    """Return the cached yosys netlist for (design, pdk), synthesizing it first
+    on a cache miss.
+
+    lb pnr and lb sta both start from the netlist that lb syn produces. A miss
+    usually just means syn has not run yet, so instead of erroring we run the
+    same yosys synthesis inline, cache the result under the 'yosys_<pdk>' token
+    (exactly where lb syn would have written it), and return it. The inline
+    synthesis builds in the yosys target tree, not the caller's pnr/sta tree,
+    so the two never share a job directory.
+    """
+    syn_token = f"yosys_{pdk}"
+    netlist = read_netlist_cache(cache_root, syn_token, group, design.name,
+                                 design)
+    if netlist is not None:
+        return netlist
+    print(f"{design.name}: no cached '{syn_token}' netlist; "
+          f"running synthesis first.", file=sys.stderr)
+    syn_builddir = os.path.join(cache_root, syn_token, group)
+    shutil.rmtree(os.path.join(syn_builddir, design.name), ignore_errors=True)
+    # stop after the synthesis node: its .vg is all pnr/sta need, so skip STA.
+    _run_lbflow(design, syn_token, None, syn_builddir, quiet, None,
+                "synthesis", timeout, clk_ns)
+    odir = os.path.join(syn_builddir, design.name, "job0", "synthesis", "0",
+                        "outputs")
+    vgs = glob.glob(os.path.join(odir, "*.vg"))
+    if not vgs:
+        raise ValueError(
+            f"{design.name}: inline synthesis produced no netlist "
+            f"for '{syn_token}'")
+    write_netlist_cache(cache_root, syn_token, group, design.name, vgs[0],
+                        design)
+    return read_netlist_cache(cache_root, syn_token, group, design.name,
+                              design)
+
+
 def _run_scflow(design, target, group, cache_root, builddir, quiet, start, stop,
                 timeout, clk_ns=None, lintonly=False):
     """`lb pnr` ASIC path: place-and-route a *cached* synthesized netlist through
     OpenROAD (asicflow backend, floorplan -> detailed route). No synthesis: the
-    netlist comes from `lb syn` (default: the yosys netlist). 'target' is
-    'sc_<pdk>'; the cache lives at
+    netlist comes from `lb syn` (default: the yosys netlist), and is synthesized
+    inline on a cache miss. 'target' is 'sc_<pdk>'; the cache lives at
     <cache_root>/netlists/yosys_<pdk>/<group>/<name>.vg."""
     pdk = target.split("_", 1)[1]
-    # consume lb syn's cached netlist (yosys by default); miss -> tell the user
-    syn_token = f"yosys_{pdk}"
-    netlist = read_netlist_cache(cache_root, syn_token, group, design.name,
-                                 design)
-    if netlist is None:
-        raise ValueError(
-            f"{design.name}: no cached netlist for '{syn_token}'. Run "
-            f"'lb syn --target {pdk}' first (pnr starts from the netlist).")
+    # start from lb syn's cached netlist (yosys by default); synthesize on a miss
+    netlist = _ensure_synth_netlist(design, pdk, group, cache_root, quiet,
+                                    timeout, clk_ns)
 
     proj = _setup_asic_project(design, _SC_MODULE[pdk], builddir, quiet,
                                timeout, clk_ns)
@@ -382,16 +418,12 @@ def _run_scflow(design, target, group, cache_root, builddir, quiet, start, stop,
 def _run_sta(design, target, group, cache_root, builddir, quiet, start, stop,
              timeout, clk_ns=None, lintonly=False):
     """`lb sta` ASIC path: OpenSTA on a *cached* synthesized netlist (fmax,
-    slacks) -- no synthesis, no P&R. 'target' is 'sta_<pdk>'; the cache lives at
+    slacks) -- no P&R. The netlist comes from `lb syn` and is synthesized inline
+    on a cache miss. 'target' is 'sta_<pdk>'; the cache lives at
     <cache_root>/netlists/yosys_<pdk>/<group>/<name>.vg."""
     pdk = target.split("_", 1)[1]
-    syn_token = f"yosys_{pdk}"
-    netlist = read_netlist_cache(cache_root, syn_token, group, design.name,
-                                 design)
-    if netlist is None:
-        raise ValueError(
-            f"{design.name}: no cached netlist for '{syn_token}'. Run "
-            f"'lb syn --target {pdk}' first (sta starts from the netlist).")
+    netlist = _ensure_synth_netlist(design, pdk, group, cache_root, quiet,
+                                    timeout, clk_ns)
 
     proj = _setup_asic_project(design, _SC_MODULE[pdk], builddir, quiet,
                                timeout, clk_ns)
