@@ -24,7 +24,7 @@ module test_requant_smoke;
 
    always #5 clk=~clk;
 
-   requant #(.IW(IW), .MW(MW), .SHW(SHW), .OW(OW)) dut
+   requant #(.DW(IW), .MW(MW), .SHW(SHW), .OW(OW)) dut
      (.acc(acc), .scale(scale), .shift(shift), .out(out));
 
    task check;
