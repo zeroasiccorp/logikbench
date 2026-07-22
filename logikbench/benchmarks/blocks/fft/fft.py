@@ -27,6 +27,12 @@ class Fft(Design):
         self.add_file(f'testbench/test_{name}_smoke.v', 'testbench', dataroot=root)
         self.set_topmodule(f'test_{name}_smoke', 'testbench')
 
+        # variants
+        self.variants = {
+            "DW": [8, 16, 32],
+            "N": [16, 32, 64, 128, 256],
+        }
+
 
 if __name__ == "__main__":
     d = Fft()

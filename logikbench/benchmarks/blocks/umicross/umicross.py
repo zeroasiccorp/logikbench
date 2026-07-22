@@ -25,6 +25,12 @@ class Umicross(Design):
                 self.set_param('AW', '64')
                 self.set_param('CW', '32')
 
+        # variants
+        self.variants = {
+            "N": [2, 4, 8, 16, 32],
+            "DW": [32, 64, 128, 256],
+        }
+
 
 if __name__ == "__main__":
     d = Umicross()

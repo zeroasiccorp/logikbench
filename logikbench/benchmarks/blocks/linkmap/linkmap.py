@@ -27,6 +27,14 @@ class Linkmap(Design):
         self.add_file(f'testbench/test_{name}_smoke.v', 'testbench', dataroot=root)
         self.set_topmodule(f'test_{name}_smoke', 'testbench')
 
+        # variants
+        self.variants = {
+            "L": [1, 2, 4, 8],
+            "M": [1, 2, 4],
+            "S": [1, 2, 4],
+            "N": [8, 16],
+        }
+
 
 if __name__ == "__main__":
     d = Linkmap()

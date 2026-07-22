@@ -26,7 +26,7 @@ module test_wordalign_smoke;
 
    always #5 clk=~clk;
 
-   wordalign #(.W(W), .PW(PW), .COMMA(COMMA)) dut
+   wordalign #(.DW(W), .PW(PW), .COMMA(COMMA)) dut
      (.clk(clk), .nreset(nreset), .din(din),
       .dout(dout), .locked(locked), .offset(offset));
 

@@ -51,7 +51,7 @@ module jesd204b_rx #(parameter L = 4,
          wire [7:0] doct;
          wire	    dk, derr;
 
-         wordalign #(.W(10), .PW(10), .COMMA(COMMA_RDN)) u_wa
+         wordalign #(.DW(10), .PW(10), .COMMA(COMMA_RDN)) u_wa
            (.clk(clk), .nreset(nreset), .din(sym),
             .dout(aln), .locked(wlk), .offset());
 

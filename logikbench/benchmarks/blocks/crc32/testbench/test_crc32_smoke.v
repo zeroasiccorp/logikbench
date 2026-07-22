@@ -35,7 +35,7 @@ module test_crc32_smoke;
    wire		out_valid;
    wire [31:0]	out_crc;
 
-   crc32 #(.W(W)) dut
+   crc32 #(.DW(W)) dut
      (.clk(clk), .rst(rst), .in_valid(in_valid), .in_data(in_data),
       .in_last(in_last), .in_bytes(in_bytes),
       .out_valid(out_valid), .out_crc(out_crc));

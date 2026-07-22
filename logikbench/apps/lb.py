@@ -8,6 +8,7 @@ import sys
 import json
 import threading
 from collections import defaultdict
+from itertools import product
 
 import psutil
 
@@ -312,14 +313,131 @@ def _memory_watchdog(stop_event, floor_bytes, interval=5.0):
             armed = True         # re-arm once memory pressure recedes
 
 
-def run_sweep(args, targets, worklist, netlist_cache=False):
+def _parse_sweep(spec):
+    """Expand a comma-separated integer list to a list of ints, or None.
+
+    '8,16,32' -> [8, 16, 32] makes the parameter a swept dimension; a bare
+    integer returns None so the caller treats it as a scalar constant applied to
+    every point. Long lists are cheap to generate in the shell, e.g.
+    DW=$(seq -s, 1 64). Values are integers (logikbench parameters are integer).
+    """
+    if "," not in spec:
+        return None
+    out = []
+    for part in spec.split(","):
+        part = part.strip()
+        try:
+            out.append(int(part))
+        except ValueError:
+            sys.exit(f"error: -p list value '{part}' is not an integer")
+    return out
+
+
+def expand_params(param_list):
+    """Parse -p NAME=VALUE tokens into (points, dims).
+
+    VALUE is a single integer (a constant applied to every point) or a
+    comma-separated integer list that makes NAME a swept dimension. Swept
+    dimensions form a cross product -- 'DW=8,16 AW=1,2,4' is 6 points -- matching
+    how a design's self.variants combine. Returns (points, dims): 'points' is the
+    list of {name: int} param dicts and 'dims' the ordered swept names (used to
+    name each point's build tree). No list -> a single point and no dims.
+    """
+    consts = {}
+    dims = []          # (name, [ints]) in declared order
+    for item in (param_list or []):
+        if "=" not in item:
+            sys.exit(f"error: -p expects NAME=VALUE, got '{item}'")
+        key, val = item.split("=", 1)
+        key, val = key.strip(), val.strip()
+        vals = _parse_sweep(val)
+        if vals is not None:
+            dims.append((key, vals))
+        else:
+            try:
+                consts[key] = int(val)
+            except ValueError:
+                sys.exit(f"error: -p value '{key}={val}' must be an integer or "
+                         "comma-separated list (parameters are integer-only)")
+
+    dim_names = [name for name, _ in dims]
+    points = []
+    for combo in product(*[vals for _, vals in dims]):
+        pt = dict(consts)
+        pt.update(zip(dim_names, combo))
+        points.append(pt)
+    return points, dim_names
+
+
+def _variant_name(base, point, dims):
+    """Name one sweep point's design: the base plus each swept dimension's
+    value, e.g. 'muls' with DW=8, OW=16 -> 'muls_DW8_OW16'. No suffix when
+    nothing is swept, so an ordinary single run keeps its bare name."""
+    if not dims:
+        return base
+    suffix = "_".join("%s%d" % (d, point[d]) for d in dims)
+    return "%s_%s" % (base, suffix)
+
+
+def param_lists(param_list):
+    """Parse -p tokens into {name: [values]} (single value -> [v]).
+
+    Used with --sweep to override individual declared self.variants dimensions.
+    """
+    out = {}
+    for item in (param_list or []):
+        if "=" not in item:
+            sys.exit(f"error: -p expects NAME=VALUE, got '{item}'")
+        key, val = item.split("=", 1)
+        key, val = key.strip(), val.strip()
+        vals = _parse_sweep(val)
+        out[key] = vals if vals is not None else [int(val)]
+    return out
+
+
+def expand_worklist(worklist, points, dims, sweep=False, p_over=None):
+    """Expand each benchmark into one entry per sweep point.
+
+    Returns the expanded [(group, cls, name)] worklist and a
+    {(group, name): params} map for the runner. Without sweep the worklist is
+    unchanged and each benchmark maps to its single -p param set. With sweep,
+    each benchmark instead expands the full cross product of its declared
+    self.variants, with any -p values overriding the matching dimensions.
+    """
+    expanded = []
+    params_by_name = {}
+    p_over = p_over or {}
+    for group, cls, base in worklist:
+        if sweep:
+            variants = dict(getattr(cls(), "variants", {}) or {})
+            variants.update(p_over)          # -p pins/overrides declared dims
+            bnames = list(variants)
+            bpoints = ([dict(zip(bnames, combo))
+                        for combo in product(*variants.values())]
+                       if bnames else [{}])
+            bdims = bnames
+        else:
+            bpoints, bdims = points, dims
+        for point in bpoints:
+            name = _variant_name(base, point, bdims)
+            expanded.append((group, cls, name))
+            params_by_name[(group, name)] = point
+    return expanded, params_by_name
+
+
+def run_sweep(args, targets, worklist, netlist_cache=False,
+              params_by_name=None):
     """Synthesize the whole target x benchmark matrix; return the failures.
 
     Each (target, benchmark) is an independent SC run, so -j fans them out over
     a single process pool across the entire matrix -- it speeds up sweeps that
-    are wide in benchmarks, wide in targets, or both. Pure build: metrics are
-    not read or written here (use 'collect' afterwards).
+    are wide in benchmarks, wide in targets, or both. 'params_by_name' maps
+    (group, name) to the RTL parameter overrides for that entry (from a -p
+    range() sweep); the name already encodes the swept values, so points never
+    collide. Pure build: metrics are not read or written here (use 'collect'
+    afterwards).
     """
+    params_by_name = params_by_name or {}
     # flat task list over all targets and their (post-resume-filter) benchmarks
     tasks = [(target, group, cls, name)
              for target in targets
@@ -417,7 +535,9 @@ def run_sweep(args, targets, worklist, netlist_cache=False):
                         future = pool.submit(
                             run_one, cls, target, group, options,
                             target_builddir(args, target), quiet,
-                            start, stop, timeout, args.clk, lintonly)
+                            start, stop, timeout, args.clk, lintonly,
+                            params=params_by_name.get((group, name), {}),
+                            name=name)
                         running[future] = (target, group, name, est)
                         running_mem += est
                         idx += 1
@@ -435,7 +555,9 @@ def run_sweep(args, targets, worklist, netlist_cache=False):
             builddir = target_builddir(args, target)
             _, error = run_one(cls, target, group, options,
                                builddir, quiet, start, stop,
-                               timeout, args.clk, lintonly)
+                               timeout, args.clk, lintonly,
+                               params=params_by_name.get((group, name), {}),
+                               name=name)
             record(target, group, name, error)
 
     return failures
@@ -822,11 +944,24 @@ def run_target_task(task, tokens, args):
     Returns an exit code."""
     worklist = make_worklist(args)
     check_worklist(args, worklist)
-    failures = run_sweep(args, tokens, worklist, netlist_cache=(task == "syn"))
+    # -p expands each benchmark into one build per point; --sweep instead
+    # expands each benchmark's declared self.variants. The point's values are
+    # baked into its name so builds and metrics stay distinct.
+    sweep = getattr(args, "sweep", False)
+    points, dims = expand_params(getattr(args, "param", None))
+    p_over = param_lists(getattr(args, "param", None)) if sweep else None
+    is_sweep = bool(dims) or sweep
+    worklist, params_by_name = expand_worklist(worklist, points, dims,
+                                               sweep=sweep, p_over=p_over)
+    failures = run_sweep(args, tokens, worklist,
+                         netlist_cache=(task == "syn" and not is_sweep),
+                         params_by_name=params_by_name)
     if not getattr(args, "lintonly", False):
         for tok in tokens:
             save_target(tok, args, worklist)
-        if should_publish(args):
+        # a sweep is exploratory characterization; do not auto-merge its many
+        # variant rows into the committed results tree unless asked explicitly.
+        if should_publish(args) and not (is_sweep and args.publish is None):
             publish_target_task(task, tokens, args)
     elif args.publish:
         print("--publish ignored: lint-only runs produce no metrics",
@@ -910,6 +1045,18 @@ LogikBench commandline runner.
     syn_p.add_argument('--clk', type=float, default=None, metavar="PERIOD",
                        help="ASIC clock period in ns (FPGA ignores it; default: "
                             "each PDK's tech.tcl clock)")
+    syn_p.add_argument('-p', '--param', nargs='+', default=[],
+                       metavar="NAME=VALUE",
+                       help="Override integer RTL top-module parameters. A "
+                            "value is a single integer (-p DW=16) or a "
+                            "comma-separated list to sweep (-p DW=8,16,32); "
+                            "multiple swept params form a cross product. "
+                            "Generate long lists in the shell: DW=$(seq -s, 1 "
+                            "64).")
+    syn_p.add_argument('--sweep', action='store_true',
+                       help="Sweep the full cross product of each benchmark's "
+                            "declared variants (self.variants). -p values "
+                            "override individual swept dimensions.")
     syn_p.add_argument('--options', default="", metavar="OPTS",
                        help="Extra options passed verbatim to the mapper (use "
                             "the =form so leading dashes parse: --options=-abc9)")

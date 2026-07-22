@@ -38,6 +38,16 @@ class Jesd204b(Design):
         self.add_file(f'testbench/test_{name}_smoke.v', 'testbench', dataroot=root)
         self.set_topmodule(f'test_{name}_smoke', 'testbench')
 
+        # variants
+        # L/M/N are a coupled JESD204B framing config; only L is safely swept
+        # L/M/N are framing-coupled (octets M*N/8 must divide L lanes); L<=2
+        # keeps every L x M x N combination valid
+        self.variants = {
+            "L": [1, 2],
+            "M": [2, 4],
+            "N": [8, 16],
+        }
+
 
 if __name__ == "__main__":
     d = Jesd204b()

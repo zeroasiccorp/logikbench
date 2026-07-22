@@ -4,7 +4,7 @@
 // License:  MIT (see LICENSE file in LogikBench repository)
 //#############################################################################
 module mulsu #(parameter DW = 16,
-               parameter OW = 32
+               parameter OW = 2 * DW
                )
    (
     //Inputs

@@ -36,6 +36,12 @@ class Lz77(Design):
         self.add_file(f'testbench/test_{name}_smoke.v', 'testbench', dataroot=root)
         self.set_topmodule(f'test_{name}_smoke', 'testbench')
 
+        # variants
+        self.variants = {
+            "WW": [16, 32, 64, 128],
+            "WIN": [4096, 16384, 32768],
+        }
+
 
 if __name__ == "__main__":
     d = Lz77()

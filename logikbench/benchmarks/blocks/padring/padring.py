@@ -27,6 +27,11 @@ class Padring(Design):
                 self.set_topmodule('test_padring_smoke')
                 self.add_file('testbench/test_padring_smoke.v')
 
+        # variants
+        self.variants = {
+            "NPINS": [4, 8, 16, 32, 64],
+        }
+
 
 if __name__ == "__main__":
     d = Padring()

@@ -27,6 +27,14 @@ class Dotprod(Design):
         self.add_file(f'testbench/test_{name}_smoke.v', 'testbench', dataroot=root)
         self.set_topmodule(f'test_{name}_smoke', 'testbench')
 
+        # variants: combinational MAC tree (N multipliers + adder tree). INT8/16
+        # with a modest tap count; wider/longer dot products are pipelined or
+        # systolic in real hardware, not a single-cycle reduction.
+        self.variants = {
+            "DW": [8, 16],
+            "N": [2, 4, 8, 16],
+        }
+
 
 if __name__ == "__main__":
     d = Dotprod()

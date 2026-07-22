@@ -23,6 +23,7 @@ import them from here rather than the submodules.
 
 import os
 import shutil
+from math import prod
 
 from logikbench import asic, fpga
 from logikbench.common import (
@@ -41,7 +42,20 @@ __all__ = [
     "read_tool_var", "read_flow_tools", "read_metric_units",
     "is_complete", "clean_build",
     "write_netlist_cache", "read_netlist_cache", "netlist_cache_path",
+    "variant_combos",
 ]
+
+
+def variant_combos(design):
+    """Number of design variants a full sweep produces: the cross product of the
+    swept value lists declared in design.variants. Coupled or derived parameters
+    (e.g. a multiplier's OW = 2*DW) are not listed there, so they do not inflate
+    the count. Returns 1 when the design declares no variants, so callers can
+    size or estimate a run before launching it.
+    """
+    variants = getattr(design, "variants", {})
+    return prod(len(values) for values in variants.values())
+
 
 # ASIC target sets by tool, all '<tool>_<pdk>' (defined in logikbench.asic):
 #   SC_TARGETS          'sc_<pdk>'         -> SC asicflow (through P&R)
@@ -61,7 +75,7 @@ TARGETS = (list(fpga.FPGA_TARGETS) + SC_TARGETS + YOSYS_TARGETS
 
 def run_one(design_cls, target=None, group="", options="", builddir="build",
             quiet=True, start=None, stop=None, timeout=None, clk=None,
-            lintonly=False):
+            lintonly=False, params=None, name=None):
     """Run a single benchmark class; return (metrics, error).
 
     'design_cls' is the benchmark's Design subclass (resolved by the caller); it
@@ -74,6 +88,14 @@ def run_one(design_cls, target=None, group="", options="", builddir="build",
     targets).
     """
     design = design_cls()
+    # override RTL parameters (e.g. {'DW': '8', 'OW': '16'}) before the run
+    for pname, pval in (params or {}).items():
+        design.set_param(pname, str(pval), "rtl")
+    # rename the design (e.g. a per-sweep-point variant like 'muls_DW8_OW16') so
+    # its build tree and metrics do not collide with sibling sweep points; the
+    # RTL top module is set separately and stays unchanged.
+    if name:
+        design.set_name(name)
     # key off the SC design name, not the class name (a class like ConvLayer
     # has design name 'conv_layer', which keys its build dir and metrics).
     name = design.name

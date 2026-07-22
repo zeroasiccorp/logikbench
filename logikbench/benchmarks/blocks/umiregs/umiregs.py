@@ -26,6 +26,12 @@ class Umiregs(Design):
         # top module
         self.set_topmodule('umidev', fileset)
 
+        # variants
+        self.variants = {
+            "DW": [32, 64, 128, 256],
+            "AW": [16, 32, 64],
+        }
+
 
 if __name__ == "__main__":
     d = Umiregs()

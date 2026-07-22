@@ -1,5 +1,6 @@
 from os.path import dirname, abspath
 from siliconcompiler import Design
+from logikbench.benchmarks.basic.variants import BASIC_N
 
 
 class Arbiter(Design):
@@ -26,6 +27,11 @@ class Arbiter(Design):
         # self-checking testbench (`lb sim`)
         self.add_file(f'testbench/test_{name}_smoke.v', 'testbench', dataroot=root)
         self.set_topmodule(f'test_{name}_smoke', 'testbench')
+
+        # variants
+        self.variants = {
+            "N": BASIC_N,
+        }
 
 
 if __name__ == "__main__":

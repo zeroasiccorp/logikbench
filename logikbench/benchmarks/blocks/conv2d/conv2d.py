@@ -31,6 +31,12 @@ class Conv2d(Design):
         self.add_file(f'testbench/test_{name}_smoke.v', 'testbench', dataroot=root)
         self.set_topmodule(f'test_{name}_smoke', 'testbench')
 
+        # variants
+        self.variants = {
+            "DW": [8, 16, 32, 64],
+            "IMGW": [64, 128, 256, 512, 1024],
+        }
+
 
 if __name__ == "__main__":
     d = Conv2d()

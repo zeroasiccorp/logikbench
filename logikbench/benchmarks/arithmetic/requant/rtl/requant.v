@@ -3,14 +3,14 @@
 // Author: Andreas Olofsson
 // License:  MIT (see LICENSE file in LogikBench repository)
 //#############################################################################
-module requant #(parameter IW = 32, // accumulator (input) width
+module requant #(parameter DW = 32, // accumulator (input) width
                  parameter MW = 16, // scale (fixed-point multiplier) width
                  parameter SHW = 6, // shift-amount width
                  parameter OW = 8   // output width (saturated)
                  )
    (
     //Inputs
-    input signed [IW-1:0]  acc,	  // wide accumulator, e.g. int32
+    input signed [DW-1:0]  acc,	  // wide accumulator, e.g. int32
     input signed [MW-1:0]  scale, // fixed-point multiplier
     input [SHW-1:0]	   shift, // arithmetic right-shift amount
     //Outputs
@@ -22,7 +22,7 @@ module requant #(parameter IW = 32, // accumulator (input) width
    // Rounding is round-half-away-from-zero (the TFLite/gemmlowp convention)
    // on the discarded low bits.
 
-   localparam PW  = IW + MW;                      // full product width
+   localparam PW  = DW + MW;                      // full product width
    localparam [PW-1:0] ONE = 1;                   // 1 in product width
    localparam signed [PW-1:0] OMAX = (1 <<< (OW-1)) - 1;   // +max, e.g. +127
    localparam signed [PW-1:0] OMIN = -(1 <<< (OW-1));     // -min, e.g. -128

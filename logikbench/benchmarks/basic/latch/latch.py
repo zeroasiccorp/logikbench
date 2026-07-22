@@ -1,5 +1,6 @@
 from os.path import dirname, abspath
 from siliconcompiler import Design
+from logikbench.benchmarks.basic.variants import BASIC_DW
 from lambdalib.veclib import Vlatq
 
 
@@ -31,6 +32,11 @@ class Latch(Design):
         # lambdalib transparent-latch primitive (la_vlatq)
         with self.active_fileset(fileset):
             self.add_depfileset(Vlatq(), "rtl")
+
+        # variants
+        self.variants = {
+            "DW": BASIC_DW,
+        }
 
 
 if __name__ == "__main__":

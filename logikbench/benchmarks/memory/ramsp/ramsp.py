@@ -1,5 +1,6 @@
 from os.path import dirname, abspath
 from siliconcompiler import Design
+from logikbench.benchmarks.memory.variants import MEMORY_DW, MEMORY_AW
 from lambdalib.ramlib import Spram
 
 
@@ -30,6 +31,12 @@ class Ramsp(Design):
         # self-checking testbench (`lb sim`)
         self.add_file(f'testbench/test_{name}_smoke.v', 'testbench', dataroot=root)
         self.set_topmodule(f'test_{name}_smoke', 'testbench')
+
+        # variants
+        self.variants = {
+            "DW": MEMORY_DW,
+            "AW": MEMORY_AW,
+        }
 
 
 if __name__ == "__main__":

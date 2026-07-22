@@ -1,5 +1,6 @@
 from os.path import dirname, abspath
 from siliconcompiler import Design
+from logikbench.benchmarks.arithmetic.variants import ARITH_DW
 
 
 class Sqrt(Design):
@@ -26,6 +27,11 @@ class Sqrt(Design):
         # self-checking testbench (`lb sim`)
         self.add_file(f'testbench/test_{name}_smoke.v', 'testbench', dataroot=root)
         self.set_topmodule(f'test_{name}_smoke', 'testbench')
+
+        # variants (input width must be even: root is DW/2)
+        self.variants = {
+            "DW": [w for w in ARITH_DW if w % 2 == 0],
+        }
 
 
 if __name__ == "__main__":
