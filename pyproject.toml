@@ -70,7 +70,7 @@ test = [
     "pytest-xdist==3.8.0",
     "pytest-split==0.11.0",
     "pytest-timeout == 2.4.0",
-    "tclint==0.8.0",
+    "tclint==0.9.0",
     "jsonschema == 4.26.0",
     "flake8 == 7.3.0"
 ]
