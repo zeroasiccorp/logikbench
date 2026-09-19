@@ -13,7 +13,7 @@ module crossbar #(parameter DW = 64,
     output reg [N*DW-1:0] dout // N DW-wide output words, concatenated
 );
 
-   integer i,j;
+   integer i,j,k;
 
    reg [DW-1:0] din_array [0:N-1];
    reg [N-1:0]  sel_array [0:N-1];
@@ -28,11 +28,11 @@ module crossbar #(parameter DW = 64,
 
    // N output muxes with independent selects
    always @(*) begin
-      for (i = 0; i < N; i = i + 1) begin
-         dout[i*DW +: DW] = {DW{1'b0}};
+     for (k = 0; k < N; k = k + 1) begin
+         dout[k*DW +: DW] = {DW{1'b0}};
          for (j = 0; j < N; j = j + 1)
-           if (sel_array[i][j])
-             dout[i*DW +: DW] = din_array[j];
+           if (sel_array[k][j])
+             dout[k*DW +: DW] = din_array[j];
       end
    end
 
