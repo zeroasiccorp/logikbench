@@ -11,6 +11,7 @@ module sub #(parameter DW = 16
     input [DW-1:0]  a,
     input [DW-1:0]  b,
     //Outputs
+    output          cout,
     output [DW-1:0] out
     );
 
