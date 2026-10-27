@@ -55,7 +55,7 @@ module rs_syndrome
    integer k;
    always @(posedge clk) begin
       if (rst) begin
-         s_valid <= 1'b0; s_nz <= 1'b0;
+         s_valid <= 1'b0;
          for (k = 0; k < TWOT; k = k + 1) acc[k] <= {M{1'b0}};
       end
       else begin
