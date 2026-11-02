@@ -1,0 +1,22 @@
+{
+  "source_repo": "siliconcompiler/logiklib",
+  "release_tag": "v0.3.0",
+  "parts": [
+    "z1000",
+    "z1002",
+    "z1010",
+    "z1012",
+    "z1015",
+    "z1060",
+    "z1062"
+  ],
+  "assets": [
+    "z1000_cad.tar.gz",
+    "z1002_cad.tar.gz",
+    "z1010_cad.tar.gz",
+    "z1012_cad.tar.gz",
+    "z1015_cad.tar.gz",
+    "z1060_cad.tar.gz",
+    "z1062_cad.tar.gz"
+  ]
+}
