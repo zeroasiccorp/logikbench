@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0",
+  "name": "addhancarlson",
+  "spec_ref": "README.md",
+  "authorship": "Zero ASIC Corporation; author Andreas Olofsson",
+  "generated_by": {
+    "model": "claude-opus-5-5",
+    "provider": "Anthropic",
+    "interface": "Claude Code",
+    "date": "2026-11-02"
+  },
+  "human_review": {
+    "reviewed": true,
+    "reviewer": "Andreas Olofsson",
+    "date": "2026-11-02",
+    "notes": "Architecture set, widths, interface and scope directed by the author; provenance (model and date) confirmed; self-checking testbench and structural/equivalence test reviewed by the author."
+  },
+  "origin": {
+    "type": "original",
+    "notes": "Original implementation for LogikBench: han-carlson parallel prefix adder (structural), written as gate-level generate loops; not copied from any specific HDL source."
+  }
+}

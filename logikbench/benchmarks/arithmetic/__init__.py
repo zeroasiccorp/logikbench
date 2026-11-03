@@ -3,7 +3,13 @@ from .abs.abs import Abs
 from .absdiff.absdiff import Absdiff
 from .absdiffs.absdiffs import Absdiffs
 from .add.add import Add
+from .addbrentkung.addbrentkung import Addbrentkung
+from .addcarrysel.addcarrysel import Addcarrysel
+from .addhancarlson.addhancarlson import Addhancarlson
+from .addkoggestone.addkoggestone import Addkoggestone
 from .addmod.addmod import Addmod
+from .addripple.addripple import Addripple
+from .addsklansky.addsklansky import Addsklansky
 from .addsub.addsub import Addsub
 from .addtree.addtree import Addtree
 from .argmax.argmax import Argmax
@@ -76,7 +82,13 @@ __all__ = [
     "Absdiff",
     "Absdiffs",
     "Add",
+    "Addbrentkung",
+    "Addcarrysel",
+    "Addhancarlson",
+    "Addkoggestone",
     "Addmod",
+    "Addripple",
+    "Addsklansky",
     "Addsub",
     "Addtree",
     "Argmax",

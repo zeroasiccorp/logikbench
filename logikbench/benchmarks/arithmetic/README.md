@@ -6,7 +6,13 @@
 | [absdiff](absdiff)       | DW            | Absolute difference
 | [absdiffs](absdiffs)     | DW            | Absolute difference (signed)
 | [add](add)               | DW            | Adder
+| [addbrentkung](addbrentkung) | DW            | Brent-Kung prefix adder (structural)
+| [addcarrysel](addcarrysel) | DW,BS         | Carry-select adder (structural)
+| [addhancarlson](addhancarlson) | DW            | Han-Carlson prefix adder (structural)
+| [addkoggestone](addkoggestone) | DW            | Kogge-Stone prefix adder (structural)
 | [addmod](addmod)         | DW            | Modular adder
+| [addripple](addripple)   | DW            | Ripple-carry adder (structural)
+| [addsklansky](addsklansky) | DW            | Sklansky prefix adder (structural)
 | [addsub](addsub)         | DW            | Adder / subtractor
 | [addtree](addtree)       | N,DW          | Adder tree (N inputs)
 | [argmax](argmax)         | N,DW          | Argmax (index of maximum)

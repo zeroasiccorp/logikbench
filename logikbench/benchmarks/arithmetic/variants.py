@@ -16,3 +16,7 @@ ARITH_DW_2D = [8, 16, 32, 64]
 # Widths for fixed-point blocks whose default fractional width QW = 8 requires
 # DW > QW (and for CONST-bearing blocks that need >= ~16 bits).
 ARITH_DW_FIXEDPT = [w for w in ARITH_DW if w >= 16]
+
+# Structural adders (addripple, addsklansky, ...): power-of-two widths only,
+# since the prefix networks assume DW = 2^k.
+ADDER_DW = [8, 16, 32, 64, 128]
